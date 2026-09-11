@@ -751,7 +751,7 @@ namespace DOL.GS
 
             protected override int OnTick(ECSGameTimer timer)
             {
-                if (!_owner.IsAlive || _owner.ObjectState is not eObjectState.Active)
+                if (!_owner.IsAlive || _owner.ObjectState is not eObjectState.Active || _owner.Client.ClientState is not GameClient.eClientState.Playing)
                     return _onQuitTimerEnd();
 
                 if (_owner.CraftTimer != null && _owner.CraftTimer.IsAlive)
@@ -777,17 +777,17 @@ namespace DOL.GS
 
                 int currentRemainingDuration = REMAINING_DURATIONS[_remainingDurationsIndex];
                 _owner.Out.SendMessage(LanguageMgr.GetTranslation(_owner.Client.Account.Language, "GamePlayer.Quit.YouWillQuit1", currentRemainingDuration), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                return CalculateNextInterval();
+                return CalculateNextInterval(currentRemainingDuration);
+            }
 
-                int CalculateNextInterval()
-                {
-                    _remainingDurationsIndex++;
+            private int CalculateNextInterval(int currentRemainingDuration)
+            {
+                _remainingDurationsIndex++;
 
-                    if (_remainingDurationsIndex < REMAINING_DURATIONS.Length)
-                        currentRemainingDuration -= REMAINING_DURATIONS[_remainingDurationsIndex];
+                if (_remainingDurationsIndex < REMAINING_DURATIONS.Length)
+                    currentRemainingDuration -= REMAINING_DURATIONS[_remainingDurationsIndex];
 
-                    return currentRemainingDuration * 1000;
-                }
+                return currentRemainingDuration * 1000;
             }
 
             private long GetLastCombatTick()
