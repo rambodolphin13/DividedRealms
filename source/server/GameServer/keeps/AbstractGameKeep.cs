@@ -582,7 +582,7 @@ namespace DOL.GS.Keeps
 				return false;
 			}
 
-			if(player.Realm != this.Realm)
+			if(player.Realm != this.Realm && !DOL.GS.ServerRules.HybridCoopRules.Enabled)
 			{
 				player.Out.SendMessage("The keep is not owned by your realm.",eChatType.CT_System,eChatLoc.CL_SystemWindow);
 				return false;

@@ -3454,6 +3454,11 @@ namespace DOL.GS
         {
             // refresh specs
             LoadClassSpecializations(sendMessages);
+            if (StormforgedRules.IsStormforged(CharacterClass.ID))
+            {
+                foreach (Specialization spec in GetSpecList())
+                    spec.Level = Level;
+            }
 
             // lock specialization while refreshing...
             lock (_specializationLock)
@@ -10070,6 +10075,9 @@ namespace DOL.GS
         /// </summary>
         public virtual int VerifySpecPoints()
         {
+            // This opt-in class earns every specialization automatically.
+            if (StormforgedRules.IsStormforged(CharacterClass.ID))
+                return 0;
             // calc normal spec points for the level & classe
             int allpoints = -1;
             for (int i = 1; i <= Level; i++)

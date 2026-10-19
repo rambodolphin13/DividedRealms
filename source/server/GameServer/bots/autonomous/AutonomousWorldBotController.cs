@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -244,7 +244,17 @@ namespace DOL.GS
                     _nextGroupPulseTick = nowTick + 1_500 + bot.ObjectID % 500;
                 }
                 string assignmentId = bot.PersistentRecord?.ObjectiveAssignmentId ?? string.Empty;
-                if (!string.Equals(_observedObjectiveAssignmentId, assignmentId, StringComparison.Ordinal))
+                if (!string.Equals(_observedObjectiveAssignmentId, assignmentId, StringComparison.Ordinal) &&
+                    AutonomousObjectiveAssignments.KeepsCampOnFirstAssignment(_observedObjectiveAssignmentId,
+                        AutonomousObjectiveAssignments.KindFor(bot), AutonomousObjectiveAssignments.IsBetweenPveTasks(bot),
+                        bot.Group != null,
+                        // Capital recovery clears the saved camp before it assigns: that route is stale.
+                        _camp != null && string.Equals(bot.PersistentRecord?.CurrentCampId, _camp.Id, StringComparison.OrdinalIgnoreCase),
+                        _camp?.IsDungeon == true))
+                {
+                    _observedObjectiveAssignmentId = assignmentId;
+                }
+                else if (!string.Equals(_observedObjectiveAssignmentId, assignmentId, StringComparison.Ordinal))
                 {
                     AutonomousGoalDiagnostics.End(bot, GoalAttemptEnd.Reassigned, "Objective assignment changed");
                     ReleaseOwnedSiegeRams(bot);
@@ -368,6 +378,8 @@ namespace DOL.GS
                 bool postCombatRecovery = BotRestRecovery.NeedsOrContinuesRest(bot) && !BotRestRecovery.BlocksRest(bot);
                 if (brain.HasAggro || (bot.InCombat && !postCombatRecovery) || bot.IsAttacking)
                 {
+                    if (DropStaleFight(brain, bot, nowTick))
+                        return true;
                     // Defense owns movement; do not resume an old dragon-ring
                     // waypoint from a different position after the fight.
                     _dragonRallyPlanning = null;
@@ -2485,6 +2497,71 @@ namespace DOL.GS
                      $"class=\"{bot.ClassName}\" camp=\"{_camp.Id}\" target=\"{_camp.MonsterName}\" " +
                      $"region={bot.CurrentRegionID} x={bot.X} y={bot.Y} z={bot.Z}");
             AbandonCamp(bot, $"{UnreachablePullsBeforeCampAbandon} pulls in a row never reached a {_camp.MonsterName}");
+            return true;
+        }
+
+        private GameNPC _flyerWatchTarget;
+        private long _flyerWatchSinceTick;
+        private long _flyerWatchAttackedTick;
+        private int _flyerWatchTargetHealth;
+
+        /// <summary>
+        /// Lets go of a high flyer that neither side can reach (see AutonomousPveTargetPolicy). The target
+        /// is skipped like a failed pull, and a solo bot whose camp is that monster abandons the camp and
+        /// reports it toward the shared route quarantine.
+        /// </summary>
+        private bool DropStaleFight(BotBrain brain, GameBot bot, long nowTick)
+        {
+            // With no current target the brain still holds its aggro list: look at its top entry too.
+            GameNPC target = bot.TargetObject as GameNPC ??
+                brain.HighestAggroTarget as GameNPC;
+            // PvE monsters only: never an enemy realm's bot, guard, keep door or siege target.
+            // Realm raids keep their own boss rules (immune phases are part of those encounters).
+            if (target == null || !target.IsAlive || target.Realm != eRealm.None || target is GameBot ||
+                target is DOL.GS.Keeps.GameKeepComponent || target is DOL.GS.Keeps.GameKeepDoor ||
+                AutonomousRealmRaid.GetView(bot.Group) != null)
+            {
+                _flyerWatchTarget = null;
+                return false;
+            }
+            bool flyer = AutonomousPveTargetPolicy.IsUnreachableFlyer(target.Flags, target.Z, bot.Z);
+            if (_flyerWatchTarget != target)
+            {
+                _flyerWatchTarget = target;
+                _flyerWatchSinceTick = nowTick;
+                _flyerWatchAttackedTick = bot.LastAttackedByEnemyTick;
+                _flyerWatchTargetHealth = target.Health;
+                return false;
+            }
+            // Only real damage counts. An attack attempt (a bow draw, or a pet's swing, which also stamps
+            // its owner) updates LastAttackTick without reaching anything: the first build missed every
+            // Hunter and Spiritmaster under the Gripklosa gliders that way.
+            bool contact = AutonomousPveTargetPolicy.FlyerFightContact(_flyerWatchAttackedTick,
+                bot.LastAttackedByEnemyTick, _flyerWatchTargetHealth, target.Health);
+            if (contact)
+            {
+                _flyerWatchSinceTick = nowTick;
+                _flyerWatchAttackedTick = bot.LastAttackedByEnemyTick;
+                _flyerWatchTargetHealth = target.Health;
+                return false;
+            }
+            if (!AutonomousPveTargetPolicy.ShouldDropStaleFight(true, flyer, false, _flyerWatchSinceTick, nowTick))
+                return false;
+
+            _flyerWatchTarget = null;
+            _failedSavageMeleePullTargets[target.ObjectID] = nowTick + SavageBotCombatPolicy.FailedMeleePullRetryMilliseconds;
+            ReleaseSavageMeleePullTarget(brain, bot, target);
+            bot.StopAttack();
+            Log.Warn($"{(flyer ? "AUTONOMOUS_UNREACHABLE_FLYER" : "AUTONOMOUS_STALE_FIGHT")} bot={bot.Name} id={bot.DatabaseID} " +
+                     $"level={bot.Level} class=\"{bot.ClassName}\" target=\"{target.Name}\" heightAbove={target.Z - bot.Z} " +
+                     $"distance={(int)bot.GetDistanceTo(target)} group={(bot.Group == null ? "solo" : _groupDirective?.GroupId ?? "party")} " +
+                     $"camp=\"{_camp?.Id}\" region={bot.CurrentRegionID} x={bot.X} y={bot.Y} z={bot.Z}");
+            if (_camp != null && bot.Group == null &&
+                string.Equals(_camp.MonsterName, target.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                AutonomousCampRouteQuarantine.ReportFailure(_camp.Id, bot.DatabaseID);
+                AbandonCamp(bot, flyer ? $"Its {target.Name} fly out of reach" : $"No damage either way on {target.Name} for a minute");
+            }
             return true;
         }
 

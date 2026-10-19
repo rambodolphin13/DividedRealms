@@ -105,6 +105,29 @@ public class UT_AutonomousSummonPolicy
         public override bool IsVisibleToPlayersOrBots=>false;
         public override void OnUpdateOrCreateForPlayer(){Handshakes++;}
     }
+    private sealed class StormPlayer : GamePlayer
+    {
+        private StormPlayer() : base(null, null) { }
+        public override bool IsObjectGreyCon(GameObject obj) => true;
+    }
+
+    [Test]
+    public void HumanStormforgedLightningBombAttacksGreyEnemiesButNotFriendlies()
+    {
+        var player = Actor<StormPlayer>();
+        var pet = Actor<FieldPet>();
+        pet.NPCTemplate = new NpcTemplate(new DbNpcTemplate { TemplateId = 60171002, Name = "Lightning Bomb" });
+        var brain = new FnfBrain(player) { Body = pet };
+        var enemy = Actor<Enemy>(); enemy.Realm = eRealm.Midgard; enemy.TestLevel = 1;
+        var friendly = Actor<Enemy>(); friendly.Realm = eRealm.Hibernia;
+        Assert.That(player.IsObjectGreyCon(enemy), Is.True);
+        Assert.That(brain.Eligible(enemy), Is.True);
+        Assert.That(brain.Eligible(friendly), Is.False);
+        Assert.That(brain.Eligible(null), Is.False);
+        pet.NPCTemplate = new NpcTemplate(new DbNpcTemplate { TemplateId = 2130, Name = "Stock turret" });
+        Assert.That(brain.Eligible(enemy), Is.False, "Stock turrets keep the grey-con rule");
+    }
+
     private sealed class FnfBrain : TurretFNFBrain
     {
         public FnfBrain(GameLiving owner) : base(owner) { }

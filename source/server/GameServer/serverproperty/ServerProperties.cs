@@ -33,6 +33,9 @@ namespace DOL.GS.ServerProperties
 			AllCurrentProperties = propDict.ToDictionary(k => k.Key, v => v.Value.Item2.GetValue(null));
 		}
 
+        [ServerProperty("server", "hybrid_coop_pvp", "Cross-realm co-op with guild PvP in DF, battlegrounds and frontier zones. Requires restart.", false)]
+        public static bool HYBRID_COOP_PVP;
+
 		// Properties: feel free to improve the SPs in the
 		// categories below, or extend the category list.
 
@@ -40,7 +43,10 @@ namespace DOL.GS.ServerProperties
 		/// <summary>
 		/// TempProperties to register
 		/// </summary>
-		[ServerProperty("system", "tempproperties_to_register", "Serialized list of tempprop string, separated by semi-colon for be registered when a player disconnect", "LastPotionItemUsedTick;SpellAvailableTime;ItemUseDelay;LastChargedItemUsedTick")]
+		[ServerProperty("classes", "enable_stormforged", "Enable the custom Midgard Stormforged class in the Midgard Mauler slot.", false)]
+        public static bool ENABLE_STORMFORGED;
+
+        [ServerProperty("system", "tempproperties_to_register", "Serialized list of tempprop string, separated by semi-colon for be registered when a player disconnect", "LastPotionItemUsedTick;SpellAvailableTime;ItemUseDelay;LastChargedItemUsedTick")]
 		public static string TEMPPROPERTIES_TO_REGISTER;
 		/// <summary>
 		/// Do we activate TempProperties manager Checkup on log in

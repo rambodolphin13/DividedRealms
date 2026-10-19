@@ -65,7 +65,7 @@ public static class AutonomousBotRealmPointRewards
     {
         if (victim?.IsAutonomousWorldBot != true || killer is not GameLiving living || !RvrLog.IsInfoEnabled) return;
         GameLiving owner = ResolveRootRewardOwner(living) ?? living;
-        if (owner.Realm == eRealm.None || owner.Realm == victim.Realm) return;
+        if (owner.Realm == eRealm.None || (DOL.GS.ServerRules.HybridCoopRules.Enabled ? !DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(owner, victim) : owner.Realm == victim.Realm)) return;
         string force = victim.TempProperties.GetProperty<string>("RvrEventForce") ?? "";
         RvrLog.Info($"RVR_BOT_KILLED victim={victim.Name} id={victim.DatabaseID} realm={GlobalConstants.RealmToName(victim.Realm)} " +
                     $"goal={AutonomousObjectiveAssignments.KindFor(victim)} force={force} killer=\"{owner.Name}\" killerRealm={GlobalConstants.RealmToName(owner.Realm)} " +
@@ -97,7 +97,7 @@ public static class AutonomousBotRealmPointRewards
         foreach (KeyValuePair<GameLiving, double> pair in rawContributors)
         {
             GameLiving credited = ResolveRootRewardOwner(pair.Key);
-            if (credited == null || credited.Realm == eRealm.None || credited.Realm == killedBot.Realm)
+            if (credited == null || credited.Realm == eRealm.None || (DOL.GS.ServerRules.HybridCoopRules.Enabled ? !DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(credited, killedBot) : credited.Realm == killedBot.Realm))
                 continue;
 
             hostileContributors[credited] = hostileContributors.TryGetValue(credited, out double existing)
@@ -188,7 +188,7 @@ public static class AutonomousBotRealmPointRewards
         if (victim == null || victimRealmPointValue <= 0 || totalDamage <= 0) return;
         var bots = hostileContributors
             .Where(pair => pair.Key is GameBot { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false } bot &&
-                bot.Realm != eRealm.None && bot.Realm != victim.Realm && bot.ObjectState == GameObject.eObjectState.Active &&
+                bot.Realm != eRealm.None && (DOL.GS.ServerRules.HybridCoopRules.Enabled ? DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(bot, victim) : bot.Realm != victim.Realm) && bot.ObjectState == GameObject.eObjectState.Active &&
                 bot.IsWithinRadius(victim, WorldMgr.MAX_EXPFORKILL_DISTANCE))
             .Select(pair => (Bot: (GameBot)pair.Key, Damage: pair.Value)).ToArray();
         foreach (var (bot, damage) in bots)
@@ -213,7 +213,7 @@ public static class AutonomousBotRealmPointRewards
         foreach (var pair in raw)
         {
             GameLiving credited = ResolveRootRewardOwner(pair.Key);
-            if (credited == null || credited.Realm == eRealm.None || credited.Realm == killedPlayer.Realm) continue;
+            if (credited == null || credited.Realm == eRealm.None || (DOL.GS.ServerRules.HybridCoopRules.Enabled ? !DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(credited, killedPlayer) : credited.Realm == killedPlayer.Realm)) continue;
             hostile[credited] = hostile.GetValueOrDefault(credited) + pair.Value;
         }
         PayGamebots(killedPlayer, killedPlayer.RealmPointsValue, killedPlayer.RealmLevel, hostile, hostile.Sum(pair => pair.Value));

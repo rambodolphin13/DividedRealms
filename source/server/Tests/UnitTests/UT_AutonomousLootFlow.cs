@@ -332,6 +332,50 @@ namespace DOL.UnitTests
             }
         }
 
+        [TestCase(1)] [TestCase(5)] [TestCase(10)] [TestCase(50)]
+        public void StormforgedRogArmorIsChainAtEveryLevelAndAllowsLargeShields(int level)
+        {
+            Assert.That(GeneratedUniqueItem.GetMidgardArmorType(eCharacterClass.Stormforged, (byte)level), Is.EqualTo(eObjectType.Chain));
+            var size = typeof(GeneratedUniqueItem).GetMethod("GetMaxShieldSizeFromClass", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.That(size.Invoke(null, new object[] { eCharacterClass.Stormforged }), Is.EqualTo(3));
+            Assert.That(GeneratedUniqueItem.GetMidgardArmorType(eCharacterClass.Thane, 1), Is.EqualTo(eObjectType.Studded));
+            Assert.That(GeneratedUniqueItem.GetMidgardArmorType(eCharacterClass.Runemaster, 50), Is.EqualTo(eObjectType.Cloth));
+        }
+
+        [Test]
+        public void StormforgedRealRandomRogsUseClassEquipmentAndKeepTheirIdentity()
+        {
+            var valid = new[] { eObjectType.Chain, eObjectType.Sword, eObjectType.Hammer, eObjectType.Axe, eObjectType.Shield, eObjectType.Magical };
+            for (int i = 0; i < 256; i++)
+            {
+                var item = new GeneratedUniqueItem(eRealm.Midgard, eCharacterClass.Stormforged, 50);
+                Assert.That(valid, Does.Contain((eObjectType)item.Object_Type));
+                Assert.That(item.Description, Is.EqualTo("Atlas ROG | Stormforged"));
+                if (item.Object_Type == (int)eObjectType.Shield)
+                    Assert.That(item.Type_Damage, Is.InRange(1, 3));
+                if (item.Object_Type == (int)eObjectType.Chain)
+                    Assert.That(item.SPD_ABS, Is.EqualTo(27));
+            }
+        }
+
+        [Test]
+        public void StormforgedRogBonusesUseItsRealSkillsAndPietyHybridStatProfile()
+        {
+            var item = new GeneratedUniqueItem(eRealm.Midgard, eCharacterClass.Stormforged, 50, eObjectType.Chain);
+            var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+            var valid = typeof(GeneratedUniqueItem).GetMethod("SkillIsValidForClass", flags);
+            foreach (var property in new[] { eProperty.Skill_Sword, eProperty.Skill_Hammer, eProperty.Skill_Axe, eProperty.Skill_Shields, eProperty.Skill_Parry, eProperty.Skill_Stealth })
+                Assert.That(valid.Invoke(item, new object[] { property }), Is.True, property.ToString());
+            Assert.That(valid.Invoke(item, new object[] { eProperty.Skill_Stormcalling }), Is.False, "The custom class has no trained stock Stormcalling specialization");
+            Assert.That(valid.Invoke(item, new object[] { eProperty.Skill_Staff }), Is.False);
+            foreach (string method in new[] { "SkillIsValidForMagical", "SkillIsValidForArmor", "SkillIsValidForWeapon" })
+                Assert.That(typeof(GeneratedUniqueItem).GetMethod(method, flags).Invoke(item, new object[] { eProperty.Skill_Stealth }), Is.True);
+            var weighted = typeof(GeneratedUniqueItem).GetMethod("GetWeightedStatForClass", flags);
+            var usefulStats = new[] { eProperty.Strength, eProperty.Dexterity, eProperty.Quickness, eProperty.Constitution, eProperty.Piety, eProperty.MaxMana, eProperty.MaxHealth };
+            for (int i = 0; i < 64; i++)
+                Assert.That(usefulStats, Does.Contain((eProperty)weighted.Invoke(item, new object[] { eCharacterClass.Stormforged })));
+        }
+
         [Test]
         public void SluaghbinderRogArmorProgressesAndAllowsAllShieldSizes()
         {

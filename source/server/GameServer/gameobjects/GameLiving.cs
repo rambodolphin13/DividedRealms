@@ -1424,6 +1424,9 @@ namespace DOL.GS
 				}
 			}*/
 
+            if (StormforgedSecondThunderEffect.TryPreventFatalDamage(this, Math.Max(0L, (long)damageAmount + criticalAmount)))
+                damageAmount = criticalAmount = 0;
+
 			Health -= damageAmount + criticalAmount;
 
 			// Protect calls to Die, since most overrides aren't thread safe.

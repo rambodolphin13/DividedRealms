@@ -89,6 +89,11 @@ namespace DOL.AI.Brain
             if (Body is TurretFnfPet && Owner is GameBot { IsAutonomousWorldBot: true } bot && BotAnimistPolicy.AppliesTo(bot))
                 return AggroLevel > 0 && target != null && !bot.IsObjectGreyCon(target) &&
                     GameServer.ServerRules.IsAllowedToAttack(Body, target, true);
+            // The private Stormforged field storm is useful against low-level enemies too.
+            // Stock FnFs retain their owner-relative grey-con restriction.
+            if (Body is TurretFnfPet { NPCTemplate.TemplateId: 60171002 } && Owner is GamePlayer)
+                return AggroLevel > 0 && target != null && target.IsAlive &&
+                    GameServer.ServerRules.IsAllowedToAttack(Body, target, true);
             return CanAggroTarget(target);
         }
 

@@ -1166,7 +1166,7 @@ namespace DOL.GS.ServerRules
                 Dictionary<GameLiving, double> creditedGainers = new();
                 foreach (var pair in killedNpc.XPGainers)
                 {
-                    GameLiving credited = ResolveRootRewardOwner(pair.Key);
+                    GameLiving credited = ResolveNpcKillRewardOwner(pair.Key);
                     if (credited == null)
                         continue;
                     creditedGainers[credited] = creditedGainers.TryGetValue(credited, out double existing)
@@ -1190,8 +1190,9 @@ namespace DOL.GS.ServerRules
                 // Process real participants first. Temporary /spawn helpers are
                 // deliberately handled afterward so their damage can be
                 // credited to their owner without incrementing the group size.
+                // Account companions are real characters: they count, and earn, as group members.
                 foreach (var pair in creditedGainers.Where(pair =>
-                             pair.Key is not GameBot { IsTemporaryGroupHelper: true }))
+                             pair.Key is not GameBot { IsTemporaryGroupHelper: true, IsAccountCompanion: false }))
                 {
                     // If the killed NPC is gray to any of the entities, or if a guard is involved, don't give any XP, drop any loot, change faction relations, etc.
                     if (pair.Key.IsObjectGreyCon(killedNpc) || pair.Key is GameGuard)
@@ -1203,7 +1204,7 @@ namespace DOL.GS.ServerRules
 
                     if (pair.Key is GameBot bot)
                     {
-                        if (!bot.IsAutonomousWorldBot)
+                        if (!bot.IsAutonomousWorldBot && !bot.IsAccountCompanion)
                             continue;
 
                         ProcessBotDamage(bot, pair.Value, botCountAndDamage, mostDamagingBot);
@@ -1245,7 +1246,7 @@ namespace DOL.GS.ServerRules
                 }
 
                 foreach (var pair in creditedGainers.Where(pair =>
-                             pair.Key is GameBot { IsTemporaryGroupHelper: true }))
+                             pair.Key is GameBot { IsTemporaryGroupHelper: true, IsAccountCompanion: false }))
                 {
                     GameBot helper = (GameBot)pair.Key;
                     GamePlayer owner = helper.Owner;
@@ -1272,17 +1273,6 @@ namespace DOL.GS.ServerRules
                 }
 
                 return true;
-
-                static GameLiving ResolveRootRewardOwner(GameLiving source)
-                {
-                    GameLiving current = source;
-                    for (int depth = 0; depth < 16 && current is GameNPC npc &&
-                         npc.Brain is IControlledBrain controlled && controlled.Owner is GameLiving owner; depth++)
-                    {
-                        current = owner;
-                    }
-                    return current;
-                }
 
                 static void ProcessBotDamage(GameBot bot, double damage,
                     Dictionary<GameBot, EntityCountTotalDamagePair> entityDamage,
@@ -1759,13 +1749,32 @@ namespace DOL.GS.ServerRules
             }
         }
 
+        /// <summary>
+        /// The participant credited for a monster kill. A pet, sub-pet or turret belongs to its
+        /// root owner. Bot brains also report their summoner as owner, so a /spawn helper folds
+        /// into its player; an account companion is a real character and stops the walk, earning
+        /// its own share (its own pets still fold into it).
+        /// </summary>
+        public static GameLiving ResolveNpcKillRewardOwner(GameLiving source)
+        {
+            GameLiving current = source;
+            for (int depth = 0; depth < 16 && current is GameNPC npc &&
+                 npc is not GameBot { IsAccountCompanion: true } &&
+                 npc.Brain is IControlledBrain controlled && controlled.Owner is GameLiving owner; depth++)
+            {
+                current = owner;
+            }
+            return current;
+        }
+
         private static void AwardBotOnNpcKill(GameBot botToAward,
             double npcTotalDamageReceived,
             GameNPC killedNpc,
             Dictionary<GameBot, EntityCountTotalDamagePair> botCountAndDamage,
             Dictionary<Group, EntityCountTotalDamagePair> groupCountAndDamage, bool recordKillCredit = true)
         {
-            if (botToAward?.IsAutonomousWorldBot != true || botToAward.IsTemporaryGroupHelper ||
+            bool accountCompanion = botToAward?.IsAccountCompanion == true;
+            if (!accountCompanion && (botToAward?.IsAutonomousWorldBot != true || botToAward.IsTemporaryGroupHelper) ||
                 npcTotalDamageReceived <= 0)
             {
                 return;
@@ -1842,7 +1851,7 @@ namespace DOL.GS.ServerRules
             // This award path already resolves pets, sub-pets, Animist
             // turrets, Theurgist elementals, and ordinary group contributors
             // to the persistent bot that legitimately earned the XP.
-            if (recordKillCredit)
+            if (recordKillCredit && !accountCompanion)
             {
                 AutonomousObjectiveAssignments.RecordPveKill(botToAward);
                 AutonomousGoalDiagnostics.Reward(botToAward, killedNpc, botToAward.Experience - diagnosticXpBefore);
@@ -2017,6 +2026,12 @@ namespace DOL.GS.ServerRules
             Dictionary<Group, EntityCountTotalDamagePair> groupCountAndDamage,
             out bool isWorthAnything)
         {
+            if (HybridCoopRules.Enabled && !HybridCoopRules.RewardEnemies(playerToAward, killedPlayer))
+            {
+                isWorthAnything = false;
+                return;
+            }
+
             // Modify rewards (base XP, RP, BP) based on damage percent inflicted by the battlegroup, group, or player.
             EntityCountTotalDamagePair entityCountTotalDamagePair;
 

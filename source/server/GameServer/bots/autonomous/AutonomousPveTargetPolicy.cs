@@ -21,5 +21,34 @@ namespace DOL.GS
         // A high flyer that attacks the bot is fought normally by its defense.
         public static bool IsUnreachableFlyer(GameNPC.eFlags flags, int monsterZ, int botZ) =>
             (flags & GameNPC.eFlags.FLYING) != 0 && Math.Abs(monsterZ - botZ) > UnreachableFlyerHeight;
+
+        /// <summary>How long a bot may "fight" a high flyer with no blow landed or taken before letting it go.</summary>
+        public const long UnreachableFlyerAggroDropMilliseconds = 30_000;
+
+        // Defense used to fight an aggressive high flyer "normally", but neither side could reach the
+        // other: the 2026-10-19 soak had 19 of 47 fifteen-minute rescues standing under Gripklosa griffon
+        // gliders ("Fighting griffon glider"). Any landed or received blow, or lost target health, is a
+        // real fight and restarts the watch.
+        /// <summary>The flyer lost health (to the bot, its pet or anyone) or something hit the bot.</summary>
+        public static bool FlyerFightContact(long initialAttackedTick, long attackedTick, int initialTargetHealth, int targetHealth) =>
+            attackedTick > initialAttackedTick || targetHealth < initialTargetHealth;
+
+        public static bool ShouldDropUnreachableFlyer(bool unreachableFlyer, bool contactSinceWatch,
+            long watchedSinceTick, long nowTick) =>
+            unreachableFlyer && !contactSinceWatch && nowTick - watchedSinceTick >= UnreachableFlyerAggroDropMilliseconds;
+
+        /// <summary>How long any other PvE monster may be "fought" with no damage either way.</summary>
+        public const long StaleFightDropMilliseconds = 60_000;
+
+        // The same soak had 42 rescues "Fighting Lieutenant Meade": a Hall of the Corrupt boss that takes
+        // no damage outside his tether, with the bots stood 1,500 units off. No damage either way for a
+        // minute is not a fight. RvR targets are never judged by this rule.
+        public static bool ShouldDropStaleFight(bool pveTarget, bool unreachableFlyer, bool contactSinceWatch,
+            long watchedSinceTick, long nowTick)
+        {
+            if (!pveTarget || contactSinceWatch) return false;
+            long limit = unreachableFlyer ? UnreachableFlyerAggroDropMilliseconds : StaleFightDropMilliseconds;
+            return nowTick - watchedSinceTick >= limit;
+        }
     }
 }

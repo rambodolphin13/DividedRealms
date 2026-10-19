@@ -33,7 +33,7 @@ namespace DOL.GS.PacketHandler
 		private static byte GetClientOverviewClassId(int classId, int realm) =>
 			classId == (int)eCharacterClass.Sluaghbinder && realm == (int)eRealm.Hibernia
 				? (byte)eCharacterClass.MaulerHib
-				: (byte)classId;
+				: StormforgedRules.OverviewClass(classId, realm);
 
 		/// <summary>
 		/// Defines a logger for this class.

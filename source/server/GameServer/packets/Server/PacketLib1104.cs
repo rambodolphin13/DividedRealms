@@ -21,10 +21,10 @@ namespace DOL.GS.PacketHandler
 		private static byte GetClientOverviewClassId(int classId, int realm) =>
 			IsSluaghbinderOverview(classId, realm)
 				? (byte)eCharacterClass.MaulerHib
-				: (byte)classId;
+				: StormforgedRules.OverviewClass(classId, realm);
 
 		private static string GetClientOverviewClassName(int classId, int realm) =>
-			IsSluaghbinderOverview(classId, realm) ? "Sluaghbinder" : ((eCharacterClass)classId).ToString();
+			IsSluaghbinderOverview(classId, realm) ? "Sluaghbinder" : StormforgedRules.IsStormforged(classId) && realm == (int)eRealm.Midgard ? "Stormforged" : ((eCharacterClass)classId).ToString();
 
 		/// <summary>
 		/// Constructs a new PacketLib for Client Version 1.104

@@ -48,12 +48,26 @@ namespace DOL.GS
         {
             // `_effectsLock` is expected to be acquired already.
             _effectIdToEffect[effect.Icon] = effect;
+            // Private tooltips are sent separately from the reused visual icon.
+            // The modern client returns that identity when cancelling the buff.
+            if (effect is ECSGameSpellEffect spellEffect &&
+                PacketHandler.PacketLib1110.UsesOwnTooltipIdentity(spellEffect.SpellHandler.Spell.ID))
+                _effectIdToEffect[spellEffect.SpellHandler.Spell.InternalID] = effect;
         }
 
         protected override void RemoveEffectIdToEffect(ECSGameEffect effect)
         {
             // `_effectsLock` is expected to be acquired already.
-            _effectIdToEffect.Remove(effect.Icon);
+            RemoveIfCurrent(effect.Icon);
+            if (effect is ECSGameSpellEffect spellEffect &&
+                PacketHandler.PacketLib1110.UsesOwnTooltipIdentity(spellEffect.SpellHandler.Spell.ID))
+                RemoveIfCurrent(spellEffect.SpellHandler.Spell.InternalID);
+
+            void RemoveIfCurrent(int id)
+            {
+                if (_effectIdToEffect.TryGetValue(id, out ECSGameEffect current) && ReferenceEquals(current, effect))
+                    _effectIdToEffect.Remove(id);
+            }
         }
 
         private void SendPlayerUpdates()

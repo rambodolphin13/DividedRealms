@@ -552,6 +552,10 @@ namespace DOL.GS.Keeps
 			if (target.Client.Account.PrivLevel != 1)
 				return false;
 
+            if (DOL.GS.ServerRules.HybridCoopRules.Enabled)
+                return DOL.GS.ServerRules.HybridCoopRules.IsWarKeep(keep) &&
+                    DOL.GS.ServerRules.HybridCoopRules.KeepEnemy(keep, target, checkGroup);
+
 			if (GameServer.Instance.Configuration.ServerType == EGameServerType.GST_PvP)
 			{
 				if (keep.Guild == null)

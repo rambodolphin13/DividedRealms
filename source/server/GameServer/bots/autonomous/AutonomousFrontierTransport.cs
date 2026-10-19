@@ -46,6 +46,13 @@ public static class AutonomousFrontierTransport
     public static bool SliceFull(int processed, double elapsedMilliseconds) =>
         processed >= SlicePassengerLimit || elapsedMilliseconds >= SliceMilliseconds;
 
+    /// <summary>
+    /// A full backpack at the medallion merchant keeps the bot there only while a sale actually made room.
+    /// With nothing sellable it used to hold "Making room for frontier medallion" every turn until the
+    /// fifteen-minute watchdog sent it to its capital; now the walking itinerary takes over at once.
+    /// </summary>
+    public static bool KeepWaitingForMedallionRoom(bool backpackFull, bool soldTrash) => backpackFull && soldTrash;
+
     public static Vector3 WaitingOffset(long botId, int attempt = 0)
     {
         // Stable per character, not per warband: no shared endpoint at the NPC.

@@ -70,7 +70,8 @@ namespace DOL.GS
             if (Vector3.DistanceSquared(current, _defensivePost.Value) <= 80 * 80)
             {
                 bot.StopMovingOnPath(); bot.StopMoving();
-                AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Objective);
+                AutonomousStuckWatchdog.MarkProgress(bot,
+                    AutonomousStuckWatchdog.DefensivePostProgress(AutonomousObjectiveAssignments.KindFor(bot)));
                 SetRvrStatus(bot, "Defending keep", keep.Name, "At a verified interior post; engaging visible enemy combatants before siege engines");
                 return true;
             }

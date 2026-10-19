@@ -37,7 +37,7 @@ namespace DOL.GS.PropertyCalc
                     hpBase = (int) (hpBase * (100 + levelBonus) * 0.01);
                 }
 
-                int flatAbilityBonus = living.AbilityBonus[property]; // New Toughness.
+                int flatAbilityBonus = living.AbilityBonus[property] + StormforgedInnate.Bonus(living, property); // New Toughness.
                 int multiplicativeAbilityBonus = living.AbilityBonus[eProperty.Of_Toughness]; // Old Toughness.
 
                 double result = hpBase;
@@ -61,7 +61,7 @@ namespace DOL.GS.PropertyCalc
                     hpBase = (int)(hpBase * (100 + levelBonus) * 0.01);
                 }
 
-                int flatAbilityBonus = living.AbilityBonus[property];
+                int flatAbilityBonus = living.AbilityBonus[property] + StormforgedInnate.Bonus(living, property);
                 int multiplicativeAbilityBonus = living.AbilityBonus[eProperty.Of_Toughness];
                 double result = hpBase;
                 result *= 1 + multiplicativeAbilityBonus * 0.01;

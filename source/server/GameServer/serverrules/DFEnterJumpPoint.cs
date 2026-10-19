@@ -19,6 +19,7 @@ namespace DOL.GS.ServerRules
 		/// </summary>
 		public static bool CanRealmEnter(eRealm realm)
 		{
+            if (HybridCoopRules.Enabled) return true;
 			if (GameServer.Instance.Configuration.ServerType != EGameServerType.GST_Normal)
 				return true;
 			if (ServerProperties.Properties.ALLOW_ALL_REALMS_DF)

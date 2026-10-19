@@ -29,7 +29,7 @@ namespace DOL.GS
         Passive = 3
     }
 
-    public class GameBot : GameNPC, IGamePlayer, IGameStaticItemOwner
+    public partial class GameBot : GameNPC, IGamePlayer, IGameStaticItemOwner
     {
         private static new readonly Logger log = LoggerManager.Create(typeof(GameBot));
 
@@ -1593,6 +1593,11 @@ namespace DOL.GS
 
         public override void GainExperience(GainedExperienceEventArgs arguments, bool notify = true)
         {
+            if (IsAccountCompanion && arguments != null && arguments.ExpTotal > 0)
+            {
+                GainAccountCompanionExperience(arguments);
+                return;
+            }
             if (!IsAutonomousWorldBot || arguments == null || arguments.ExpTotal <= 0)
                 return;
             if (Level >= MaxLevel)
@@ -2720,6 +2725,10 @@ namespace DOL.GS
                     return;
             }
 
+            // An account companion's character keeps everything it earned: save it while its
+            // position, equipment and pets are all still in place.
+            if (IsAccountCompanion)
+                FinishAccountCompanion();
             _deathRecoveryTimer?.Stop();
             _deathRecoveryTimer = null;
             AutonomousPetSupport.CancelPendingCharm(this);
@@ -3908,7 +3917,7 @@ namespace DOL.GS
         // during combat/casting/horse travel. Preserve the existing build/group.
         internal bool TryApplyEndgameCompanionUpgrade()
         {
-            if (!IsTemporaryGroupHelper || _endgameCompanionEquipped || Owner?.Level != 50 ||
+            if (!IsTemporaryGroupHelper || IsAccountCompanion || _endgameCompanionEquipped || Owner?.Level != 50 ||
                 !IsAlive || IsCasting || InCombat || IsAttacking || IsOnStableMasterRoute ||
                 Brain is BotBrain { HasAggro: true } || ControlledBrain?.Body is { InCombat: true })
                 return false;
@@ -4616,6 +4625,11 @@ namespace DOL.GS
 
         public void SaveToDatabase()
         {
+            if (IsAccountCompanion)
+            {
+                SaveAccountCompanion("save");
+                return;
+            }
             if (IsTemporaryGroupHelper)
                 return;
             BotDatabase.SaveBot(this);

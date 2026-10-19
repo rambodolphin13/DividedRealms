@@ -87,7 +87,9 @@ namespace DOL.AI.Brain
 
             GameBot autonomous = target as GameBot ?? ((target as GameNPC)?.Brain as IControlledBrain)?.GetLivingOwner() as GameBot;
             if (autonomous?.IsAutonomousWorldBot == true)
-                return autonomous.Realm != eRealm.None && autonomous.Realm != Body.Realm;
+                return DOL.GS.ServerRules.HybridCoopRules.Enabled
+                    ? DOL.GS.ServerRules.HybridCoopRules.KeepEnemy(_keepGuardBody.Component.Keep, autonomous)
+                    : autonomous.Realm != eRealm.None && autonomous.Realm != Body.Realm;
 
             GamePlayer checkPlayer = null;
 

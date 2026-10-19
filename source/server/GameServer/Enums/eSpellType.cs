@@ -436,6 +436,19 @@ namespace DOL.GS
         SluaghbinderEpicSummon,
 
         // Sluaghbinder class realm ability: a snare that tightens every second, then bursts (AtlasOF_CripplingPlague).
-        SluaghbinderCripplingPlague
+        SluaghbinderCripplingPlague,
+        StormforgedStrike,
+        StormforgedAura,
+        StormforgedChant,
+        StormforgedWard,
+        StormforgedRest,
+        StormforgedPet,
+        StormforgedAvatar,
+        StormforgedSecondThunder,
+        StormforgedStormguard,
+        StormforgedStep,
+        StormforgedRide,
+        StormforgedRecall,
+        StormforgedEye
     }
 }

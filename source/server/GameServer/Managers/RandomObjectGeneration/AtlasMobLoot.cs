@@ -188,14 +188,16 @@ namespace DOL.GS {
             GameLiving owner = ResolveLootOwner(killer);
             // Helpers never own loot; their real owner may receive the kill's
             // normal loot through the existing reward-owner/pickup path.
-            if (owner is GameBot { IsTemporaryGroupHelper: true } helper)
+            if (owner is GameBot { IsTemporaryGroupHelper: true, IsAccountCompanion: false } helper)
                 owner = helper.Owner;
             return IsLootParticipant(owner) ? owner : null;
         }
 
         private static bool IsLootParticipant(GameLiving living)
         {
-            return living is GamePlayer || living is GameBot { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false };
+            // Account companions are real characters and roll for loot like any group member.
+            return living is GamePlayer || living is GameBot { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false } ||
+                   living is GameBot { IsAccountCompanion: true };
         }
 
         private static IEnumerable<GameLiving> GetLootParticipants(Group group)

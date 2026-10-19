@@ -1212,6 +1212,7 @@ namespace DOL.GS
                         return eProperty.Piety;
                     else return eProperty.Constitution;
                 
+                case eCharacterClass.Stormforged:
                 case eCharacterClass.Thane:
                 case eCharacterClass.Reaver:
                     if (Util.Chance(20))
@@ -1312,6 +1313,8 @@ namespace DOL.GS
 
         private bool SkillIsValidForClass(eProperty property)
         {
+            if (charClass == eCharacterClass.Stormforged)
+                return StormforgedRules.IsRogSkill(property);
             switch (charClass)
             {
                 // Base classes need explicit smart-loot coverage too.  Without
@@ -2028,10 +2031,12 @@ namespace DOL.GS
 
         private bool SkillIsValidForMagical(eProperty property)
         {
+            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
+                return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
             eObjectType type = (eObjectType)this.Object_Type;
-            eCharacterClass charClass = this.charClass;
+            eCharacterClass charClass = this.charClass == eCharacterClass.Stormforged ? eCharacterClass.Thane : this.charClass;
 
             switch (property)
             {
@@ -2673,10 +2678,12 @@ namespace DOL.GS
 
         private bool SkillIsValidForArmor(eProperty property)
         {
+            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
+                return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
             eObjectType type = (eObjectType)this.Object_Type;
-            eCharacterClass charClass = this.charClass;
+            eCharacterClass charClass = this.charClass == eCharacterClass.Stormforged ? eCharacterClass.Thane : this.charClass;
 
             switch (property)
             {
@@ -3717,9 +3724,12 @@ namespace DOL.GS
 
         private bool SkillIsValidForWeapon(eProperty property)
         {
+            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
+                return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
             eObjectType type = (eObjectType)this.Object_Type;
+            eCharacterClass charClass = this.charClass == eCharacterClass.Stormforged ? eCharacterClass.Thane : this.charClass;
 
             switch (property)
             {
@@ -5737,6 +5747,7 @@ namespace DOL.GS
                     weaponTypes.Add(eObjectType.Hammer);
                     weaponTypes.Add(eObjectType.Shield);
                     break;
+                case eCharacterClass.Stormforged:
                 case eCharacterClass.Thane:
                 case eCharacterClass.Warrior:
                     weaponTypes.Add(eObjectType.Sword);
@@ -5788,6 +5799,8 @@ namespace DOL.GS
 
             switch (charClass)
             {
+                case eCharacterClass.Stormforged:
+                    return eObjectType.Chain;
                 case eCharacterClass.Viking:
                     return eObjectType.Studded;
                 case eCharacterClass.Seer:
@@ -6262,6 +6275,7 @@ namespace DOL.GS
 
                 // Sluaghbinder can use small, medium, and large shields.  The
                 // damage-type field on a shield is the classic size marker.
+                case eCharacterClass.Stormforged:
                 case eCharacterClass.Sluaghbinder:
                     return 3;
 

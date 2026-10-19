@@ -1011,6 +1011,7 @@ namespace DOL.GS
         /// <returns>server rules handler or normal server type handler if errors</returns>
         public static IServerRules CreateServerRules(EGameServerType serverType)
         {
+            if (HybridCoopRules.Enabled) return new HybridCoopRules();
             Type rules = null;
 
             // first search in scripts

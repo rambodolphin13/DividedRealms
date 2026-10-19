@@ -35,6 +35,18 @@ namespace DOL.GS
         public const long RetargetCooldownMilliseconds = 10 * 60_000;
 
         /// <summary>
+        /// How long a party leader holds before a route monster it may not pull itself. Only the leader
+        /// scans the route, but a PvE party pull belongs to its designated puller, so a leader that is not
+        /// the puller used to hold for ever (2026-10-19 soak: 61 such holds, ~100 scans each, and 117
+        /// fifteen-minute rescues of followers "Traveling in group formation"). After this the monster
+        /// is passed by; the party still defends if it aggroes.
+        /// </summary>
+        public const long PartyHoldBeforePassMilliseconds = 45_000;
+
+        public static bool ShouldPassHeldThreat(long holdingSinceTick, long nowTick) =>
+            nowTick - holdingSinceTick >= PartyHoldBeforePassMilliseconds;
+
+        /// <summary>
         /// What to do about the first threat on the route. An even fight is pulled; a strong
         /// monster or a pack is avoided when a way around exists (at most twice per monster);
         /// otherwise a manageable one is pulled anyway, and only a hopeless one makes the bot

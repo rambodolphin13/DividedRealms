@@ -1243,8 +1243,8 @@ namespace DOL.GS.Spells
 
 		public virtual int CalculateEnduranceCost()
 		{
-			// Sluaghbinder spells cost power only; their styles carry the endurance cost.
-			if (IsSluaghbinder(m_caster))
+			// Custom Sluaghbinder and Stormforged spells cost power only; styles still cost endurance.
+			if (IsSluaghbinder(m_caster) || m_spell.ID is >= 62000 and <= 62239)
 				return 0;
 
 			return 5;
@@ -1279,7 +1279,9 @@ namespace DOL.GS.Spells
 		/// <returns>effective casting time in milliseconds</returns>
 		public virtual int CalculateCastingTime()
 		{
-			return m_caster.CalculateCastingTime(this);
+			int castTime = m_caster.CalculateCastingTime(this);
+            return m_spell.ID is >= 62000 and <= 62239 && StormforgedHeroicRules.HasAvatar(m_caster)
+                ? Math.Min(250, castTime) : castTime;
 		}
 
 		#region animations
@@ -3293,6 +3295,14 @@ namespace DOL.GS.Spells
 		/// </summary>
 		public virtual void DamageTarget(AttackData ad, bool showEffectAnimation, int attackResult)
 		{
+            if (DOL.GS.ServerRules.HybridCoopRules.RequiresDamageCheck(ad.Attacker, ad.Target) &&
+                !GameServer.ServerRules.IsAllowedToAttack(ad.Attacker, ad.Target, true))
+            {
+                ad.Damage = 0;
+                ad.CriticalDamage = 0;
+                return;
+            }
+
 			ad.AttackResult = eAttackResult.HitUnstyled;
 
 			// Send animation before dealing damage else dying livings show no animation

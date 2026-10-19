@@ -966,6 +966,7 @@ namespace DOL.GS
 			{eRealm.Midgard, new List<eCharacterClass>() {eCharacterClass.Viking, eCharacterClass.Mystic, eCharacterClass.Seer, eCharacterClass.MidgardRogue,
 				// post 1.93
 				eCharacterClass.Thane, 		// Thane = 21,
+                eCharacterClass.Stormforged,
 				eCharacterClass.Warrior, 		// Warrior = 22,
 				eCharacterClass.Shadowblade, 	// Shadowblade = 23,
 				eCharacterClass.Skald, 		// Skald = 24,

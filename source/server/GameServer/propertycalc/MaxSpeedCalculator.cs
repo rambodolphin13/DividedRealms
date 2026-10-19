@@ -64,7 +64,7 @@ namespace DOL.GS.PropertyCalc
                         speedIncrease = 0;
                 }
 
-                if (player.IsStealthed && player.Client.Account.PrivLevel == 1)
+                if (player.IsStealthed && player.Client.Account.PrivLevel == 1 && !StormforgedRules.HasStormsong(player))
                 {
                     AtlasOF_MasteryOfStealth mos = player.GetAbility<AtlasOF_MasteryOfStealth>();
                     //GameSpellEffect bloodrage = SpellHandler.FindEffectOnTarget(player, "BloodRage");

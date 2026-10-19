@@ -644,6 +644,14 @@ namespace DOL.GS
             if (!AutosplitLoot || item.IsPlayerDiscarded)
                 return TryPickUpResult.DoesNotWant;
 
+            // An account companion takes a drop only when it is an upgrade it will wear.
+            if (AccountCompanionManager.TryGiveUpgrade(this, item, out GameBot companion))
+            {
+                SendMessageToGroupMembers($"{companion.Name} takes {item.Item.GetName(1, false)} and equips it.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                _ = item.RemoveFromWorld();
+                return TryPickUpResult.Success;
+            }
+
             List<GamePlayer> eligibleMembers = new(8);
 
             // Members must be in visible range.

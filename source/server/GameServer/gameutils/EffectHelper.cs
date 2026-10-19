@@ -18,7 +18,7 @@ namespace DOL.GS
 
         public static void SendSpellAnimation(ECSGameSpellEffect e)
         {
-            if (e == null)
+            if (e == null || e.SpellHandler.Spell.ClientEffect == 0)
                 return;
 
             ISpellHandler spellHandler = e.SpellHandler;
@@ -39,6 +39,15 @@ namespace DOL.GS
         {
             switch (spell.SpellType)
             {
+                case eSpellType.StormforgedAura: return eEffect.StormforgedAura;
+                case eSpellType.StormforgedChant: return eEffect.StormforgedChant;
+                case eSpellType.StormforgedWard: return eEffect.StormforgedWard;
+                case eSpellType.StormforgedAvatar: return eEffect.StormforgedAvatar;
+                case eSpellType.StormforgedSecondThunder: return eEffect.StormforgedSecondThunder;
+                case eSpellType.StormforgedStormguard: return eEffect.StormforgedStormguard;
+                case eSpellType.StormforgedRide: return eEffect.StormforgedRide;
+                case eSpellType.StormforgedEye: return eEffect.StormforgedEye;
+
                 #region Positive Effects
 
                 case eSpellType.Bladeturn:
@@ -252,6 +261,7 @@ namespace DOL.GS
                 case eSpellType.SummonAnimistPet:
                 case eSpellType.SummonAnimistFnF:
                 case eSpellType.SummonSpiritFighter:
+                case eSpellType.StormforgedPet:
                 case eSpellType.SummonHunterPet:
                 case eSpellType.SummonUnderhill:
                 case eSpellType.SummonDruidPet:

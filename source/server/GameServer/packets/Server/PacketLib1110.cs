@@ -61,7 +61,7 @@ namespace DOL.GS.PacketHandler
 		/// </summary>
 		public static bool UsesOwnTooltipIdentity(int spellId)
 		{
-			return spellId is >= 59000 and <= 59111;
+			return spellId is >= 59000 and <= 59111 or >= 62000 and <= 62239;
 		}
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace DOL.GS.PacketHandler
 					{
 						ISpellHandler spellHandler = gameEffect.SpellHandler;
 
-						if (spellHandler.Spell.IsDynamic || m_gameClient.CanSendTooltip(24, spellHandler.Spell.InternalID))
+						if (spellHandler.Spell.IsDynamic || UsesOwnTooltipIdentity(spellHandler.Spell.ID) || m_gameClient.CanSendTooltip(24, spellHandler.Spell.InternalID))
 							SendDelveInfo(DetailDisplayHandler.DelveSpell(spellHandler));
 					}
 

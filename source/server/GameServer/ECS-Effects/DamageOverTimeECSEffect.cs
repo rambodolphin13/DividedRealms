@@ -27,6 +27,13 @@ namespace DOL.GS
 
         public override void OnEffectPulse()
         {
+            if (DOL.GS.ServerRules.HybridCoopRules.RequiresDamageCheck(SpellHandler.Caster, Owner) &&
+                !GameServer.ServerRules.IsAllowedToAttack(SpellHandler.Caster, Owner, true))
+            {
+                End();
+                return;
+            }
+
             if (SpellHandler is not DoTSpellHandler dotHandler)
                 return;
 

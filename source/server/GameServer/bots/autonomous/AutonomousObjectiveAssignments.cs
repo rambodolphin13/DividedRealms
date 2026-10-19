@@ -461,6 +461,17 @@ public static class AutonomousObjectiveAssignments
         return GameLoop.GameLoopTime - wait.StartedTick >= GroupMatchmakingTimeout.TotalMilliseconds;
     }
 
+    /// <summary>How long an ungrouped GroupPvE bot has waited for its current assignment's party (0 when unknown).</summary>
+    public static long MatchmakingWaitMilliseconds(GameBot bot)
+    {
+        if (bot?.PersistentRecord == null || !Is(bot, eAutonomousObjectiveKind.GroupPve)) return 0;
+        long key = bot.DatabaseID > 0 ? bot.DatabaseID : bot.ObjectID;
+        return GroupWaits.TryGetValue(key, out var wait) &&
+               string.Equals(wait.Assignment, bot.PersistentRecord.ObjectiveAssignmentId ?? string.Empty, StringComparison.Ordinal)
+            ? Math.Max(0, GameLoop.GameLoopTime - wait.StartedTick)
+            : 0;
+    }
+
     /// <summary>
     /// Matchmaking owns an ungrouped GroupPvE bot until it assigns the complete
     /// eight-member roster or performs the twenty-minute fallback.  The generic
@@ -552,6 +563,20 @@ public static class AutonomousObjectiveAssignments
         bot.MarkAutonomousStateDirty();
         AutonomousBotStatusPersistence.Queue(bot);
     }
+
+    /// <summary>
+    /// The allocator runs once a minute, so a bot that logs in (or finishes a task) first picks and walks
+    /// to a camp with no assignment, then loses that walk when its first assignment arrives (2026-10-18:
+    /// 111 of 148 goal attempts by 120 new bots ended "Objective assignment changed" after 7-47 seconds).
+    /// A first PvE assignment for an ungrouped bot keeps that camp; RvR, battleground and between-task
+    /// work still replan, and a bot awaiting group matchmaking never keeps a dungeon camp.
+    /// <paramref name="hasCamp"/> means the controller's camp is still the record's saved camp (a capital
+    /// recovery clears the saved camp first, so its stale route is always dropped).
+    /// </summary>
+    public static bool KeepsCampOnFirstAssignment(string previousAssignmentId, eAutonomousObjectiveKind kind,
+        bool betweenTasks, bool grouped, bool hasCamp, bool campIsDungeon) =>
+        string.IsNullOrEmpty(previousAssignmentId) && hasCamp && !grouped && !betweenTasks &&
+        (kind == eAutonomousObjectiveKind.SoloPve || kind == eAutonomousObjectiveKind.GroupPve && !campIsDungeon);
 
     public static bool IsBetweenPveTasks(OfflineWorldBotRecord record) =>
         record?.ObjectiveAssignmentId?.StartsWith(BetweenTasksPrefix, StringComparison.Ordinal) == true;

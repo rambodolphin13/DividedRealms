@@ -159,6 +159,23 @@ namespace DOL.AI.Brain
 
         public virtual bool HasAggro => !AggroList.IsEmpty;
 
+        /// <summary>The aggro entry with the most effective threat (null when the list is empty).</summary>
+        public GameLiving HighestAggroTarget
+        {
+            get
+            {
+                GameLiving best = null;
+                long bestAmount = long.MinValue;
+                foreach (var entry in AggroList)
+                    if (entry.Value.Effective > bestAmount)
+                    {
+                        best = entry.Key;
+                        bestAmount = entry.Value.Effective;
+                    }
+                return best;
+            }
+        }
+
         private GameLiving _committedDungeonPull;
         private long _committedDungeonPullUntil;
 
@@ -5165,10 +5182,13 @@ namespace DOL.AI.Brain
         // minute, and only while a dead group member is actually within spell range.
         private void ReportResurrectionBlock(Spell resurrection, string reason, GameLiving corpse = null)
         {
-            if (Body.Group == null || !BotBody.IsAutonomousWorldBot || GameLoop.GameLoopTime < _nextResurrectionBlockReportTick)
+            // Read the group once: another bot's turn can disband it between two reads (2026-10-19 soak:
+            // a NullReferenceException here removed a Cleric from the world when its RvR task expired).
+            Group group = Body.Group;
+            if (group == null || !BotBody.IsAutonomousWorldBot || GameLoop.GameLoopTime < _nextResurrectionBlockReportTick)
                 return;
             int range = BotBody.castingComponent.CalculateSpellRange(resurrection);
-            corpse ??= Body.Group.GetMembersInTheGroup().FirstOrDefault(member => member != Body && !member.IsAlive &&
+            corpse ??= group.GetMembersInTheGroup().FirstOrDefault(member => member != Body && !member.IsAlive &&
                 member.ObjectState == GameObject.eObjectState.Active && member.CurrentRegionID == Body.CurrentRegionID &&
                 Body.IsWithinRadius(member, range));
             if (corpse == null)
@@ -5212,12 +5232,13 @@ namespace DOL.AI.Brain
                 }
                 ReportResurrectionBlock(resurrection, null);
             }
-            if (resurrection == null || Body.Group == null || Body.InCombat || Body.Group.GetMembersInTheGroup().Any(m => m.IsAlive && m.InCombat) || Body.IsCasting || !CheckHealSpell(resurrection))
+            Group group = Body.Group; // read once; see ReportResurrectionBlock
+            if (resurrection == null || group == null || Body.InCombat || group.GetMembersInTheGroup().Any(m => m.IsAlive && m.InCombat) || Body.IsCasting || !CheckHealSpell(resurrection))
                 return false;
 
             int range = BotBody.castingComponent.CalculateSpellRange(resurrection);
             bool regrouping = AutonomousBotGroupCoordinator.IsRecovering(BotBody);
-            GameLiving deadMember = Body.Group.GetMembersInTheGroup()
+            GameLiving deadMember = group.GetMembersInTheGroup()
                 .Where(member => member != Body && !member.IsAlive && member.ObjectState is GameObject.eObjectState.Active &&
                                  member.CurrentRegionID == Body.CurrentRegionID)
                 // Raise nearby casualties, but do not abandon recovery to chase

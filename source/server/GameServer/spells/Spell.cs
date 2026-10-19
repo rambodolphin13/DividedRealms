@@ -331,6 +331,7 @@ namespace DOL.GS
 			eSpellType.CurePoison or
 			eSpellType.CombatHeal or
 			eSpellType.Heal or
+            eSpellType.StormforgedRest or
 			eSpellType.HealOverTime or
 			eSpellType.HealthRegenBuff or
 			eSpellType.MercHeal or

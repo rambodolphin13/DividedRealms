@@ -243,6 +243,20 @@ namespace DOL.UnitTests
             public override byte Level { get; set; }
         }
 
+        [TestCase(false)] [TestCase(true)]
+        public void NpcKillCreditFoldsSpawnHelpersIntoOwnerButNotAccountCompanions(bool accountCompanion)
+        {
+            var owner = (Owner)RuntimeHelpers.GetUninitializedObject(typeof(Owner)); owner.Level = 20;
+            var bot = new GameBot(owner, (byte)eCharacterClass.Healer, "CreditTester", (byte)eRace.Norseman,
+                temporaryGroupHelper: true, botLevel: 20);
+            _constructed.Add(bot);
+            if (accountCompanion)
+                typeof(GameBot).GetProperty(nameof(GameBot.IsAccountCompanion)).SetValue(bot, true);
+
+            GameLiving credited = GS.ServerRules.AbstractServerRules.ResolveNpcKillRewardOwner(bot);
+            Assert.That(credited, Is.SameAs(accountCompanion ? bot : owner));
+        }
+
         [TestCase(false, 7, 7)] [TestCase(false, 0, 20)] [TestCase(true, 7, 20)]
         public void RealOwnerBoundConstructorUsesSavedLevelBeforeStatsSpecsAndEquipment(bool temporary, byte requested, byte expected)
         {

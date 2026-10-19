@@ -1543,6 +1543,7 @@ public static partial class AutonomousBotGroupCoordinator
                 : 8;
             if (rolledSize == 1)
                 continue;
+            long leaderWaited = AutonomousObjectiveAssignments.MatchmakingWaitMilliseconds(leader);
             GameBot[] compatiblePool = available
                 .Where(candidate => candidate != leader && !claimed.Contains(candidate) && candidate.Group == null &&
                                      AutonomousObjectiveAssignments.Is(candidate, objectiveKind) &&
@@ -1552,7 +1553,9 @@ public static partial class AutonomousBotGroupCoordinator
                                       CanRecruitPveMember(candidate.IsOnStableMasterRoute,
                                           candidate.IsReturningAfterRelease, candidate.InCombat,
                                           candidate.IsAttacking, (candidate.Brain as BotBrain)?.HasAggro == true,
-                                          candidate.GetDistanceTo(leader))))
+                                          candidate.GetDistanceTo(leader),
+                                          PveRecruitmentDistance(leaderWaited,
+                                              AutonomousObjectiveAssignments.MatchmakingWaitMilliseconds(candidate)))))
                 .OrderBy(candidate => Math.Abs(candidate.Level - leader.Level))
                 .ThenBy(candidate => candidate.GetDistanceTo(leader))
                 .ToArray();
@@ -2699,9 +2702,23 @@ public static partial class AutonomousBotGroupCoordinator
         first >= 50 || second >= 50 ? first >= 50 && second >= 50 : Math.Abs(first - second) <= 5;
 
     public static bool CanRecruitPveMember(bool riding, bool returning, bool inCombat,
-        bool attacking, bool hasAggro, int distanceFromLeader) =>
+        bool attacking, bool hasAggro, int distanceFromLeader, int maximumDistance = MaximumPveRecruitmentDistance) =>
         !riding && !returning && !inCombat && !attacking && !hasAggro &&
-        distanceFromLeader >= 0 && distanceFromLeader <= MaximumPveRecruitmentDistance;
+        distanceFromLeader >= 0 && distanceFromLeader <= maximumDistance;
+
+    public const int ExtendedPveRecruitmentDistance = 60_000;
+    public const long ExtendedPveRecruitmentAfterMilliseconds = 10 * 60_000L;
+
+    /// <summary>
+    /// Bots waiting for a party grind solo at camps drawn without distance preference, so they spread
+    /// over the whole region. The 2026-10-19 soak formed 22 PvE parties against 733 twenty-minute
+    /// timeouts; at its end 39 of 66 waiting bots had four or more compatible same-region partners,
+    /// none of them within 30,000 units. After ten minutes of waiting by either bot the reach doubles.
+    /// </summary>
+    public static int PveRecruitmentDistance(long leaderWaitedMilliseconds, long candidateWaitedMilliseconds) =>
+        Math.Max(leaderWaitedMilliseconds, candidateWaitedMilliseconds) >= ExtendedPveRecruitmentAfterMilliseconds
+            ? ExtendedPveRecruitmentDistance
+            : MaximumPveRecruitmentDistance;
 
     private static bool TryBuildPveRoster(GameBot leader, GameBot[] candidates, out GameBot[] selected,
         out Dictionary<long, BotPveGroupRole> roles, int minimumSize = 8, int maximumSize = 8)

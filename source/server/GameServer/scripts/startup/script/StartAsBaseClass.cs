@@ -79,6 +79,9 @@ namespace DOL.GS.GameEvents
 				return;
 			
 			DbCoreCharacter ch = chArgs.Character;
+            // Stormforged retains its identity and full equipment access from creation.
+            if (StormforgedRules.IsStormforged(ch.Class))
+                return;
 
 			// Revert to Base Class.
 			var chClass = ScriptMgr.FindCharacterBaseClass(ch.Class);

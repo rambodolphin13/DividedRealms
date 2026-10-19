@@ -70,6 +70,10 @@ namespace DOL.GS.Spells
             if (target == null || target.ObjectState is not GameObject.eObjectState.Active)
                 return false;
 
+            if (DOL.GS.ServerRules.HybridCoopRules.Enabled &&
+                !GameServer.ServerRules.IsSameRealm(Caster, target, true))
+                return false;
+
             if (GameServer.ServerRules.IsAllowedToAttack(Caster, target, true))
                 return false;
 

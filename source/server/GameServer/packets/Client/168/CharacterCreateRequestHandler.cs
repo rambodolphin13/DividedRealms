@@ -413,7 +413,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 
             // Set Realm and Class
             ch.Realm = pdata.Realm;
-            ch.Class = pdata.Class;
+            ch.Class = StormforgedRules.CreationClass(pdata.Class, ch.Realm, Properties.ENABLE_STORMFORGED);
+            if (StormforgedRules.IsStormforged(ch.Class) && (!Properties.ENABLE_STORMFORGED || (eRealm)ch.Realm != eRealm.Midgard))
+                return true;
 
             // The classic client has a fixed Hibernian class slot that is
             // reserved for MaulerHib.  The isolated Sluaghbinder test build

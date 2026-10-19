@@ -1,3 +1,4 @@
+using System.Linq;
 using DOL.AI.Brain;
 using DOL.GS.Effects;
 using DOL.GS.Keeps;
@@ -10,7 +11,9 @@ namespace DOL.GS.Spells
     [SpellHandler(eSpellType.SummonAnimistFnF)]
     public class SummonAnimistFnF : SummonAnimistPet
     {
-        public override string ShortDescription => "Summons an elemental spirit to attack the target.";
+        public override string ShortDescription => Spell.ID is >= 62000 and <= 62159
+            ? "Places a lightning storm at your ground target for 120 seconds. Fires ranged area lightning and a 350-radius PBAoE every four seconds. No summon recast delay; up to 16 owned lightning storms, including in one area."
+            : "Summons an elemental spirit to attack the target.";
 
         public SummonAnimistFnF(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
 
@@ -53,11 +56,18 @@ namespace DOL.GS.Spells
                 }
             }
 
-            if (Properties.TURRET_AREA_CAP_COUNT > 0)
+            bool stormSummon = StormforgedTurretRules.IsStormSummon(Caster, Spell);
+            if (stormSummon && !StormforgedTurretRules.CanSummon(AutonomousPetSupport.OwnedFieldTurrets(Caster)
+                    .Count(entry => StormforgedTravel.IsOwnedStorm(Caster, entry.Turret))))
+            {
+                MessageToCaster("You already control 16 lightning storms. Release a clump before summoning more.", eChatType.CT_SpellResisted);
+                return false;
+            }
+            if (!stormSummon && Properties.TURRET_AREA_CAP_COUNT > 0)
             {
                 foreach (GameNPC npc in Caster.CurrentRegion.GetNPCsInRadius(Caster.GroundTarget, (ushort) Properties.TURRET_AREA_CAP_RADIUS))
                 {
-                    if (npc.Brain is TurretFNFBrain && ++count >= Properties.TURRET_AREA_CAP_COUNT)
+                    if (npc.Brain is TurretFNFBrain && !StormforgedTurretRules.IsStorm(npc) && ++count >= Properties.TURRET_AREA_CAP_COUNT)
                     {
                         if (playerCaster != null)
                             MessageToCaster(LanguageMgr.GetTranslation(playerCaster.Client, "SummonAnimistFnF.CheckBeginCast.TurretAreaCap"), eChatType.CT_SpellResisted);
@@ -67,7 +77,7 @@ namespace DOL.GS.Spells
                 }
             }
 
-            if (Properties.TURRET_PLAYER_CAP_COUNT > 0 & Caster.PetCount >= Properties.TURRET_PLAYER_CAP_COUNT)
+            if (!stormSummon && Properties.TURRET_PLAYER_CAP_COUNT > 0 && Caster.PetCount >= Properties.TURRET_PLAYER_CAP_COUNT)
             {
                 if (playerCaster != null)
                     MessageToCaster(LanguageMgr.GetTranslation(playerCaster.Client, "SummonAnimistFnF.CheckBeginCast.TurretPlayerCap"), eChatType.CT_SpellResisted);
@@ -109,7 +119,9 @@ namespace DOL.GS.Spells
 
         protected override IControlledBrain GetPetBrain(GameLiving owner)
         {
-            return new TurretFNFBrain(owner);
+            return Spell.ID is >= 62000 and <= 62159
+                ? new StormforgedBombBrain(owner)
+                : new TurretFNFBrain(owner);
         }
 
         public override void CastSubSpells(GameLiving target) { }

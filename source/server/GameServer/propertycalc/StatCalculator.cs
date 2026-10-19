@@ -65,7 +65,7 @@ namespace DOL.GS.PropertyCalc
 
             int baseStat = living.GetBaseStat((eStat) property);
             int itemBonus = CalcValueFromItems(livingToCheck, property);
-            abilityBonus += livingToCheck.AbilityBonus[property];
+            abilityBonus += livingToCheck.AbilityBonus[property] + StormforgedInnate.Bonus(living, property);
             int baseAndItemStat = baseStat + itemBonus;
             int buffBonus = 0;
 

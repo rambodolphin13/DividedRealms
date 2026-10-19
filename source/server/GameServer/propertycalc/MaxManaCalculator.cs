@@ -61,7 +61,7 @@ namespace DOL.GS.PropertyCalc
             int poolItemBonusCap = living.Level / 2 + Math.Min(living.ItemBonus[eProperty.PowerPoolCapBonus], living.Level);
             int flatItemBonus = Math.Min(flatItemBonusCap, living.ItemBonus[eProperty.MaxMana]); // Pre-ToA flat bonus.
             int poolItemBonus = Math.Min(poolItemBonusCap, living.ItemBonus[eProperty.PowerPool]); // ToA bonus.
-            int flatAbilityBonus = living.AbilityBonus[eProperty.MaxMana]; // New Ethereal Bond.
+            int flatAbilityBonus = living.AbilityBonus[eProperty.MaxMana] + StormforgedInnate.Bonus(living, eProperty.MaxMana); // New Ethereal Bond.
             int poolAbilityBonus = living.AbilityBonus[eProperty.PowerPool]; // Old Ethereal Bond.
 
             double result = manaBase;

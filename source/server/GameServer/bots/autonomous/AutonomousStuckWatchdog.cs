@@ -24,6 +24,8 @@ public enum eAutonomousProgressKind
     StableTravel,
     Recovery,
     SiegeParticipation,
+    // Standing at a verified keep defense post: refreshes the movement clock only.
+    DefensivePostHold,
 }
 
 /// <summary>
@@ -178,6 +180,22 @@ public static class AutonomousStuckWatchdog
         isAlive && !inPlayerLedGroup && !protectedStableTravel && !isRvrRoaming &&
         nowUtc - lastGoalProgressUtc >= GoalProgressThreshold;
 
+    public static bool RefreshesMovementClock(eAutonomousProgressKind kind) => kind is
+        eAutonomousProgressKind.Movement or eAutonomousProgressKind.StableTravel or
+        eAutonomousProgressKind.Recovery or eAutonomousProgressKind.SiegeParticipation or
+        eAutonomousProgressKind.DefensivePostHold;
+
+    /// <summary>
+    /// Progress reported by a bot standing at its verified keep defense post. A battleground tour has no
+    /// RvR event to protect its keep defenders, so holding the post must count as being in place or every
+    /// third bot (the defenders) is "rescued" to its capital fifteen minutes into a quiet hold. The
+    /// forty-five-minute outcome clock still applies, and RvR defenders keep their event protection.
+    /// </summary>
+    public static eAutonomousProgressKind DefensivePostProgress(eAutonomousObjectiveKind kind) =>
+        kind == eAutonomousObjectiveKind.Battleground
+            ? eAutonomousProgressKind.DefensivePostHold
+            : eAutonomousProgressKind.Objective;
+
     public static bool CountsAsGoalProgress(eAutonomousProgressKind kind) => kind is
         eAutonomousProgressKind.SiegeParticipation or
         eAutonomousProgressKind.Combat or
@@ -242,7 +260,7 @@ public static class AutonomousStuckWatchdog
         Observation current = Capture(bot, now);
         Observation observation = Observations.GetOrAdd(bot.DatabaseID, current);
         CopyOutcomeSnapshot(observation, current);
-        if (kind is eAutonomousProgressKind.Movement or eAutonomousProgressKind.StableTravel or eAutonomousProgressKind.Recovery or eAutonomousProgressKind.SiegeParticipation)
+        if (RefreshesMovementClock(kind))
         {
             CopyPositionSnapshot(observation, current);
             observation.LastMovementUtc = now;

@@ -314,10 +314,9 @@ namespace DOL.GS
 			
 			foreach (SpellLine sl in GetSpellLinesForLiving(living, level))
 			{
-				dict.Add(sl, SkillBase.GetSpellList(sl.KeyName)
-				         .Where(item => item.Level <= sl.Level)
-				         .OrderBy(item => item.Level)
-				         .ThenBy(item => item.ID).Cast<Skill>().ToList());
+				dict.Add(sl, StormforgedRules.VisibleSpellRanks(sl.KeyName,
+                         SkillBase.GetSpellList(sl.KeyName).Where(item => item.Level <= sl.Level))
+                         .Cast<Skill>().ToList());
 			}
 			
 			return dict;

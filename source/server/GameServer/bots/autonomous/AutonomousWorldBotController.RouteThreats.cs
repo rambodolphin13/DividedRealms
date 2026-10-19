@@ -21,6 +21,10 @@ namespace DOL.GS
         private int _routeThreatPullRepeats;
         private long _lastRouteThreatPullTick;
         private const int RouteThreatPullAttempts = 3;
+        // The monster a party leader is holding before (see AutonomousRouteThreatPolicy.PartyHoldBeforePassMilliseconds).
+        private GameNPC _routeThreatHoldTarget;
+        private long _routeThreatHoldSinceTick;
+        private long _routeThreatHoldLastTick;
 
         /// <summary>
         /// Open-world route threat awareness (see AutonomousRouteThreatPolicy). Called right before
@@ -145,6 +149,21 @@ namespace DOL.GS
                 default: // Pull
                     if (grouped && !AutonomousBotGroupCoordinator.CanInitiateNewPull(bot))
                     {
+                        if (_routeThreatHoldTarget != blocker || now - _routeThreatHoldLastTick > 15_000)
+                        {
+                            _routeThreatHoldTarget = blocker;
+                            _routeThreatHoldSinceTick = now;
+                        }
+                        _routeThreatHoldLastTick = now;
+                        if (AutonomousRouteThreatPolicy.ShouldPassHeldThreat(_routeThreatHoldSinceTick, now))
+                        {
+                            _routeThreatHoldTarget = null;
+                            _unreachableRouteThreats.Add(blocker);
+                            Log.Info($"AUTONOMOUS_ROUTE_THREAT_HOLD_PASSED bot={bot.Name} id={bot.DatabaseID} " +
+                                     $"group={_groupDirective.GroupId} target=\"{blocker.Name}\" " +
+                                     $"at={blocker.X},{blocker.Y},{blocker.Z} zone=\"{zone.Description}\"");
+                            return false;
+                        }
                         bot.StopMovingOnPath();
                         bot.StopMoving();
                         SetStatus(bot, "Holding before a route threat", GoalText(),
