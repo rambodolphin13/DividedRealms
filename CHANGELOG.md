@@ -3,10 +3,21 @@
 The newest version is first. For the full detail of every earlier update, see
 [docs/history/CHANGELOG-0.3-to-0.32b.md](docs/history/CHANGELOG-0.3-to-0.32b.md).
 
-## 0.37 / 0.37b (not released yet)
+## 0.37 / 0.37b / 0.37c — 2026-10-18
 
-Changes made after 0.36 are listed here as they are made, and will be in the 0.37 / 0.37b download. Until then,
-0.36 / 0.36b / 0.36c is the latest release.
+The first version that comes as an update to 0.36: the overview is in [docs/RELEASE-0.37.md](docs/RELEASE-0.37.md);
+every change is listed below.
+
+**Updating and installing**
+- One downloader zip per edition, with one question: **1 = Update my game** (0.36, 0.36b or 0.36c) downloads and
+  applies only the update; **2 = New install** installs the complete 0.36 game and updates it.
+- The update finds the edition and the new client by itself, checks that every file it replaces is as installed,
+  backs up everything it replaces (and the database) in `patch-backups`, updates the world data without touching
+  saves (a world row is changed only if it is still as released), and puts everything back if anything fails.
+- If game files it would replace were changed, it lists them, changes nothing, and offers a fresh 0.37 in a new
+  folder with your progress brought over by the progress transfer tool.
+- The 0.37c downloader also offers to add the new client to a game that doesn't have it yet.
+- The launcher shows VERSION 0.37, 0.37b or 0.37c; the progress transfer tool imports 0.36 / 0.36b saves too.
 
 **Guilds**
 - You can form a guild on your own. Stand near a Guild Registrar (Brit in Jordheim, Lord Christopher in Camelot,
@@ -117,6 +128,12 @@ Changes made after 0.36 are listed here as they are made, and will be in the 0.3
   wear it down (Galladoria's Corrupt Primal of Fire).
 - Party members keep walking with their leader instead of reaching the spot they were heading for and pausing
   until their next step: they now aim a little further ahead of a walking leader.
+- Bots on their way to Dun Lamfhota no longer bounce between Emain Macha and Breifine. Coming into Breifine they
+  were taken to be on a cut-off ledge and sent back to Emain Macha, then into Breifine again, over and over.
+- Every party of a dragon raid can reach its spot round the lair. One of Cuuldurach's 38 staging spots lay on
+  ground the route planner did not link to the lair, so the party sent there was routed out through Shannon
+  Estuary and never arrived. A full check of every dragon, relic keep, Apocalypse and Olcasgean route found no
+  other spot bots cannot reach.
 - Caer Sidi: the raid keeps climbing to the final encounter. The way up is long, and the raid used to give up the
   climb after three minutes and fall back.
 - Bots of any task can leave their realm's portal keep through its door (136 Hibernians stuck inside Hibernia's
@@ -173,7 +190,7 @@ Changes made after 0.36 are listed here as they are made, and will be in the 0.3
 - Guards fight a quest monster that wanders far from its home, as the Vindsaul gate guards fought Fjall and his
   friends. Quest monsters that live among guards, such as the thieves inside Camelot, are still left to you.
 
-**The new client (0.36c)**
+**The new client (0.37c)**
 - The Magic tab lists each specialization's spells by level, lowest first, as the original client does. They were
   grouped by specialization but mixed by spell type.
 - Stable rides seat you on your mount. On horses you jittered beside and behind the horse, and on flying routes

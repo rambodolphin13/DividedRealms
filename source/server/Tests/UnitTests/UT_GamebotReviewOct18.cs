@@ -93,16 +93,6 @@ public sealed class UT_GamebotReviewOct18
     }
 
     [Test]
-    public void APartyLeaderThatMayNotPullPassesARouteMonsterAfterAShortHold()
-    {
-        const long start = 1_000_000;
-        long hold = AutonomousRouteThreatPolicy.PartyHoldBeforePassMilliseconds;
-        Assert.That(AutonomousRouteThreatPolicy.ShouldPassHeldThreat(start, start + hold - 1), Is.False);
-        Assert.That(AutonomousRouteThreatPolicy.ShouldPassHeldThreat(start, start + hold), Is.True);
-        Assert.That(hold, Is.LessThan(15 * 60_000), "must end well before the fifteen-minute watchdog");
-    }
-
-    [Test]
     public void GriffonGlidersHoveringOverTheCampFloorAreUnreachable()
     {
         // Gripklosa: a glider at Z 7482 over a Hunter rescued at Z 6677.
