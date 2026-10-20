@@ -54,6 +54,16 @@ namespace DOL.AI
         /// Stops the brain thinking
         /// </summary>
         /// <returns>true if stopped</returns>
+        /// <summary>
+        /// Whether a stopping brain sends its body back to its spawn point. A dead bot stays where it died: its
+        /// brain stops on death, and sending the corpse "home" moved every dead bot to its spawn point within
+        /// milliseconds, so no player or bot could resurrect it (found in game by chris4aker's Social Expansion
+        /// fork, 2026-10-17: the corpse moved 34 ms after death). The bot's own release moves it later.
+        /// </summary>
+        public static bool ShouldReturnToSpawnOnStop(bool isBot, bool botIntentionalWorldMove, bool alive,
+            bool nearSpawn, bool active) =>
+            !(isBot && botIntentionalWorldMove) && !(isBot && !alive) && !nearSpawn && !active;
+
         public virtual bool Stop()
         {
             if (ServiceObjectId.IsPendingRemoval)
@@ -63,7 +73,8 @@ namespace DOL.AI
             // GameObject.MoveTo temporarily makes an autonomous GameBot inactive
             // while changing regions. Returning it to spawn from inside that
             // transfer creates a nested MoveTo and must not happen.
-            if (Body is not GameBot { IsIntentionalWorldMove: true } && !Body.IsNearSpawn && !IsActive)
+            if (ShouldReturnToSpawnOnStop(Body is GameBot, (Body as GameBot)?.IsIntentionalWorldMove == true,
+                    Body.IsAlive, Body.IsNearSpawn, IsActive))
                 Body.MoveTo(Body.CurrentRegionID, Body.SpawnPoint.X, Body.SpawnPoint.Y, Body.SpawnPoint.Z, Body.SpawnHeading);
 
             Body.ClearObjectsInRadiusCache();

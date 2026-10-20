@@ -248,6 +248,7 @@ public static class AutonomousStuckWatchdog
             GoalObservations.TryRemove(bot.DatabaseID, out _);
             LastPositionValidation.TryRemove(bot.DatabaseID, out _);
             GroupHoldCache.TryRemove(bot.DatabaseID, out _);
+            PartyStallReported.TryRemove(bot.DatabaseID, out _);
         }
     }
 
@@ -398,6 +399,26 @@ public static class AutonomousStuckWatchdog
             return false;
         }
 
+        if (bot.Group != null && !withHuman && bot.Brain is BotBrain partyBrain &&
+            AutonomousObjectiveAssignments.Is(bot, eAutonomousObjectiveKind.GroupPve) &&
+            AutonomousRealmRaid.GetView(bot.Group) == null &&
+            IsPartyTravelStall(true, bot.PersistentRecord.Activity, now - previous.LastMovementUtc,
+                bot.InCombat || bot.IsAttacking || partyBrain.HasAggro || bot.IsCasting || bot.IsRecoveryResting ||
+                bot.IsOnStableMasterRoute || !bot.IsAlive) &&
+            (!PartyStallReported.TryGetValue(bot.DatabaseID, out DateTime lastStall) || now - lastStall >= PartyTravelStallThreshold))
+        {
+            PartyStallReported[bot.DatabaseID] = now;
+            // End the party early, without moving anyone: its members choose new work where they stand, and the
+            // fifteen-minute rescue still catches a bot that is physically stuck. Only a group PvE party ends.
+            string state = DescribeRescueState(bot);
+            string reason = $"no movement for {PartyTravelStallThreshold.TotalMinutes:0} minutes while travelling as a party";
+            Log.Warn($"AUTONOMOUS_PARTY_TRAVEL_STALL bot=\"{ForLog(bot.Name)}\" id={bot.DatabaseID} level={bot.Level} " +
+                     $"realm={GlobalConstants.RealmToName(bot.Realm)} activity=\"{ForLog(bot.PersistentRecord.Activity)}\" " +
+                     $"goal=\"{ForLog(currentGoal)}\" at={bot.CurrentRegionID}:{bot.X},{bot.Y},{bot.Z} {state}");
+            AutonomousBotGroupCoordinator.EndPvePartyBeforeIndividualRecovery(bot, reason);
+            return false;
+        }
+
         bool isRvrRoaming = AutonomousObjectiveAssignments.Is(bot, eAutonomousObjectiveKind.RvR);
         if (ShouldRecoverGoal(goalObservation.LastProgressUtc, now, bot.IsAlive, withHuman, false, isRvrRoaming))
         {
@@ -450,6 +471,53 @@ public static class AutonomousStuckWatchdog
         !string.Equals(previousId ?? string.Empty, currentId ?? string.Empty, StringComparison.Ordinal)
             ? now : lastProgressUtc;
 
+    /// <summary>
+    /// A solo bot rescued by the 15- or 45-minute watchdog counts as a failure of its camp, so three different
+    /// bots stalling on one camp bench it (AutonomousCampRouteQuarantine). Before, rescues never reported: in
+    /// the 2026-10-19 soak 11 Hibernians stalled 12 times on one Sheeroe Hills "pale horse" camp, three of them
+    /// within 11 minutes. Party rescues are left out (one frozen party is not evidence against a camp), and so
+    /// are position repairs.
+    /// </summary>
+    public static readonly TimeSpan PartyTravelStallThreshold = TimeSpan.FromMinutes(5);
+    private static readonly ConcurrentDictionary<long, DateTime> PartyStallReported = new();
+
+    /// <summary>
+    /// A party member that has stood still for five minutes while "travelling" (in formation, or toward the
+    /// camp), and is not fighting, casting, resting or riding. In the 2026-10-19 soak 49 of 75 fifteen-minute
+    /// rescues were whole parties frozen this way; ending the party at five minutes, without moving anyone,
+    /// costs far less than fifteen minutes and a capital teleport for every member.
+    /// </summary>
+    public static bool IsPartyTravelStall(bool inParty, string activity, TimeSpan idle, bool busy) =>
+        inParty && !busy && idle >= PartyTravelStallThreshold && activity != null &&
+        (activity == "Traveling in group formation" || activity.StartsWith("Traveling to ", StringComparison.Ordinal));
+
+    private static string DescribeRescueState(GameBot bot)
+    {
+        try
+        {
+            var brain = bot.Brain as BotBrain;
+            string own = $"moving={bot.IsMoving} casting={bot.IsCasting} inCombat={bot.InCombat} attacking={bot.IsAttacking} " +
+                         $"aggro={brain?.HasAggro == true} resting={bot.IsRecoveryResting} riding={bot.IsOnStableMasterRoute} " +
+                         $"fsm={brain?.FSM?.GetCurrentState()?.StateType}";
+            if (bot.Group?.LivingLeader is not GameBot leader || leader == bot)
+                return own + (bot.Group != null ? " partyLeader=self" : string.Empty);
+            var leaderBrain = leader.Brain as BotBrain;
+            return own + $" partyLeader=\"{ForLog(leader.Name)}\" leaderActivity=\"{ForLog(leader.PersistentRecord?.Activity)}\" " +
+                   $"leaderDistance={(leader.CurrentRegionID == bot.CurrentRegionID ? (int)bot.GetDistanceTo(leader) : -1)} " +
+                   $"leaderMoving={leader.IsMoving} leaderCasting={leader.IsCasting} leaderInCombat={leader.InCombat} " +
+                   $"leaderAggro={leaderBrain?.HasAggro == true} leaderResting={leader.IsRecoveryResting} " +
+                   $"leaderFsm={leaderBrain?.FSM?.GetCurrentState()?.StateType}";
+        }
+        catch (Exception exception)
+        {
+            return $"state=unavailable({exception.GetType().Name})"; // a diagnostic must never block the rescue
+        }
+    }
+
+    public static bool ReportsCampOnRescue(string logMarker, bool grouped, string campId) =>
+        !grouped && !string.IsNullOrWhiteSpace(campId) &&
+        logMarker is "AUTONOMOUS_STUCK_15M_RECOVERY" or "AUTONOMOUS_GOAL_STALL_45M_RECOVERY";
+
     private static bool RelocateToSafeCapital(
         GameBot bot,
         DateTime now,
@@ -470,6 +538,27 @@ public static class AutonomousStuckWatchdog
         string oldActivity = bot.PersistentRecord?.Activity ?? string.Empty;
         string oldDestination = bot.PersistentRecord?.TravelDestination ?? string.Empty;
         var expedition = AutonomousRealmRaid.GetView(bot.Group);
+        string oldCampId = bot.PersistentRecord?.CurrentCampId ?? string.Empty;
+        // What the bot (and its party leader) were doing, captured before the rescue changes it. The 2026-10-19
+        // soak's frozen parties showed only "Traveling in group formation" and a leader "Traveling to <camp>" that
+        // logged nothing for fifteen minutes; these flags say which branch held them.
+        string state = DescribeRescueState(bot);
+        if (ReportsCampOnRescue(logMarker, bot.Group != null, oldCampId))
+        {
+            if (AutonomousCampRouteQuarantine.ReportFailure(oldCampId, bot.DatabaseID, now))
+                Log.Warn($"AUTONOMOUS_CAMP_ROUTE_QUARANTINE camp=\"{ForLog(oldCampId)}\" target=\"{ForLog(oldTarget)}\" " +
+                         $"bots={AutonomousCampRouteQuarantine.DistinctBotsToQuarantine} " +
+                         $"hours={AutonomousCampRouteQuarantine.QuarantineDuration.TotalHours:0} reason=watchdog-rescues");
+            // The camp's own region (from the goal attempt), not where the bot happened to stall.
+            var attempt = bot.GoalDiagnosticAttempt;
+            ushort campRegion = attempt != null && string.Equals(attempt.CampId, oldCampId, StringComparison.OrdinalIgnoreCase)
+                ? (ushort)attempt.Region : bot.CurrentRegionID;
+            string family = AutonomousCampRouteQuarantine.FamilyKey(campRegion, oldTarget);
+            if (family.Length > 0 && AutonomousCampRouteQuarantine.ReportFailure(family, bot.DatabaseID, now))
+                Log.Warn($"AUTONOMOUS_CAMP_ROUTE_QUARANTINE camp=\"{ForLog(family)}\" target=\"{ForLog(oldTarget)}\" " +
+                         $"bots={AutonomousCampRouteQuarantine.DistinctBotsToQuarantine} " +
+                         $"hours={AutonomousCampRouteQuarantine.QuarantineDuration.TotalHours:0} reason=watchdog-rescues-family");
+        }
 
         if (moveLiveObject)
         {
@@ -530,7 +619,7 @@ public static class AutonomousStuckWatchdog
                  $"realm={GlobalConstants.RealmToName(bot.Realm)} class=\"{ForLog(bot.ClassName)}\" reason=\"{ForLog(reason)}\" " +
                  $"goal=\"{ForLog(oldGoal)}\" target=\"{ForLog(oldTarget)}\" activity=\"{ForLog(oldActivity)}\" " +
                  $"destination=\"{ForLog(oldDestination)}\" recovery={record.RecoveryCount} " +
-                 $"from={oldRegion}:{oldX},{oldY},{oldZ} to={capital.RegionId}:{capital.X},{capital.Y},{capital.Z}");
+                 $"from={oldRegion}:{oldX},{oldY},{oldZ} to={capital.RegionId}:{capital.X},{capital.Y},{capital.Z} {state}");
         MarkProgress(bot, eAutonomousProgressKind.Recovery, now);
         if (moveLiveObject)
         {

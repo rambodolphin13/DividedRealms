@@ -172,6 +172,10 @@ namespace DOL.GS
         private GameNPC _serviceNpc;
         private int[] _campLevelScratch = new int[16];
         private readonly AutonomousServiceReachability.ApproachFailures _serviceApproachFailures = new();
+        // The service currently being walked to, and since when (AutonomousServiceReachability.NearbyApproachTimedOut).
+        private GameNPC _serviceRoutingNpc;
+        private long _serviceRoutingSinceTick;
+        private long _serviceRoutingLastTick;
         private eWorldServiceKind? _serviceKind;
         private long _nextServiceSearchTick;
         private long _nextRvrReleaseCheckTick;
@@ -1054,6 +1058,33 @@ namespace DOL.GS
 
             int distance = Distance(bot.X, bot.Y, destination.X, destination.Y);
             int interactionRadius = Math.Max(32, GS.ServerProperties.Properties.WORLD_PICKUP_DISTANCE);
+            // A new service, or the same one again after a break in routing (a fight, the next task), starts a new clock.
+            if (_serviceRoutingNpc != _serviceNpc || GameLoop.GameLoopTime - _serviceRoutingLastTick > 30_000)
+            {
+                _serviceRoutingNpc = _serviceNpc;
+                _serviceRoutingSinceTick = GameLoop.GameLoopTime;
+            }
+            _serviceRoutingLastTick = GameLoop.GameLoopTime;
+            if (!bot.IsWithinRadius(_serviceNpc, interactionRadius) &&
+                AutonomousServiceReachability.NearbyApproachTimedOut(bot.CurrentZone == _serviceNpc.CurrentZone,
+                    Vector3.Distance(new(bot.X, bot.Y, bot.Z), new(destination.X, destination.Y, destination.Z)),
+                    _serviceRoutingSinceTick, GameLoop.GameLoopTime))
+            {
+                string service = AutonomousServiceReachability.Key(_serviceNpc);
+                bool shared = AutonomousServiceReachability.ReportFailure(service, bot.DatabaseID, GameLoop.GameLoopTime);
+                Log.Info($"AUTONOMOUS_SERVICE_UNREACHABLE bot={bot.Name} id={bot.DatabaseID} service=\"{_serviceNpc.Name}\" " +
+                         $"region={_serviceNpc.CurrentRegionID} at={_serviceNpc.X},{_serviceNpc.Y},{_serviceNpc.Z} " +
+                         $"from={bot.X},{bot.Y},{bot.Z} skippedByAll={shared} reason=nearby-walk-timeout");
+                _serviceApproachFailures.Reset();
+                _serviceNpc = null;
+                _serviceRoutingNpc = null;
+                _nextServiceSearchTick = 0;
+                bot.StopMovingOnPath();
+                bot.StopMoving();
+                SetStatus(bot, "Choosing another merchant", needed == eWorldServiceKind.RealmExchange ? "Use the Realm Exchange" : "Sell ordinary backpack loot",
+                    "Three minutes close to the chosen service without reaching it", string.Empty, destination.ZoneName);
+                return true;
+            }
             if (!bot.IsWithinRadius(_serviceNpc, interactionRadius))
             {
                 Vector3 rawPoint = new(destination.X, destination.Y, destination.Z);
@@ -2602,7 +2633,8 @@ namespace DOL.GS
             // its owner) updates LastAttackTick without reaching anything: the first build missed every
             // Hunter and Spiritmaster under the Gripklosa gliders that way.
             bool contact = AutonomousPveTargetPolicy.FlyerFightContact(_flyerWatchAttackedTick,
-                bot.LastAttackedByEnemyTick, _flyerWatchTargetHealth, target.Health);
+                bot.LastAttackedByEnemyTick, _flyerWatchTargetHealth, target.Health,
+                bot.InCombat || bot.IsAttacking || bot.IsCasting);
             if (contact)
             {
                 _flyerWatchSinceTick = nowTick;
@@ -3308,6 +3340,7 @@ namespace DOL.GS
                          .Where(cell => !rejectedDungeons.Contains(cell.Id) && reachableRegions.Contains(cell.RegionId) &&
                                         (sharedGroup || !_recentFailedSoloCamps.ContainsKey(cell.Id)) &&
                                         !AutonomousCampRouteQuarantine.IsQuarantined(cell.Id) &&
+                                        !AutonomousCampRouteQuarantine.IsFamilyQuarantined(cell.RegionId, cell.MonsterName) &&
                                         (sharedGroup || !AutonomousCampDangerBench.IsBenched(cell.Id)) &&
                                         IsZoneAccessible(bot.Realm, cell.Zone, bot.CurrentRegionID) &&
                                         AutonomousOrdinaryPveRealmPolicy.CanAssignCamp(bot.Realm, cell.RegionId,
@@ -3604,6 +3637,7 @@ namespace DOL.GS
 
         private static CampCatalogCell[] BuildCampCatalogDraft(CampMonster[] snapshot)
         {
+                snapshot = AutonomousPveTargetPolicy.WithZone(snapshot, npc => npc.CurrentZone);
                 var cells = new List<CampCatalogCell>();
                 Dictionary<(ushort ZoneId, string Name), CampMonster[]> liveByZoneAndName = snapshot
                     .GroupBy(npc => (npc.CurrentZone.ID, npc.Name.Trim().ToLowerInvariant()))

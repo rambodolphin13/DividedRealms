@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace DOL.GS
 {
@@ -11,6 +12,14 @@ namespace DOL.GS
         public static bool IsAssignedTarget(string assignedName, string monsterName, int monsterLevel) =>
             monsterLevel >= 0 && !string.IsNullOrWhiteSpace(assignedName) &&
             string.Equals(assignedName, monsterName, StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Camp catalog input without monsters that have no zone. One such monster made the whole catalog
+        /// draft throw, so every bot stayed in "Searching for a valid XP camp" (found by MoomoocowPlus's fork,
+        /// 2026-10-18; our own logs show zoneless spawns such as ColialtAdds' ancient zombies).
+        /// </summary>
+        public static T[] WithZone<T>(T[] monsters, Func<T, Zone> zoneOf) where T : class =>
+            monsters?.Where(monster => monster != null && zoneOf(monster) != null).ToArray() ?? [];
 
         /// <summary>Vertical gap beyond which a flying monster cannot be pulled from the bot's floor.</summary>
         public const int UnreachableFlyerHeight = 400;
@@ -29,9 +38,15 @@ namespace DOL.GS
         // other: the 2026-10-19 soak had 19 of 47 fifteen-minute rescues standing under Gripklosa griffon
         // gliders ("Fighting griffon glider"). Any landed or received blow, or lost target health, is a
         // real fight and restarts the watch.
-        /// <summary>The flyer lost health (to the bot, its pet or anyone) or something hit the bot.</summary>
-        public static bool FlyerFightContact(long initialAttackedTick, long attackedTick, int initialTargetHealth, int targetHealth) =>
-            attackedTick > initialAttackedTick || targetHealth < initialTargetHealth;
+        /// <summary>
+        /// Something hit the bot, or the target lost health while the bot itself was fighting. Health lost to a pet
+        /// alone does not count: in the overnight 2026-10-20 soak all 20 remaining griffon-glider rescues were
+        /// Spiritmasters and Hunters out of combat (inCombat=False, aggro=True), their pets nicking a glider the
+        /// owner could never reach, which kept resetting the watch.
+        /// </summary>
+        public static bool FlyerFightContact(long initialAttackedTick, long attackedTick, int initialTargetHealth, int targetHealth,
+            bool ownerFighting) =>
+            attackedTick > initialAttackedTick || ownerFighting && targetHealth < initialTargetHealth;
 
         public static bool ShouldDropUnreachableFlyer(bool unreachableFlyer, bool contactSinceWatch,
             long watchedSinceTick, long nowTick) =>

@@ -7175,9 +7175,13 @@ namespace DOL.GS
                             }
                         }
 
-                        if (useItem.MaxCharges > 0)
+                        if (type == 1 && useItem.MaxCharges > 0)
                         {
                             useItem.Charges--;
+                        }
+                        else if (type == 2 && useItem.MaxCharges1 > 0)
+                        {
+                            useItem.Charges1--;
                         }
 
                         if (castOk)

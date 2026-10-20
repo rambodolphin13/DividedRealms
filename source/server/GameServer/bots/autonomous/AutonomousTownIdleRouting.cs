@@ -54,9 +54,15 @@ namespace DOL.GS
                 !string.IsNullOrWhiteSpace(area.Description));
         }
 
+        /// <summary>
+        /// Whether a bot is inside its break town, by the same flat (2D) test the break itself uses
+        /// (IsInsideIdleTown). CurrentAreas measures a town circle in 3D, so a bot standing on a street above or
+        /// below the circle's centre counted as outside: the 2026-10-19 soak "rescued" bots on their break at
+        /// Caer Witrin (440 units from the centre but 940 above it), Swanton Keep and Innis Carthaig.
+        /// </summary>
         public static bool IsAtAssignedIdleTown(GameBot bot)
         {
-            return bot?.CurrentRegion?.IsCapitalCity == true || bot?.CurrentAreas?.OfType<AbstractArea>()
+            return bot?.CurrentRegion?.IsCapitalCity == true || bot?.CurrentZone?.GetAreasOfSpot(bot, false)?.OfType<AbstractArea>()
                 .Any(area => IsIdleTownArea(area) && area.Description == bot.PersistentRecord?.TravelDestination) == true;
         }
 

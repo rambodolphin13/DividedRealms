@@ -50,14 +50,37 @@ namespace DOL.GS
                     return false;
                 record.FailedBots.Clear();
                 record.QuarantinedUntilUtc = now + QuarantineDuration;
+                if (campId.StartsWith("family:", StringComparison.Ordinal))
+                    System.Threading.Interlocked.Increment(ref _familyQuarantines);
                 return true;
             }
         }
+
+        /// <summary>
+        /// One monster's camps in one region, benched as a whole by watchdog rescues. The Sheeroe Hills "pale horse"
+        /// is four nearby camp spots: overnight 2026-10-20 three solo bots stalled within 17 minutes on different
+        /// spots, so no single spot reached three bots and seven stalls followed.
+        /// </summary>
+        public static string FamilyKey(ushort regionId, string monsterName) =>
+            string.IsNullOrWhiteSpace(monsterName) || regionId == 0
+                ? string.Empty
+                : $"family:{regionId}:{monsterName.Trim().ToLowerInvariant()}";
+
+        private static int _familyQuarantines;
+
+        /// <summary>Family check for the camp planner; free until any family has ever been benched.</summary>
+        public static bool IsFamilyQuarantined(ushort regionId, string monsterName, DateTime? nowUtc = null) =>
+            System.Threading.Volatile.Read(ref _familyQuarantines) > 0 &&
+            IsQuarantined(FamilyKey(regionId, monsterName), nowUtc);
 
         public static bool IsQuarantined(string campId, DateTime? nowUtc = null) =>
             !string.IsNullOrWhiteSpace(campId) && Records.TryGetValue(campId, out Record record) &&
             record.QuarantinedUntilUtc > (nowUtc ?? DateTime.UtcNow);
 
-        public static void ResetForTests() => Records.Clear();
+        public static void ResetForTests()
+        {
+            Records.Clear();
+            _familyQuarantines = 0;
+        }
     }
 }

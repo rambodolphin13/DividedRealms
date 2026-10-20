@@ -42,6 +42,19 @@ namespace DOL.GS
             (SharedSkips.TryGetValue(service, out long shared) && now < shared ||
              BotSkips.TryGetValue((service, bot), out long own) && now < own);
 
+        public const int NearbyApproachDistance = 5_000;
+        public const long NearbyApproachLimitMilliseconds = 3 * 60_000;
+
+        /// <summary>
+        /// A service in the bot's own zone and close by that it still has not reached after three minutes is given
+        /// up, however its searches went. 2026-10-19 soak: Wilered found an approach point to Grimspound's Kel,
+        /// then failed the walk to it for twelve minutes, each AI turn spending ~500 ms on route recovery; the
+        /// failed-search rule never counted because the search itself succeeded.
+        /// </summary>
+        public static bool NearbyApproachTimedOut(bool sameZone, float distance, long routingSinceTick, long now) =>
+            sameZone && distance <= NearbyApproachDistance && routingSinceTick > 0 &&
+            now - routingSinceTick >= NearbyApproachLimitMilliseconds;
+
         public const int FailuresBeforeSkip = 3;
         public const long GiveUpMilliseconds = 60_000;
         public const float ProgressDistance = 500f;

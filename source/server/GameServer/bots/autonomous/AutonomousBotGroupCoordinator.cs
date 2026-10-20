@@ -1122,6 +1122,16 @@ public static partial class AutonomousBotGroupCoordinator
     // recovery episode uses the same safe 90/80/80 threshold as regrouping:
     // passive songs, buffs and normal travel can leave a member at 99%, while
     // the puller's hold branch does not start a rest just for that last point.
+    /// <summary>
+    /// Whether the party should look at its resources between pulls. Only a fight near the leader used to start
+    /// that rest, but a new pull needs every member at 90/80/80: a member below it for any other reason (buff
+    /// upkeep, a fight away from the leader) left the party with no rest and no pull. The leader held "Holding
+    /// group formation" and everyone else followed it: all 11 frozen parties of the 2026-10-19 soak, no one
+    /// resting, broken up only by the five-minute party stall rule.
+    /// </summary>
+    public static bool StartsBetweenPullRecovery(bool combatObserved, bool groupPveTaskStarted, bool membersReady) =>
+        combatObserved || groupPveTaskStarted && !membersReady;
+
     private static bool MembersReadyForPull(GameBot[] members) => members.Length >= 2 &&
         members.All(member => ReadyForGroupPull(member.HealthPercent, member.ManaPercent,
             member.EndurancePercent, member.MaxMana > 0));
@@ -1865,7 +1875,9 @@ public static partial class AutonomousBotGroupCoordinator
             session.CombatObserved = true;
             session.RecoveringBetweenPulls = false;
         }
-        else if (session.CombatObserved && !session.Recovery.IsRegrouping)
+        else if (!session.Recovery.IsRegrouping && StartsBetweenPullRecovery(session.CombatObserved,
+                     session.ObjectiveKind == eAutonomousObjectiveKind.GroupPve && session.TaskClock.HasStarted,
+                     MembersReadyForPull(members)))
         {
             // Near-full resources after a trivial defense do not require an
             // exact-100 rest that no controller branch would initiate. Once a
@@ -2155,6 +2167,19 @@ public static partial class AutonomousBotGroupCoordinator
         if (now < session.NextAttendanceTick)
             return;
         session.NextAttendanceTick = now + 5_000;
+        // A member that dies MeetupDeathLimit times on the way is a no-show at once (ported from chris4aker's
+        // Social Expansion fork, 2026-10-17: a level 1-3 party died ~70 times through a full meetup wait).
+        foreach (GameBot member in members)
+        {
+            int deathCount = member.PersistentRecord?.DeathCount ?? 0;
+            // Read before ReachedDeathLimit moves the member's deadline to now, or it always reads the full wait.
+            long waitedMs = session.Attendance.WaitedMilliseconds(member.DatabaseID, now);
+            if (session.Attendance.ReachedDeathLimit(member.DatabaseID, deathCount, now))
+                Log.Warn($"AUTONOMOUS_GROUP_MEETUP_DEATHS group={session.Id} bot={member.Name} id={member.DatabaseID} " +
+                         $"level={member.Level} deaths={session.Attendance.DeathsSinceStart(member.DatabaseID, deathCount)} " +
+                         $"waitedSeconds={waitedMs / 1000} region={member.CurrentRegionID} " +
+                         $"at={(int)member.X},{(int)member.Y} rendezvous={(int)session.Rendezvous.X},{(int)session.Rendezvous.Y}");
+        }
         // Capture attendance before removals shift group indexes/formation slots.
         GameBot[] missing = members.Where(member =>
             session.Attendance.Observe(member.DatabaseID, now, AtRendezvous(session, member))).ToArray();
