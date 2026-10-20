@@ -41,6 +41,7 @@ EDITION_TEXT = {
 # The base package's own parts that this repository replaces, plus run state that never ships.
 BASE_ROOT_SKIP = {"runtime", "source", "docs", "editions", "patch-backups", "PACKAGE MANIFEST.sha256", "EDITION.txt"}
 BASE_TOOLS_SKIP = {"pet-art", "claude-version", "asset-tool", "ProgressImporter"}
+PRIVATE_DOCS = {"PROJECT-HANDOFF.md"}
 
 
 def set_property(con: sqlite3.Connection, key: str, value: str):
@@ -143,7 +144,8 @@ def main():
     counts = {"player files": assemble.copy_tree(repo / "package-files", out)}
     for name in assemble.ROOT_FILES:
         shutil.copy2(repo / name, out / name)
-    counts["docs"] = assemble.copy_tree(repo / "docs", out / "docs")
+    # PROJECT-HANDOFF.md is the developer's own session hand-off (it names local folders); it stays in the repository.
+    counts["docs"] = assemble.copy_tree(repo / "docs", out / "docs", lambda rel: rel.as_posix() not in PRIVATE_DOCS)
     counts["source"] = assemble.copy_tree(repo / "source", out / "source", assemble.keep)
     for tool in ("pet-art", "claude-version", "asset-tool"):
         counts[f"tools/{tool}"] = assemble.copy_tree(repo / "tools" / tool, out / "tools" / tool, assemble.keep)
@@ -155,7 +157,8 @@ def main():
     forbidden = [p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file() and (
         p.name.lower() == "account.txt"
         or p.suffix.lower() in {".log", ".dmp", ".trx"}
-        or p.suffix.lower() in {".db", ".sqlite3", ".db-wal", ".db-shm"} and p != database)]
+        or p.suffix.lower() in {".db", ".sqlite3", ".db-wal", ".db-shm"} and p != database
+        and p.name.lower() != "thumbs.db")]  # Windows' thumbnail cache, part of the released client
     assert not forbidden, f"files that must not ship: {forbidden[:20]}"
     assert not (out / "source/server/CoreServer/config/serverconfig.xml").exists(), "a local server config would ship"
 
