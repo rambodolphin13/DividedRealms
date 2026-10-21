@@ -2167,12 +2167,10 @@ public static partial class AutonomousBotGroupCoordinator
         if (now < session.NextAttendanceTick)
             return;
         session.NextAttendanceTick = now + 5_000;
-        // A member that dies MeetupDeathLimit times on the way is a no-show at once (ported from chris4aker's
-        // Social Expansion fork, 2026-10-17: a level 1-3 party died ~70 times through a full meetup wait).
         foreach (GameBot member in members)
         {
             int deathCount = member.PersistentRecord?.DeathCount ?? 0;
-            // Read before ReachedDeathLimit moves the member's deadline to now, or it always reads the full wait.
+            // Read before ReachedDeathLimit moves the member's deadline to now; read after, it is always the full wait.
             long waitedMs = session.Attendance.WaitedMilliseconds(member.DatabaseID, now);
             if (session.Attendance.ReachedDeathLimit(member.DatabaseID, deathCount, now))
                 Log.Warn($"AUTONOMOUS_GROUP_MEETUP_DEATHS group={session.Id} bot={member.Name} id={member.DatabaseID} " +
