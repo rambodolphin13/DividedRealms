@@ -260,5 +260,15 @@ public sealed class UT_GamebotReviewOct18
         }
         finally { AutonomousCampRouteQuarantine.ResetForTests(); }
     }
+
+    [Test]
+    public void AHealerLetsTheSameSpellFinishInsteadOfRestartingIt()
+    {
+        // From stefanrows/OfflineDAoC: a cure mezz on a still-mezzed mate was stopped and restarted every turn.
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, 4321, 4321), Is.True);
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, 1234, 4321), Is.False, "a different spell may replace it");
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(false, 4321, 4321), Is.False);
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, null, 4321), Is.False);
+    }
     private sealed record Spawn(string Name, Zone Zone);
 }

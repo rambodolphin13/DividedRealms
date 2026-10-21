@@ -159,6 +159,10 @@ namespace DOL.AI.Brain
 
         public virtual bool HasAggro => !AggroList.IsEmpty;
 
+        /// <summary>True when the bot is already casting this very spell, which must be left to finish.</summary>
+        public static bool IsAlreadyCastingSpell(bool isCasting, int? currentSpellId, int spellId) =>
+            isCasting && currentSpellId == spellId;
+
         /// <summary>The aggro entry with the most effective threat (null when the list is empty).</summary>
         public GameLiving HighestAggroTarget
         {
@@ -5090,6 +5094,11 @@ namespace DOL.AI.Brain
                     CheckHealSpell(BotBody.HealInstant) ? BotBody.HealInstant : null;
             if (spellToCast != null && spellTarget != null)
             {
+                // The same spell is already being cast (a cure mezz on a mate who is still mezzed is picked again on
+                // every turn): let it finish. Stopping it below and starting over made the healer recast without end.
+                // (From stefanrows/OfflineDAoC, 714a9e20.)
+                if (IsAlreadyCastingSpell(BotBody.IsCasting, BotBody.castingComponent?.SpellHandler?.Spell?.ID, spellToCast.ID))
+                    return true;
                 spellTarget = BotGroupSupport.ReserveHeal(BotBody, spellToCast, spellTarget);
                 if (spellTarget == null) return isCastingHeal;
                 if (!BotBody.IsWithinRadius(spellTarget, BotBody.castingComponent.CalculateSpellRange(spellToCast)))
