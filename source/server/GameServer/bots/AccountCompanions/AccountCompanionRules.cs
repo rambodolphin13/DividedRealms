@@ -79,6 +79,20 @@ namespace DOL.GS
         public static int LineLimit(int characterLevel) => Math.Clamp(characterLevel, 1, MaxLevel);
 
         /// <summary>
+        /// The level a respec leaves a line at, as GamePlayer.RespecSingleLine: an autotrained line
+        /// keeps its free levels (character level / 4, from level 8), every other line goes to 1.
+        /// </summary>
+        public static int RespecLevel(bool autotrain, int characterLevel) =>
+            autotrain && characterLevel >= 8 ? characterLevel / 4 : 1;
+
+        /// <summary>Points a respec of the line gives back.</summary>
+        public static int RespecRefund(int specLevel, bool autotrain, int characterLevel)
+        {
+            int target = Math.Min(specLevel, RespecLevel(autotrain, characterLevel));
+            return EffectiveLineCost(specLevel, autotrain, characterLevel) - EffectiveLineCost(target, autotrain, characterLevel);
+        }
+
+        /// <summary>
         /// Hand training: raises a line by up to <paramref name="steps"/> levels, stopping at the
         /// character's level or when the next level costs more than the points left.
         /// </summary>

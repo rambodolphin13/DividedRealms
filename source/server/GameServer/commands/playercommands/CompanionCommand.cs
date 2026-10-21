@@ -25,6 +25,8 @@ namespace DOL.GS.Commands
         internal const string AutoSpendOffLink = "Auto-spend off";
         internal const string SpendByBuildLink = "Spend by build";
         internal const string BackLink = "Back";
+        internal const string ResetPrefix = "Reset ";
+        internal const string ResetAllName = "all lines";
 
         private readonly GamePlayer _owner;
         private ECSGameTimer _expirationTimer;
@@ -79,17 +81,20 @@ namespace DOL.GS.Commands
             text.Append(companion.CompanionAutoSpend
                 ? $"Auto-spend is on: it trains its build by itself at every level. [{AutoSpendOffLink}]\n"
                 : $"Auto-spend is off: you choose where its points go. [{AutoSpendOnLink}]\n");
-            text.Append($"[{SpendByBuildLink}] spends the free points now along its build, once.\n\n");
+            text.Append($"[{SpendByBuildLink}] spends the free points now along its build, once.\n");
+            text.Append($"[{ResetPrefix}{ResetAllName}] gives back every point (free, asks first).\n\n");
             foreach (Specialization spec in companion.CompanionTrainableLines())
             {
+                string reset = companion.CanRespecCompanionLine(spec) ? $" [{ResetPrefix}{spec.Name}]" : string.Empty;
                 if (spec.Level >= limit)
                 {
-                    text.Append($"{spec.Name} {spec.Level} (most at this level)\n");
+                    text.Append($"{spec.Name} {spec.Level} (most at this level){reset}\n");
                     continue;
                 }
                 int cost = AccountCompanionRules.NextLevelCost(spec.Level, companion.IsCompanionAutotrainLine(spec), companion.Level);
                 text.Append($"{spec.Name} {spec.Level}, next level {cost} points: ");
                 text.Append(string.Join(' ', TrainSteps.Select(steps => $"[{spec.Name} +{steps}]")));
+                text.Append(reset);
                 text.Append('\n');
             }
             text.Append($"\n[{BackLink}]");
@@ -186,11 +191,35 @@ namespace DOL.GS.Commands
                 }
                 message = $"{_specFor.Name} has nothing to train along its build right now.";
             }
+            else if (TryParseResetLink(text, out string resetLine))
+            {
+                GameBot companion = _specFor;
+                CompanionCommandHandler.ConfirmRespec(_owner, companion, resetLine, () =>
+                {
+                    // Show the page again with the new levels, if it is still open on this companion.
+                    if (!_closed && ReferenceEquals(_specFor, companion) && _owner.ObjectState is eObjectState.Active)
+                        _owner.Out.SendMessage(CurrentText(), eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+                });
+                return;
+            }
             else if (TryParseTrainLink(text, out string line, out int steps))
                 message = _specFor.TrainCompanionLine(line, steps);
             else
                 return;
             _owner.Out.SendMessage(message, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+        }
+
+        /// <summary>Reads a reset link: a line name, or "all" for every line.</summary>
+        public static bool TryParseResetLink(string text, out string line)
+        {
+            line = null;
+            text = text?.Trim() ?? string.Empty;
+            if (!text.StartsWith(ResetPrefix, StringComparison.OrdinalIgnoreCase) || text.Length <= ResetPrefix.Length)
+                return false;
+            line = text.Substring(ResetPrefix.Length).Trim();
+            if (string.Equals(line, ResetAllName, StringComparison.OrdinalIgnoreCase))
+                line = "all";
+            return line.Length > 0;
         }
 
         private void Close()
@@ -218,6 +247,7 @@ namespace DOL.GS.Commands
         "/companion build <name> [build] - choose its training build",
         "/companion spec <name> - training page: spend its points by hand",
         "/companion train <name> <line> [levels] | autospend <name> on|off",
+        "/companion respec <name> <line|all> - free respec, asks first",
         "/companion list | dismiss <name|all>")]
     public sealed class CompanionCommandHandler : AbstractCommandHandler, ICommandHandler
     {
@@ -254,6 +284,9 @@ namespace DOL.GS.Commands
                     return;
                 case "train":
                     Train(player, args);
+                    return;
+                case "respec":
+                    Respec(player, args);
                     return;
                 case "autospend":
                 case "autotrain":
@@ -346,6 +379,38 @@ namespace DOL.GS.Commands
         internal static string AutoSpendMessage(GameBot companion) => companion.CompanionAutoSpend
             ? $"{companion.Name} will spend its points along its build at every level."
             : $"{companion.Name} will keep its points for you to spend.";
+
+        /// <summary>Asks with the client's Yes/No dialog, then respecs. Free, as player respecs are on this server.</summary>
+        internal static void ConfirmRespec(GamePlayer player, GameBot companion, string line, Action afterRespec = null)
+        {
+            string refusal = companion.CompanionRespecRefusal();
+            if (refusal != null)
+            {
+                player.Out.SendMessage(refusal, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                return;
+            }
+            string what = line == "all" ? "every line" : line;
+            player.Out.SendCustomDialog($"Respec {companion.Name}'s {what}? The points come back to spend again.", (responder, response) =>
+            {
+                if (response != 0x01 || !AccountCompanionManager.ActiveFor(responder).Contains(companion))
+                    return;
+                responder.Out.SendMessage(companion.RespecCompanion(line), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                afterRespec?.Invoke();
+            });
+        }
+
+        private static void Respec(GamePlayer player, string[] args)
+        {
+            if (args.Length < 4)
+            {
+                player.Out.SendMessage("Usage: /companion respec <name> <line|all>", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                return;
+            }
+            GameBot companion = ActiveCompanion(player, args[2]);
+            string line = string.Join(' ', args.Skip(3)).Trim();
+            if (companion != null)
+                ConfirmRespec(player, companion, line.Equals("all", StringComparison.OrdinalIgnoreCase) ? "all" : line);
+        }
 
         private static GameBot ActiveCompanion(GamePlayer player, string name)
         {

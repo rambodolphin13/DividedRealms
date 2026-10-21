@@ -4,6 +4,7 @@ using System.Linq;
 using DOL.Database;
 using DOL.Events;
 using DOL.GS.PacketHandler;
+using DOL.GS.Styles;
 
 namespace DOL.GS
 {
@@ -249,6 +250,87 @@ namespace DOL.GS
             if (log.IsInfoEnabled)
                 log.Info($"ACCOUNT_COMPANION_TRAINED companion=\"{Name}\" line=\"{spec.KeyName}\" level={trained} cost={cost}");
             return $"{Name} trains {spec.Name} to {trained} ({cost} points). {available - cost} points left.";
+        }
+
+        /// <summary>Lines a respec would lower: above 1, or above an autotrain line's free levels.</summary>
+        internal bool CanRespecCompanionLine(Specialization spec) =>
+            spec.Level > AccountCompanionRules.RespecLevel(IsCompanionAutotrainLine(spec), Level);
+
+        /// <summary>Why a respec has to wait, or null. Changing lines mid-fight or mid-cast could leave a stale spell or style in use.</summary>
+        internal string CompanionRespecRefusal()
+        {
+            if (!IsAccountCompanion || CharacterClass == null)
+                return "Only an account companion can be respecced this way.";
+            if (!IsAlive)
+                return $"{Name} must be alive to respec.";
+            if (InCombat || IsCasting || IsAttacking)
+                return $"{Name} is fighting. Respec it once the fight is over.";
+            return null;
+        }
+
+        /// <summary>
+        /// Free respec of one line or every line ("all"), as /respec at a trainer: each line goes back to 1
+        /// (an autotrain line to its free levels) and the points become free to spend again.
+        /// </summary>
+        internal string RespecCompanion(string lineName)
+        {
+            string refusal = CompanionRespecRefusal();
+            if (refusal != null)
+                return refusal;
+
+            bool all = string.Equals(lineName?.Trim(), "all", StringComparison.OrdinalIgnoreCase);
+            List<Specialization> lines = CompanionTrainableLines()
+                .Where(spec => all ||
+                               string.Equals(spec.Name, lineName?.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                               string.Equals(spec.KeyName, lineName?.Trim(), StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (lines.Count == 0)
+                return $"{Name} has no line called '{lineName}'.";
+            lines = lines.Where(CanRespecCompanionLine).ToList();
+            if (lines.Count == 0)
+                return all ? $"{Name} has nothing to respec." : $"{Name}'s {lineName} has no trained levels to give back.";
+
+            int refunded = 0;
+            foreach (Specialization spec in lines)
+                refunded += LowerCompanionLine(spec);
+
+            // Re-adds what the remaining levels still grant, then rebuilds the spell and style choices.
+            RefreshSpecDependantSkills(false);
+            GetAllUsableSkills(true);
+            GetAllUsableListSpells(true);
+            SetBotSpells();
+            SortStyles();
+            SortSpells();
+            _companionDirty = true;
+            SaveAccountCompanion("respec");
+            if (log.IsInfoEnabled)
+                log.Info($"ACCOUNT_COMPANION_RESPEC companion=\"{Name}\" lines=\"{string.Join(",", lines.Select(spec => spec.KeyName))}\" refunded={refunded}");
+            string what = all ? "every line" : lines[0].Name;
+            return $"{Name} respecs {what}: {refunded} points back, {CompanionUnspentSpecPoints()} free to spend.";
+        }
+
+        /// <summary>
+        /// Lowers one line and takes away what only its lost levels granted. The bot's skill refresh
+        /// only ever adds, so abilities and styles of the line are removed here and re-added by the
+        /// caller's refresh at the levels still trained.
+        /// </summary>
+        private int LowerCompanionLine(Specialization spec)
+        {
+            bool autotrain = IsCompanionAutotrainLine(spec);
+            int target = AccountCompanionRules.RespecLevel(autotrain, Level);
+            int refund = AccountCompanionRules.RespecRefund(spec.Level, autotrain, Level);
+            List<Ability> oldAbilities = spec.GetAbilitiesForLiving(this) ?? new List<Ability>();
+            List<Style> oldStyles = spec.GetStylesForLiving(this) ?? new List<Style>();
+
+            spec.Level = target;
+
+            var lostStyles = new HashSet<int>(oldStyles.Select(style => style.ID));
+            lostStyles.ExceptWith((spec.GetStylesForLiving(this) ?? new List<Style>()).Select(style => style.ID));
+            foreach (Ability ability in oldAbilities)
+                RemoveAbility(ability.KeyName);
+            lock (Styles)
+                Styles.RemoveAll(style => style != null && lostStyles.Contains(style.ID));
+            return refund;
         }
 
         /// <summary>Tells the owner about unspent points when the companion does not spend them itself.</summary>

@@ -1,8 +1,8 @@
 # Account companions
 
-Status, October 20, 2026: **compiles; unit tests pass (15 companion rule tests, 3000 in the full suite).
-Not yet checked against a played database or in game; that includes the hand-training page added
-on October 20.** Code review fixed one bug: a summon that
+Status, October 20, 2026: **compiles; unit tests pass (19 companion rule tests, 3016 in the full suite).
+Not yet checked against a played database or in game, including the hand-training and respec page
+added on October 20.** Code review fixed one bug: a summon that
 failed partway (region refused, group refused, double summon) saved the character at the owner's
 position. Now only a companion that joined the group is ever saved.
 
@@ -22,6 +22,11 @@ counts for Bring A Friend. It is still a real character:
   When it's on, the companion spends new points at every level along a bot build that fits what it
   has trained, the old behavior. It never lowers a line and never touches lines outside its build.
   **Spend by build** on the training page does the same once, without turning auto-spend on.
+- Respecs are free, the same as player respecs on this server. Each line on the training page has a
+  **Reset** link, and **Reset all lines** clears everything. The game's Yes/No box asks first. A
+  reset line goes back to 1 (an autotrained line to its free levels), the styles and abilities
+  of the lost levels go, and the points are free to spend again. Not while the companion is
+  fighting or casting.
 - It takes a dropped item only when it is an upgrade it will wear; the old piece goes into its
   backpack. The group's autosplit loot setting must be on.
 - Coin needs nothing extra: money is shared per realm across the account, so the owner's normal
@@ -41,6 +46,7 @@ counts for Bring A Friend. It is still a real character:
 | `/companion spec <name>` | Clickable training page for a companion that is with you |
 | `/companion train <name> <line> [levels]` | Train a line by hand (e.g. `/companion train Kalia Two Handed 5`) |
 | `/companion autospend <name> [on\|off]` | Show or switch auto-spend along its build |
+| `/companion respec <name> <line\|all>` | Free respec of one line or every line (asks first) |
 | `/companion list` | Your characters, their level and whether they can come |
 | `/companion dismiss <name or all>` | Send home and save |
 

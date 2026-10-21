@@ -89,6 +89,32 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void Respec_SendsALineTo1AndAnAutotrainLineToItsFreeLevels()
+        {
+            Assert.That(AccountCompanionRules.RespecLevel(false, 40), Is.EqualTo(1));
+            Assert.That(AccountCompanionRules.RespecLevel(true, 40), Is.EqualTo(10));
+            Assert.That(AccountCompanionRules.RespecLevel(true, 7), Is.EqualTo(1), "below level 8 an autotrain line goes to 1 too");
+        }
+
+        [Test]
+        public void Respec_GivesBackEveryPaidPoint()
+        {
+            Assert.That(AccountCompanionRules.RespecRefund(20, false, 40), Is.EqualTo(AccountCompanionRules.LineCost(20)));
+            // Levels 1-10 of an autotrained line were free at character level 40, so only 11-20 come back.
+            Assert.That(AccountCompanionRules.RespecRefund(20, true, 40),
+                Is.EqualTo(AccountCompanionRules.LineCost(20) - AccountCompanionRules.LineCost(10)));
+            Assert.That(AccountCompanionRules.RespecRefund(6, true, 40), Is.EqualTo(0), "a line inside its free levels has nothing to give back");
+        }
+
+        [Test]
+        public void Respec_ThenTrainAgain_CostsWhatTheRespecGaveBack()
+        {
+            int refund = AccountCompanionRules.RespecRefund(20, false, 40);
+            Assert.That(AccountCompanionRules.TrainLine(1, 19, false, 40, refund, out int cost), Is.EqualTo(20));
+            Assert.That(cost, Is.EqualTo(refund));
+        }
+
+        [Test]
         public void TrainLinks_NameTheLineAndTheLevelCount()
         {
             Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseTrainLink("Two Handed +5", out string line, out int steps), Is.True);
@@ -96,6 +122,17 @@ namespace DOL.UnitTests
             Assert.That(steps, Is.EqualTo(5));
             Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseTrainLink("Mending +3", out _, out _), Is.False, "the page offers +1, +5 and +10 only");
             Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseTrainLink("Back", out _, out _), Is.False);
+            Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseTrainLink("Reset Two Handed", out _, out _), Is.False);
+        }
+
+        [Test]
+        public void ResetLinks_NameALineOrEveryLine()
+        {
+            Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseResetLink("Reset Two Handed", out string line), Is.True);
+            Assert.That(line, Is.EqualTo("Two Handed"));
+            Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseResetLink("Reset all lines", out line), Is.True);
+            Assert.That(line, Is.EqualTo("all"));
+            Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseResetLink("Mending +1", out _), Is.False);
         }
 
         [Test]
