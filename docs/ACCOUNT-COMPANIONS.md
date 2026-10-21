@@ -1,7 +1,8 @@
 # Account companions
 
-Status, October 18, 2026: **compiles; unit tests pass (9 companion tests, 2916 in the full suite).
-Not yet checked against a played database or in game.** Code review fixed one bug: a summon that
+Status, October 20, 2026: **compiles; unit tests pass (15 companion rule tests, 3000 in the full suite).
+Not yet checked against a played database or in game; that includes the hand-training page added
+on October 20.** Code review fixed one bug: a summon that
 failed partway (region refused, group refused, double summon) saved the character at the owner's
 position. Now only a companion that joined the group is ever saved.
 
@@ -13,8 +14,14 @@ counts for Bring A Friend. It is still a real character:
 
 - It wears its own equipment and carries its own bags (its normal inventory rows; nothing is generated).
 - It earns experience as a group member, at the player XP rate, and levels up.
-- It spends new specialization points automatically along a bot build that fits what it has
-  already trained. It never lowers a line, and it never touches lines outside its build.
+- You spend its specialization points yourself: click **Train** beside it in the `/companion`
+  menu (or type `/companion spec <name>`) for a page with every line, its next-level cost and
+  +1 / +5 / +10 links. As at a trainer, a line can't pass the character's level, and free autotrain
+  levels cost nothing. It reminds you of unspent points when it levels and when you summon it.
+- Auto-spend is **off** by default, including for companions saved before this setting existed.
+  When it's on, the companion spends new points at every level along a bot build that fits what it
+  has trained, the old behavior. It never lowers a line and never touches lines outside its build.
+  **Spend by build** on the training page does the same once, without turning auto-spend on.
 - It takes a dropped item only when it is an upgrade it will wear; the old piece goes into its
   backpack. The group's autosplit loot setting must be on.
 - Coin needs nothing extra: money is shared per realm across the account, so the owner's normal
@@ -31,6 +38,9 @@ counts for Bring A Friend. It is still a real character:
 | `/companion <name>` | Summon, or send home if it is already with you |
 | `/companion <name> <class>` | Choose the class for a new character (characters start as a base class, e.g. Viking) |
 | `/companion build <name> [build]` | List or choose its training build (e.g. Healer: MendHealer, AugHealer, PacHealer) |
+| `/companion spec <name>` | Clickable training page for a companion that is with you |
+| `/companion train <name> <line> [levels]` | Train a line by hand (e.g. `/companion train Kalia Two Handed 5`) |
+| `/companion autospend <name> [on\|off]` | Show or switch auto-spend along its build |
 | `/companion list` | Your characters, their level and whether they can come |
 | `/companion dismiss <name or all>` | Send home and save |
 
@@ -55,8 +65,8 @@ counts for Bring A Friend. It is still a real character:
 | `source/server/GameServer/bots/AccountCompanions/AccountCompanionRules.cs` | Pure rules: spec points, autotrain refunds, spending, stat gains, levels, spec merge, refusal order |
 | `.../AccountCompanions/GameBot.AccountCompanion.cs` | `partial class GameBot`: build from a `DbCoreCharacter`, XP, auto-train, upgrades, saving |
 | `.../AccountCompanions/AccountCompanionManager.cs` | Summon, dismiss, class choice, build choice, loot hand-off |
-| `.../AccountCompanions/AccountCompanionRecord.cs` | New table `account_companions` (saved build plan only) |
-| `source/server/GameServer/commands/playercommands/CompanionCommand.cs` | `/companion` and its popup menu |
+| `.../AccountCompanions/AccountCompanionRecord.cs` | New table `account_companions` (saved build plan and the auto-spend switch) |
+| `source/server/GameServer/commands/playercommands/CompanionCommand.cs` | `/companion`, its popup menu and the training page |
 | `source/server/Tests/UnitTests/UT_AccountCompanion.cs` | Rule tests |
 
 Edits to existing files:

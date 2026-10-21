@@ -17,5 +17,8 @@ namespace DOL.GS
         [DataElement(AllowDbNull = false)] public string Style { get; set; } = string.Empty;
         [DataElement(AllowDbNull = false)] public string BuildPlan { get; set; } = string.Empty;
         [DataElement(AllowDbNull = false)] public string LastSummonedUtc { get; set; } = string.Empty;
+        // Off by default (and for rows saved before this column existed): the owner trains the
+        // companion's lines by hand with /companion spec. On, it spends free points along BuildPlan.
+        [DataElement(AllowDbNull = false)] public bool AutoTrain { get; set; }
     }
 }

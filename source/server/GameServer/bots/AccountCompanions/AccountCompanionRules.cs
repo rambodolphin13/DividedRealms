@@ -71,6 +71,33 @@ namespace DOL.GS
         public static int SpentSpecPoints(IEnumerable<(int Level, bool Autotrain)> lines, int characterLevel) =>
             lines.Sum(line => EffectiveLineCost(line.Level, line.Autotrain, characterLevel));
 
+        /// <summary>Points to raise a line one level, after any autotrain refund (0 for a free autotrain level).</summary>
+        public static int NextLevelCost(int specLevel, bool autotrain, int characterLevel) =>
+            EffectiveLineCost(specLevel + 1, autotrain, characterLevel) - EffectiveLineCost(specLevel, autotrain, characterLevel);
+
+        /// <summary>A line can be trained up to the character's level, as at a trainer.</summary>
+        public static int LineLimit(int characterLevel) => Math.Clamp(characterLevel, 1, MaxLevel);
+
+        /// <summary>
+        /// Hand training: raises a line by up to <paramref name="steps"/> levels, stopping at the
+        /// character's level or when the next level costs more than the points left.
+        /// </summary>
+        public static int TrainLine(int specLevel, int steps, bool autotrain, int characterLevel, int points, out int cost)
+        {
+            cost = 0;
+            int level = specLevel;
+            int limit = LineLimit(characterLevel);
+            for (; steps > 0 && level < limit; steps--)
+            {
+                int next = NextLevelCost(level, autotrain, characterLevel);
+                if (cost + next > points)
+                    break;
+                cost += next;
+                level++;
+            }
+            return level;
+        }
+
         /// <summary>
         /// Spends only points that are actually free, with the same order the bots use
         /// (BotSpecLine ratios first, then any leftover into lines still under their caps).

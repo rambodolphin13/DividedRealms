@@ -213,7 +213,8 @@ namespace DOL.GS
             if (companion.Brain is BotBrain brain)
                 brain.FSM.SetCurrentState(eFSMStateType.FOLLOW);
 
-            companion.AutoTrainCompanion();
+            if (companion.CompanionAutoSpend)
+                companion.AutoTrainCompanion();
             companion.CompanionRecord.LastSummonedUtc = DateTime.UtcNow.ToString("O");
             companion.MarkCompanionDirty();
             companion.SaveAccountCompanion("summon");

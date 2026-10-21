@@ -196,6 +196,72 @@ namespace DOL.GS
             return true;
         }
 
+        /// <summary>On: free points are spent along the build at every level. Off (the default): the owner trains by hand.</summary>
+        internal bool CompanionAutoSpend => CompanionRecord?.AutoTrain == true;
+
+        internal void SetCompanionAutoSpend(bool on)
+        {
+            if (CompanionRecord == null || CompanionRecord.AutoTrain == on)
+                return;
+            CompanionRecord.AutoTrain = on;
+            CompanionRecord.Dirty = true;
+            _companionDirty = true;
+            if (on)
+                AutoTrainCompanion();
+            SaveAccountCompanion("autospend");
+        }
+
+        /// <summary>The lines the owner can train, in the class's own order.</summary>
+        internal List<Specialization> CompanionTrainableLines() =>
+            GetSpecList().Where(spec => spec.Trainable).ToList();
+
+        internal bool IsCompanionAutotrainLine(Specialization spec) =>
+            CharacterClass?.GetAutotrainableSkills()?.Any(key => string.Equals(key, spec.KeyName, StringComparison.OrdinalIgnoreCase)) == true;
+
+        /// <summary>Raises one line by up to <paramref name="steps"/> levels with free points, as at a trainer.</summary>
+        internal string TrainCompanionLine(string lineName, int steps)
+        {
+            if (!IsAccountCompanion || CharacterClass == null)
+                return "Only an account companion can be trained this way.";
+            Specialization spec = CompanionTrainableLines().FirstOrDefault(line =>
+                string.Equals(line.Name, lineName?.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(line.KeyName, lineName?.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (spec == null)
+                return $"{Name} has no line called '{lineName}'.";
+
+            int limit = AccountCompanionRules.LineLimit(Level);
+            if (spec.Level >= limit)
+                return $"{Name}'s {spec.Name} is already {spec.Level}, the most at level {Level}.";
+
+            int available = CompanionUnspentSpecPoints();
+            bool autotrain = IsCompanionAutotrainLine(spec);
+            int trained = AccountCompanionRules.TrainLine(spec.Level, Math.Max(1, steps), autotrain, Level, available, out int cost);
+            if (trained == spec.Level)
+                return $"{Name} needs {AccountCompanionRules.NextLevelCost(spec.Level, autotrain, Level)} points for {spec.Name} {spec.Level + 1} and has {available}.";
+
+            spec.Level = trained;
+            RefreshSpecDependantSkills(false);
+            SetBotSpells();
+            SortStyles();
+            SortSpells();
+            _companionDirty = true;
+            SaveAccountCompanion("train");
+            if (log.IsInfoEnabled)
+                log.Info($"ACCOUNT_COMPANION_TRAINED companion=\"{Name}\" line=\"{spec.KeyName}\" level={trained} cost={cost}");
+            return $"{Name} trains {spec.Name} to {trained} ({cost} points). {available - cost} points left.";
+        }
+
+        /// <summary>Tells the owner about unspent points when the companion does not spend them itself.</summary>
+        internal void RemindCompanionUnspentPoints()
+        {
+            if (CompanionAutoSpend || Owner?.Client?.ClientState is not GameClient.eClientState.Playing)
+                return;
+            int available = CompanionUnspentSpecPoints();
+            if (available > 0)
+                Owner.Out.SendMessage($"{Name} has {available} specialization points to spend. Type /companion spec {Name} to train.",
+                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
+        }
+
         private void GainAccountCompanionExperience(GainedExperienceEventArgs arguments)
         {
             if (Level >= AccountCompanionRules.MaxLevel)
@@ -230,7 +296,8 @@ namespace DOL.GS
             ApplyLevelStatGrowth(Level);
             LoadClassSpecializations(false);
             RefreshSpecDependantSkills(false);
-            AutoTrainCompanion();
+            if (CompanionAutoSpend)
+                AutoTrainCompanion();
             SetBotSpells();
             SortStyles();
             SortSpells();
@@ -238,6 +305,7 @@ namespace DOL.GS
             Mana = MaxMana;
             Endurance = MaxEndurance;
             ShowCompanionLevelUp();
+            RemindCompanionUnspentPoints();
             SaveAccountCompanion("level");
         }
 

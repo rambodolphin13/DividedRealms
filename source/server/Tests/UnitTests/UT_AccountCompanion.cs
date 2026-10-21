@@ -57,6 +57,48 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void NextLevelCost_IsTheNewLevelMinusFreeAutotrainLevels()
+        {
+            Assert.That(AccountCompanionRules.NextLevelCost(5, false, 20), Is.EqualTo(6));
+            Assert.That(AccountCompanionRules.NextLevelCost(4, true, 20), Is.EqualTo(0), "level 5 is free at character level 20");
+            Assert.That(AccountCompanionRules.NextLevelCost(5, true, 20), Is.EqualTo(6));
+        }
+
+        [Test]
+        public void TrainLine_StopsWhenPointsRunOut()
+        {
+            // 5 -> 6 costs 6 and 6 -> 7 costs 7; 7 -> 8 would need 8 more than the 20 points.
+            Assert.That(AccountCompanionRules.TrainLine(5, 5, false, 20, 20, out int cost), Is.EqualTo(7));
+            Assert.That(cost, Is.EqualTo(13));
+        }
+
+        [Test]
+        public void TrainLine_NeverPassesTheCharacterLevel()
+        {
+            Assert.That(AccountCompanionRules.TrainLine(19, 10, false, 20, 1000, out int cost), Is.EqualTo(20));
+            Assert.That(cost, Is.EqualTo(20));
+            Assert.That(AccountCompanionRules.TrainLine(20, 1, false, 20, 1000, out cost), Is.EqualTo(20));
+            Assert.That(cost, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TrainLine_TakesFreeAutotrainLevelsWithNoPoints()
+        {
+            Assert.That(AccountCompanionRules.TrainLine(1, 10, true, 20, 0, out int cost), Is.EqualTo(5));
+            Assert.That(cost, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TrainLinks_NameTheLineAndTheLevelCount()
+        {
+            Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseTrainLink("Two Handed +5", out string line, out int steps), Is.True);
+            Assert.That(line, Is.EqualTo("Two Handed"));
+            Assert.That(steps, Is.EqualTo(5));
+            Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseTrainLink("Mending +3", out _, out _), Is.False, "the page offers +1, +5 and +10 only");
+            Assert.That(DOL.GS.Commands.AccountCompanionMenu.TryParseTrainLink("Back", out _, out _), Is.False);
+        }
+
+        [Test]
         public void Spend_WithNoPointsChangesNothing()
         {
             var current = new Dictionary<string, int> { ["Sword"] = 4 };
