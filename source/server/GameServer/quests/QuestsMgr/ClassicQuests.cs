@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -18,19 +18,24 @@ namespace DOL.GS.Quests
     /// classic-quests.json; everything else they need comes from that file next to the server, written by the quest generator:
     /// <list type="bullet">
     /// <item>the red map marker for the player's current step (the same relic-marker packet as bounties,
-    /// reputation quests and the Sluaghbinder epic, in its own reserved ID so all can show at once);</item>
+    /// reputation quests, in its own reserved ID so all can show at once);</item>
     /// <item>event monsters (shades, summoned bosses) that appear only when a player on that step reaches the
     /// spot, and leave again after the encounter;</item>
     /// <item>the quest monsters gamebots must leave alone (owner: "i dont want gamebots killing a quest npc and
     /// then it not being there for the player").</item>
     /// </list>
     /// Quest givers keep the normal yellow quest indicator over their heads. Without the file nothing happens.
+    /// HearthDAoC: hearthdaoc-quests.json (beside it) adds quests (an entry with <c>Replace</c> replaces upstream's: a
+    /// quest the fork rebuilt) and quest monsters, and its <c>Chat</c> replaces upstream's NPC replies keyword by keyword
+    /// (an empty reply silences one).
     /// </summary>
     public static class ClassicQuests
     {
         public const uint MarkerId = 0xFFFE0004;
         public const string EventSpawnProperty = "ClassicQuestEventFor";
         private const string FileName = "classic-quests.json";
+        /// <summary>HearthDAoC: the fork's additions (the Guild of Shadows level-50 quests), read beside FileName.</summary>
+        private const string ExtraFileName = "hearthdaoc-quests.json";
         private const int RefreshMilliseconds = 5000;
         private static readonly Logger Log = LoggerManager.Create(typeof(ClassicQuests));
         /// <summary>Markers on each player's map: quest id -> (step, point). Each quest has its own marker id.</summary>
@@ -43,6 +48,7 @@ namespace DOL.GS.Quests
         private static Timer _timer;
         private static Config _config = new();
         private static DateTime _loadedWrite;
+        private static DateTime _loadedExtraWrite; // HearthDAoC
 
         public sealed record Point(ushort Region, int X, int Y, int Z);
 
@@ -93,8 +99,8 @@ namespace DOL.GS.Quests
             public int Count { get; set; }
             public bool Give { get; set; }
             public Dictionary<string, string> Trades { get; set; }
-            /// <summary>choose: reward name (the keyword the NPC offers) -> item Id_nb; whispering one to Target gives
-            /// it and completes the step (classic "choose your reward" endings).</summary>
+            /// <summary>choose: reward name (the keyword the NPC offers) -> item Id_nb (classic "choose your reward"
+            /// endings). HearthDAoC: whispering one to Target shows it; "I'll take it" then gives it and completes the step.</summary>
             public Dictionary<string, string> Choices { get; set; }
             public List<StepDrop> Drops { get; set; }
             /// <summary>say: the words of power spoken aloud (/say) on the step's point; NightOnly when the walkthrough
@@ -133,8 +139,12 @@ namespace DOL.GS.Quests
             /// <summary>1-based steps, index 0 unused.</summary>
             public List<StepInfo> Steps { get; set; } = new();
             /// <summary>Races the quest is offered to (empty: any). DataQuest has class limits but no race limits;
-            /// Information is the Key (Celt) went to every Hibernian race, Sluaghbinders included (owner check 2026-10-07).</summary>
+            /// Information is the Key (Celt) went to every Hibernian race (owner check 2026-10-07).</summary>
             public List<string> Races { get; set; } = new();
+            /// <summary>HearthDAoC: in hearthdaoc-quests.json, this entry replaces upstream's for the same quest ID (a quest
+            /// the fork rebuilt, such as level 11's "Entry Into Tomorrow"); without it upstream's entry wins, but for our
+            /// XpShares and Greets (<see cref="ClassicQuestOverlay"/>).</summary>
+            public bool Replace { get; set; }
             /// <summary>Each step's experience as a share of the player's current level (quest XP scaled with the
             /// player's level in the period); empty: the quest row's fixed RewardXP. tools/claude-version/fix_quest_xp.py.</summary>
             public List<double> XpShares { get; set; } = new();
@@ -157,6 +167,12 @@ namespace DOL.GS.Quests
             /// <summary>The walkthroughs' NPC conversation: NPC name -> clicked/whispered keyword -> what the NPC answers
             /// (owner 2026-10-07: the quests had only a bare offer; the classic [keyword] chains were missing).</summary>
             public Dictionary<string, Dictionary<string, string>> Chat { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+            /// <summary>HearthDAoC: in hearthdaoc-quests.json, NPCs the fork moved: every map marker on a From point (an
+            /// NPC's old spot) shows on its To point instead, in every quest of both files (owner 2026-10-13).</summary>
+            public List<MarkerMove> MovedMarkers { get; set; } = new();
+            /// <summary>HearthDAoC: in hearthdaoc-quests.json, the quest camps whose members join a fight against whoever
+            /// attacks one of its callers (#119; see HearthDAoC.LinkedCamps).</summary>
+            public List<LinkGroup> Links { get; set; } = new();
             /// <summary>Rewards made per class (owner 2026-10-11): reward Id_nb -> class id -> that class's own version
             /// (Viraniel's belts, Banba's cloaks, Stoneheart weapons, Ley Infused and Trustan's belts).</summary>
             public Dictionary<string, Dictionary<string, string>> ClassRewards { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -174,6 +190,26 @@ namespace DOL.GS.Quests
                 return item;
             return GameServer.Database.FindObjectByKey<DbItemTemplate>(id) ?? item;
         }
+
+        /// <summary>HearthDAoC: a moved NPC's old spot and new one (see <see cref="Config.MovedMarkers"/>).</summary>
+        public sealed class MarkerMove
+        {
+            public Point From { get; set; }
+            public Point To { get; set; }
+        }
+
+        /// <summary>HearthDAoC (#119): a linked quest camp. Members are Mob_IDs; Callers, the members whose attacker the
+        /// others join (empty: every member); Range, how far from the attacked member the others may stand.</summary>
+        public sealed class LinkGroup
+        {
+            public string Name { get; set; }
+            public List<string> Members { get; set; } = new();
+            public List<string> Callers { get; set; } = new();
+            public int Range { get; set; } = 1500;
+        }
+
+        /// <summary>HearthDAoC: the linked quest camps of the loaded files (#119).</summary>
+        public static IReadOnlyList<LinkGroup> Links => _config.Links ?? new List<LinkGroup>();
 
         [GameServerStartedEvent]
         public static void OnServerStarted(DOLEvent e, object sender, EventArgs args)
@@ -203,7 +239,13 @@ namespace DOL.GS.Quests
                 string key = (whisper.Text ?? string.Empty).Trim().TrimEnd('.', '!', '?');
                 if (TryChooseReward(player, npc, key)) return;
                 if (!_config.Chat.TryGetValue(npc.Name, out var lines)) return;
-                if (lines.TryGetValue(key, out string reply) && !string.IsNullOrWhiteSpace(reply))
+                // HearthDAoC: the quests this NPC gives that the player may take now, or is on: their own replies
+                // ("keyword@<quest ID>") come first.
+                int[] quests = npc.DataQuestList
+                    .Where(q => q.CheckQuestQualification(player) || player.QuestList.Keys.OfType<DataQuest>().Any(a => a.ID == q.ID))
+                    .Select(q => q.ID).ToArray();
+                string reply = ChatReply(lines, key, quests);
+                if (!string.IsNullOrWhiteSpace(reply))
                     npc.SayTo(player, PacketHandler.eChatLoc.CL_PopupWindow, DOL.GS.Behaviour.BehaviourUtils.GetPersonalizedMessage(reply, player));
             }
             catch (Exception ex)
@@ -249,6 +291,43 @@ namespace DOL.GS.Quests
         public static string WordsOnly(string text) =>
             string.Join(' ', System.Text.RegularExpressions.Regex.Matches((text ?? string.Empty).ToLowerInvariant(), "[a-z0-9']+").Select(m => m.Value));
 
+        /// <summary>HearthDAoC: what a whisper to a "choose" step's NPC asks for (owner 2026-10-12: the rewards were chosen
+        /// blind). Naming a reward shows it; "I'll take it" takes the reward the player last looked at.</summary>
+        public enum RewardWhisper { None, Show, Take, NothingShown }
+
+        private static readonly HashSet<string> TakeWords = new(StringComparer.Ordinal) { "i'll take it", "ill take it", "i will take it" };
+
+        /// <summary>The reward a whisper names (Show, in the step's own spelling), the one last shown when the player says
+        /// "I'll take it" (Take; NothingShown when none of this step's rewards was shown), or None.</summary>
+        public static (RewardWhisper Action, string Choice) ReadRewardWhisper(IReadOnlyDictionary<string, string> choices, string shown, string whispered)
+        {
+            string key = (whispered ?? string.Empty).Trim().TrimEnd('.', '!', '?');
+            if (key.Length == 0 || choices == null) return (RewardWhisper.None, null);
+            string named = choices.Keys.FirstOrDefault(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase));
+            if (named != null) return (RewardWhisper.Show, named);
+            if (!TakeWords.Contains(WordsOnly(key.Replace('’', '\'')))) return (RewardWhisper.None, null);
+            string last = shown == null ? null : choices.Keys.FirstOrDefault(k => string.Equals(k, shown, StringComparison.OrdinalIgnoreCase));
+            return last == null ? (RewardWhisper.NothingShown, null) : (RewardWhisper.Take, last);
+        }
+
+        /// <summary>HearthDAoC: how taking a chosen reward ended.</summary>
+        public enum RewardTake { BackpackFull, StepRefused, Given }
+
+        /// <summary>HearthDAoC: the chosen reward is given only after its step completes. Upstream gave it first and
+        /// ignored the step's answer, so a finish step that refused (with /xp off, "Your XP is turned off") gave the
+        /// reward again at every try (#95).</summary>
+        public static RewardTake TakeReward(bool room, Func<bool> completeStep, Action give)
+        {
+            if (!room) return RewardTake.BackpackFull;
+            if (!completeStep()) return RewardTake.StepRefused;
+            give();
+            return RewardTake.Given;
+        }
+
+        /// <summary>HearthDAoC: the reward each player last looked at, by (player, quest, step). <see cref="Refresh"/>
+        /// drops the entries of steps a player is no longer on.</summary>
+        private static readonly ConcurrentDictionary<(GamePlayer, int, int), string> Looked = new();
+
         private static bool TryChooseReward(GamePlayer player, GameNPC npc, string key)
         {
             foreach (DataQuest quest in player.QuestList.Keys.OfType<DataQuest>().ToArray())
@@ -256,19 +335,40 @@ namespace DOL.GS.Quests
                 if (!_config.Quests.TryGetValue(quest.ID, out QuestInfo info) || quest.Step <= 0 || quest.Step >= info.Steps.Count) continue;
                 CustomStep custom = info.Steps[quest.Step]?.Custom;
                 if (custom?.Kind != "choose" || custom.Choices == null || !string.Equals(custom.Target, npc.Name, StringComparison.OrdinalIgnoreCase)) continue;
-                string chosen = custom.Choices.Keys.FirstOrDefault(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase));
-                if (chosen == null) continue;
-                DbItemTemplate template = RewardFor(player, GameServer.Database.FindObjectByKey<DbItemTemplate>(custom.Choices[chosen]));
-                if (template == null) continue;
-                if (!player.Inventory.IsSlotsFree(1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
+                // HearthDAoC: a named reward is shown first; "I'll take it" takes the last one shown (owner 2026-10-12).
+                var look = (player, quest.ID, quest.Step);
+                (RewardWhisper action, string chosen) = ReadRewardWhisper(custom.Choices, Looked.TryGetValue(look, out string last) ? last : null, key);
+                if (action == RewardWhisper.None) continue;
+                if (action == RewardWhisper.NothingShown)
                 {
-                    player.Out.SendMessage("Your backpack is full.", PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
+                    npc.SayTo(player, PacketHandler.eChatLoc.CL_PopupWindow, "Which one? Name it first, and I will show it to you.");
                     return true;
                 }
-                if (player.Inventory.AddTemplate(GameInventoryItem.Create(template), 1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
-                    player.Out.SendMessage($"{npc.GetName(0, true)} gives you {template.GetName(1, false)}.", PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
-                quest.AdvanceByScript(npc);
-                return true;
+                DbItemTemplate template = RewardFor(player, GameServer.Database.FindObjectByKey<DbItemTemplate>(custom.Choices[chosen]));
+                if (template == null) continue;
+                if (action == RewardWhisper.Show)
+                {
+                    // The window a player gets on examining an item in the backpack, made from the template.
+                    var delve = new List<string>();
+                    player.DelveItem(template, delve);
+                    player.Out.SendCustomTextWindow(template.Name, delve);
+                    Looked[look] = chosen;
+                    npc.SayTo(player, PacketHandler.eChatLoc.CL_PopupWindow,
+                        $"That is {template.GetName(1, false)}. If it is the one you want, say [I'll take it], or name another.");
+                    return true;
+                }
+                // HearthDAoC: room for the reward and the step's own final rewards, then the step, then the reward (#95).
+                bool room = player.Inventory.IsSlotsFree(1 + quest.FinalRewards.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                RewardTake taken = TakeReward(room, () => quest.AdvanceByScript(npc), () =>
+                {
+                    if (player.Inventory.AddTemplate(GameInventoryItem.Create(template), 1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
+                        player.Out.SendMessage($"{npc.GetName(0, true)} gives you {template.GetName(1, false)}.", PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
+                });
+                if (taken == RewardTake.BackpackFull)
+                    player.Out.SendMessage("Your backpack is full.", PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
+                else if (taken == RewardTake.Given)
+                    Looked.TryRemove(look, out _);
+                return true; // StepRefused: DataQuest said why (such as "Your XP is turned off"); the look stays
             }
             return false;
         }
@@ -278,6 +378,7 @@ namespace DOL.GS.Quests
             for (int i = 0; i < step.Grant.Count; i++)
             {
                 string id = step.Grant[i];
+                if (QuestGrants.HandOnce(player, quest, id, step.GrantFrom)) continue; // HearthDAoC: a real item once (QuestGrants)
                 if (string.IsNullOrEmpty(id) || player.Inventory.GetFirstItemByID(id, eInventorySlot.Min_Inv, eInventorySlot.Max_Inv) != null) continue;
                 var key = (player, quest.ID, quest.Step * 100 + i + 1);
                 long now = GameLoop.GameLoopTime;
@@ -564,7 +665,8 @@ namespace DOL.GS.Quests
             {
                 if (!_config.Quests.TryGetValue(quest.ID, out QuestInfo info) || quest.Step <= 0 || quest.Step >= info.Steps.Count) continue;
                 string greet = info.Steps[quest.Step]?.Greet;
-                if (string.IsNullOrWhiteSpace(greet) || quest.TargetName != npc.Name ||
+                // HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
+                if (string.IsNullOrWhiteSpace(greet) || !QuestNames.Same(quest.TargetName, npc.Name) ||
                     quest.TargetRegion != 0 && quest.TargetRegion != npc.CurrentRegionID) continue;
                 npc.SayTo(player, PacketHandler.eChatLoc.CL_PopupWindow, DOL.GS.Behaviour.BehaviourUtils.GetPersonalizedMessage(greet, player));
                 return;
@@ -575,14 +677,16 @@ namespace DOL.GS.Quests
         {
             foreach (DataQuest quest in player.QuestList.Keys.OfType<DataQuest>())
             {
+                // HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
                 if (!_config.Quests.ContainsKey(quest.ID) || quest.Step <= 0 ||
                     quest.StepType is not (DataQuest.eStepType.Whisper or DataQuest.eStepType.WhisperFinish) ||
-                    quest.TargetName != npc.Name || quest.TargetRegion != 0 && quest.TargetRegion != npc.CurrentRegionID)
+                    !QuestNames.Same(quest.TargetName, npc.Name) || quest.TargetRegion != 0 && quest.TargetRegion != npc.CurrentRegionID)
                     continue;
                 string keyword = quest.CurrentAdvanceText;
                 if (string.IsNullOrWhiteSpace(keyword) || (quest.CurrentTargetText ?? string.Empty).Contains("[" + keyword + "]"))
                     continue;
-                npc.SayTo(player, PacketHandler.eChatLoc.CL_PopupWindow, WhisperPrompt(quest.CurrentStepText, keyword));
+                // HearthDAoC: as the player reads it: The Lost Stone's keyword <Player> links the player's name (QuestWhispers).
+                npc.SayTo(player, PacketHandler.eChatLoc.CL_PopupWindow, DOL.GS.Behaviour.BehaviourUtils.GetPersonalizedMessage(WhisperPrompt(quest.CurrentStepText, keyword), player));
             }
         }
 
@@ -608,6 +712,7 @@ namespace DOL.GS.Quests
         private static void GiveDeliveryItem(GamePlayer player, DataQuest quest)
         {
             if (quest.StepType is not (DataQuest.eStepType.Deliver or DataQuest.eStepType.DeliverFinish)) return;
+            if (QuestDeliveryItems.BringsToGiver(quest.Step, quest.TargetName, quest.DBDataQuest?.StartName)) return; // HearthDAoC: the player brings it
             string id = quest.CurrentStepItemTemplate;
             if (string.IsNullOrEmpty(id) || player.Inventory.GetFirstItemByID(id, eInventorySlot.Min_Inv, eInventorySlot.Max_Inv) != null) return;
             var key = (player, quest.ID, quest.Step * 100 + 99);
@@ -683,14 +788,19 @@ namespace DOL.GS.Quests
                 string path = Path.Combine(AppContext.BaseDirectory, FileName);
                 if (!File.Exists(path)) return;
                 DateTime write = File.GetLastWriteTimeUtc(path);
-                if (write == _loadedWrite) return;
-                Config config = JsonSerializer.Deserialize<Config>(File.ReadAllText(path),
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                // HearthDAoC: hearthdaoc-quests.json is read too; a change to either file reloads both.
+                string extraPath = Path.Combine(AppContext.BaseDirectory, ExtraFileName);
+                DateTime extraWrite = File.Exists(extraPath) ? File.GetLastWriteTimeUtc(extraPath) : DateTime.MinValue;
+                if (write == _loadedWrite && extraWrite == _loadedExtraWrite) return;
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                Config config = JsonSerializer.Deserialize<Config>(File.ReadAllText(path), options);
                 if (config == null) return;
                 config.QuestMonsterIds = new HashSet<string>(config.QuestMonsterIds ?? new(), StringComparer.Ordinal);
                 config.Fellows = new Dictionary<string, string>(config.Fellows ?? new(), StringComparer.Ordinal);
+                config = Merge(config, ReadExtra(extraPath, options));
                 _config = config;
                 _loadedWrite = write;
+                _loadedExtraWrite = extraWrite;
                 if (Log.IsInfoEnabled)
                     Log.Info($"CLASSIC_QUESTS loaded quests={config.Quests.Count} questMonsters={config.QuestMonsterIds.Count}");
             }
@@ -699,6 +809,111 @@ namespace DOL.GS.Quests
                 Log.Error("Could not load classic-quests.json; classic quest markers and event spawns are off", ex);
             }
         }
+
+        /// <summary>HearthDAoC: the fork's additions, or null (said once) when the file is missing or unreadable.</summary>
+        private static Config ReadExtra(string path, JsonSerializerOptions options)
+        {
+            try
+            {
+                if (File.Exists(path))
+                    return JsonSerializer.Deserialize<Config>(File.ReadAllText(path), options);
+                Log.Info($"{ExtraFileName} not found; no extra quest data");
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Could not read {ExtraFileName}; HearthDAoC's quest additions are off", ex);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// HearthDAoC: adds the extra file's quests where upstream's file has no entry for the ID (upstream's entry wins,
+        /// unless ours says <see cref="QuestInfo.Replace"/>; ours still carries its XpShares and Greets onto upstream's:
+        /// <see cref="ClassicQuestOverlay"/>), and its quest monsters; its <c>Chat</c> replies replace
+        /// upstream's (see <see cref="MergeChat"/>). Returns <paramref name="upstream"/>. A null extra file changes nothing.
+        /// </summary>
+        public static Config Merge(Config upstream, Config extra)
+        {
+            if (extra == null) return upstream;
+            if (extra.Quests != null)
+                foreach (KeyValuePair<int, QuestInfo> quest in extra.Quests)
+                {
+                    if (quest.Value?.Replace == true)
+                        upstream.Quests[quest.Key] = quest.Value;
+                    else if (!upstream.Quests.TryAdd(quest.Key, quest.Value)) // HearthDAoC: our XpShares and Greets win (0.37 sync)
+                        ClassicQuestOverlay.Apply(upstream.Quests[quest.Key], quest.Value);
+                }
+            if (extra.QuestMonsterIds != null)
+                foreach (string mob in extra.QuestMonsterIds)
+                    upstream.QuestMonsterIds.Add(mob);
+            if (extra.Chat != null)
+                MergeChat(upstream, extra.Chat);
+            // HearthDAoC: the fork's linked camps, and the markers of the NPCs it moved, in every quest (owner 2026-10-13).
+            if (extra.Links != null)
+                (upstream.Links ??= new()).AddRange(extra.Links);
+            if (extra.MovedMarkers != null)
+                foreach (QuestInfo quest in upstream.Quests.Values)
+                    foreach (StepInfo step in quest?.Steps ?? new List<StepInfo>())
+                    {
+                        if (step?.Marker == null) continue;
+                        MarkerMove move = extra.MovedMarkers.FirstOrDefault(m => m?.From != null && m.To != null && m.From == step.Marker);
+                        if (move != null) step.Marker = move.To;
+                    }
+            return upstream;
+        }
+
+        /// <summary>
+        /// HearthDAoC: for each NPC and keyword of <paramref name="extra"/>, our reply replaces upstream's and adds the NPC
+        /// or keyword when upstream has none; an empty reply therefore silences upstream's line (OnWhisper sends nothing
+        /// for it). Upstream had several broken replies in the Guild of Shadows chain (every class called "Cabalist",
+        /// walkthrough notes like "[Step#3] loc=51921"). NPC names and keywords compare without case, and our keywords
+        /// are trimmed of trailing <c>.!?</c> as OnWhisper trims what the player says. The merged lookups ignore case.
+        /// </summary>
+        private static void MergeChat(Config upstream, Dictionary<string, Dictionary<string, string>> extra)
+        {
+            var merged = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+            // Copied one by one: two upstream keys that differ only in case must not throw (the whole file would fail to
+            // load); the later one wins.
+            if (upstream.Chat != null)
+                foreach (var npc in upstream.Chat)
+                {
+                    if (!merged.TryGetValue(npc.Key, out var copy))
+                        merged[npc.Key] = copy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    if (npc.Value != null)
+                        foreach (var line in npc.Value)
+                            copy[line.Key] = line.Value;
+                }
+
+            foreach (var npc in extra)
+            {
+                if (npc.Value == null) continue;
+                if (!merged.TryGetValue(npc.Key, out var lines))
+                    merged[npc.Key] = lines = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var line in npc.Value)
+                    lines[(line.Key ?? string.Empty).Trim().TrimEnd('.', '!', '?')] = line.Value ?? string.Empty;
+            }
+
+            upstream.Chat = merged;
+        }
+
+        /// <summary>HearthDAoC: an NPC's reply to a keyword. A reply keyed "keyword@questId" belongs to that quest and wins
+        /// while it is one of <paramref name="quests"/> (the quests of this NPC the player may take or is on): a trainer
+        /// offers level 40 and level 43 with the same period keyword, "[interested]" (owner 2026-10-12). Otherwise the
+        /// plain keyword's reply, or null.</summary>
+        public static string ChatReply(IReadOnlyDictionary<string, string> lines, string key, IEnumerable<int> quests)
+        {
+            if (lines == null || string.IsNullOrEmpty(key)) return null;
+            foreach (int quest in quests ?? Enumerable.Empty<int>())
+                if (lines.TryGetValue($"{key}@{quest}", out string own))
+                    return own;
+            return lines.TryGetValue(key, out string reply) ? reply : null;
+        }
+
+        /// <summary>HearthDAoC: the map marker of a quest's stage (either file), or null. The GM's /epic goto uses it.</summary>
+        public static Point MarkerFor(int questId, int step) =>
+            _config.Quests.TryGetValue(questId, out QuestInfo info) && info.Steps != null && step > 0 && step < info.Steps.Count
+                ? info.Steps[step]?.Marker
+                : null;
 
         private static void Refresh(object state)
         {
@@ -717,6 +932,9 @@ namespace DOL.GS.Quests
                             foreach (GameNPC npc in gone) if (npc?.ObjectState == GameObject.eObjectState.Active) npc.Delete();
                     foreach (var key in EventCooldown.Keys.Where(k => k.Item1 == player && active.All(q => q.ID != k.Item2)).ToArray())
                         EventCooldown.TryRemove(key, out _);
+                    // HearthDAoC: the rewards looked at on steps the player is no longer on are forgotten.
+                    foreach (var key in Looked.Keys.Where(k => k.Item1 == player && !active.Any(q => q.ID == k.Item2 && q.Step == k.Item3)).ToArray())
+                        Looked.TryRemove(key, out _);
                     // Every active classic quest shows its current step on the map, each with its own marker
                     // (owner 2026-10-07: one shared marker hid every quest behind the first one), and every active
                     // quest's step can spawn its monster.
@@ -744,6 +962,9 @@ namespace DOL.GS.Quests
                 }
                 foreach (GamePlayer gone in Shown.Keys.Where(p => p.ObjectState != GameObject.eObjectState.Active).ToArray())
                     Shown.TryRemove(gone, out _);
+                // HearthDAoC: and those of players who left.
+                foreach (var gone in Looked.Keys.Where(k => k.Item1.ObjectState != GameObject.eObjectState.Active).ToArray())
+                    Looked.TryRemove(gone, out _);
             }
             catch (Exception ex)
             {
@@ -752,7 +973,7 @@ namespace DOL.GS.Quests
         }
 
         /// <summary>A classic quest's own marker id: MarkerId for the first quest id, one more per id after it (the
-        /// bounty, reputation and Sluaghbinder markers sit below MarkerId).</summary>
+        /// bounty and reputation markers sit below MarkerId).</summary>
         public static uint QuestMarkerId(int questId) => MarkerId + (uint)Math.Max(0, questId - 20000);
 
         private static void ShowMarker(GamePlayer player, int quest, int step, Point marker)

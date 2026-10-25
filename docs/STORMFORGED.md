@@ -1,5 +1,8 @@
 # Stormforged development build
 
+**Modern test update:** Storm Sovereign now replaces this kit in the modern test installation.
+See [STORM-SOVEREIGN.md](STORM-SOVEREIGN.md). The design below documents the older class.
+
 Stormforged is an intentionally powerful Midgard class alongside the original Thane.
 The working name can be changed. Server class 64 is presented through Midgard's Mauler
 slot (61) in the original client. The server, database and client patch must be installed together.
@@ -7,14 +10,24 @@ The original Thane and the Hibernian Sluaghbinder mapping remain separate.
 
 ## Current design
 
-- Norseman, Troll or Dwarf; normal leveling to 50. Class identity is retained from creation.
+- Any Midgard race (Norseman, Troll, Dwarf, Kobold, Valkyn, Frostalf, Deifrang), even ones the
+  server's disabled-race list blocks for other classes; normal leveling to 50. The patched classic
+  client still offers only Norseman, Troll and Dwarf. Class identity is retained from creation.
 - **Chain, large shields, hammers, axes and swords from level 1**, as intrinsic class
   abilities. New characters receive Midgard chain armor, a training hammer, a large
   shield and the normal shared recall stone. Existing inventories are not reset.
 - Sword, axe, hammer, shield, parry and stealth automatically match character level.
-  Spell lines unlock automatically, displaying only the newest two learned ranks per
-  Stormforged spell line; weapon styles retain their full lists. Each ability has its own line because the classic
-  client addresses spells by line and level; sharing a level would cast the wrong ability. No tradeoff between keeping lines trained is required.
+  Spells unlock automatically. The client sees one **Stormforged** spell line holding only the
+  newest learned rank of each ability; weapon styles retain their full lists. On the server each
+  ability still has its own line (the client addresses spells by line and level, and every type
+  shares the same tier levels). `StormforgedRules.ClientSpellLines` merges them for the client and
+  gives each ability a fixed slot number, its unlock level pushed past slots already taken:
+  Chain Lightning 1, Stormbolt 2, Stormhammer 3, Stormheart 4, Stormrest 5, Stormsong 6,
+  Thunderclap 7, Thunderforged Ward 8, Stormbound Elemental 9, Lightning Bomb 10, Release Storm
+  Clump 11, Stormguard 12, Stormstep 15, Second Thunder 20, Thunder Recall 21, Eye of the Storm 25,
+  Ride the Storm 30, Avatar of Thor 40. The spellbook shows these slot numbers as levels. Slots
+  never move, so hotbar buttons keep working as ranks upgrade; buttons made before this change
+  must be dragged again from the new line. No tradeoff between keeping lines trained is required.
 - Stormcalling: stronger energy attacks, a cast-time bolt, instant thunderclap on a
   12-second cooldown, instant 350-radius Chain Lightning centered on the caster (12-second
   cooldown), and Stormhammer, a 2.5-second targeted 350-radius AoE using the stock Thane hammer effect. Damaging hits return 50% as health
@@ -103,10 +116,11 @@ Rank 3 includes the lower shield sizes; the class does not need three separate g
 
 ## Storm travel and network
 
-- **Stormstep (level 15):** instant teleport to a visible ground target up to **2,000 units**
-  away, followed by a 350-radius lightning arrival blast. Eight-second cooldown. Ground
-  validation uses region bounds, range, a 400-unit vertical limit and navmesh snapping/LOS
-  where a navmesh exists; unmeshed zones also require the client's ground visibility.
+- **Stormstep (level 15):** instant teleport to an **enemy target** up to **2,000 units** away,
+  landing about 90 units in front of it and facing it, followed by a 350-radius lightning arrival
+  blast. Eight-second cooldown. Normal target range/LOS checks apply; where a navmesh exists the
+  landing spot is snapped to it, falling back to the target's own spot. A caster already beside
+  the target stays put and just bursts.
 - **Thunder Recall (level 20):** instant, five-second cooldown. Moves this owner's live
   Lightning Bombs in the same region to a ground target within 1,000 units and refreshes
   the actual summon effects and registry lifetimes to two minutes. Uses in-region NPC

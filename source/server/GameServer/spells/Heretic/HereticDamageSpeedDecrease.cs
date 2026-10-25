@@ -198,7 +198,7 @@ namespace DOL.GS.Spells
                 ad.AttackResult = eAttackResult.Missed;
 				ad.SpellHandler = this;
                 target.OnAttackedByEnemy(ad);
-                target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
+                target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
             }
             else if (Spell.CastTime > 0)
             {

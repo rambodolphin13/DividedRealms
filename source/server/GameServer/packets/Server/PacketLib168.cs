@@ -27,13 +27,8 @@ namespace DOL.GS.PacketHandler
 		protected const int MAX_PACKET_LENGTH = 2048;
 		protected const int JOURNAL_MAX_QUEST_COUNT = 25;
 
-		// The isolated client reuses the Hibernian Mauler slot for the
-		// experimental Sluaghbinder. Novices remain server-side Acolytes until
-		// level 5, so only a promoted Sluaghbinder is sent through that slot.
 		private static byte GetClientOverviewClassId(int classId, int realm) =>
-			classId == (int)eCharacterClass.Sluaghbinder && realm == (int)eRealm.Hibernia
-				? (byte)eCharacterClass.MaulerHib
-				: StormforgedRules.OverviewClass(classId, realm);
+			StormforgedRules.OverviewClass(classId, realm);
 
 		/// <summary>
 		/// Defines a logger for this class.
@@ -2327,7 +2322,7 @@ namespace DOL.GS.PacketHandler
 			if (player == null)
 				return;
 
-			var spellsXLines = player.GetAllUsableListSpells(true);
+			var spellsXLines = StormforgedRules.ClientSpellLines(player.GetAllUsableListSpells(true));
 
 			int lineIndex = 0;
 			foreach (var spXsl in spellsXLines)
@@ -2353,6 +2348,8 @@ namespace DOL.GS.PacketHandler
 							reqLevel = ((Style)sp).SpecLevelRequirement;
 						else if (sp is Ability)
 							reqLevel = ((Ability)sp).SpecLevelRequirement;
+						else if (sp is Spell spell)
+							reqLevel = StormforgedRules.ClientLevel(spXsl.Item1, spell);
 						else
 							reqLevel = sp.Level;
 
@@ -2761,7 +2758,7 @@ namespace DOL.GS.PacketHandler
 			var disabledSpells = new List<Tuple<byte, byte, ushort>>();
 			var disabledSkills = new List<Tuple<ushort, ushort>>();
 
-			var listspells = m_gameClient.Player.GetAllUsableListSpells();
+			var listspells = StormforgedRules.ClientSpellLines(m_gameClient.Player.GetAllUsableListSpells());
 			var listskills = m_gameClient.Player.GetAllUsableSkills();
 			int specCount = listskills.Where(sk => sk.Item1 is Specialization).Count();
 

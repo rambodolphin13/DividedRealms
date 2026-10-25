@@ -165,7 +165,7 @@ namespace DOL.GS
                 // Accurate 1.65 behavior.
                 if (!caster.IsCrowdControlled)
                 {
-                    if (spell.PulsePower > 0)
+                    if (spell.PulsePower != 0)
                     {
                         int pulsePower = BotSpellPower.PulseCost(caster, spell);
                         if (caster.Mana >= pulsePower)

@@ -22,6 +22,7 @@ GamePlayer.RealmTitle.Albion.RR11.Male:				Lord
 GamePlayer.RealmTitle.Albion.RR12.Male:				Baronet
 GamePlayer.RealmTitle.Albion.RR13.Male:				Baron
 GamePlayer.RealmTitle.Albion.RR14.Male:				Arch Duke
+GamePlayer.RealmTitle.Albion.RR15.Male:				Prince
 
 ### Female
 GamePlayer.RealmTitle.Albion.RR0.Female:			Invader
@@ -39,6 +40,7 @@ GamePlayer.RealmTitle.Albion.RR11.Female:			Lady
 GamePlayer.RealmTitle.Albion.RR12.Female:			Baronetess
 GamePlayer.RealmTitle.Albion.RR13.Female:			Baroness
 GamePlayer.RealmTitle.Albion.RR14.Female:			Arch Duchess
+GamePlayer.RealmTitle.Albion.RR15.Female:			Princess
 
 ## Midgard
 ### Male
@@ -57,6 +59,7 @@ GamePlayer.RealmTitle.Midgard.RR11.Male:			Herra
 GamePlayer.RealmTitle.Midgard.RR12.Male:			Hersir
 GamePlayer.RealmTitle.Midgard.RR13.Male:			Vicomte
 GamePlayer.RealmTitle.Midgard.RR14.Male:			Stor Jarl
+GamePlayer.RealmTitle.Midgard.RR15.Male:			Konungsson
 
 ### Female
 GamePlayer.RealmTitle.Midgard.RR0.Female:			Invader
@@ -74,6 +77,7 @@ GamePlayer.RealmTitle.Midgard.RR11.Female:			Fru
 GamePlayer.RealmTitle.Midgard.RR12.Female:			Baronsfru
 GamePlayer.RealmTitle.Midgard.RR13.Female:			Vicomtessa
 GamePlayer.RealmTitle.Midgard.RR14.Female:			Stor Hurfru
+GamePlayer.RealmTitle.Midgard.RR15.Female:			Konungsdottir
 
 ## Hibernia
 ### Male
@@ -92,6 +96,7 @@ GamePlayer.RealmTitle.Hibernia.RR11.Male:			Barun
 GamePlayer.RealmTitle.Hibernia.RR12.Male:			Ard Tiarna
 GamePlayer.RealmTitle.Hibernia.RR13.Male:			Ciann
 GamePlayer.RealmTitle.Hibernia.RR14.Male:			Ard Diuc
+GamePlayer.RealmTitle.Hibernia.RR15.Male:			Prionsa
 
 ### Female
 GamePlayer.RealmTitle.Hibernia.RR0.Female:			Defender
@@ -109,3 +114,4 @@ GamePlayer.RealmTitle.Hibernia.RR11.Female:			Banbharun
 GamePlayer.RealmTitle.Hibernia.RR12.Female:			Ard Bantiarna
 GamePlayer.RealmTitle.Hibernia.RR13.Female:			Cath
 GamePlayer.RealmTitle.Hibernia.RR14.Female:			Ard Bandiuc
+GamePlayer.RealmTitle.Hibernia.RR15.Female:			Banphrionsa

@@ -19,20 +19,25 @@ namespace DOL.GS.Spells
             return ECSGameEffectFactory.Create(initParams, static (in i) => new StatDebuffECSEffect(i));
         }
 
+        /// <summary>False for snares that ignore root and snare immunity (the Bonedancer's snare totems).</summary>
+        protected virtual bool RespectsSnareImmunity => true;
+
         public override void ApplyEffectOnTarget(GameLiving target)
         {
             // Check for immunities.
             if (target.HasAbility(Abilities.CCImmunity) ||
-                target.HasAbility(Abilities.RootImmunity) || // Also affects snares?
-                target.effectListComponent.ContainsEffectForEffectType(eEffect.SnareImmunity) ||
-                target.effectListComponent.ContainsEffectForEffectType(eEffect.SpeedOfSound))
+                RespectsSnareImmunity && target.HasAbility(Abilities.RootImmunity) || // Also affects snares?
+                RespectsSnareImmunity && target.effectListComponent.ContainsEffectForEffectType(eEffect.SnareImmunity) ||
+                target.effectListComponent.ContainsEffectForEffectType(eEffect.SpeedOfSound) ||
+                target.effectListComponent.ContainsEffectForEffectType(eEffect.Vanish) ||
+                RealmAbilities.ModernRr5.IsControlImmune(target))
             {
                 MessageToCaster("Your target is immune to this effect!", eChatType.CT_SpellResisted);
                 OnSpellNegated(target, SpellNegatedReason.Immune);
                 return;
             }
 
-            if (target.EffectList.GetOfType<ChargeEffect>() != null)
+            if (target.EffectList.GetOfType<ChargeEffect>() != null || target.effectListComponent.ContainsEffectForEffectType(eEffect.Charge))
             {
                 MessageToCaster($"{target.Name} is moving to fast for this spell to have any effect!", eChatType.CT_SpellResisted);
                 return;

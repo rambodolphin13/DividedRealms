@@ -6,7 +6,7 @@ namespace OfflineDaoc.Launcher.Tests;
 
 /// <summary>
 /// Since 0.33 "Claude Takeover": every install makes its own local account, and the
-/// "no custom class" edition (classes/enable_sluaghbinder = False) never rolls class 63.
+/// retired Sluaghbinder (class 63) is never rolled.
 /// </summary>
 public sealed class ClaudeTakeoverEditionTests
 {
@@ -35,20 +35,18 @@ public sealed class ClaudeTakeoverEditionTests
     }
 
     [Test]
-    public void DisabledCustomClassIsNeverRolled()
+    public void RetiredSluaghbinderIsNeverRolled()
     {
         var reserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         MethodInfo generate = Launcher.GetType("OfflineDaoc.Launcher.BotCharacterGenerator")!
             .GetMethod("Generate", BindingFlags.Static | BindingFlags.Public)!;
-        int Roll(bool allow)
+        int Roll()
         {
-            object identity = generate.Invoke(null, [3, reserved, allow])!;
+            object identity = generate.Invoke(null, [3, reserved])!;
             return (int)identity.GetType().GetProperty("ClassId")!.GetValue(identity)!;
         }
-        var disabled = Enumerable.Range(0, 1500).Select(_ => Roll(false)).ToList();
-        Assert.That(disabled, Does.Not.Contain(63));
-        var enabled = Enumerable.Range(0, 1500).Select(_ => Roll(true)).ToList();
-        Assert.That(enabled, Does.Contain(63), "the default (the b edition) keeps the Sluaghbinder in the Hibernian pool");
+        var rolled = Enumerable.Range(0, 1500).Select(_ => Roll()).ToList();
+        Assert.That(rolled, Does.Not.Contain(63));
     }
 
     [TestCase(true, "VERSION 0.37b")]

@@ -16,7 +16,7 @@ def align(value, boundary):
     return (value + boundary - 1) // boundary * boundary
 
 
-def patch(original):
+def patch(original, sovereign=False):
     digest = hashlib.sha256(original).hexdigest()
     if digest not in SUPPORTED:
         raise ValueError(f"Unsupported client SHA-256 {digest}; no patch applied")
@@ -49,8 +49,8 @@ def patch(original):
     raw = align(len(data), file_align)
     rva = align(max(s[2]+max(s[1],s[3]) for s in sections), section_align)
     va = BASE+rva
-    label = b"Stormforged\0"
-    description = b"A master of thunder: lightning, storm wards, restoration, stealth and stormbound allies.\0"
+    label = b"Storm Sovereign\0" if sovereign else b"Stormforged\0"
+    description = b"A royal master of thunder, weapons and stealth, accompanied by a loyal Storm Wolf.\0" if sovereign else b"A master of thunder: lightning, storm wards, restoration, stealth and stormbound allies.\0"
     label_va = va+64
     desc_va = label_va+len(label)
     # Replace only Midgard's label initializer, preserving ECX and the original call convention.

@@ -24,7 +24,7 @@ namespace DOL.GS.Spells
         {
 			target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
 			//Nearsight Immunity check
-			if (target.HasAbility(Abilities.NSImmunity))
+			if (target.HasAbility(Abilities.NSImmunity) || RealmAbilities.ModernRr5.IsNearsightImmune(target))
 			{
 				MessageToCaster("Your target can't be nearsighted!", eChatType.CT_SpellResisted);
 				SendEffectAnimation(target, 0, false, 0);

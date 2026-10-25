@@ -88,7 +88,7 @@ namespace DOL.GS.Spells
 			AttackData ad = CalculateDamageToTarget(target);
 			DamageTarget(ad, true);
 			SendDamageMessages(ad);
-			target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
+			target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
 		}
 
 		#endregion

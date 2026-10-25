@@ -30,6 +30,8 @@ namespace DOL.GS.PlayerClass
 		/// <returns></returns>
 		public override bool CanChangeCastingSpeed(SpellLine line, Spell spell)
 		{
+            if (Spells.ModernWarlock.Owns(spell.ID))
+                return spell.SpellType != eSpellType.WarlockChamber;
 			if (spell.SpellType == eSpellType.Chamber)
 				return false;
 
@@ -59,9 +61,8 @@ namespace DOL.GS.PlayerClass
 			return true;
 		}
 
-		public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
-		{
-			// PlayerRace.Frostalf, PlayerRace.Kobold, PlayerRace.Norseman,
-		};
+        public override List<PlayerRace> EligibleRaces => ServerProperties.Properties.ENABLE_WARLOCK_TEST
+            ? new List<PlayerRace> { PlayerRace.Frostalf, PlayerRace.Kobold, PlayerRace.Norseman, PlayerRace.Troll }
+            : new List<PlayerRace>();
 	}
 }

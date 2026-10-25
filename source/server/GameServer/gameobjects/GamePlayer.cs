@@ -3454,7 +3454,7 @@ namespace DOL.GS
         {
             // refresh specs
             LoadClassSpecializations(sendMessages);
-            if (StormforgedRules.IsStormforged(CharacterClass.ID))
+            if (PendragonRules.IsSovereign(CharacterClass.ID))
             {
                 foreach (Specialization spec in GetSpecList())
                     spec.Level = Level;
@@ -3698,7 +3698,8 @@ namespace DOL.GS
             if (notify)
                 base.GainRealmPoints(amount);
 
-            RealmPoints += amount;
+            // 1.130a caps realm points at 2,000,000,000.
+            RealmPoints = Math.Min(MAX_REALM_POINTS, RealmPoints + amount);
             m_statistics.AddToTotalRealmPointsEarned((uint) amount);
 
             if (m_guild != null && Client.Account.PrivLevel == 1)
@@ -3706,6 +3707,8 @@ namespace DOL.GS
 
             if (sendMessage == true && amount > 0)
                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainRealmPoints.YouGet", amount.ToString()), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+
+            ChampionRules.GainRealmPoints(this, amount);
 
             while (RealmPoints >= CalculateRPsFromRealmLevel(RealmLevel + 1) && RealmLevel < ( REALMPOINTS_FOR_LEVEL.Length - 1 ) )
             {
@@ -3854,6 +3857,8 @@ namespace DOL.GS
         /// <summary>
         /// Holds realm points needed for special realm level
         /// </summary>
+        public const long MAX_REALM_POINTS = 2000000000;
+
         public static readonly long[] REALMPOINTS_FOR_LEVEL =
         {
             0,	// for level 0
@@ -3987,6 +3992,17 @@ namespace DOL.GS
             152517769,	// for level 128
             169294723,	// for level 129
             187917143,	// for level 130
+            // 1.130a: RR14L1 through RR15L0.
+            223084000,	// for level 131
+            278317600,	// for level 132
+            355644640,	// for level 133
+            445902496,	// for level 134
+            555928241,	// for level 135
+            680853214,	// for level 136
+            820594584,	// for level 137
+            990514251,	// for level 138
+            1230285525,	// for level 139
+            1650444126,	// for level 140
 
         };
 
@@ -4300,8 +4316,7 @@ namespace DOL.GS
             if (expTotal >= 0)
             {
                 //Level up
-                if (Level >= 5 && (!CharacterClass.HasAdvancedFromBaseClass() ||
-                    (Realm == eRealm.Hibernia && CharacterClass.ID == (int)eCharacterClass.Acolyte)))
+                if (Level >= 5 && !CharacterClass.HasAdvancedFromBaseClass())
                 {
                     if (expTotal > 0)
                     {
@@ -4424,8 +4439,7 @@ namespace DOL.GS
             if (expTotal >= 0)
             {
                 //Level up
-                if (Level >= 5 && (!CharacterClass.HasAdvancedFromBaseClass() ||
-                    (Realm == eRealm.Hibernia && CharacterClass.ID == (int)eCharacterClass.Acolyte)))
+                if (Level >= 5 && !CharacterClass.HasAdvancedFromBaseClass())
                 {
                     if (expTotal > 0)
                     {
@@ -4441,6 +4455,10 @@ namespace DOL.GS
                 else if (Level < MAX_LEVEL && Experience >= ExperienceForNextLevel)
                 {
                     Level++;
+                }
+                else if (Level >= MAX_LEVEL)
+                {
+                    MasterLevelRules.GainExperience(this, expTotal);
                 }
             }
 
@@ -4479,6 +4497,7 @@ namespace DOL.GS
                         Out.SendLevelUpSound();
                     }
                 }
+
             }
         }
 
@@ -4514,6 +4533,7 @@ namespace DOL.GS
         /// <param name="previouslevel"></param>
         public virtual void OnLevelUp(int previouslevel)
         {
+            MasterLevelRules.EnsureTraining(this);
             IsLevelSecondStage = false;
             int isHardcore = 0;
             int realm = 0;
@@ -5161,6 +5181,14 @@ namespace DOL.GS
             base.OnAttackEnemy(ad);
         }
 
+        public override void DealDamage(AttackData ad)
+        {
+            int healthBefore = ad.Target?.Health ?? 0;
+            base.DealDamage(ad);
+            if (PendragonRules.IsSovereign(CharacterClass.ID))
+                DOL.GS.Spells.StormSovereignAbilities.Siphon(this, ad, healthBefore);
+        }
+
         /// <summary>
         /// This method is called at the end of the attack sequence to
         /// notify objects if they have been attacked/hit by an attack
@@ -5483,6 +5511,10 @@ namespace DOL.GS
 
         public override int WeaponSpecLevel(eObjectType objectType, int slotPosition)
         {
+            // Death Knight melee is trained through Painworking (live 1.122B).
+            if (DOL.GS.Spells.DeathKnight.Is(this))
+                return DOL.GS.Spells.DeathKnight.PainworkingSpec(this);
+
             // Use axe spec if left hand axe is not in the left hand slot.
             if (objectType is eObjectType.LeftAxe && slotPosition is not Slot.LEFTHAND)
                 return GameServer.ServerRules.GetObjectSpecLevel(this, eObjectType.Axe);
@@ -5510,6 +5542,9 @@ namespace DOL.GS
         /// </summary>
         public int WeaponBaseSpecLevel(eObjectType objectType, int slotPosition)
         {
+            if (DOL.GS.Spells.DeathKnight.Is(this))
+                return GetBaseSpecLevel(Specs.Painworking);
+
             // Use axe spec if left hand axe is not in the left hand slot.
             if (objectType is eObjectType.LeftAxe && slotPosition is not Slot.LEFTHAND)
                 return GameServer.ServerRules.GetObjectBaseSpecLevel(this, eObjectType.Axe);
@@ -5549,6 +5584,9 @@ namespace DOL.GS
         /// <returns></returns>
         public override int GetWeaponStat(DbInventoryItem weapon)
         {
+            // Death Knight weaponskill and melee damage use Intelligence (live 1.122B).
+            if (DOL.GS.Spells.DeathKnight.Is(this))
+                return DOL.GS.Spells.DeathKnight.WeaponStat(this);
             if (weapon != null)
             {
                 switch ((eObjectType)weapon.Object_Type)
@@ -5619,6 +5657,7 @@ namespace DOL.GS
             if (effect != null && slot == (effect.SpellHandler as VampiirArmorDebuff).Slot)
                 armorFactor -= (int) (effect.SpellHandler as VampiirArmorDebuff).Spell.Value;*/
 
+            armorFactor *= HealthArmorChantSpellHandler.Scale(this); // Champion / Thane armor chants.
             return Math.Max(0, armorFactor);
         }
 
@@ -5654,7 +5693,7 @@ namespace DOL.GS
 
             if (trainedSpec > 0)
             {
-                string specName = SkillBase.ObjectTypeToSpec((eObjectType) weapon.Object_Type);
+                string specName = DOL.GS.Spells.DeathKnight.Is(this) ? Specs.Painworking : SkillBase.ObjectTypeToSpec((eObjectType) weapon.Object_Type);
 
                 if (specName != null)
                     itemBonus = GetModifiedFromItems(SkillBase.SpecToSkill(specName));
@@ -8680,6 +8719,8 @@ namespace DOL.GS
             if (IsCasting)
                 CurrentSpellHandler?.CasterMoves();
 
+            TrackStealthSpellHandler.OnMove(this);
+
             if (IsCastingRealmAbility)
             {
                 Out.SendInterruptAnimation(this);
@@ -8711,7 +8752,8 @@ namespace DOL.GS
 
             if (attackComponent.AttackState)
             {
-                if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
+                // Snapshot (Armsman): shots carry on while moving.
+                if (ActiveWeaponSlot == eActiveWeaponSlot.Distance && !SnapshotECSGameEffect.KeepsShotOnMove(this))
                 {
                     string attackTypeMsg = (ActiveWeapon.Object_Type == (int)eObjectType.Thrown ? "throw" : "shot");
                     Out.SendMessage("You move and interrupt your " + attackTypeMsg + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -8863,6 +8905,9 @@ namespace DOL.GS
 
                 if (lifter != null)
                     result *= 1 + lifter.Amount * 0.01;
+
+                if (MasterLevelRules.HasPassive(this, "Sojourner", 1))
+                    result *= 1.5;
 
                 return (int) result;
             }
@@ -9964,74 +10009,6 @@ namespace DOL.GS
             // Get this Attached Class Specialization from SkillBase.
             IDictionary<Specialization, int> careers = SkillBase.GetSpecializationCareer(CharacterClass.ID);
 
-            // The isolated Sluaghbinder test uses the existing Acolyte base
-            // class for levels 1-4, just as Albion stores a new Necromancer
-            // as a Disciple until promotion.  Hibernia has no normal Acolyte
-            // starting path, so give only that experimental path its own
-            // career spell lines while it is still an Acolyte.  These are
-            // career specializations (not spendable points), and are removed
-            // automatically when the Tir na Nog trainer promotes the player
-            // to class 63 at level 5.
-            if (CharacterClass.ID == (int)eCharacterClass.Acolyte && Realm == eRealm.Hibernia)
-            {
-                foreach (Specialization genericSpec in careers.Keys
-                    .Where(spec => spec.KeyName.Equals("Rejuvenation", StringComparison.OrdinalIgnoreCase) ||
-                                   spec.KeyName.Equals("Enhancement", StringComparison.OrdinalIgnoreCase))
-                    .ToList())
-                {
-                    careers.Remove(genericSpec);
-                }
-
-                // Remove generic Acolyte spell lines that may have been loaded
-                // by an older test build before adding the themed novice set.
-                RemoveSpellLine("Rejuvenation");
-                RemoveSpellLine("Enhancement");
-
-                // Keep the level-1-to-4 novice spellbook on the three core
-                // Sluaghbinder lines.  The three optional paths are added by
-                // the class promotion at level 5; the epic line is added only
-                // by its future level-10 quest reward.
-                string[] noviceLines = { "Sluagh Host", "Abhartach's Rot", "Cairn Oath" };
-                foreach (string lineKey in noviceLines)
-                {
-                    Specialization source = SkillBase.GetSpecialization(lineKey, false);
-                    if (source == null)
-                        continue;
-
-                    // CareerSpecialization follows the player's level and does
-                    // not consume the Acolyte's level-1-to-4 training points.
-                    Specialization novice = new CareerSpecialization(
-                        source.KeyName, source.Name, source.Icon, source.ID)
-                    {
-                        LevelRequired = -3,
-                    };
-
-                    careers[novice] = -3;
-                }
-            }
-
-            // The Epic Spells page is a quest-earned career line.  It is not
-            // a trainer specialization and therefore must remain completely
-            // absent until the first Sluaghbinder epic reward is finished.
-            // Once earned, CareerSpecialization makes the line follow the
-            // player's level and keeps every reward spell automatically
-            // available without spending specialization points.
-            if (CharacterClass.ID == (int)eCharacterClass.Sluaghbinder &&
-                DOL.GS.Quests.Hibernia.SluaghbinderEpicQuestState.HasFirstReward(this))
-            {
-                Specialization source = SkillBase.GetSpecialization("Epic Spells", false);
-                if (source != null)
-                {
-                    Specialization epicSpells = new DOL.GS.Quests.Hibernia.SluaghbinderEpicSpellsSpecialization(
-                        source.KeyName, source.Name, source.Icon, source.ID)
-                    {
-                        LevelRequired = -3,
-                    };
-
-                    careers[epicSpells] = -3;
-                }
-            }
-
             // Remove All Trainable Specialization or "Career Spec" that aren't managed by This Data Career anymore
             var speclist = GetSpecList();
             var careerslist = careers.Keys.Select(k => k.KeyName.ToLower());
@@ -10045,6 +10022,14 @@ namespace DOL.GS
             byte mlindex = 0;
             foreach (KeyValuePair<Specialization, int> constraint in careers)
             {
+                // Each realm has its own Champion path; it trains itself as Champion Levels are earned.
+                if (constraint.Key is RealmChampionSpecialization champion && (!champion.IsFor(this) || ChampionLevel < 1))
+                {
+                    if (HasSpecialization(constraint.Key.KeyName))
+                        RemoveSpecialization(constraint.Key.KeyName);
+                    continue;
+                }
+
                 if (constraint.Key is IMasterLevelsSpecialization)
                 {
                     if (mlindex != MLLine)
@@ -10058,7 +10043,9 @@ namespace DOL.GS
 
                     mlindex++;
 
-                    if (!MLGranted || MLLevel < 1)
+                    // Offline MLs are earned by level-50 experience; a Master Level is enough,
+                    // whether or not the old "training started" flag was ever set.
+                    if (MLLevel < 1)
                     {
                         continue;
                     }
@@ -10084,7 +10071,7 @@ namespace DOL.GS
         public virtual int VerifySpecPoints()
         {
             // This opt-in class earns every specialization automatically.
-            if (StormforgedRules.IsStormforged(CharacterClass.ID))
+            if (PendragonRules.IsSovereign(CharacterClass.ID))
                 return 0;
             // calc normal spec points for the level & classe
             int allpoints = -1;
@@ -10152,17 +10139,6 @@ namespace DOL.GS
             HandleCharacterSkills();
             HandleCraftingSkills(await craftingForRealmTask);
             HandleQuests(await scriptedQuestsTask, await dataQuestsTask);
-            // Sluaghbinder's Epic Spells line is gated by completed scripted
-            // quests.  Character skills are loaded before the quest journal,
-            // so refresh this isolated class once after quests are hydrated;
-            // otherwise a relog can temporarily hide the earned service
-            // spells until the player trains again.
-            if (CharacterClass?.ID == (int)eCharacterClass.Sluaghbinder && Realm == eRealm.Hibernia)
-            {
-                RefreshSpecDependantSkills(false);
-                GetAllUsableListSpells(true);
-                GetAllUsableSkills(true);
-            }
             FactionMgr.LoadAllAggroToFaction(this, await factionRelationsTask);
             HandleTasks(await tasksTask);
             HandleMasterLevels(await masterLevelsTask);
@@ -11138,6 +11114,7 @@ namespace DOL.GS
             if (HasAbilityType(typeof(AtlasOF_SeeHidden)) && bot.CharacterClass?.IsAssassin != true && !camouflage)
                 range = Math.Max(range, 2700 - 36 * stealthLevel);
             range += BaseBuffBonusCategory[eProperty.Skill_Stealth];
+            range += ModernMasteryOfStealth.DetectionBonus(this, bot);
             return IsWithinRadius(bot, Math.Min(range, 1900));
         }
 
@@ -11160,7 +11137,8 @@ namespace DOL.GS
                         return true;
 
                     // Why is this still using the old effect list and vanish effect?
-                    if (enemyPlayer.EffectList.GetOfType<VanishEffect>() != null || enemyPlayer.Client.Account.PrivLevel > 1)
+                    if (enemyPlayer.EffectList.GetOfType<VanishEffect>() != null || enemyPlayer.Client.Account.PrivLevel > 1 ||
+                        enemyPlayer.effectListComponent.ContainsEffectForEffectType(eEffect.Vanish))
                         return false;
 
                     // This ignores the hard cap.
@@ -11210,7 +11188,10 @@ namespace DOL.GS
                             range += mos.GetAmountForLevel(CalculateSkillLevel(mos));
                     }*/
 
+                    // Archery Track: a percentage of the base detection, before stealth-detection buffs and Mastery of Stealth.
+                    range += range * TrackStealthSpellHandler.Bonus(this) / 100;
                     range += BaseBuffBonusCategory[eProperty.Skill_Stealth];
+                    range += ModernMasteryOfStealth.DetectionBonus(this, enemyPlayer);
 
                     // //Buff (Stealth Detection)
                     // //Increases the target's ability to detect stealthed players and monsters.
@@ -11251,6 +11232,8 @@ namespace DOL.GS
                     // if (iConvokerEffect != null)
                     //     range += (int)iConvokerEffect.Spell.Value;
 
+                    if (DOL.GS.Spells.StormSovereignAbilities.HasVeil(enemyPlayer))
+                        range = Math.Max(75, range * 3 / 4);
                     // Hard cap.
                     if (range > 1900)
                         range = 1900;
@@ -11446,9 +11429,12 @@ namespace DOL.GS
         /// <returns>true if added, false if player is already doing the quest!</returns>
         public bool AddQuest(AbstractQuest quest)
         {
-            if (QuestList.Count > 25)
+            // HearthDAoC: upstream's "if (QuestList.Count > 25)" had no body, so it guarded the duplicate check: the
+            // journal had no limit, and that check (by C# type, which every data quest shares) ran only above 25 (#112).
+            if (QuestJournal.IsFull(QuestList.Count))
+                return false;
 
-            if (IsDoingQuest(quest) != null)
+            if (QuestList.Keys.Any(q => q.IsDoingQuest() && QuestJournal.Same(q, quest)))
                 return false;
 
             if (!AvailableQuestIndexes.TryDequeue(out byte index))
@@ -12972,29 +12958,19 @@ namespace DOL.GS
         /// <summary>
         /// The maximum champion level a player can reach
         /// </summary>
-        public const int CL_MAX_LEVEL = 10;
+        public const int CL_MAX_LEVEL = 15;
 
         /// <summary>
         /// A table that holds the required XP/Level
         /// </summary>
+        /// <summary>
+        /// Total champion experience for each Champion Level. Offline, champion experience is earned from
+        /// realm points (ChampionRules): 25,000 per level for CL1-5, 50,000 for CL6-10, 100,000 for CL11-15.
+        /// </summary>
         public static readonly long[] CLXPLevel =
         {
-            0, //xp tp level 0
-            32000, //xp to level 1
-            64000, // xp to level 2
-            96000, // xp to level 3
-            128000, // xp to level 4
-            160000, // xp to level 5
-            192000, // xp to level 6
-            224000, // xp to level 7
-            256000, // xp to level 8
-            288000, // xp to level 9
-            320000, // xp to level 10
-            640000, // xp to level 11
-            640000, // xp to level 12
-            640000, // xp to level 13
-            640000, // xp to level 14
-            640000, // xp to level 15
+            0, 25000, 50000, 75000, 100000, 125000, 175000, 225000, 275000, 325000, 375000,
+            475000, 575000, 675000, 775000, 875000,
         };
 
         /// <summary>
@@ -13126,18 +13102,12 @@ namespace DOL.GS
         /// <param name="experience">Amount of Experience</param>
         public virtual void GainChampionExperience(long experience, eXPSource source)
         {
-            if (ChampionExperience >= 320000)
-            {
-                ChampionExperience = 320000;
-                return;
-            }
-
             // Do not gain experience:
             // - if champion not activated
             // - if champion max level reached
             // - if experience is negative
             // - if praying at your grave
-            if (!Champion || ChampionLevel == CL_MAX_LEVEL || experience <= 0 || IsPraying)
+            if (!Champion || ChampionLevel >= CL_MAX_LEVEL || experience <= 0 || IsPraying)
                 return;
 
             if (source != eXPSource.GM && source != eXPSource.Quest)
@@ -13155,10 +13125,15 @@ namespace DOL.GS
                 }
             }
 
+            if (experience <= 0)
+                return;
+
             System.Globalization.NumberFormatInfo format = System.Globalization.NumberFormatInfo.InvariantInfo;
             Out.SendMessage("You get " + experience.ToString("N0", format) + " champion experience points.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 
-            ChampionExperience += experience;
+            ChampionExperience = Math.Min(ChampionExperience + experience, GetChampionExperienceForLevel(CL_MAX_LEVEL));
+            while (ChampionLevel < CL_MAX_LEVEL && ChampionExperience >= ChampionExperienceForNextLevel)
+                ChampionLevelUp();
             Out.SendUpdatePoints();
         }
 
@@ -13188,6 +13163,7 @@ namespace DOL.GS
             ChampionLevel = 0;
 
             RespecChampionSkills();
+            MasterLevelRules.SyncPassives(this);
         }
 
         /// <summary>
@@ -13205,6 +13181,7 @@ namespace DOL.GS
 
             RefreshSpecDependantSkills(true);
             Out.SendUpdatePlayerSkills(true);
+            MasterLevelRules.SyncPassives(this);
 
             Notify(GamePlayerEvent.ChampionLevelUp, this);
             Out.SendMessage("You have gained one champion level!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);

@@ -35,7 +35,7 @@ namespace DOL.GS.Spells
                 Caster.ChangeEndurance(Caster, eEnduranceChangeType.Spell, StormforgedRules.RestorePerHit(dealt, (int)Spell.Value));
             }
 
-            target.StartInterruptTimer(target.SpellInterruptDuration, attack.AttackType, Caster);
+            target.StartDamageInterruptTimer(target.SpellInterruptDuration, attack);
         }
     }
 
@@ -76,8 +76,9 @@ namespace DOL.GS.Spells
     public class StormforgedWard : StormforgedMaintainedSpell
     {
         public StormforgedWard(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-        public override string ShortDescription =>
-            $"All eight stats (STR, CON, DEX, QUI, INT, PIE, EMP, CHA): +{Math.Max(1, (int)(Caster.Level * 1.25))} base and +{Math.Max(1, (int)(Caster.Level * 1.875))} specialization bonus each. " +
+        public override string ShortDescription => StormSovereignAbilities.Owns(Spell.ID)
+            ? "Full base and specialization buffs to all eight stats, scaling with character level. Innate vitality and normal equipment bonuses stack separately."
+            : $"All eight stats (STR, CON, DEX, QUI, INT, PIE, EMP, CHA): +{Math.Max(1, (int)(Caster.Level * 1.25))} base and +{Math.Max(1, (int)(Caster.Level * 1.875))} specialization bonus each. " +
             $"Armor factor: +{Math.Max(1, Caster.Level * 2)}. All nine resists: +{Math.Max(1, (int)Math.Ceiling(26 * Math.Min(40, (int)Caster.Level) / 40.0))}%. " +
             $"Weapon damage add: {SkillBase.GetSpellByID(Spell.ID + 8)?.Damage ?? 0:0.#}. Reactive damage shield: {SkillBase.GetSpellByID(Spell.SubSpellID)?.Damage ?? 0:0.#}. Bonuses scale with your level; normal stat caps apply.";
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams) =>

@@ -65,7 +65,7 @@ namespace DOL.GS
                 Owner.LastAttackTickPvP = GameLoop.GameLoopTime;
 
             // NPCs interrupt with every DoT tick.
-            if (SpellHandler.Caster is GameNPC)
+            if (SpellHandler.Caster is GameNPC && !SpellCastPushback.AppliesTo(Owner))
                 Owner.StartInterruptTimer(SpellHandler.Caster.SpellInterruptDuration, AttackData.eAttackType.Spell, SpellHandler.Caster);
         }
     }

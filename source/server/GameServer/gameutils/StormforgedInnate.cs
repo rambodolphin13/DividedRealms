@@ -13,15 +13,15 @@ namespace DOL.GS
                 IGamePlayer bot => bot.CharacterClass?.ID,
                 _ => null
             };
-            if (classId != (int)eCharacterClass.Stormforged)
+            if (!classId.HasValue || !PendragonRules.IsSovereign(classId.Value))
                 return 0;
             int level = Math.Clamp((int)living.Level, 1, 50);
             if (property >= eProperty.Stat_First && property <= eProperty.Stat_Last)
-                return level * 2;
+                return level * 23 / 10;
             return property switch
             {
-                eProperty.MaxHealth => level * 10,
-                eProperty.MaxMana => level * 2,
+                eProperty.MaxHealth => level * 23 / 2,
+                eProperty.MaxMana => level * 23 / 10,
                 _ => 0
             };
         }

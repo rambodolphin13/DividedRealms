@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using DOL.Database;
 using DOL.GS.Effects;
@@ -110,7 +110,7 @@ namespace DOL.GS.Spells
 			ad.Damage += (int)(ad.Damage * damageIncreaseInPercent);
 			SendDamageMessages(ad);
 			DamageTarget(ad, true);			
-			target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
+			target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
 		}
 
 		public override IList<string> DelveInfo

@@ -274,6 +274,8 @@ namespace DOL.GS
 		/// Stag Ability
 		/// </summary>
 		public const string Stag = "Stag";
+		/// <summary>Thane and Valkyrie level 40 ability (live 1.130a).</summary>
+		public const string CallOfAThousandStorms = "Call of a thousand storms";
 		/// <summary>
 		/// Stoicism Ability
 		/// </summary>

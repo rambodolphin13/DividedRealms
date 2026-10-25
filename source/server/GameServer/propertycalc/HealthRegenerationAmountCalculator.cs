@@ -50,7 +50,7 @@ namespace DOL.GS.PropertyCalc
             }
 
             regen *= ServerProperties.Properties.HEALTH_REGEN_AMOUNT_MODIFIER;
-            return Math.Max(1, (int) regen);
+            return OutOfCombatRecovery.Amount(living, property, Math.Max(1, (int) regen));
         }
     }
 }

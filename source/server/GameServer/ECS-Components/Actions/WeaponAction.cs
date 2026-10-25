@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DOL.Database;
@@ -25,6 +25,9 @@ namespace DOL.GS
         public eActiveWeaponSlot ActiveWeaponSlot { get; }
         public eRangedAttackType RangedAttackType { get; }
         public DbInventoryItem Ammo { get; }
+
+        /// <summary>The target this attack was made against.</summary>
+        public GameObject Target => _target;
 
         public bool HasAmmoReachedTarget { get; private set; } // Used to not cancel the release animation. A bit clunky, may not work perfectly.
 
@@ -359,6 +362,7 @@ namespace DOL.GS
             if (attackData.AttackResult is eAttackResult.HitUnstyled or eAttackResult.HitStyle)
             {
                 _owner.DealDamage(attackData);
+                ModernRr5.OnWeaponHit(_owner, attackData);
                 _owner.CheckWeaponMagicalEffect(attackData);
                 HandleDamageAdd(_owner, attackData);
                 target.OnArmorHit(attackData, target.Inventory?.GetItem((eInventorySlot) attackData.ArmorHitLocation));
@@ -367,7 +371,9 @@ namespace DOL.GS
             else if (attackData.AttackResult is eAttackResult.Blocked)
                 target.OnArmorHit(attackData, target.ActiveLeftWeapon);
 
-            if (_target is GameLiving livingTarget && livingTarget.effectListComponent.ContainsEffectForEffectType(eEffect.ReflexAttack))
+            // Guard and intercept can change the actual victim of the swing.
+            if (target.effectListComponent.ContainsEffectForEffectType(eEffect.ReflexAttack) ||
+                DOL.GS.RealmAbilities.ModernReflexAttack.ShouldCounter(target, attackData))
                 HandleReflexAttack(_owner, attackData.Target, attackData.AttackResult, _interval);
         }
 
@@ -454,7 +460,15 @@ namespace DOL.GS
                     // It applies damage adds and shields, but Reflex Attack shouldn't trigger them.
                     // It would also cause a stack overflow if the target has Reflex Attack too.
                     AttackData ReflexAttackAD = target.attackComponent.LivingMakeAttack(weaponAction, attacker, target.ActiveWeapon, null, 1.0, attackSpeed, false, true);
+                    bool modern = target.GetAbility<DOL.GS.RealmAbilities.ModernReflexAttack>() != null;
+                    if (modern) attacker.OnAttackedByEnemy(ReflexAttackAD);
                     target.DealDamage(ReflexAttackAD);
+                    if (modern && IsDualWieldAttack(target.ActiveWeapon, target.ActiveLeftWeapon, target))
+                    {
+                        var offhand = target.attackComponent.LivingMakeAttack(weaponAction, attacker, target.ActiveLeftWeapon, null, 1.0, attackSpeed, true, true);
+                        attacker.OnAttackedByEnemy(offhand);
+                        target.DealDamage(offhand);
+                    }
 
                     // If we get hit by Reflex Attack (it can miss), send a "you were hit" message to the attacker manually
                     // since it will not be done automatically as this attack is not processed by regular attacking code.

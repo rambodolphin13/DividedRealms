@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,22 +13,14 @@ namespace DOL.GS.PacketHandler
 	{
 		private static readonly Logging.Logger log = Logging.LoggerManager.Create(MethodBase.GetCurrentMethod().DeclaringType);
 
-		/// <summary>
-		/// The isolated client has no native class-id slot for Sluaghbinder.
-		/// Use the Hibernian Mauler slot only for promoted Sluaghbinders in
-		/// character-overview packets. Novice Hibernian Acolytes stay Acolytes
-		/// in the overview until their level-5 promotion.
-		/// </summary>
-		protected static bool IsSluaghbinderOverview(int classId, int realm) =>
-			classId == (int)eCharacterClass.Sluaghbinder && realm == (int)eRealm.Hibernia;
-
+		// This packet lib only serves 1.125+ clients, so the native-slot switch alone decides.
 		protected static byte GetClientOverviewClassId(int classId, int realm) =>
-			IsSluaghbinderOverview(classId, realm)
-				? (byte)eCharacterClass.MaulerHib
+			CustomClassSlots.IsNative(ServerProperties.Properties.NATIVE_CUSTOM_CLASS_SLOTS, GameClient.eClientVersion.Version1125)
+				? (byte)classId
 				: StormforgedRules.OverviewClass(classId, realm);
 
 		protected static string GetClientOverviewClassName(int classId, int realm) =>
-			IsSluaghbinderOverview(classId, realm) ? "Sluaghbinder" : StormforgedRules.IsStormforged(classId) && realm == (int)eRealm.Midgard ? "Stormforged" : ((eCharacterClass)classId).ToString();
+			PendragonRules.IsPendragon(classId) && realm == (int)eRealm.Albion ? "Pendragon Sovereign" : PendragonRules.IsTuatha(classId) && realm == (int)eRealm.Hibernia ? "Tuatha Sovereign" : StormforgedRules.IsStormforged(classId) && realm == (int)eRealm.Midgard ? "Stormforged" : ((eCharacterClass)classId).ToString();
 
 		/// <summary>
 		/// Constructs a new PacketLib for Client Version 1.125

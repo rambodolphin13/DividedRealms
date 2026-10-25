@@ -664,7 +664,7 @@ namespace DOL.GS.ServerRules
             // classes restriction.
             if (playerLike != null && !string.IsNullOrEmpty(item.AllowedClasses))
             {
-                if (!Util.SplitCSV(item.AllowedClasses, true).Contains(playerLike.CharacterClass.ID.ToString()))
+                if (!ClassItemRules.Allows(item.AllowedClasses, playerLike.CharacterClass.ID))
                     return false;
             }
 

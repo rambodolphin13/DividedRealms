@@ -63,6 +63,10 @@ namespace DOL.GS.Spells
             if (SpellLine.KeyName is GlobalSpellsLines.Mundane_Poisons && Caster.effectListComponent.ContainsEffectForEffectType(eEffect.Viper))
                 ad.Damage *= 2;
 
+            double viper = DOL.GS.RealmAbilities.ModernViper.PoisonMultiplier(Caster, SpellLine.KeyName == GlobalSpellsLines.Mundane_Poisons);
+            ad.Damage = (int)(ad.Damage * viper);
+            ad.CriticalDamage = (int)(ad.CriticalDamage * viper);
+
             /* GameSpellEffect iWarLordEffect = FindEffectOnTarget(target, "CleansingAura");
             if (iWarLordEffect != null)
                 ad.Damage *= (int) (1.00 - iWarLordEffect.Spell.Value * 0.01);*/
@@ -94,7 +98,8 @@ namespace DOL.GS.Spells
         public override void ApplyEffectOnTarget(GameLiving target)
         {
             base.ApplyEffectOnTarget(target);
-            target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
+            if (!SpellCastPushback.AppliesTo(target))
+                target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
         }
 
         protected override GameSpellEffect CreateSpellEffect(GameLiving target, double effectiveness)

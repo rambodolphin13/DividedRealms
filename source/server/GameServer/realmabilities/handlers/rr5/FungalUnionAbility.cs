@@ -48,7 +48,7 @@ namespace DOL.GS.RealmAbilities
 
         public override int GetReUseDelay(int level)
         {
-            return 420;
+            return 300; // Live: 5 minutes.
         }
 
         public override void AddEffectsInfo(IList<string> list)

@@ -21,7 +21,13 @@ namespace DOL.GS
 
         // A native channeled spell pays on each real pulse, not every AI tick.
         // Preserve the spell's native upkeep cost for bots and players alike.
-        public static int PulseCost(GameLiving caster, Spell spell) => spell.PulsePower;
+        // Negative upkeep is a percentage of maximum power, like a negative Power
+        // (the Valkyrie's Odin's Retribution chant costs 9% per pulse).
+        public static int PulseCost(GameLiving caster, Spell spell) =>
+            spell.PulsePower >= 0 ? spell.PulsePower : PulseCost(caster.MaxMana, spell.PulsePower);
+
+        public static int PulseCost(int maxMana, int pulsePower) =>
+            pulsePower >= 0 ? pulsePower : (int)Math.Ceiling(maxMana * -pulsePower / 100.0);
 
         public static int Cost(GameBot bot, Spell spell, SpellLine line)
         {

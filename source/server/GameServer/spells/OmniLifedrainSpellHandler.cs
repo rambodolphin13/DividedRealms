@@ -27,7 +27,7 @@ namespace DOL.GS.Spells
 			StealLife(ad);
 			StealEndo(ad);
 			StealPower(ad);
-			target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
+			target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
 		}
 
 		/// <summary>

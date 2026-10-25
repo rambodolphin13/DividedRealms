@@ -52,6 +52,8 @@ namespace DOL.GS.PropertyCalc
             int percent = Math.Min(25, living.BaseBuffBonusCategory[property]
                 - living.DebuffCategory[property]
                 + living.ItemBonus[property]);
+            if (MasterLevelRules.HasPassive(living, "Perfecter", 4))
+                percent += 10;
             // Add RA bonus
             percent += living.AbilityBonus[property];
             return percent;

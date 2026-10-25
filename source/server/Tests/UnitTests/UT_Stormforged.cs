@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using DOL.AI.Brain;
@@ -6,6 +7,7 @@ using System.Runtime.CompilerServices;
 using DOL.Database;
 using DOL.GS;
 using DOL.GS.PlayerClass;
+using DOL.GS.Realm;
 using DOL.GS.Spells;
 using NUnit.Framework;
 
@@ -82,6 +84,13 @@ namespace DOL.UnitTests
         public void OverviewKeepsServerIdentitySeparate(int server, int realm, int client)
         {
             Assert.That(StormforgedRules.OverviewClass(server, realm), Is.EqualTo(client));
+        }
+
+        [Test]
+        public void EveryMidgardRaceIsEligible()
+        {
+            var midgard = PlayerRace.AllRaces.Where(race => race.Realm == eRealm.Midgard).Select(race => race.ID);
+            Assert.That(new ClassStormforged().EligibleRaces.Select(race => race.ID), Is.EquivalentTo(midgard));
         }
 
         [Test]
@@ -209,15 +218,54 @@ namespace DOL.UnitTests
         }
 
         [TestCase(1, new[] { 1 })]
-        [TestCase(5, new[] { 1, 5 })]
-        [TestCase(10, new[] { 5, 10 })]
-        [TestCase(50, new[] { 40, 50 })]
-        public void SpellListKeepsNewestTwoLearnedRanksWithoutChangingStockLines(int level, int[] expected)
+        [TestCase(5, new[] { 5 })]
+        [TestCase(10, new[] { 10 })]
+        [TestCase(50, new[] { 50 })]
+        public void SpellListKeepsNewestLearnedRankWithoutChangingStockLines(int level, int[] expected)
         {
             var learned = new[] { 1, 5, 10, 15, 20, 30, 40, 50 }.Where(rank => rank <= level)
                 .Select(rank => new Spell(new DbSpell { SpellID = 62000 + rank, Type = "StormforgedStrike", Target = "Enemy" }, rank)).Reverse().ToList();
             Assert.That(StormforgedRules.VisibleSpellRanks("Stormforged.Stormbolt", learned).Select(spell => spell.Level), Is.EqualTo(expected));
             Assert.That(StormforgedRules.VisibleSpellRanks("Stormcalling", learned).Count(), Is.EqualTo(learned.Count));
+        }
+
+        [Test]
+        public void ClientSlotsAreUniqueAndFollowUnlockLevel()
+        {
+            Spell Rank(int id, int level) => new Spell(new DbSpell { SpellID = id, Type = "StormforgedStrike", Target = "Enemy" }, level);
+            var slots = StormforgedRules.AssignClientSlots(new[]
+            {
+                ("Stormforged.B", (IEnumerable<Spell>)new[] { Rank(1, 1), Rank(2, 50) }),
+                ("Stormforged.A", new[] { Rank(3, 1) }),
+                ("Stormforged.Pet", new[] { Rank(4, 5) }),
+                ("Stormforged.Late", new[] { Rank(5, 2) }),
+            });
+            // A and B both unlock at 1; Late (2) is pushed to 3. Every rank of a type shares its slot.
+            Assert.That(slots[3], Is.EqualTo(1));
+            Assert.That(slots[1], Is.EqualTo(2));
+            Assert.That(slots[2], Is.EqualTo(2));
+            Assert.That(slots[5], Is.EqualTo(3));
+            Assert.That(slots[4], Is.EqualTo(5));
+        }
+
+        [Test]
+        public void ClientViewMergesStormforgedLinesAndLeavesOtherLinesAlone()
+        {
+            var bolt = new Spell(new DbSpell { SpellID = 62001, Type = "StormforgedStrike", Target = "Enemy" }, 1);
+            var clap = new Spell(new DbSpell { SpellID = 62002, Type = "StormforgedStrike", Target = "Enemy" }, 1);
+            var boltLine = new SpellLine("Stormforged.Stormbolt", "Stormbolt", "StormforgedCareer", true);
+            var clapLine = new SpellLine("Stormforged.Thunderclap", "Thunderclap", "StormforgedCareer", true);
+            var other = new SpellLine("Mending", "Mending", "Mending", true);
+            var lines = new List<(SpellLine, List<Skill>)> { (other, new List<Skill>()), (boltLine, new List<Skill> { bolt }), (clapLine, new List<Skill> { clap }) };
+
+            var view = StormforgedRules.ClientSpellLines(lines);
+            Assert.That(view.Select(line => line.Item1), Is.EqualTo(new[] { other, StormforgedRules.ClientLine }));
+            Assert.That(view[1].Item2, Is.EquivalentTo(new Skill[] { bolt, clap }));
+            Assert.That(StormforgedRules.ServerLine(lines, view[1].Item1, clap), Is.SameAs(clapLine));
+            Assert.That(StormforgedRules.ServerLine(lines, other, bolt), Is.SameAs(other));
+
+            var stock = new List<(SpellLine, List<Skill>)> { (other, new List<Skill>()) };
+            Assert.That(StormforgedRules.ClientSpellLines(stock), Is.SameAs(stock));
         }
 
         [Test]

@@ -394,8 +394,9 @@ namespace DOL.GS.Commands
 
 						player.MLLevel = level;
 						player.MLExperience = 0;
-						player.SaveIntoDatabase();
-						player.Out.SendUpdatePlayer();
+						if (level > 0)
+							player.MLGranted = true;
+						MasterLevelRules.Refresh(player);
 						player.Out.SendMasterLevelWindow((byte)player.MLLevel);
 						client.Out.SendMessage(player.Name + " Master Level is set to " + level + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 						player.Out.SendMessage(client.Player.Name + "(PrivLevel: " + client.Account.PrivLevel + ") has set your Master Level to " + level + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -417,13 +418,11 @@ namespace DOL.GS.Commands
 
 						byte line = Convert.ToByte(args[2]);
 
-						if (line > 1) line = 1;
+						int pathCount = MasterLevelRules.Paths(player).Count;
+						if (line >= pathCount) line = (byte)Math.Max(0, pathCount - 1);
 
 						player.MLLine = line;
-						player.SaveIntoDatabase();
-						player.RefreshSpecDependantSkills(true);
-						player.Out.SendUpdatePlayerSkills(true);
-						player.Out.SendUpdatePlayer();
+						MasterLevelRules.Refresh(player);
 						player.Out.SendMasterLevelWindow((byte)player.MLLevel);
 						client.Out.SendMessage(player.Name + " Master Line is set to " + line + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 						player.Out.SendMessage(client.Player.Name + "(PrivLevel: " + client.Account.PrivLevel + ") has set your Master Line to " + line + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);

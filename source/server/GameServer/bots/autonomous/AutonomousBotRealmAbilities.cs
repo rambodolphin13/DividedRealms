@@ -78,6 +78,31 @@ public static class AutonomousBotRealmAbilities
         ("MasteryOfArchery", 2), ("Toughness", 1), ("FalconsEye", 2), ("AugCon", 3), (SecondWind, 1),
         ("MasteryOfPain", 1), ("MasteryOfArchery", 3), ("AvoidanceOfMagic", 1), ("Determination", 1));
 
+    // Live class access gives Mastery of Pain to casters and drops Mastery of Archery, so the
+    // base classes are named here; the key test below remains for custom classes.
+    private static readonly Dictionary<int, Archetype> ClassArchetypes = new()
+    {
+        [(int)eCharacterClass.Scout] = Archetype.Archer, [(int)eCharacterClass.Hunter] = Archetype.Archer,
+        [(int)eCharacterClass.Ranger] = Archetype.Archer,
+        [(int)eCharacterClass.Cleric] = Archetype.Healer, [(int)eCharacterClass.Healer] = Archetype.Healer,
+        [(int)eCharacterClass.Shaman] = Archetype.Healer, [(int)eCharacterClass.Druid] = Archetype.Healer,
+        [(int)eCharacterClass.Bard] = Archetype.Healer,
+        [(int)eCharacterClass.Theurgist] = Archetype.Caster, [(int)eCharacterClass.Wizard] = Archetype.Caster,
+        [(int)eCharacterClass.Sorcerer] = Archetype.Caster, [(int)eCharacterClass.Necromancer] = Archetype.Caster,
+        [(int)eCharacterClass.Cabalist] = Archetype.Caster, [(int)eCharacterClass.Spiritmaster] = Archetype.Caster,
+        [(int)eCharacterClass.Runemaster] = Archetype.Caster, [(int)eCharacterClass.Bonedancer] = Archetype.Caster,
+        [(int)eCharacterClass.Bainshee] = Archetype.Caster, [(int)eCharacterClass.Eldritch] = Archetype.Caster,
+        [(int)eCharacterClass.Enchanter] = Archetype.Caster, [(int)eCharacterClass.Mentalist] = Archetype.Caster,
+        [(int)eCharacterClass.Animist] = Archetype.Caster, [(int)eCharacterClass.Warlock] = Archetype.Caster,
+    };
+
+    public static Archetype ArchetypeOf(int classId, ICollection<string> available)
+    {
+        if (ClassArchetypes.TryGetValue(classId, out Archetype archetype)) return archetype;
+        // Every other base class (up to the Maulers) is melee; custom classes use their abilities.
+        return classId <= (int)eCharacterClass.MaulerHib ? Archetype.Melee : ArchetypeOf(available);
+    }
+
     public static Archetype ArchetypeOf(ICollection<string> available)
     {
         if (available.Contains("AtlasOF_MasteryOfArchery")) return Archetype.Archer;
@@ -95,11 +120,11 @@ public static class AutonomousBotRealmAbilities
     /// points only ever extend the result.
     /// </summary>
     public static Dictionary<string, int> Plan(IReadOnlyDictionary<string, int> available, Archetype archetype, int classId,
-        int points, Func<string, int, int> cost)
+        int points, Func<string, int, int> cost, ISet<string> noLegacyPrerequisites = null)
     {
         var owned = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         int Owned(string key) => owned.TryGetValue(key, out int level) ? level : 0;
-        bool Meets(string key) => Requirement(key, classId) is not { } need || Owned(need.Key) >= need.Level;
+        bool Meets(string key) => noLegacyPrerequisites?.Contains(key) == true || Requirement(key, classId) is not { } need || Owned(need.Key) >= need.Level;
         // One purge is enough: the reduced-cost variant replaces the full one where a class has it.
         bool Redundant(string key) => key == Purge && owned.ContainsKey(PurgeReduced) || key == PurgeReduced && owned.ContainsKey(Purge) ||
             key == IgnorePain && owned.ContainsKey(IgnorePainTank) || key == IgnorePainTank && owned.ContainsKey(IgnorePain);
@@ -166,7 +191,7 @@ public static class AutonomousBotRealmAbilities
             .Where(ra => ra is not RR5RealmAbility && (ra is not TimedRealmAbility || UsableActives.Contains(ra.KeyName)))
             .GroupBy(ra => ra.KeyName).ToDictionary(g => g.Key, g => g.First());
         var available = byKey.ToDictionary(pair => pair.Key, pair => pair.Value.MaxLevel);
-        return new Catalog(byKey, available, ArchetypeOf(available.Keys));
+        return new Catalog(byKey, available, ArchetypeOf(id, available.Keys));
     });
 
     private static int ClassOf(GameBot bot) => bot.CharacterClass?.ID ?? bot.ClassId;
@@ -174,7 +199,8 @@ public static class AutonomousBotRealmAbilities
     private static Dictionary<string, int> PlanFor(GameBot bot, int points)
     {
         Catalog catalog = CatalogFor(ClassOf(bot));
-        return Plan(catalog.Available, catalog.Archetype, ClassOf(bot), points, (key, level) => catalog.ByKey[key].CostForUpgrade(level));
+        return Plan(catalog.Available, catalog.Archetype, ClassOf(bot), points, (key, level) => catalog.ByKey[key].CostForUpgrade(level),
+            catalog.ByKey.Where(pair => pair.Value is IModernRealmAbility).Select(pair => pair.Key).ToHashSet());
     }
 
     private static bool Eligible(GameBot bot) => bot is { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false };

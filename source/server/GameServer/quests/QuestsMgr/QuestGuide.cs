@@ -12,7 +12,7 @@ namespace DOL.GS.Quests
     /// The Quest Journal's QUEST GUIDE button (owner 2026-10-07): the period Allakhazam walkthrough of each active quest,
     /// read from classic-quest-guides.json next to the server (research/period-data/quests/build_quest_guides.py).
     /// The button sends /task; each click shows the next page, then the next active quest. /questguide [quest] [page]
-    /// opens any classic quest's guide. Quests made for this server (bounties, reputation, the Sluaghbinder epic) have
+    /// opens any classic quest's guide. Quests made for this server (bounties, reputation) have
     /// no Allakhazam page: their own journal text is shown instead.
     /// </summary>
     public static class QuestGuide

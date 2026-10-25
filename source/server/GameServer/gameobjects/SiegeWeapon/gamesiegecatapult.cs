@@ -162,7 +162,7 @@ namespace DOL.GS
 				if (Owner is GameBot && (living == null || !BotSiegeRuntime.LegalEnemy(Owner, living) || BotPvpCrowdControl.Protected(Owner, living))) continue;
 				if(living == null)
 					continue;
-				int damageAmount = CalcDamageToTarget(living) + Util.Random(50);
+				int damageAmount = SiegeDefense.Reduce(living, CalcDamageToTarget(living) + Util.Random(50));
 
 				AttackData ad = new AttackData();
 				ad.Target = living;

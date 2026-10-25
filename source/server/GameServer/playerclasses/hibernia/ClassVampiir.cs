@@ -49,9 +49,8 @@ namespace DOL.GS.PlayerClass
             return true;
         }
 
-        public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
-        {
-            // PlayerRace.Celt, PlayerRace.Lurikeen, PlayerRace.Shar,
-        };
+        public override List<PlayerRace> EligibleRaces => ServerProperties.Properties.ENABLE_VAMPIIR_TEST
+            ? new List<PlayerRace> { PlayerRace.Celt, PlayerRace.Lurikeen, PlayerRace.Shar }
+            : new List<PlayerRace>();
     }
 }

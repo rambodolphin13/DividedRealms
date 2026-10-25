@@ -18,6 +18,7 @@
  */
 using System.Collections.Generic;
 using DOL.GS.Realm;
+using DOL.GS.ServerProperties;
 
 namespace DOL.GS.PlayerClass
 {
@@ -47,9 +48,8 @@ namespace DOL.GS.PlayerClass
 			return true;
 		}
 
-		public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
-		{
-			// PlayerRace.Dwarf, PlayerRace.Frostalf, PlayerRace.Norseman,
-		};
+        public override List<PlayerRace> EligibleRaces => Properties.ENABLE_VALKYRIE_TEST
+            ? new List<PlayerRace> { PlayerRace.Dwarf, PlayerRace.Frostalf, PlayerRace.Norseman, PlayerRace.Valkyn }
+            : new List<PlayerRace>();
 	}
 }

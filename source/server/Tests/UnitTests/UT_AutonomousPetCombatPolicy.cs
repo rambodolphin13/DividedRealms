@@ -227,13 +227,13 @@ public sealed class UT_AutonomousPetCombatPolicy
     [TestCase(59054, eSpellType.SpecArmorFactorBuff, 3.0, 3500)]
     [TestCase(59059, eSpellType.DamageAdd, 3.0, 3500)]
     [TestCase(59064, eSpellType.CombatSpeedBuff, 3.5, 4000)]
-    public void CovenantPetBuffsCanAdvanceAfterTheirRealCastTime(
+    public void PetBuffsCanAdvanceAfterTheirRealCastTime(
         int spellId, eSpellType type, double castSeconds, int nextActionMilliseconds)
     {
         Spell petBuff = new(new DbSpell
         {
             SpellID = spellId,
-            Name = "Covenant pet buff",
+            Name = "Pet buff",
             Target = eSpellTarget.PET.ToString(),
             Type = type.ToString(),
             Duration = 1200,
@@ -242,29 +242,19 @@ public sealed class UT_AutonomousPetCombatPolicy
 
         Assert.Multiple(() =>
         {
-            Assert.That(AutonomousPetSupport.IsCovenantRoutinePetBuff(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petBuff), Is.True);
             Assert.That(AutonomousPetSupport.PetBuffActionCooldown(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petBuff, false),
-                Is.EqualTo(nextActionMilliseconds), "The next distinct buff need not wait fifteen seconds");
+                eCharacterClass.Enchanter, eSpecType.None, petBuff, false),
+                Is.EqualTo(nextActionMilliseconds), "Every pet class buffs at the cast cadence out of combat");
             Assert.That(AutonomousPetSupport.PetBuffActionCooldown(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petBuff, true),
-                Is.EqualTo(15_000), "Keep the old buff pacing during combat");
-            Assert.That(AutonomousPetSupport.IsCovenantRoutinePetBuff(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderBane, petBuff), Is.False);
-            Assert.That(AutonomousPetSupport.PetBuffActionCooldown(
-                eCharacterClass.Enchanter, eSpecType.SluaghbinderCovenant, petBuff, false),
-                Is.EqualTo(nextActionMilliseconds), "Every pet class now buffs at the cast cadence out of combat");
-            Assert.That(AutonomousPetSupport.PetBuffActionCooldown(
-                eCharacterClass.Enchanter, eSpecType.SluaghbinderCovenant, petBuff, true),
+                eCharacterClass.Enchanter, eSpecType.None, petBuff, true),
                 Is.EqualTo(15_000), "Combat keeps the old spacing for every class");
         });
     }
 
     [Test]
-    public void CovenantPetBuffWaitsForEffectConfirmationOrRetryWindow()
+    public void PetBuffWaitsForEffectConfirmationOrRetryWindow()
     {
-        AutonomousPetSupport.CovenantPetBuffCadenceState cadence = new();
+        AutonomousPetSupport.PetBuffCadenceState cadence = new();
         cadence.Record(eEffect.DexQuickBuff, 59049, 16_000);
 
         Assert.Multiple(() =>
@@ -279,167 +269,6 @@ public sealed class UT_AutonomousPetCombatPolicy
             Assert.That(cadence.IsDeferred(16_000, false, false), Is.False,
                 "An unconfirmed buff can retry when its bounded wait expires");
             Assert.That(cadence.IsDeferred(16_000, true, false), Is.False);
-        });
-    }
-
-    [Test]
-    public void InstantCairnheartHealAndOtherSpecsDoNotEnterPetBuffCadence()
-    {
-        Spell petHeal = new(new DbSpell
-        {
-            SpellID = 59069,
-            Name = "Cairnheart Rebirth",
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.HealthRegenBuff.ToString(),
-            Duration = 60,
-            CastTime = 0,
-        }, 1);
-        Spell otherPetBuff = new(new DbSpell
-        {
-            SpellID = 4771,
-            Name = "Craftiness",
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.DexterityQuicknessBuff.ToString(),
-            Duration = 1200,
-            CastTime = 3,
-        }, 1);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(AutonomousPetSupport.IsCovenantRoutinePetBuff(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petHeal), Is.False);
-            Assert.That(AutonomousPetSupport.IsCovenantRoutinePetBuff(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, otherPetBuff), Is.False);
-            Assert.That(AutonomousPetSupport.IsCovenantRoutinePetBuff(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderBulwark, otherPetBuff), Is.False);
-        });
-    }
-
-    [TestCase(59065, "Cairnheart Pulse")]
-    [TestCase(59066, "Cairnheart Mending")]
-    [TestCase(59067, "Cairnheart Rekindling")]
-    [TestCase(59068, "Cairnheart Resurgence")]
-    [TestCase(59069, "Cairnheart Rebirth")]
-    public void EveryLiveCovenantPetHotRankWaitsForItsEffectToExpire(int spellId, string name)
-    {
-        Spell petHot = new(new DbSpell
-        {
-            SpellID = spellId,
-            Name = name,
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.HealthRegenBuff.ToString(),
-            Duration = 60,
-            CastTime = 0,
-        }, 1);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(petHot.IsHealing, Is.True);
-            Assert.That(petHot.IsBuff, Is.True);
-            Assert.That(petHot.CastTime, Is.Zero);
-            Assert.That(petHot.Duration, Is.EqualTo(60_000));
-            Assert.That(EffectHelper.GetEffectFromSpell(petHot), Is.EqualTo(eEffect.HealthRegenBuff));
-            Assert.That(AutonomousPetSupport.IsCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petHot), Is.True,
-                "Keep this healing rank out of routine pet-buff upkeep");
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petHot, true), Is.True,
-                "Do not restart the one-minute pet heal while any Cairnheart rank is still running");
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petHot, false), Is.False,
-                "Expiration or dispel must allow healing an injured pet again");
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderBane, petHot, true), Is.False);
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderBulwark, petHot, true), Is.False);
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Enchanter, eSpecType.SluaghbinderCovenant, petHot, true), Is.False);
-        });
-    }
-
-    [TestCase(59065, "Cairnheart Pulse")]
-    [TestCase(59066, "Cairnheart Mending")]
-    [TestCase(59067, "Cairnheart Rekindling")]
-    [TestCase(59068, "Cairnheart Resurgence")]
-    [TestCase(59069, "Cairnheart Rebirth")]
-    public void RebalancedCovenantPetHotRanksUseTheSameHealGuard(int spellId, string name)
-    {
-        // The balance pass turned the Cairnheart ranks into real 15-second
-        // heals-over-time (pulse every 3 s, 20 s recast).
-        Spell petHot = new(new DbSpell
-        {
-            SpellID = spellId,
-            Name = name,
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.HealOverTime.ToString(),
-            Duration = 15,
-            Frequency = 30,
-            RecastDelay = 20,
-            CastTime = 0,
-        }, 1);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(petHot.IsHealing, Is.True);
-            Assert.That(EffectHelper.GetEffectFromSpell(petHot), Is.EqualTo(eEffect.HealOverTime));
-            Assert.That(AutonomousPetSupport.IsCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petHot), Is.True);
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petHot, true), Is.True,
-                "Do not restart the pet heal-over-time while any Cairnheart rank is still running");
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, petHot, false), Is.False);
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderBane, petHot, true), Is.False);
-        });
-    }
-
-    [Test]
-    public void CovenantPetHealGuardDoesNotSuppressDirectOrShortHealingSpells()
-    {
-        Spell directHeal = new(new DbSpell
-        {
-            SpellID = 59091,
-            Name = "Pet Direct Heal",
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.Heal.ToString(),
-            Duration = 60,
-        }, 1);
-        Spell shortHot = new(new DbSpell
-        {
-            SpellID = 59092,
-            Name = "Short Pet HoT",
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.HealOverTime.ToString(),
-            Duration = 30,
-        }, 1);
-        Spell ordinaryPetRegen = new(new DbSpell
-        {
-            SpellID = 59090,
-            Name = "Other pet regeneration",
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.HealthRegenBuff.ToString(),
-            Duration = 60,
-        }, 1);
-        Spell cairnheartStats = new(new DbSpell
-        {
-            SpellID = 59009,
-            Name = "Cairnheart Renewal",
-            Target = eSpellTarget.PET.ToString(),
-            Type = eSpellType.StrengthConstitutionBuff.ToString(),
-            Duration = 1200,
-        }, 1);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, directHeal, true), Is.False);
-            Assert.That(AutonomousPetSupport.ShouldSkipActiveCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, shortHot, true), Is.False);
-            Assert.That(AutonomousPetSupport.IsCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, ordinaryPetRegen), Is.False);
-            Assert.That(AutonomousPetSupport.IsCovenantPetHot(
-                eCharacterClass.Sluaghbinder, eSpecType.SluaghbinderCovenant, cairnheartStats), Is.False);
         });
     }
 

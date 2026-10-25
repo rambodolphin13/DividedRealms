@@ -7,7 +7,8 @@ The base is a released classic 0.36 folder brought to 0.37 by upstream's update 
 read. The package is that game with this repository's server, launcher, progress importer, docs and source, a clean
 world (built by build_release_037.py's own clean_world and checks: no account, character, bot or save; default keeps,
 doors and relics; zero-bot start, GM off, 1x XP, automatic account creation) and:
-  classic       no custom class: enable_sluaghbinder and enable_stormforged off, the stock classic client.
+  classic       no custom class: enable_stormforged off, the stock classic client.
+Both drop the retired Sluaghbinder's world rows (remove_sluaghbinder.py) and keep its edition switch off.
   stormforged   the Midgard Stormforged class: seed_stormforged.py's world rows (enable_stormforged on) and the client
                 patched by patch_client.py, which accepts only the verified classic client.
 The co-op / guild-warfare rules ship switched off in both (seed_hybrid_coop.py enables them in an installation).
@@ -28,6 +29,7 @@ TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
 sys.path.insert(0, str(TOOLS / "stormforged"))
 import build_release_037 as release  # noqa: E402  (reused, unchanged)
+import remove_sluaghbinder  # noqa: E402
 import assemble_release_037 as assemble  # noqa: E402
 from patch_client import patch as patch_stormforged_client  # noqa: E402
 from seed_stormforged import seed as seed_stormforged  # noqa: E402
@@ -49,13 +51,11 @@ def set_property(con: sqlite3.Connection, key: str, value: str):
 
 
 def classic_world(con: sqlite3.Connection) -> dict:
-    """clean_world switches upstream's Sluaghbinder on (its 0.37b package); a classic package has no custom class."""
+    """clean_world switches upstream's Sluaghbinder on (its 0.37b package); this fork has retired the class, so its
+    switch stays off (the launcher reads it for the edition label) and its world rows go."""
     release.set_edition(con, False)
-    marks = ",".join("?" * len(release.SLUAGH_MOBS))
-    mobs = con.execute(f"DELETE FROM Mob WHERE Mob_ID IN ({marks})", release.SLUAGH_MOBS).rowcount
-    specs = con.execute("DELETE FROM ClassXSpecialization WHERE ClassID=63").rowcount
     set_property(con, "enable_stormforged", "False")
-    return {"removed_sluaghbinder_mobs": mobs, "removed_sluaghbinder_specializations": specs}
+    return remove_sluaghbinder.apply(con)
 
 
 def main():

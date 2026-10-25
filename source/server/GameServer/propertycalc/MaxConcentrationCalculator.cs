@@ -30,8 +30,8 @@ namespace DOL.GS.PropertyCalc
                 if (conc < 0)
                     conc = 0;
 
-                if (player.GetSpellLine("Perfecter") != null && player.MLLevel >= 4)
-                    conc += 20 * conc / 100;
+                if (MasterLevelRules.HasPassive(player, "Perfecter", 4))
+                    conc += 30 * conc / 100;
 
                 return conc;
             }

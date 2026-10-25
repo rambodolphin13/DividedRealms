@@ -144,7 +144,7 @@ namespace DOL.GS.Spells
 					m_handler.MessageToCaster("You miss!", eChatType.CT_YouHit);
 					m_handler.MessageToLiving(target, caster.GetName(0, false) + " missed!", eChatType.CT_Missed);
 					target.OnAttackedByEnemy(ad);
-					target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, caster);
+					target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
 					if (target is GameNPC)
 					{
 						IOldAggressiveBrain aggroBrain = ((GameNPC)target).Brain as IOldAggressiveBrain;
@@ -285,7 +285,7 @@ namespace DOL.GS.Spells
 
 					m_handler.SendDamageMessages(ad);
 					m_handler.DamageTarget(ad, false, 0x14);
-					target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, caster);
+					target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
 				}
 
 

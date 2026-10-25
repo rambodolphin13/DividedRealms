@@ -16,7 +16,10 @@ namespace DOL.GS
         {
             Spell burst = SkillBase.GetSpellByID(parent.SubSpellID);
             if (burst != null)
-                new StormforgedStrike(owner, burst, line).StartSpell(target);
+                if (burst.SpellType == eSpellType.StormSovereignAbility)
+                    new StormSovereignHandler(owner, burst, line).StartSpell(target);
+                else
+                    new StormforgedStrike(owner, burst, line).StartSpell(target);
         }
     }
 
@@ -24,6 +27,7 @@ namespace DOL.GS
     {
         private ushort _originalModel;
         private ushort _avatarModel;
+        public const int SovereignCrownAbsorption = 20, SovereignCrownMeleeDamage = 50, SovereignCrownHaste = 20, SovereignCrownRegen = 10;
 
         public StormforgedAvatarEffect(in ECSGameEffectInitParams initParams) : base(initParams) { }
 
@@ -33,10 +37,24 @@ namespace DOL.GS
             _originalModel = Owner.Model;
             _avatarModel = (ushort)SpellHandler.Spell.Value;
             Owner.Model = _avatarModel;
+            if (StormSovereignAbilities.Owns(SpellHandler.Spell.ID))
+            {
+                Owner.AbilityBonus[eProperty.ArmorAbsorption] += SovereignCrownAbsorption;
+                Owner.AbilityBonus[eProperty.MeleeDamage] += SovereignCrownMeleeDamage;
+                Owner.AbilityBonus[eProperty.MeleeSpeed] += SovereignCrownHaste;
+                MLMod.Refresh(Owner);
+            }
         }
 
         public override void OnStopEffect()
         {
+            if (StormSovereignAbilities.Owns(SpellHandler.Spell.ID))
+            {
+                Owner.AbilityBonus[eProperty.ArmorAbsorption] -= SovereignCrownAbsorption;
+                Owner.AbilityBonus[eProperty.MeleeDamage] -= SovereignCrownMeleeDamage;
+                Owner.AbilityBonus[eProperty.MeleeSpeed] -= SovereignCrownHaste;
+                MLMod.Refresh(Owner);
+            }
             if (Owner.Model == _avatarModel)
                 Owner.Model = _originalModel;
             base.OnStopEffect();
@@ -49,10 +67,11 @@ namespace DOL.GS
                 End();
                 return;
             }
-            Owner.ChangeHealth(Owner, eHealthChangeType.Spell, Math.Max(1, Owner.MaxHealth * 15 / 100));
-            Owner.ChangeMana(Owner, eManaChangeType.Spell, Math.Max(1, Owner.MaxMana * 15 / 100));
-            Owner.ChangeEndurance(Owner, eEnduranceChangeType.Spell, Math.Max(1, Owner.MaxEndurance * 15 / 100));
-            if (!Owner.IsCrowdControlled)
+            int percent = StormSovereignAbilities.Owns(SpellHandler.Spell.ID) ? SovereignCrownRegen : 15;
+            Owner.ChangeHealth(Owner, eHealthChangeType.Spell, Math.Max(1, Owner.MaxHealth * percent / 100));
+            Owner.ChangeMana(Owner, eManaChangeType.Spell, Math.Max(1, Owner.MaxMana * percent / 100));
+            Owner.ChangeEndurance(Owner, eEnduranceChangeType.Spell, Math.Max(1, Owner.MaxEndurance * percent / 100));
+            if (!Owner.IsCrowdControlled && !Owner.IsStealthed)
                 StormforgedHeroicRules.CastBurst(Owner, SpellHandler.Spell, SpellHandler.SpellLine, Owner);
         }
     }

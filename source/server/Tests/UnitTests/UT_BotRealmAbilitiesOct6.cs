@@ -101,5 +101,19 @@ namespace DOL.UnitTests
         [Test]
         public void OnlyActivesBotsCanUseAreBought() =>
             Assert.That(UsableActives, Is.EquivalentTo(new[] { Purge, PurgeReduced, IgnorePainTank, IgnorePain, SecondWind, FirstAid }));
+
+        // Live access gives every class Mastery of Pain and no class Mastery of Archery, so base classes are named.
+        [TestCase(eCharacterClass.Wizard, Archetype.Caster)]
+        [TestCase(eCharacterClass.Healer, Archetype.Healer)]
+        [TestCase(eCharacterClass.Druid, Archetype.Healer)]
+        [TestCase(eCharacterClass.Hunter, Archetype.Archer)]
+        [TestCase(eCharacterClass.Nightshade, Archetype.Melee)]
+        [TestCase(eCharacterClass.MaulerHib, Archetype.Melee)]
+        public void BaseClassArchetypesSurviveLiveClassAccess(eCharacterClass classId, Archetype archetype) =>
+            Assert.That(ArchetypeOf((int)classId, new[] { "AtlasOF_MasteryOfPain", AugAcuity, "AtlasOF_MasteryOfHealing" }), Is.EqualTo(archetype));
+
+        [Test]
+        public void CustomClassesStillUseTheirAbilities() =>
+            Assert.That(ArchetypeOf((int)eCharacterClass.Stormforged, new[] { "AtlasOF_MasteryOfHealing" }), Is.EqualTo(Archetype.Healer));
     }
 }

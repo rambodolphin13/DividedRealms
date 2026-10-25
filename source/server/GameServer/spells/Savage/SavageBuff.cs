@@ -187,4 +187,16 @@ namespace DOL.GS.Spells
 
         public SavageCrushResistanceBuff(GameLiving caster, Spell spell, SpellLine spellLine) : base(caster, spell, spellLine) { }
     }
+
+    /// <summary>Live Deflect..Ignore Attacks (1.123): one buff for crush, slash and thrust resistance.</summary>
+    [SpellHandler(eSpellType.SavageMeleeResistanceBuff)]
+    public class SavageMeleeResistanceBuff : AbstractSavageResistBuff
+    {
+        public override string ShortDescription => $"Increases {TargetPronoun} resistance to melee damage by {Spell.Value}%.";
+        public override eProperty Property1 => eProperty.Resist_Crush;
+        public override eProperty Property2 => eProperty.Resist_Slash;
+        public override eProperty Property3 => eProperty.Resist_Thrust;
+
+        public SavageMeleeResistanceBuff(GameLiving caster, Spell spell, SpellLine spellLine) : base(caster, spell, spellLine) { }
+    }
 }

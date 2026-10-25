@@ -28,7 +28,7 @@ namespace DOL.GS.PlayerClass
 			: base()
 		{
 			m_profession = "PlayerClass.Profession.TempleofIronFist";
-			m_specializationMultiplier = 15;
+			m_specializationMultiplier = 18;
 			m_wsbase = 440;
 			m_baseHP = 600;
 			m_primaryStat = eStat.STR;
@@ -57,9 +57,7 @@ namespace DOL.GS.PlayerClass
 			return true;
 		}
 
-		public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
-		{
-			// PlayerRace.Kobold, PlayerRace.Deifrang, PlayerRace.Norseman,
-		};
+        public override List<PlayerRace> EligibleRaces => ServerProperties.Properties.ENABLE_MAULER_TEST
+            ? new List<PlayerRace> { PlayerRace.Deifrang, PlayerRace.Norseman, PlayerRace.Kobold, PlayerRace.Troll } : new List<PlayerRace>();
 	}
 }

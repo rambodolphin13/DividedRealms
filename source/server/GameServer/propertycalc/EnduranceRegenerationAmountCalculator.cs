@@ -16,6 +16,13 @@ namespace DOL.GS.PropertyCalc
     {
         public EnduranceRegenerationAmountCalculator() { }
 
+        public static double ActiveRegeneration(double buffs, double ability, double items, int debuff, bool freeTireless)
+        {
+            // Native Tireless is a floor, not another stacking point. Existing paid
+            // Tireless continues to work without double-counting the free grant.
+            return (freeTireless ? Math.Max(buffs + items, Math.Max(1, ability)) : buffs + ability + items) - Math.Abs(debuff);
+        }
+
         public override int CalcValue(GameLiving living, eProperty property)
         {
             // In 1.65, tireless is supposed to run on its own timer and regenerate 1 endurance per (9 - level) seconds. Works in and out combat, but is notoriously bad.
@@ -35,14 +42,15 @@ namespace DOL.GS.PropertyCalc
                 debuff = -debuff;
 
             // Buffs allow to regenerate endurance even in combat and while moving.
-            double regen = living.BaseBuffBonusCategory[property] + living.AbilityBonus[property] + living.ItemBonus[property] - debuff;
+            double regen = ActiveRegeneration(living.BaseBuffBonusCategory[property], living.AbilityBonus[property],
+                living.ItemBonus[property], debuff, living.HasAbility(Abilities.Tireless));
 
             bool playerRules = living is GamePlayer || living is GameBot;
             if (playerRules)
                 regen += ClassicRestRegeneration.BaseEndurancePerTick(living.IsSitting, living.InCombat, living.IsMoving);
 
             regen *= ServerProperties.Properties.ENDURANCE_REGEN_AMOUNT_MODIFIER;
-            return Math.Max(0, (int) regen);
+            return OutOfCombatRecovery.Amount(living, property, Math.Max(0, (int) regen));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,20 +11,11 @@ namespace DOL.GS.PacketHandler
 	{
 		private static readonly Logging.Logger log = Logging.LoggerManager.Create(MethodBase.GetCurrentMethod().DeclaringType);
 
-		// The 1.109c client has no native Sluaghbinder class slot. Keep the
-		// persisted/server class ID intact, but present promoted Sluaghbinders
-		// through the Hibernian Mauler slot that the isolated client has been
-		// relabeled to. Novice Hibernian Acolytes remain Acolytes in the overview.
-		private static bool IsSluaghbinderOverview(int classId, int realm) =>
-			classId == (int)eCharacterClass.Sluaghbinder && realm == (int)eRealm.Hibernia;
-
 		private static byte GetClientOverviewClassId(int classId, int realm) =>
-			IsSluaghbinderOverview(classId, realm)
-				? (byte)eCharacterClass.MaulerHib
-				: StormforgedRules.OverviewClass(classId, realm);
+			StormforgedRules.OverviewClass(classId, realm);
 
 		private static string GetClientOverviewClassName(int classId, int realm) =>
-			IsSluaghbinderOverview(classId, realm) ? "Sluaghbinder" : StormforgedRules.IsStormforged(classId) && realm == (int)eRealm.Midgard ? "Stormforged" : ((eCharacterClass)classId).ToString();
+			PendragonRules.IsPendragon(classId) && realm == (int)eRealm.Albion ? "Pendragon Sovereign" : PendragonRules.IsTuatha(classId) && realm == (int)eRealm.Hibernia ? "Tuatha Sovereign" : StormforgedRules.IsStormforged(classId) && realm == (int)eRealm.Midgard ? "Stormforged" : ((eCharacterClass)classId).ToString();
 
 		/// <summary>
 		/// Constructs a new PacketLib for Client Version 1.104

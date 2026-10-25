@@ -28,6 +28,20 @@ namespace DOL.GS
             return origin.IsWithinRadius(landing, range) && origin.CurrentRegion.GetZone(landing.X, landing.Y) != null;
         }
 
+        /// <summary>
+        /// A spot about 90 units in front of the target, on the caster's side; the target's own spot if
+        /// the ground there is unusable. A caster already that close stays where they are.
+        /// </summary>
+        public static Point3D ResolveBeside(GameLiving caster, GameLiving target)
+        {
+            double dx = caster.X - target.X, dy = caster.Y - target.Y;
+            double distance = Math.Sqrt(dx * dx + dy * dy);
+            if (distance <= 90)
+                return new Point3D(caster.X, caster.Y, caster.Z);
+            var beside = new Point3D(target.X + (int)(dx * 90 / distance), target.Y + (int)(dy * 90 / distance), target.Z);
+            return TryResolvePoint(target, beside, 200, out Point3D landing) ? landing : new Point3D(target.X, target.Y, target.Z);
+        }
+
         public static bool IsOwnedStorm(GameLiving owner, GameNPC pet) =>
             pet is TurretPet { NPCTemplate.TemplateId: 60171002 } && pet.IsAlive &&
             pet.ObjectState == GameObject.eObjectState.Active &&

@@ -166,10 +166,9 @@ namespace DOL.GS.PlayerClass
 			Player.Model = (ushort)Player.Client.Account.Characters[Player.Client.ActiveCharIndex].CreationModel;
 		}
 
-		public override List<PlayerRace> EligibleRaces => new()
-		{
-			// PlayerRace.Celt, PlayerRace.Elf, PlayerRace.Lurikeen,
-		};
+		public override List<PlayerRace> EligibleRaces => ServerProperties.Properties.ENABLE_BAINSHEE_TEST
+			? new List<PlayerRace> { PlayerRace.Celt, PlayerRace.Elf, PlayerRace.Lurikeen }
+			: new List<PlayerRace>();
 	}
 	#endregion
 }

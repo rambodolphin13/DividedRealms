@@ -5,7 +5,7 @@ using DOL.AI.Brain;
 
 namespace DOL.GS
 {
-    /// <summary>One native song source at a time; never extend its child effects or skip recast timers.</summary>
+    /// <summary>One native song source at a time under 1.65 rules (several under live chant rules); never extend child effects or skip recast timers.</summary>
     public static class BotSongTwistPolicy
     {
         public readonly record struct Song(int Id, int CastMilliseconds, int CooldownMilliseconds, long RemainingMilliseconds);
@@ -87,6 +87,30 @@ namespace DOL.GS
             if (hasBladeturn && (combat || grouped)) return eSpellType.Bladeturn;
             return eSpellType.DamageAdd;
         }
+
+        /// <summary>
+        /// Under live chant rules (allow_multiple_chants) every chant can stay up, so a selector skips one
+        /// whose type is already running at this rank or higher instead of twisting back to it,
+        /// and skips every new chant once the caster is at its pulse cap.
+        /// Under 1.65 rules the one-song rotation is unchanged.
+        /// </summary>
+        public static bool KeepsRunning(GameLiving living, Spell spell) =>
+            ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS && spell != null && (IsPulseCapped(living, spell) ||
+            KeepsSameChant(living, spell));
+
+        // At the live pulse cap a new chant can't start, so selectors skip it instead of retrying.
+        private static bool IsPulseCapped(GameLiving living, Spell spell) =>
+            living is GameBot { CharacterClass: not null } bot && !EffectListComponent.CanStartPulse(spell,
+                bot.effectListComponent.GetPulseEffects().Where(effect => !effect.IsEnding && !effect.IsEnded &&
+                    effect.SpellHandler?.Spell != null).Select(effect => effect.SpellHandler.Spell),
+                EffectListComponent.MaxPulses(bot.CharacterClass.ID));
+
+        private static bool KeepsSameChant(GameLiving living, Spell spell) =>
+            living?.effectListComponent.GetPulseEffects().Any(effect => !effect.IsEnding && !effect.IsEnded &&
+                effect.SpellHandler?.Spell is Spell running && KeepsRunning(running, spell)) == true;
+
+        public static bool KeepsRunning(Spell running, Spell candidate) =>
+            running.SpellType == candidate.SpellType && (running.ID == candidate.ID || running.Level >= candidate.Level);
 
         public static int Choose(int primaryId, int activeId, IReadOnlyList<Song> songs)
         {

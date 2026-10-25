@@ -425,6 +425,29 @@ namespace DOL.AI.Brain
             (living as GameNPC)?.ForgetAggroHolder(this);
         }
 
+        /// <summary>
+        /// Drops livings that have left the world from the aggro lists (see <see cref="GameLiving.ForgetDeparted"/>): after
+        /// the first sweep (2026-10-22) monsters' aggro lists still held deleted bots.
+        /// </summary>
+        public void ForgetDeparted()
+        {
+            bool removed = false;
+            foreach (GameLiving held in AggroList.Keys)
+                if (GameLiving.HasDeparted(held))
+                {
+                    RemoveFromAggroList(held);
+                    removed = true;
+                }
+            ConcurrentDictionary<GameLiving, AggroAmount> temporary = _tempAggroList;
+            if (temporary != null)
+                foreach (GameLiving held in temporary.Keys)
+                    if (GameLiving.HasDeparted(held))
+                        temporary.TryRemove(held, out _);
+            if (removed)
+                lock (_orderedAggroListLock)
+                    OrderedAggroList.Clear();
+        }
+
         public List<OrderedAggroListElement> GetOrderedAggroList()
         {
             // Potentially slow, so we cache the result.
@@ -1501,9 +1524,8 @@ namespace DOL.AI.Brain
                 return false;
             }
 
-            // Pets: a DoT from a different effect group stacks (e.g. the Sluaghbinder
-            // Dullahan's Grave Rot beside its owner's Rot and Bane), so only a
-            // conflicting DoT blocks it. Wild mobs keep the stock category check.
+            // Pets: a DoT from a different effect group stacks (beside its owner's
+            // DoTs), so only a conflicting DoT blocks it. Wild mobs keep the stock category check.
             if (spellEffect == eEffect.DamageOverTime && this is IControlledBrain)
                 return target.effectListComponent.GetSpellEffects(spellEffect)
                     .Any(effect => effect?.SpellHandler?.Spell is Spell existing && BotBrain.DotsConflict(spell, existing));

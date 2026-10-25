@@ -26,8 +26,6 @@ namespace DOL.GS.RealmAbilities
 				return;
 			if (shield.Object_Type != (int)eObjectType.Shield)
 				return;
-			if (living.TargetObject == null)
-				return;
 			if (living.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
 				return;
 			if (living.ActiveWeapon.Hand == 1)
@@ -45,7 +43,7 @@ namespace DOL.GS.RealmAbilities
 
 		public override int GetReUseDelay(int level)
 		{
-			return 900;
+			return 600; // Live 1.129: reduced from 15 to 10 minutes.
 		}
 
 		public override void AddEffectsInfo(IList<string> list)

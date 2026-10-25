@@ -89,7 +89,11 @@ namespace DOL.GS.PropertyCalc
                         speedIncrease *= 2;
                 }
 
-                if (GameRelic.IsPlayerCarryingRelic(player))
+                if (player.IsStealthed && DOL.GS.Spells.StormSovereignAbilities.HasVeil(player))
+                    speedIncrease *= 1.1;
+
+                // Speedwarp negates speed boosts (and mounts), as carrying a relic does.
+                if (GameRelic.IsPlayerCarryingRelic(player) || DOL.GS.Spells.SpeedwarpSpellHandler.IsWarped(player))
                 {
                     if (speedIncrease > 1.0)
                         speedIncrease = 1.0;
@@ -101,6 +105,9 @@ namespace DOL.GS.PropertyCalc
                     speedIncrease *= SPRINT;
 
                 speedIncrease *= horseSpeed;
+
+                if (player.EffectList.GetOfType<TestudoEffect>() != null)
+                    speedIncrease = Math.Min(speedIncrease, TestudoEffect.SPEED_FACTOR);
             }
             else if (living is GameNPC npc)
             {

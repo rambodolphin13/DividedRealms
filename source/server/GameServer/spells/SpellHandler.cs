@@ -42,7 +42,8 @@ namespace DOL.GS.Spells
 		public eCastState CastState { get; private set; }
 		public bool HasLos { get; set; } // Modified by CastingComponent during LoS checks.
 		protected double DistanceFallOff { get; private set; }
-		protected double CasterEffectiveness { get; private set; } = 1.0; // Needs to default to 1 since some spell handlers override `StartSpell`, preventing it from being set.
+		protected double ModernConcentrationFactor { get; private set; } = 1.0;
+        protected double CasterEffectiveness { get; private set; } = 1.0; // Needs to default to 1 since some spell handlers override `StartSpell`, preventing it from being set.
 		protected virtual bool IsDualComponentSpell => false; // Dual component spells have a higher chance to be resisted.
 
 		protected Spell m_spell;
@@ -62,6 +63,34 @@ namespace DOL.GS.Spells
 		private long _puslingSpellLastEndOfCastMessage;
 
 		public bool IsQuickCasting => Caster is not GameBot && _quickcast != null;
+        private int _damagePushbackApplied;
+        public int DamagePushbackApplied => _damagePushbackApplied;
+
+        public void ApplyDamagePushback()
+        {
+            if (!SpellCastPushback.AppliesTo(Caster) || CastState != eCastState.Casting ||
+                Spell.IsInstantCast || Spell.Uninterruptible || ModernWarlock.IsUninterruptible(Caster, Spell) || Spell.SpellType == eSpellType.Archery ||
+                IsQuickCasting || Caster.effectListComponent.ContainsEffectForEffectType(eEffect.MasteryOfConcentration) ||
+                Caster.effectListComponent.ContainsEffectForEffectType(eEffect.FacilitatePainworking))
+                return;
+
+            int alreadyApplied, delay;
+            do
+            {
+                alreadyApplied = System.Threading.Volatile.Read(ref _damagePushbackApplied);
+                delay = SpellCastPushback.DelayForHit(alreadyApplied);
+                if (delay <= 0 || GameLoop.GameLoopTime >= _castEndTick)
+                    return;
+            }
+            while (System.Threading.Interlocked.CompareExchange(ref _damagePushbackApplied,
+                alreadyApplied + delay, alreadyApplied) != alreadyApplied);
+            System.Threading.Interlocked.Add(ref _castEndTick, delay);
+            // Reannounce the remaining time directly: SendCastAnimation would reset our deadline.
+            ushort remaining = (ushort)Math.Clamp((_castEndTick - GameLoop.GameLoopTime + 99) / 100, 1, ushort.MaxValue);
+            foreach (GamePlayer player in Caster.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                player?.Out.SendSpellCastAnimation(Caster, Spell.ClientEffect, remaining);
+        }
+
 		public long CastStartTick => _castStartTick;
 		public bool StartReuseTimer => m_startReuseTimer;
 
@@ -331,7 +360,7 @@ namespace DOL.GS.Spells
 
 		public virtual bool CasterIsAttacked(GameLiving attacker)
 		{
-			if (Spell.Uninterruptible)
+			if (Spell.Uninterruptible || ModernWarlock.IsUninterruptible(Caster, Spell) || UninterruptibleAuraSpellHandler.Protects(Caster))
 				return false;
 
 			NecromancerPet necromancerPet = Caster as NecromancerPet;
@@ -387,6 +416,16 @@ namespace DOL.GS.Spells
 		/// </summary>
 		public virtual bool CheckBeginCast(GameLiving selectedTarget, bool quiet)
 		{
+            if (DeathKnight.BlockedByForm(Caster, Spell))
+            {
+                if (!quiet) MessageToCaster("You cannot use that in Chthonic Form.", eChatType.CT_System);
+                return false;
+            }
+            if (ModernWarlock.Secondary(Caster, Spell) && ModernWarlock.Primer(Caster) == null)
+            {
+                if (!quiet) MessageToCaster("Select a Warlock primer stance before casting a secondary spell.", eChatType.CT_System);
+                return false;
+            }
 			if (m_caster.ObjectState != GameObject.eObjectState.Active)
 				return false;
  
@@ -568,7 +607,7 @@ namespace DOL.GS.Spells
 				m_caster.attackComponent.StopAttack();
 
 			// Check interrupt timer.
-			if (!m_spell.Uninterruptible && !m_spell.IsInstantCast)
+			if (!m_spell.Uninterruptible && !m_spell.IsInstantCast && !ModernWarlock.IsUninterruptible(Caster, Spell))
 			{
 				long interruptRemainingDuration = Caster.InterruptRemainingDuration;
 
@@ -784,6 +823,9 @@ namespace DOL.GS.Spells
 			if (!CheckConcentrationCost(quiet))
 				return false;
 
+			if (!CheckPulseCap(quiet))
+				return false;
+
 			// Cancel engage if user starts attack
 			if (m_caster.IsEngaging)
 			{
@@ -800,6 +842,35 @@ namespace DOL.GS.Spells
 				necromancerPetBrain.OnPetBeginCast(Spell, SpellLine);
 
 			return true;
+		}
+
+		/// <summary>Live rules: players and bots keep at most max_pulses chants (skald_max_pulses for Skalds).</summary>
+		public bool CheckPulseCap(bool quiet)
+		{
+			if (!m_spell.IsPulsing || m_spell.IsFocus || !ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS)
+				return true;
+
+			ICharacterClass characterClass = Caster switch
+			{
+				GamePlayer player => player.CharacterClass,
+				GameBot bot => bot.CharacterClass,
+				_ => null
+			};
+
+			if (characterClass == null)
+				return true;
+
+			IEnumerable<Spell> running = m_caster.effectListComponent.GetPulseEffects()
+				.Where(effect => !effect.IsEnding && !effect.IsEnded && effect.SpellHandler?.Spell != null)
+				.Select(effect => effect.SpellHandler.Spell);
+
+			if (EffectListComponent.CanStartPulse(m_spell, running, EffectListComponent.MaxPulses(characterClass.ID)))
+				return true;
+
+			if (!quiet && m_caster is not GameBot)
+				MessageToCaster("You can't maintain any more chants.", eChatType.CT_SpellResisted);
+
+			return false;
 		}
 
 		public bool CheckConcentrationCost(bool quiet)
@@ -844,6 +915,13 @@ namespace DOL.GS.Spells
 			}
 			else
 				verbose = false;
+
+			// Warlock RR5 Boiling Cauldron bedazzle: a finished cast can miscast.
+			if (RealmAbilities.ModernBoilingCauldron.Miscasts(Caster))
+			{
+				MessageToCaster("You are bedazzled and miscast your spell!", eChatType.CT_SpellResisted);
+				return false;
+			}
 
 			if (IsSummoningSpell && Caster.CurrentRegion.IsCapitalCity &&
 				!AutonomousPetSupport.CanSummonInCapital(Caster))
@@ -1180,6 +1258,9 @@ namespace DOL.GS.Spells
 		/// </summary>
 		public virtual int PowerCost(GameLiving target)
 		{
+            if (ModernMauler.FreeCosts(Caster)) return 0;
+            if (ModernWarlock.SecondaryCost(Caster, Spell) is int primerCost)
+                return primerCost;
 			// Warlock.
 			/* GameSpellEffect effect = SpellHandler.FindEffectOnTarget(m_caster, "Powerless");
 			if (effect != null && !m_spell.IsPrimary)
@@ -1238,21 +1319,19 @@ namespace DOL.GS.Spells
 			if (IsQuickCasting && Spell.CastTime > 0)
 				powerCost *= 2;
 
+			powerCost *= PowerCostDebuff.Scale(Caster); // Shaman Bane of Magic line.
+
 			return (int) powerCost;
 		}
 
 		public virtual int CalculateEnduranceCost()
 		{
-			// Custom Sluaghbinder and Stormforged spells cost power only; styles still cost endurance.
-			if (IsSluaghbinder(m_caster) || m_spell.ID is >= 62000 and <= 62239)
+			// Custom Stormforged and royal class spells cost power only; styles still cost endurance.
+			if (m_spell.ID is >= 62000 and <= 62239 or >= 62400 and <= 62972 or >= 64000 and <= 64572 or >= 73000 and <= 73572)
 				return 0;
 
 			return 5;
 		}
-
-		private static bool IsSluaghbinder(GameLiving caster) =>
-			caster is GamePlayer { CharacterClass.ID: (int)eCharacterClass.Sluaghbinder } ||
-			caster is GameBot { CharacterClass.ID: (int)eCharacterClass.Sluaghbinder };
 
 		/// <summary>
 		/// Called whenever the casters casting sequence is to interrupt immediately
@@ -1279,8 +1358,8 @@ namespace DOL.GS.Spells
 		/// <returns>effective casting time in milliseconds</returns>
 		public virtual int CalculateCastingTime()
 		{
-			int castTime = m_caster.CalculateCastingTime(this);
-            return m_spell.ID is >= 62000 and <= 62239 && StormforgedHeroicRules.HasAvatar(m_caster)
+			int castTime = ModernWarlock.AdjustCastTime(Caster, Spell, RealmAbilities.ModernRr5.CastTime(m_caster, m_caster.CalculateCastingTime(this)));
+            return (m_spell.ID is >= 62000 and <= 62239 || StormSovereignAbilities.Owns(m_spell.ID)) && StormforgedHeroicRules.HasAvatar(m_caster)
                 ? Math.Min(250, castTime) : castTime;
 		}
 
@@ -1503,7 +1582,7 @@ namespace DOL.GS.Spells
 			List<GameLiving> list = GameLoop.GetListForTick<GameLiving>();
 			GameLiving target = castTarget as GameLiving;
 			eSpellTarget modifiedTarget = Spell.Target;
-			ushort modifiedRadius = (ushort) Spell.Radius;
+			ushort modifiedRadius = (ushort) ModernWarlock.AdjustDistance(Caster, Spell, Spell.Radius);
 
 			if (modifiedTarget is eSpellTarget.PET && !HasPositiveEffect)
 				modifiedTarget = eSpellTarget.ENEMY;
@@ -2048,6 +2127,9 @@ namespace DOL.GS.Spells
 		/// <param name="target">The current target object, only used if 'SpellHandler.Target' is null.</param>
 		public virtual bool StartSpell(GameLiving target)
 		{
+			if (RealmAbilities.ModernSpeedOfSoundEffect.BreaksOn(Spell, SpellLine))
+				RealmAbilities.ModernSpeedOfSoundEffect.BreakOnAction(Caster);
+
 			if (Spell.SpellType is not eSpellType.TurretPBAoE && Spell.IsPBAoE)
 				Target = Caster;
 			else if (Target == null)
@@ -2086,6 +2168,7 @@ namespace DOL.GS.Spells
 				targets = SelectTargets(Target);
 
 			CasterEffectiveness = Caster.Effectiveness;
+            ModernConcentrationFactor = DOL.GS.RealmAbilities.ModernMasteryOfConcentration.SpellFactor(Caster, SpellLine);
 
 			/// [Atlas - Takii] No effectiveness drop in OF MOC.
 // 			if (Caster.EffectList.GetOfType<MasteryofConcentrationEffect>() != null)
@@ -2110,6 +2193,7 @@ namespace DOL.GS.Spells
 // 				}
 // 			}
 
+            CasterEffectiveness *= ModernWarlock.DamageScale(Caster, Spell);
 			if (Caster is GamePlayer && (Caster as GamePlayer).CharacterClass.ID == (int)eCharacterClass.Warlock && m_spell.IsSecondary)
 			{
 				Spell uninterruptibleSpell = Caster.TempProperties.GetProperty<Spell>(UninterruptableSpellHandler.WARLOCK_UNINTERRUPTABLE_SPELL);
@@ -2157,7 +2241,7 @@ namespace DOL.GS.Spells
 
 		protected virtual double CalculateDamageEffectiveness()
 		{
-			return CasterEffectiveness * 1 + Caster.GetModified(eProperty.SpellDamage) * 0.01;
+			return (CasterEffectiveness + Caster.GetModified(eProperty.SpellDamage) * 0.01) * ModernConcentrationFactor;
 		}
 
 		protected virtual double CalculateBuffDebuffEffectiveness()
@@ -2179,7 +2263,7 @@ namespace DOL.GS.Spells
 			if (Caster is GamePlayer playerCaster && playerCaster.UseDetailedCombatLog && effectiveness != 1)
 				playerCaster.Out.SendMessage($"Effectiveness (bonus / crit): {effectiveness:0.##}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
 
-			return effectiveness;
+			return effectiveness * (DOL.GS.RealmAbilities.ModernMasteryOfConcentration.IsControl(Spell) ? 1 : ModernConcentrationFactor);
 		}
 
 		protected virtual double GetDebuffEffectivenessCriticalModifier()
@@ -2224,6 +2308,8 @@ namespace DOL.GS.Spells
 			}
 
 			duration *= effectiveness;
+            if (DOL.GS.RealmAbilities.ModernMasteryOfConcentration.IsControl(Spell))
+                duration *= ModernConcentrationFactor;
 
 			if (duration < 1)
 				duration = 1;
@@ -2483,6 +2569,37 @@ namespace DOL.GS.Spells
 
 		protected virtual bool CheckSpellResist(GameLiving target)
 		{
+            if (ChampionAbilities.IsControlImmune(target, Spell))
+            {
+                MessageToCaster("Your target is immune to this effect!", eChatType.CT_SpellResisted);
+                OnSpellNegated(target, SpellNegatedReason.Immune);
+                return true;
+            }
+
+            // Death Knight Ignore line: a chance to shrug off debuffs.
+            if (DeathKnight.IsDebuff(this) && DeathKnight.IgnoreChance(target) is int ignore and > 0 && Util.Chance(ignore))
+            {
+                MessageToCaster($"{target.GetName(0, true)} ignores the effect!", eChatType.CT_SpellResisted);
+                OnSpellNegated(target, SpellNegatedReason.Resisted);
+                return true;
+            }
+
+            // Skald Sleep Guard / Stun Guard: the ward stops the spell and is used up.
+            if (CrowdControlGuardSpellHandler.Blocks(this, target))
+            {
+                MessageToCaster($"{target.GetName(0, true)} is warded against your spell!", eChatType.CT_SpellResisted);
+                OnSpellNegated(target, SpellNegatedReason.Immune);
+                return true;
+            }
+
+            // Rampage and Fury (tank shouts): a chance to shrug off debuffs and crowd control.
+            if (FuryHandler.ShrugChance(this, target) is int shrug and > 0 && Util.Chance(shrug))
+            {
+                MessageToCaster($"{target.GetName(0, true)} shrugs off the effect!", eChatType.CT_SpellResisted);
+                OnSpellNegated(target, SpellNegatedReason.Resisted);
+                return true;
+            }
+
 			double spellResistChance = CalculateSpellResistChance(target);
 
 			if (spellResistChance > 0)
@@ -2573,6 +2690,9 @@ namespace DOL.GS.Spells
 		/// </summary>
 		public virtual void StartSpellNegatedInterruptTimer(GameLiving target)
 		{
+            // A resisted damaging spell is not a damaging hit. Explicit CC/taunt paths remain interrupts.
+            if (Spell.Damage != 0 && SpellCastPushback.AppliesTo(target))
+                return;
 			// Spells that would have caused damage or are not instant will still interrupt.
 			if (Spell.Damage > 0 || Spell.CastTime != 0)
 				target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
@@ -3368,3 +3488,4 @@ namespace DOL.GS.Spells
 		}
 	}
 }
+

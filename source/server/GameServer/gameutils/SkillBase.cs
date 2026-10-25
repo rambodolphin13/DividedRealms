@@ -2299,6 +2299,20 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="spellLineID">KeyName of spell-line</param>
 		/// <returns>list of spells, never null</returns>
+		public static List<string> GetSpellLineKeys()
+		{
+			m_syncLockUpdates.EnterReadLock();
+
+			try
+			{
+				return [.. m_spellLineIndex.Keys];
+			}
+			finally
+			{
+				m_syncLockUpdates.ExitReadLock();
+			}
+		}
+
 		public static List<Spell> GetSpellList(string spellLineID)
 		{
 			List<Spell> spellList = [];

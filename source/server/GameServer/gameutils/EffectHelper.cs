@@ -39,6 +39,27 @@ namespace DOL.GS
         {
             switch (spell.SpellType)
             {
+                case eSpellType.WarlockPrimer: return eEffect.WarlockPrimer;
+                case eSpellType.MaulerStance: return eEffect.MaulerStance;
+                case eSpellType.VampiirFlight: return eEffect.MovementSpeedBuff;
+                case eSpellType.VampiirDetermination: return eEffect.VampiirDetermination;
+                case eSpellType.VampiirFeint: return eEffect.VampiirFeint;
+                case eSpellType.HereticHellflower: return eEffect.HereticHellflower;
+                case eSpellType.HereticCocoon: return eEffect.AblativeArmor;
+                case eSpellType.DeathKnightForm: return eEffect.DeathKnightForm;
+                case eSpellType.DeathKnightMagicWard: return eEffect.AblativeArmor;
+                case eSpellType.DeathKnightIgnore: return eEffect.DeathKnightIgnore;
+                case eSpellType.DeathKnightPowerShield: return eEffect.DeathKnightPowerShield;
+                case eSpellType.DeathKnightEmpowerment: return eEffect.DeathKnightEmpowerment;
+                case eSpellType.DeathKnightRegenerate: return eEffect.HealOverTime;
+                case eSpellType.DeathKnightSnare: return eEffect.MovementSpeedDebuff;
+                case eSpellType.DeathKnightServant: return eEffect.Pet;
+                case eSpellType.DeathKnightPowerLock: return eEffect.DeathKnightPowerLock;
+                case eSpellType.MaulerControl: return eEffect.MaulerControl;
+                case eSpellType.MaulerUtility: return eEffect.MaulerUtility;
+                case eSpellType.MaulerStat: return eEffect.MaulerStat;
+                case eSpellType.WarlockChamber: return eEffect.WarlockChamber;
+                case eSpellType.WarlockChainDot: return eEffect.DamageOverTime;
                 case eSpellType.StormforgedAura: return eEffect.StormforgedAura;
                 case eSpellType.StormforgedChant: return eEffect.StormforgedChant;
                 case eSpellType.StormforgedWard: return eEffect.StormforgedWard;
@@ -47,6 +68,16 @@ namespace DOL.GS
                 case eSpellType.StormforgedStormguard: return eEffect.StormforgedStormguard;
                 case eSpellType.StormforgedRide: return eEffect.StormforgedRide;
                 case eSpellType.StormforgedEye: return eEffect.StormforgedEye;
+                case eSpellType.ArcingPower: return eEffect.ArcingPower;
+                case eSpellType.StormSovereignAbility:
+                case eSpellType.MasterLevelAbility: return eEffect.MasterLevel;
+                case eSpellType.DazzlingArray: return eEffect.MasterLevel;
+                case eSpellType.EnervatingGas: return eEffect.MasterLevel;
+                case eSpellType.InebriatingFumes: return eEffect.MasterLevel;
+                case eSpellType.MentalSiphon: return eEffect.MasterLevel;
+                case eSpellType.ChokingVapors: return eEffect.MasterLevel;
+                case eSpellType.SenseDullingCloud: return eEffect.MasterLevel;
+                case eSpellType.EnergyTempest: return eEffect.MasterLevel;
 
                 #region Positive Effects
 
@@ -59,6 +90,8 @@ namespace DOL.GS
                 case eSpellType.DamageShield: // FocusShield: Could be the wrong SpellType here.
                     return eEffect.FocusShield;
                 case eSpellType.AblativeArmor:
+                case eSpellType.MagicAblativeArmor:
+                case eSpellType.BothAblativeArmor:
                     return eEffect.AblativeArmor;
                 case eSpellType.MeleeDamageBuff:
                     return eEffect.MeleeDamageBuff;
@@ -116,8 +149,77 @@ namespace DOL.GS
                 case eSpellType.HeatColdMatterBuff:
                     return eEffect.HeatColdMatterBuff;
                 case eSpellType.AllMagicResistBuff:
+                case eSpellType.AllMagicResistsBuff:
                 case eSpellType.AllSecondaryMagicResistsBuff:
                     return eEffect.AllMagicResistsBuff;
+                case eSpellType.AllMeleeResistsBuff:
+                    return eEffect.AllMeleeResistsBuff;
+                case eSpellType.Fury:
+                    return eEffect.TankFury;
+                case eSpellType.Rampage:
+                    return eEffect.TankRampage;
+                case eSpellType.MetalGuard:
+                    return eEffect.PhysicalAbsorptionBuff;
+                case eSpellType.SiegeProtection:
+                    return eEffect.SiegeProtection;
+                case eSpellType.CrowdControlGuard:
+                    return eEffect.CrowdControlGuard;
+                case eSpellType.DamageReflection:
+                    return eEffect.DamageReflection;
+                case eSpellType.ArcheryDamageBuff:
+                    return eEffect.ArcheryDamageBuff;
+                case eSpellType.UninterruptibleAura:
+                    return eEffect.UninterruptibleAura;
+                case eSpellType.HelpingHand:
+                    return eEffect.HelpingHand;
+                case eSpellType.TrackStealth:
+                    return eEffect.TrackStealth;
+                case eSpellType.MeleeDamageTypeAura:
+                    return eEffect.MeleeDamageTypeAura;
+                case eSpellType.BolaShot:
+                case eSpellType.TotemSnare:
+                case eSpellType.PoisonSnare:
+                    return eEffect.MovementSpeedDebuff;
+                case eSpellType.WeaponSkillDebuff:
+                    return eEffect.WeaponSkillDebuff;
+                case eSpellType.HealthArmorChant:
+                    return eEffect.HealthArmorChant;
+                case eSpellType.SpellDamageDebuff:
+                    return eEffect.SpellDamageDebuff;
+                case eSpellType.PowerCostDebuff:
+                    return eEffect.PowerCostDebuff;
+                case eSpellType.SpellRangeBuff:
+                    return eEffect.SpellRangeBuff;
+                case eSpellType.DamageReduction:
+                    return eEffect.DamageReduction;
+                case eSpellType.StealthDetectionAura:
+                    return eEffect.StealthDetectionAura;
+                case eSpellType.StaffSkillBuff:
+                    return eEffect.StaffSkillBuff;
+                case eSpellType.HealingReceivedBuff:
+                    return eEffect.HealingReceivedBuff;
+                case eSpellType.HealingDoneBuff:
+                    return eEffect.HealingDoneBuff;
+                case eSpellType.SpellCritAura:
+                    return eEffect.SpellCritAura;
+                case eSpellType.IceGrip:
+                    return eEffect.IceGrip;
+                case eSpellType.FlameCocoon:
+                    return eEffect.FlameCocoon;
+                case eSpellType.BattleControl:
+                    return eEffect.BattleControl;
+                case eSpellType.AllyStealth:
+                    return eEffect.AllyStealth;
+                case eSpellType.Speedwarp:
+                    return eEffect.Speedwarp;
+                case eSpellType.StyleZeal:
+                    return eEffect.StyleZeal;
+                case eSpellType.MeleeTruth:
+                    return eEffect.MeleeTruth;
+                case eSpellType.Siegebreaker:
+                    return eEffect.Siegebreaker;
+                case eSpellType.BlightSurge:
+                    return eEffect.BlightSurge;
 
                 // Regens.
                 case eSpellType.HealthRegenBuff:
@@ -129,6 +231,7 @@ namespace DOL.GS
 
                 // Misc.
                 case eSpellType.OffensiveProc:
+                case eSpellType.PoisonCoating:
                     return eEffect.OffensiveProc;
                 case eSpellType.DefensiveProc:
                     return eEffect.DefensiveProc;
@@ -151,7 +254,6 @@ namespace DOL.GS
                 case eSpellType.SpeedDecrease:
                 case eSpellType.UnbreakableSpeedDecrease:
                 case eSpellType.PreventFlight:
-                case eSpellType.SluaghbinderCripplingPlague:
                     return eEffect.MovementSpeedDebuff;
                 case eSpellType.MeleeDamageDebuff:
                     return eEffect.MeleeDamageDebuff;
@@ -215,6 +317,8 @@ namespace DOL.GS
                     return eEffect.MatterResistDebuff;
                 case eSpellType.SlashResistDebuff:
                     return eEffect.SlashResistDebuff;
+                case eSpellType.CrushSlashThrustDebuff:
+                    return eEffect.AllMeleeResistsDebuff;
 
                 // Misc.
                 case eSpellType.SavageCombatSpeedBuff:
@@ -228,6 +332,7 @@ namespace DOL.GS
                 case eSpellType.SavageStyleParryBuff:
                 case eSpellType.SavageSlashResistanceBuff:
                 case eSpellType.SavageThrustResistanceBuff:
+                case eSpellType.SavageMeleeResistanceBuff:
                     return eEffect.SavageBuff;
                 case eSpellType.DirectDamage:
                     return eEffect.DirectDamage;
@@ -261,6 +366,7 @@ namespace DOL.GS
                 case eSpellType.SummonAnimistPet:
                 case eSpellType.SummonAnimistFnF:
                 case eSpellType.SummonSpiritFighter:
+                case eSpellType.StormSovereignWolf:
                 case eSpellType.StormforgedPet:
                 case eSpellType.SummonHunterPet:
                 case eSpellType.SummonUnderhill:
@@ -288,7 +394,7 @@ namespace DOL.GS
                     return eEffect.StunImmunity;
                 case eSpellType.SpeedDecrease:
                 case eSpellType.UnbreakableSpeedDecrease:
-                case eSpellType.SluaghbinderCripplingPlague:
+                case eSpellType.BolaShot:
                     return eEffect.SnareImmunity;
                 case eSpellType.Nearsight:
                     return eEffect.NearsightImmunity;
@@ -351,6 +457,21 @@ namespace DOL.GS
                     list.Add(eProperty.WeaponSkill);
                     list.Add(eProperty.Constitution);
                     return list;
+                case eEffect.WeaponSkillDebuff:
+                    list.Add(eProperty.WeaponSkill);
+                    return list;
+                case eEffect.SpellDamageDebuff:
+                    list.Add(eProperty.SpellDamage);
+                    return list;
+                case eEffect.PowerCostDebuff:
+                    list.Add(eProperty.SpellPowerCost);
+                    return list;
+                case eEffect.SpellRangeBuff:
+                    list.Add(eProperty.SpellRange);
+                    return list;
+                case eEffect.StaffSkillBuff:
+                    list.Add(eProperty.Skill_Staff);
+                    return list;
                 case eEffect.DexQuickBuff:
                 case eEffect.DexQuiDebuff:
                     list.Add(eProperty.Dexterity);
@@ -410,6 +531,7 @@ namespace DOL.GS
                     list.Add(eProperty.Resist_Energy);
                     return list;
                 case eEffect.AllMagicResistsBuff:
+                case eEffect.TankFury:
                     list.Add(eProperty.Resist_Body);
                     list.Add(eProperty.Resist_Spirit);
                     list.Add(eProperty.Resist_Energy);
@@ -454,6 +576,11 @@ namespace DOL.GS
                     return list;
                 case eEffect.MesmerizeDurationBuff:
                     list.Add(eProperty.MesmerizeDurationReduction);
+                    return list;
+                case eEffect.VampiirDetermination:
+                    list.Add(eProperty.MesmerizeDurationReduction);
+                    list.Add(eProperty.StunDurationReduction);
+                    list.Add(eProperty.SpeedDecreaseDurationReduction);
                     return list;
                 case eEffect.FatigueConsumptionBuff:
                 case eEffect.FatigueConsumptionDebuff:
@@ -522,6 +649,7 @@ namespace DOL.GS
                 case eEffect.HeatColdMatterBuff:
                 case eEffect.BodySpiritEnergyBuff:
                 case eEffect.AllMagicResistsBuff:
+                case eEffect.TankFury:
                 case eEffect.SlashResistBuff:
                 case eEffect.SlashResistDebuff:
                 case eEffect.ThrustResistBuff:

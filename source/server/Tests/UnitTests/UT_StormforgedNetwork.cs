@@ -81,7 +81,6 @@ namespace DOL.UnitTests
         private sealed class Step : StormforgedStep
         {
             public Step(GameLiving owner, Spell spell) : base(owner, spell, Line) { }
-            public bool Resolve(out Point3D point) => GetDestination(out point);
         }
 
         [SetUp]
@@ -147,20 +146,20 @@ namespace DOL.UnitTests
         }, 30);
 
         [Test]
-        public void StormstepAcceptsTwoThousandUnitsButRejectsHiddenOutOfRangeAndOffMapTargets()
+        public void StormstepLandsInFrontOfItsTargetAndStillValidatesGround()
         {
-            var owner = NewActor();
+            var owner = NewActor(); var enemy = NewActor(2800); enemy.Realm = eRealm.None; enemy.Health = 100;
             var step = new Step(owner, Spell(62210, "StormforgedStep", 2000));
-            owner.GroundTarget.Set(3000, 1000, 100); owner.GroundTargetInView = true;
-            Assert.That(step.Resolve(out var landing), Is.True);
-            Assert.That(landing.X, Is.EqualTo(3000));
-            step.ApplyEffectOnTarget(owner);
-            Assert.That(owner.X, Is.EqualTo(3000));
+            step.ApplyEffectOnTarget(enemy);
+            Assert.That(owner.X, Is.EqualTo(2710));
+            Assert.That(owner.Y, Is.EqualTo(1000));
+            // Already beside the target: stay put rather than stacking onto it.
+            owner.X = 2750;
+            Assert.That(StormforgedTravel.ResolveBeside(owner, enemy).X, Is.EqualTo(2750));
+            // No target, no travel.
             owner.X = 1000;
-            owner.GroundTarget.Set(3001, 1000, 100);
-            Assert.That(step.Resolve(out _), Is.False);
-            owner.GroundTarget.Set(2000, 1000, 100); owner.GroundTargetInView = false;
-            Assert.That(step.Resolve(out _), Is.False);
+            step.ApplyEffectOnTarget(null);
+            Assert.That(owner.X, Is.EqualTo(1000));
             Assert.That(StormforgedTravel.TryResolvePoint(owner, new Point3D(-1, 1000, 100), 2000, out _), Is.False);
             Assert.That(StormforgedTravel.TryResolvePoint(owner, new Point3D(1200, 1000, 900), 2000, out _), Is.False);
         }

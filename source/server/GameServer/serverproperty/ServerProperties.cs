@@ -36,6 +36,37 @@ namespace DOL.GS.ServerProperties
         [ServerProperty("server", "hybrid_coop_pvp", "Cross-realm co-op with guild PvP in DF, battlegrounds and frontier zones. Requires restart.", false)]
         public static bool HYBRID_COOP_PVP;
 
+        [ServerProperty("spells", "spell_damage_pushback", "Damage delays player/gamebot casts instead of interrupting or imposing a casting lockout.", true)]
+        public static bool SPELL_DAMAGE_PUSHBACK = true;
+
+        [ServerProperty("spells", "allow_multiple_chants", "Live chant rules: a caster may keep several different chants and songs running at once. A new chant only replaces the caster's chant of the same type or effect group, and only one focus spell runs at a time. False restores the 1.65 one-pulse-at-a-time rule.", true)]
+        public static bool ALLOW_MULTIPLE_CHANTS = true;
+
+        [ServerProperty("spells", "max_pulses", "With allow_multiple_chants, how many pulsing spells (chants, songs, pulses) a caster can keep running at once. Live 1.121: 8. Focus spells don't count.", 8)]
+        public static int MAX_PULSES = 8;
+
+        [ServerProperty("spells", "skald_max_pulses", "With allow_multiple_chants, the Skald's pulse cap. Live 1.123: 12.", 12)]
+        public static int SKALD_MAX_PULSES = 12;
+
+        [ServerProperty("spells", "spell_damage_pushback_per_hit", "Cast delay per damaging hit, in milliseconds.", 500)]
+        public static int SPELL_DAMAGE_PUSHBACK_PER_HIT = 500;
+
+        [ServerProperty("spells", "spell_damage_pushback_cap", "Maximum accumulated damage delay per cast, in milliseconds.", 1000)]
+        public static int SPELL_DAMAGE_PUSHBACK_CAP = 1000;
+
+        [ServerProperty("recovery", "faster_out_of_combat_recovery", "Enable player resource recovery floors outside combat; existing bot fast rest is unchanged.", true)]
+        public static bool FASTER_OUT_OF_COMBAT_RECOVERY = true;
+        [ServerProperty("recovery", "rest_health_seconds", "Approximate standing health refill time; zero disables this resource's floor.", 60)]
+        public static int REST_HEALTH_SECONDS = 60;
+        [ServerProperty("recovery", "rest_power_seconds", "Approximate standing power refill time; zero disables this resource's floor.", 30)]
+        public static int REST_POWER_SECONDS = 30;
+        [ServerProperty("recovery", "rest_endurance_seconds", "Approximate stationary endurance refill time; zero disables this resource's floor.", 20)]
+        public static int REST_ENDURANCE_SECONDS = 20;
+        [ServerProperty("recovery", "rest_sitting_multiplier", "Additional recovery-floor multiplier while sitting/resting.", 2)]
+        public static int REST_SITTING_MULTIPLIER = 2;
+        [ServerProperty("bots", "buff_upkeep_refresh_seconds", "Refresh own long-duration buffs this many seconds before expiry; zero disables early refresh.", 15)]
+        public static int BUFF_UPKEEP_REFRESH_SECONDS = 15;
+
 		// Properties: feel free to improve the SPs in the
 		// categories below, or extend the category list.
 
@@ -45,6 +76,39 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("classes", "enable_stormforged", "Enable the custom Midgard Stormforged class in the Midgard Mauler slot.", false)]
         public static bool ENABLE_STORMFORGED;
+
+        [ServerProperty("classes", "enable_pendragon", "Enable the Albion Pendragon Sovereign in the Albion Mauler slot.", false)]
+        public static bool ENABLE_PENDRAGON;
+
+        [ServerProperty("classes", "enable_tuatha", "Enable the Hibernian Tuatha Sovereign (class 67). Needs the patched modern client's native slot 67 and native_custom_class_slots.", false)]
+        public static bool ENABLE_TUATHA;
+
+        [ServerProperty("classes", "native_custom_class_slots", "The modern (1.125+) client is patched with its own class slots 64-67 (Storm Sovereign, Pendragon Sovereign, Death Knight, Tuatha Sovereign; source/tools/classslots). Creation and character lists then use those IDs directly and the Mauler slots are real Maulers. Leave False for unpatched clients.", false)]
+        public static bool NATIVE_CUSTOM_CLASS_SLOTS;
+
+        [ServerProperty("classes", "enable_valkyrie_test", "Enable Valkyrie race eligibility for the isolated development class test; requires class data and creation settings.", false)]
+        public static bool ENABLE_VALKYRIE_TEST;
+
+        [ServerProperty("classes", "enable_warlock_test", "Enable the isolated modern Warlock player test kit; install its class data before enabling.", false)]
+        public static bool ENABLE_WARLOCK_TEST;
+
+        [ServerProperty("classes", "enable_bainshee_test", "Enable the modern-live Bainshee test kit; install its class data before enabling.", false)]
+        public static bool ENABLE_BAINSHEE_TEST;
+
+        [ServerProperty("classes", "enable_vampiir_test", "Enable the modern-live Vampiir test kit; install its class data before enabling.", false)]
+        public static bool ENABLE_VAMPIIR_TEST;
+
+        [ServerProperty("classes", "enable_heretic_test", "Enable the modern-live Heretic test kit; install its class data before enabling.", false)]
+        public static bool ENABLE_HERETIC_TEST;
+
+        [ServerProperty("classes", "enable_death_knight_test", "Enable the Death Knight (live Necromancer) test class; needs the patched client with native slot 66.", false)]
+        public static bool ENABLE_DEATH_KNIGHT_TEST;
+
+        [ServerProperty("classes", "enable_mauler_test", "Enable native Mauler players in the isolated modern client test installation.", false)]
+        public static bool ENABLE_MAULER_TEST;
+
+        [ServerProperty("classes", "enable_modern_races", "Enable expansion-race player creation with the bundled 1.130 client class/race combinations. Requires modern starting-location data.", false)]
+        public static bool ENABLE_MODERN_RACES;
 
         [ServerProperty("system", "tempproperties_to_register", "Serialized list of tempprop string, separated by semi-colon for be registered when a player disconnect", "LastPotionItemUsedTick;SpellAvailableTime;ItemUseDelay;LastChargedItemUsedTick")]
 		public static string TEMPPROPERTIES_TO_REGISTER;
@@ -748,6 +812,18 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("rates", "cl_xp_rate", "The Champion Level Experience Points Rate Modifier - Edit this to change the rate at which you gain CL experience points e.g 1.5 is 50% more 2.0 is twice the amount (100%) 0.5 is half the amount (50%)", 1.0)]
 		public static double CL_XP_RATE;
+
+		/// <summary>
+		/// The ML Experience Rate
+		/// </summary>
+		[ServerProperty("rates", "ml_xp_rate", "Master Level experience from level-50 kills. At 1.0 one Master Level takes the experience of one level 49 to 50; 2.0 is twice as fast. 0 turns ML experience off.", 1.0)]
+		public static double ML_XP_RATE;
+
+		/// <summary>
+		/// The Champion Level rate from realm points
+		/// </summary>
+		[ServerProperty("rates", "cl_rp_rate", "Champion experience per realm point earned at level 50. CL15 takes 875,000 champion experience; 2.0 is twice as fast, 0 turns Champion Levels off.", 1.0)]
+		public static double CL_RP_RATE;
 
 		/// <summary>
 		/// RvR Zones XP Rate
@@ -2129,14 +2205,6 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("classes", "disabled_classes", "Serialized list of disabled classes, separated by semi-colon or a range with a dash (ie 1-5;7;9)", "")]
 		public static string DISABLED_CLASSES;
-
-		/// <summary>
-		/// Offline DAoC 0.33 editions: the custom Hibernian Sluaghbinder class (0.33b keeps it on,
-		/// 0.33 "no custom class" turns it off). Off means no player creation through the Mauler slot,
-		/// no Sluaghbinder autonomous bots and no Sluaghbinder temporary helpers.
-		/// </summary>
-		[ServerProperty("classes", "enable_sluaghbinder", "Allow the custom Hibernian Sluaghbinder class (player creation, autonomous bots and helpers). False leaves only the Classic + SI classes.", true)]
-		public static bool ENABLE_SLUAGHBINDER = true;
 
 		/// <summary>
 		/// Disable some races from being created

@@ -1,53 +1,31 @@
-using DOL.GS.Effects;
-
 namespace DOL.GS.Spells
 {
+    /// <summary>Fury (tank shout): all magic resists for the caster, and a chance to shrug off crowd control (Value% each).</summary>
     [SpellHandler(eSpellType.Fury)]
-    public class FuryHandler : SpellHandler
+    public class FuryHandler(GameLiving caster, Spell spell, SpellLine line) : AllMagicResistsAbilityBuff(caster, spell, line)
     {
-        public override void OnEffectStart(GameSpellEffect effect)
+        public override string ShortDescription => $"You gain a {Spell.Value}% bonus to all magic resistances and a {Spell.Value}% chance to shrug off crowd control spells.";
+
+        /// <summary>The chance for the target to shrug off this spell: Rampage against debuffs, Fury against crowd control.</summary>
+        public static int ShrugChance(ISpellHandler handler, GameLiving target)
         {
-            int value = (int)m_spell.Value;
+            if (target == null || handler.HasPositiveEffect)
+                return 0;
 
-            SendEffectAnimation(effect.Owner, 0, false, 1);
-            effect.Owner.AbilityBonus[eProperty.Resist_Body] += value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Cold] += value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Energy] += value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Heat] += value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Matter] += value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Spirit] += value;
+            int chance = 0;
 
-            GamePlayer player = effect.Owner as GamePlayer;
-            if (player != null)
-            {
-                player.Out.SendCharStatsUpdate();
-                player.UpdatePlayerStatus();
-                player.Out.SendCharResistsUpdate();
-            }
+            if (handler is PropertyChangingSpell && handler.Spell.IsDebuff && EffectListService.GetEffectOnTarget(target, eEffect.TankRampage) is ECSGameSpellEffect rampage)
+                chance = (int) rampage.SpellHandler.Spell.Value;
+
+            if (IsCrowdControl(handler) && EffectListService.GetEffectOnTarget(target, eEffect.TankFury) is ECSGameSpellEffect fury)
+                chance = System.Math.Max(chance, (int) fury.SpellHandler.Spell.Value);
+
+            return chance;
         }
 
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+        private static bool IsCrowdControl(ISpellHandler handler)
         {
-            int value = (int)m_spell.Value;
-
-            effect.Owner.AbilityBonus[eProperty.Resist_Body] -= value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Cold] -= value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Energy] -= value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Heat] -= value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Matter] -= value;
-            effect.Owner.AbilityBonus[eProperty.Resist_Spirit] -= value;
-
-            GamePlayer player = effect.Owner as GamePlayer;
-            if (player != null)
-            {
-                player.Out.SendCharStatsUpdate();
-                player.UpdatePlayerStatus();
-                player.Out.SendCharResistsUpdate();
-            }
-
-            return 0;
+            return handler is AbstractCCSpellHandler || handler.Spell.SpellType is eSpellType.SpeedDecrease or eSpellType.UnbreakableSpeedDecrease or eSpellType.DamageSpeedDecrease;
         }
-
-        public FuryHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
     }
 }

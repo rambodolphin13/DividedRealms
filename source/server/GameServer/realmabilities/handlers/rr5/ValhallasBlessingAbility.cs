@@ -49,29 +49,13 @@ namespace DOL.GS.RealmAbilities
         {
             if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
-            GamePlayer player = living as GamePlayer;
-            if (player != null)
+            var targets = living.Group?.GetMembersInTheGroup() ?? new List<GameLiving> { living };
+            foreach (GameLiving target in targets)
             {
-                ArrayList targets = new ArrayList();
-                if (player.Group == null)
-                    targets.Add(player);
-                else
-                {
-                    foreach (GamePlayer grpplayer in player.Group.GetPlayersInTheGroup())
-                    {
-                        if (player.IsWithinRadius( grpplayer, SpellRadius ) && grpplayer.IsAlive)
-                            targets.Add(grpplayer);
-                    }
-                }
-                foreach (GamePlayer target in targets)
-                {
-                    //send spelleffect
-                    if (!target.IsAlive) continue;
-					ValhallasBlessingEffect ValhallasBlessing = target.EffectList.GetOfType<ValhallasBlessingEffect>();
-                    if (ValhallasBlessing != null)
-                        ValhallasBlessing.Cancel(false);
-                    new ValhallasBlessingEffect().Start(target);
-                }
+                if (!target.IsAlive || target.CurrentRegion != living.CurrentRegion || !living.IsWithinRadius(target, SpellRadius))
+                    continue;
+                target.EffectList.GetOfType<ValhallasBlessingEffect>()?.Cancel(false);
+                new ValhallasBlessingEffect().Start(target);
             }
             DisableSkill(living);
         }

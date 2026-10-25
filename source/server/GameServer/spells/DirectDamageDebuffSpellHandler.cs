@@ -62,7 +62,7 @@ namespace DOL.GS.Spells
 			AttackData ad = CalculateDamageToTarget(target);
 			SendDamageMessages(ad);
 			DamageTarget(ad, true);
-			target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
+			target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
 			/*
 			if (target.IsAlive)
 				base.ApplyEffectOnTarget(target, effectiveness);*/

@@ -40,6 +40,7 @@ namespace DOL.GS.PropertyCalc
                     chance += playerOwner.GetAbility<RealmAbilities.AtlasOF_WildMinionAbility>()?.Amount ?? 0;
             }
 
+            chance += Spells.SpellCritAuraSpellHandler.Percent(living); // Runemaster Empowerment line.
             return Math.Min(chance, 50);
         }
     }

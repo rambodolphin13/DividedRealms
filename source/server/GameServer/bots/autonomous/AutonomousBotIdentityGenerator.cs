@@ -65,9 +65,6 @@ namespace DOL.GS
                     new(eCharacterClass.Ranger, eRace.Celt, eRace.Elf, eRace.Lurikeen),
                     new(eCharacterClass.Animist, eRace.Celt, eRace.Firbolg, eRace.Sylvan),
                     new(eCharacterClass.Valewalker, eRace.Celt, eRace.Firbolg, eRace.Sylvan),
-                    // Experimental Sluaghbinder: the isolated class has the
-                    // same two legal races as its player character creator.
-                    new(eCharacterClass.Sluaghbinder, eRace.Celt, eRace.Firbolg),
                 ],
             };
 
@@ -115,7 +112,6 @@ namespace DOL.GS
                 throw new ArgumentOutOfRangeException(nameof(gender), "Autonomous bots must have a male or female identity.");
 
             random ??= Random.Shared;
-            realmChoices = ActiveChoices(realmChoices);
             ClassChoice classChoice = realmChoices[random.Next(realmChoices.Length)];
             eRace race = classChoice.Races[random.Next(classChoice.Races.Length)];
             string name = GenerateUniqueName(realm, gender, reservedNames, random);
@@ -131,7 +127,7 @@ namespace DOL.GS
         {
             if (!Choices.TryGetValue(realm, out ClassChoice[] realmChoices))
                 throw new ArgumentOutOfRangeException(nameof(realm));
-            ClassChoice choice = ActiveChoices(realmChoices).FirstOrDefault(entry => entry.CharacterClass == characterClass);
+            ClassChoice choice = realmChoices.FirstOrDefault(entry => entry.CharacterClass == characterClass);
             if (choice == null)
                 throw new ArgumentException($"{characterClass} is not a Classic + SI {GlobalConstants.RealmToName(realm)} class.", nameof(characterClass));
             if (gender is not eGender.Male and not eGender.Female)
@@ -149,19 +145,8 @@ namespace DOL.GS
 
         public static IReadOnlyCollection<eCharacterClass> GetEraClasses(eRealm realm) =>
             Choices.TryGetValue(realm, out ClassChoice[] choices)
-                ? ActiveChoices(choices).Select(choice => choice.CharacterClass).ToArray()
+                ? choices.Select(choice => choice.CharacterClass).ToArray()
                 : Array.Empty<eCharacterClass>();
-
-        /// <summary>False only for the Sluaghbinder in the 0.33 "no custom class" edition.</summary>
-        public static bool IsClassAvailable(eCharacterClass characterClass) =>
-            characterClass != eCharacterClass.Sluaghbinder || ServerProperties.Properties.ENABLE_SLUAGHBINDER;
-
-        // With the custom class enabled (0.33b, the default) the original array is used unchanged,
-        // so bot rolls are identical to the Claude version build.
-        private static ClassChoice[] ActiveChoices(ClassChoice[] choices) =>
-            ServerProperties.Properties.ENABLE_SLUAGHBINDER
-                ? choices
-                : choices.Where(choice => IsClassAvailable(choice.CharacterClass)).ToArray();
 
         public static IReadOnlyCollection<eRace> GetEligibleRaces(eCharacterClass characterClass) =>
             Choices.Values.SelectMany(value => value)

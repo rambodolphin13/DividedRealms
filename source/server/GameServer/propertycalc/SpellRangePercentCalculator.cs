@@ -52,7 +52,8 @@ namespace DOL.GS.PropertyCalc
 
         public override int CalcValueFromBuffs(GameLiving living, eProperty property)
         {
-            return Math.Min(5, living.SpecBuffBonusCategory[property]);
+            // Minstrel Reach songs (SpellRangeBuff) are base buffs beside the capped spec buffs.
+            return Math.Min(5, living.SpecBuffBonusCategory[property]) + living.BaseBuffBonusCategory[property];
         }
 
         public override int CalcValueFromItems(GameLiving living, eProperty property)

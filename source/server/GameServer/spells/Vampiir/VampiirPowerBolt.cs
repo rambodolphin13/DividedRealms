@@ -6,15 +6,10 @@ namespace DOL.GS.Spells
 	[SpellHandler(eSpellType.VampiirBolt)]
 	public class VampiirBoltSpellHandler : SpellHandler
 	{
-		public override bool CheckBeginCast(GameLiving selectedTarget)
-		{
-			if (Caster.InCombat == true)
-			{
-				MessageToCaster("You cannot cast this spell in combat!", eChatType.CT_SpellResisted);
-				return false;
-			}
-			return base.CheckBeginCast(selectedTarget);
-		}
+		// Live 1.123: Devouring Bolt and its lower ranks can be cast while in combat.
+		public override string ShortDescription =>
+			$"Instant bolt that drains power from the target and gives it to you: {Spell.Value / 2.5:0.#}% of a player's maximum power, or {Spell.Value * 2}% of a monster's level. Range {Spell.Range}, reuse {Spell.RecastDelay / 1000} seconds. Usable in combat.";
+
 		public override bool StartSpell(GameLiving target)
 		{
 			foreach (GameLiving targ in SelectTargets(target))

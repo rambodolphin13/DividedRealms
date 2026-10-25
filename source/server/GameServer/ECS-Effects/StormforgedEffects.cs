@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DOL.GS.Spells;
 
 namespace DOL.GS
@@ -26,6 +27,16 @@ namespace DOL.GS
     public class StormforgedChantEffect : ECSGameSpellEffect
     {
         private long _supportTick;
+        private MLMod[] _royalMods = Array.Empty<MLMod>();
+        private static IEnumerable<GameLiving> RoyalMembers(GameLiving singer)
+        {
+            IEnumerable<GameLiving> roster = singer.Group?.GetMembersInTheGroup() ?? (IEnumerable<GameLiving>)new[] { singer };
+            foreach (var member in roster)
+            {
+                yield return member;
+                if (member.ControlledBrain?.Body is GameNPC pet) yield return pet;
+            }
+        }
         private readonly List<StormforgedChantEffect> _children = new();
 
         public StormforgedChantEffect(in ECSGameEffectInitParams initParams) : base(initParams)
@@ -42,10 +53,20 @@ namespace DOL.GS
             base.OnStartEffect();
             Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, SpellHandler.Spell.Value / 100.0);
             Owner.OnMaxSpeedChange();
+            if (StormSovereignAbilities.Owns(SpellHandler.Spell.ID))
+            {
+                int level = Math.Min(40, SpellHandler.Spell.Level);
+                _royalMods = MLMod.Resists(MLCategory.Buff, Math.Max(1, level * 24 / 40))
+                    .Concat(new[] { MLMod.Buff(eProperty.ArmorFactor, level * 2), MLMod.Buff(eProperty.MeleeSpeed, level * 17 / 40) }).ToArray();
+                foreach (var mod in _royalMods) mod.Apply(Owner, this, true);
+                MLMod.Refresh(Owner);
+            }
         }
 
         public override void OnStopEffect()
         {
+            foreach (var mod in _royalMods) mod.Apply(Owner, this, false);
+            MLMod.Refresh(Owner);
             Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, this);
             Owner.OnMaxSpeedChange();
             StormforgedEffectSupport.EndSubSpell(SpellHandler.Caster, Owner, SpellHandler.Spell.SubSpellID);
@@ -64,8 +85,7 @@ namespace DOL.GS
                 return;
             }
             if (Owner != singer && (!singer.IsWithinRadius(Owner, SpellHandler.Spell.Radius) ||
-                singer is not GamePlayer playerSinger || playerSinger.Group == null ||
-                !playerSinger.Group.GetMembersInTheGroup().Contains(Owner)))
+                !RoyalMembers(singer).Contains(Owner)))
             {
                 End();
                 return;
@@ -84,9 +104,8 @@ namespace DOL.GS
                 return;
             _supportTick = GameLoop.GameLoopTime + SpellHandler.Spell.Frequency;
             _children.RemoveAll(child => child.IsEnded);
-            if (singer is GamePlayer player && player.Group != null)
             {
-                foreach (GameLiving member in player.Group.GetMembersInTheGroup())
+                foreach (GameLiving member in RoyalMembers(singer).Distinct())
                 {
                     if (member != singer && member.IsAlive && member.CurrentRegion == singer.CurrentRegion && singer.IsWithinRadius(member, SpellHandler.Spell.Radius))
                     {
@@ -122,18 +141,21 @@ namespace DOL.GS
             // multiplied by level again, flooring early buffs to zero and weakening old ranks.
             _baseStats = Math.Max(1, (int)(Owner.Level * 1.25));
             _specStats = Math.Max(1, (int)(Owner.Level * 1.875));
-            _armor = Math.Max(1, Owner.Level * 2);
-            _resists = Math.Max(1, (int)Math.Ceiling(26 * Math.Min(40, (int)Owner.Level) / 40.0));
+            bool royal = StormSovereignAbilities.Owns(SpellHandler.Spell.ID);
+            _armor = royal ? 0 : Math.Max(1, Owner.Level * 2);
+            _resists = royal ? 0 : Math.Max(1, (int)Math.Ceiling(26 * Math.Min(40, (int)Owner.Level) / 40.0));
             ChangeBonuses(1);
             StormforgedEffectSupport.ApplySubSpell(Owner, Owner, SpellHandler.Spell.SubSpellID, SpellHandler.SpellLine);
-            StormforgedEffectSupport.ApplySubSpell(Owner, Owner, SpellHandler.Spell.ID + 8, SpellHandler.SpellLine);
+            if (!StormSovereignAbilities.Owns(SpellHandler.Spell.ID))
+                StormforgedEffectSupport.ApplySubSpell(Owner, Owner, SpellHandler.Spell.ID + 8, SpellHandler.SpellLine);
         }
 
         public override void OnStopEffect()
         {
             ChangeBonuses(-1);
             StormforgedEffectSupport.EndSubSpell(Owner, Owner, SpellHandler.Spell.SubSpellID);
-            StormforgedEffectSupport.EndSubSpell(Owner, Owner, SpellHandler.Spell.ID + 8);
+            if (!StormSovereignAbilities.Owns(SpellHandler.Spell.ID))
+                StormforgedEffectSupport.EndSubSpell(Owner, Owner, SpellHandler.Spell.ID + 8);
             base.OnStopEffect();
         }
 

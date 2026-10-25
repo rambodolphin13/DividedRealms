@@ -40,42 +40,6 @@ namespace DOL.GS.Spells
 		public SummonDruidPet(GameLiving caster, Spell spell, SpellLine line)
 			: base(caster, spell, line) { }
 
-		protected override IControlledBrain GetPetBrain(GameLiving owner)
-		{
-			// Real players do not implement the bot-only IGamePlayer interface.
-			// Both must reach the priest's heal-before-melee brain. Keep the
-			// pet body/stat factory unchanged: this repair is healing AI only.
-			int? classId = owner switch
-			{
-				GamePlayer human => human.CharacterClass?.ID,
-				IGamePlayer bot => bot.CharacterClass?.ID,
-				_ => null
-			};
-			if (classId == (int)eCharacterClass.Sluaghbinder ||
-				 (owner is GamePlayer player && classId == (int)eCharacterClass.Acolyte &&
-				  player.Realm == eRealm.Hibernia && player.Level < 5))
-			{
-				return new SluaghbinderPetBrain(owner);
-			}
-
-			return base.GetPetBrain(owner);
-		}
-
-		protected override GameSummonedPet GetGamePet(INpcTemplate template)
-		{
-			// The dedicated role stats apply to real players, persistent GameBots,
-			// and temporary companions on the isolated Sluaghbinder path only.
-			if (Caster is IGamePlayer playerLike && playerLike.CharacterClass != null &&
-				(playerLike.CharacterClass.ID == (int)eCharacterClass.Sluaghbinder ||
-				 (Caster is GamePlayer player && player.CharacterClass.ID == (int)eCharacterClass.Acolyte &&
-				  player.Realm == eRealm.Hibernia && player.Level < 5)))
-			{
-				return new SluaghbinderPet(template);
-			}
-
-			return base.GetGamePet(template);
-		}
-
 		public override bool CheckEndCast(GameLiving selectedTarget)
 		{
 			if (Caster is GamePlayer && ((GamePlayer)Caster).ControlledBrain != null)

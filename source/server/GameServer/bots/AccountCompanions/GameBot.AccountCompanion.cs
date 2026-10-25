@@ -86,9 +86,7 @@ namespace DOL.GS
             Endurance = character.Endurance > 0 ? Math.Min(character.Endurance, MaxEndurance) : MaxEndurance;
             RespawnInterval = -1;
 
-            var brain = (eCharacterClass)ClassId == eCharacterClass.Sluaghbinder
-                ? new DOL.AI.Brain.SluaghbinderBotBrain()
-                : new DOL.AI.Brain.BotBrain();
+            var brain = new DOL.AI.Brain.BotBrain();
             brain.IsHealer = IsHealerClass();
             SetOwnBrain(brain);
             InitControlledBrainArray(1);

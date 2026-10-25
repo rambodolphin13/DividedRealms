@@ -50,6 +50,18 @@ public class UT_StormforgedInnate
         Assert.That(StormforgedTurretRules.IsStormSummon(stock, bomb), Is.False);
         Assert.That(StormforgedInnate.Bonus(null, eProperty.Strength), Is.Zero);
     }
+    [TestCase((byte)1)] [TestCase((byte)25)] [TestCase((byte)50)]
+    public void PendragonHasExactlyTheSameInnateStatsHealthAndPower(byte level)
+    {
+        var midgard=NewPlayer(true,level);
+        var albion=NewPlayer(true,level);
+        albion.Class=new ClassPendragonSovereign();
+        for(int property=(int)eProperty.Stat_First;property<=(int)eProperty.Stat_Last;property++)
+            Assert.That(albion.GetModified((eProperty)property),Is.EqualTo(midgard.GetModified((eProperty)property)));
+        Assert.That(new MaxHealthCalculator().CalcValue(albion,eProperty.MaxHealth),Is.EqualTo(new MaxHealthCalculator().CalcValue(midgard,eProperty.MaxHealth)));
+        Assert.That(new MaxManaCalculator().CalcValue(albion,eProperty.MaxMana),Is.EqualTo(new MaxManaCalculator().CalcValue(midgard,eProperty.MaxMana)));
+        Assert.That(StormforgedTurretRules.IsStormOwner(albion),Is.False,"no obsolete storm turret allowance");
+    }
 
     [TestCase((byte)1)] [TestCase((byte)5)] [TestCase((byte)20)] [TestCase((byte)40)] [TestCase((byte)50)]
     public void AllEightStatsScaleWithoutEquipmentOrBuffs(byte level)
@@ -58,7 +70,7 @@ public class UT_StormforgedInnate
         var thane = NewPlayer(false, level);
         for (int property = (int)eProperty.Stat_First; property <= (int)eProperty.Stat_Last; property++)
         {
-            Assert.That(storm.GetModified((eProperty)property), Is.EqualTo(60 + level * 2));
+            Assert.That(storm.GetModified((eProperty)property), Is.EqualTo(60 + level * 23 / 10));
             Assert.That(thane.GetModified((eProperty)property), Is.EqualTo(60));
         }
     }
@@ -70,11 +82,11 @@ public class UT_StormforgedInnate
         player.BaseBuffBonusCategory[eProperty.Strength] = 10000;
         player.SpecBuffBonusCategory[eProperty.Strength] = 10000;
         player.ItemBonus[eProperty.Strength] = 10000;
-        Assert.That(player.GetModified(eProperty.Strength), Is.EqualTo(60 + 80 + 50 + 75 + 60));
+        Assert.That(player.GetModified(eProperty.Strength), Is.EqualTo(60 + 92 + 50 + 75 + 60));
         player.Level = 50;
-        Assert.That(player.GetModified(eProperty.Strength), Is.EqualTo(60 + 100 + 62 + 93 + 75));
+        Assert.That(player.GetModified(eProperty.Strength), Is.EqualTo(60 + 115 + 62 + 93 + 75));
         player.TotalConstitutionLostAtDeath = 5;
-        Assert.That(player.GetModified(eProperty.Constitution), Is.EqualTo(155));
+        Assert.That(player.GetModified(eProperty.Constitution), Is.EqualTo(170));
     }
 
     [TestCase((byte)1)] [TestCase((byte)25)] [TestCase((byte)50)]
@@ -82,9 +94,9 @@ public class UT_StormforgedInnate
     {
         var player = NewPlayer(true, level);
         Assert.That(new MaxHealthCalculator().CalcValue(player, eProperty.MaxHealth),
-            Is.EqualTo(1000 + (60 + level * 2) * 2 + level * 10));
+            Is.EqualTo(1000 + (60 + level * 23 / 10) * 2 + level * 23 / 2));
         Assert.That(new MaxManaCalculator().CalcValue(player, eProperty.MaxMana),
-            Is.EqualTo(100 + 60 + level * 2 + level * 2));
+            Is.EqualTo(100 + 60 + level * 23 / 10 + level * 23 / 10));
         var stock = NewPlayer(false, level);
         Assert.That(new MaxHealthCalculator().CalcValue(stock, eProperty.MaxHealth), Is.EqualTo(1120));
         Assert.That(new MaxManaCalculator().CalcValue(stock, eProperty.MaxMana), Is.EqualTo(160));

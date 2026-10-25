@@ -459,6 +459,7 @@ namespace DOL.GS.Styles
 		/// <returns>Endurance needed to use style</returns>
 		private static int CalculateEnduranceCost(GameLiving living, Style style, int weaponSpd, bool allowFreeProc = true)
 		{
+            if (DOL.GS.Spells.ModernMauler.FreeCosts(living)) return 0;
 			// 1.108 - Valhallas Blessing now has a 75% chance to not use endurance.
 			// Apply Valkyrie RA5L effect
 			ValhallasBlessingEffect ValhallasBlessing = living.EffectList.GetOfType<ValhallasBlessingEffect>();
@@ -490,7 +491,7 @@ namespace DOL.GS.Styles
 
 		public static bool CheckEnduranceCost(GamePlayer player, DbInventoryItem weapon, Style style)
 		{
-			int enduranceCost = CalculateEnduranceCost(player, style, weapon.SPD_ABS);
+			int enduranceCost = CalculateEnduranceCost(player, style, weapon.SPD_ABS, false);
 
 			if (player.Endurance < enduranceCost)
 			{

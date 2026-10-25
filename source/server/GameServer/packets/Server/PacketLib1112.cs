@@ -192,7 +192,7 @@ namespace DOL.GS.PacketHandler
 			if (player == null)
 				return;
 
-			var spellsXLines = player.GetAllUsableListSpells(true);
+			var spellsXLines = StormforgedRules.ClientSpellLines(player.GetAllUsableListSpells(true));
 
 			int lineIndex = 0;
 			foreach (var spXsl in spellsXLines)
@@ -217,7 +217,7 @@ namespace DOL.GS.PacketHandler
 						if (sk is Spell)
 						{
 							Spell sp = (Spell)sk;
-							pak.WriteShortLowEndian((byte)sp.Level);
+							pak.WriteShortLowEndian((byte)StormforgedRules.ClientLevel(spXsl.Item1, sp));
 							pak.WriteShort((ushort)sp.InternalID); //new 1.112
 							pak.WriteShort(sp.Icon);
 							pak.WritePascalString(sp.Name);

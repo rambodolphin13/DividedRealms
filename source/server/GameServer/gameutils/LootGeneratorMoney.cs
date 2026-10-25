@@ -44,6 +44,9 @@ namespace DOL.GS
 
 			long moneyCount = minLoot + Util.Random(minLoot >> 1);
 			moneyCount = (long)((double)moneyCount * ServerProperties.Properties.MONEY_DROP);
+			GameObject looter = killer is GameNPC { Brain: AI.Brain.IControlledBrain pet } ? pet.GetPlayerOwner() : killer;
+			if (MasterLevelRules.HasPassive(looter as GameLiving, "Spymaster", 1))
+				moneyCount = moneyCount * 3 / 2;
 
 			DbItemTemplate money = new DbItemTemplate();
 			money.Model = 488;

@@ -43,6 +43,9 @@ namespace DOL.GS.PropertyCalc
                 double result = hpBase;
                 result *= 1 + multiplicativeAbilityBonus * 0.01;
                 result += itemBonus + buffBonus + flatAbilityBonus;
+                if (MasterLevelRules.HasPassive(player, "Warlord", 1))
+                    result *= 1.1; // Warlord ML1 Iron Will
+                result *= Spells.HealthArmorChantSpellHandler.Scale(living); // Champion / Thane health chants.
                 return (int) result;
             }
             else if (living is IGamePlayer igp)
@@ -66,6 +69,7 @@ namespace DOL.GS.PropertyCalc
                 double result = hpBase;
                 result *= 1 + multiplicativeAbilityBonus * 0.01;
                 result += itemBonus + buffBonus + flatAbilityBonus;
+                result *= Spells.HealthArmorChantSpellHandler.Scale(living);
                 return Math.Max(1, (int)result);
             }
             else if (living is GameKeepComponent keepComponent)

@@ -315,7 +315,7 @@ namespace DOL.GS
 
 		public virtual double GetArmorAF(eArmorSlot slot)
 		{
-			return Math.Max(0, GetModified(eProperty.ArmorFactor) / 5.0);
+			return Math.Max(0, GetModified(eProperty.ArmorFactor) / 5.0 * HealthArmorChantSpellHandler.Scale(this));
 		}
 
 		public virtual double GetArmorAbsorb(eArmorSlot slot)
@@ -683,6 +683,22 @@ namespace DOL.GS
 		/// <summary>
 		/// Starts the interrupt timer on this living.
 		/// </summary>
+        public void StartDamageInterruptTimer(int duration, AttackData attack)
+        {
+            var activeCast = castingComponent.SpellHandler;
+            if (!SpellCastPushback.AppliesTo(this) || activeCast?.CastState == eCastState.Focusing ||
+                activeCast?.Spell.SpellType == eSpellType.Archery)
+            {
+                StartInterruptTimer(duration, attack.AttackType, attack.Attacker);
+                return;
+            }
+
+            // Misses, blocks and absorbed hits neither delay nor lock out a cast.
+            if (attack.Attacker != this && attack.AttackResult is eAttackResult.HitUnstyled or eAttackResult.HitStyle &&
+                (long)attack.Damage + attack.CriticalDamage > 0)
+                activeCast?.ApplyDamagePushback();
+        }
+
 		public virtual void StartInterruptTimer(int duration, eAttackType attackType, GameLiving attacker)
 		{
 			long newInterruptTime = GameLoop.GameLoopTime + duration;
@@ -731,6 +747,43 @@ namespace DOL.GS
 		}
 
 		public GameObject LastInterrupter { get; private set; }
+
+		/// <summary>True for an object that has left the world (deleted, or removed until it comes back).</summary>
+		public static bool HasDeparted(GameObject obj) => obj != null && obj.ObjectState != eObjectState.Active;
+
+		/// <summary>
+		/// Drops what this living still holds of objects that have left the world: its last interrupter, the targets its
+		/// attack actions remember, damage credit and the nearby-object lists it cached. Live run 2026-10-22: 2,424 scheduled
+		/// bot logouts left 1,500 deleted bots in memory, held by monsters' last interrupter and weapon and start-of-attack
+		/// targets (and deleted monsters by the same fields of bots); nothing cleared them after a fight, and each held bot
+		/// kept the Windows events its locks had made (Event handles grew about 1,000 an hour). Called every few minutes by
+		/// <see cref="DepartedReferenceSweep"/> on the game loop thread.
+		/// </summary>
+		public virtual void ForgetDeparted()
+		{
+			if (HasDeparted(LastInterrupter))
+				LastInterrupter = null;
+			attackComponent?.ForgetDeparted();
+			// Damage credit decides XP, loot and realm points, so only what can never earn any is dropped: departed neutral
+			// monsters on a bot's or player's own list (realm points ignore them). A monster's list, and the damage of a pet
+			// whose owner is still here (credited to the owner when the monster dies), are kept.
+			if (this is GamePlayer or GameBot)
+			lock (XpGainersLock)
+			{
+				if (m_xpGainers.Count > 0)
+				{
+					List<GameLiving> gone = null;
+					foreach (GameLiving gainer in m_xpGainers.Keys)
+						if (HasDeparted(gainer) && gainer is not (GamePlayer or GameBot) &&
+							(AutonomousBotRealmPointRewards.ResolveRootRewardOwner(gainer) ?? gainer).Realm == eRealm.None)
+							(gone ??= new()).Add(gainer);
+					if (gone != null)
+						foreach (GameLiving gainer in gone)
+							m_xpGainers.Remove(gainer);
+				}
+			}
+			ClearObjectsInRadiusCache();
+		}
 		public long InterruptTime { get; private set; }
 		public long SelfInterruptTime { get; private set; }
 		public long InterruptRemainingDuration => Math.Max(0, Math.Max(InterruptTime, SelfInterruptTime) - GameLoop.GameLoopTime);
@@ -831,8 +884,8 @@ namespace DOL.GS
 				if (ad.Attacker is GamePlayer)
 				{
 					GamePlayer PlayerAttacker = ad.Attacker as GamePlayer;
-					if (PlayerAttacker.GetSpellLine("Spymaster") != null)
-						if (Util.Chance((double)(15 * 0.0001))) return;
+					if (MasterLevelRules.HasPassive(PlayerAttacker, "Spymaster", 3) && Util.Chance(50))
+						return;
 				}
 				weapon.PoisonCharges--;
 				if (weapon.PoisonCharges <= 0) { weapon.PoisonMaxCharges = 0; weapon.PoisonSpellID = 0; }
@@ -991,6 +1044,10 @@ namespace DOL.GS
 			}
 			else if (this is GameNPC && IsObjectInFront(ad.Attacker, 180))
 				evadeChance = GetModified(eProperty.EvadeChance);
+
+			// Strike Prediction also works for classes with no innate Evade skill.
+			if (effectListComponent.ContainsEffectForEffectType(eEffect.ModernStrikePrediction) && IsObjectInFront(ad.Attacker, 180))
+				evadeChance = Math.Max(evadeChance, GetModified(eProperty.EvadeChance));
 
 			if (evadeChance > 0)
 			{
@@ -1427,7 +1484,13 @@ namespace DOL.GS
             if (StormforgedSecondThunderEffect.TryPreventFatalDamage(this, Math.Max(0L, (long)damageAmount + criticalAmount)))
                 damageAmount = criticalAmount = 0;
 
+            Spells.ModernMauler.Protect(this, source, damageType, ref damageAmount, ref criticalAmount);
+            int maulerOldHealth = Health;
 			Health -= damageAmount + criticalAmount;
+            Spells.ModernMauler.ReceivedDamage(this, source, Math.Max(0, maulerOldHealth - Health));
+
+			if (source is GameLiving && source != this)
+				RealmAbilities.ModernDivineIntervention.Absorb(this, damageAmount + criticalAmount);
 
 			// Protect calls to Die, since most overrides aren't thread safe.
 			if (!IsAlive && _dieLock.TryEnter())
@@ -1514,6 +1577,14 @@ namespace DOL.GS
 				return;
 
 			HandleCrowdControlOnAttacked(ad);
+            RealmAbilities.ModernRr5.OnAttacked(this, ad);
+            RealmAbilities.ModernRr5.ModifyIncoming(this, ad);
+            Spells.LiveRound7.OnAttacked(this, ad);
+            Spells.DamageReductionSpellHandler.Reduce(this, ad);
+            HandleAblatives(ad);
+            Spells.DamageReflectionSpellHandler.OnAttacked(this, ad);
+            Spells.HelpingHandSpellHandler.OnAttacked(this, ad);
+            Spells.StyleZealSpellHandler.OnAttacked(this, ad);
 
 			if (ad.IsHit && ad.CausesCombat)
 			{
@@ -1538,46 +1609,7 @@ namespace DOL.GS
 						LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
 				}
 
-				// Melee attack that actually caused damage.
-				if (ad.IsMeleeAttack && ad.Damage > 0)
-				{
-					// Handle ablatives.
-					List<ECSGameSpellEffect> effects = effectListComponent.GetSpellEffects(eEffect.AblativeArmor);
 
-					for (int i = 0; i < effects.Count; i++)
-					{
-						if (effects[i] is not AblativeArmorECSGameEffect effect)
-							continue;
-
-						AblativeArmorSpellHandler ablativeArmorSpellHandler = effect.SpellHandler as AblativeArmorSpellHandler;
-
-						if (!ablativeArmorSpellHandler.MatchingDamageType(ref ad))
-							continue;
-
-						int ablativeHp = effect.RemainingValue;
-						double absorbPercent = AblativeArmorSpellHandler.ValidateSpellDamage((int)effect.SpellHandler.Spell.Damage);
-						int damageAbsorbed = (int)(0.01 * absorbPercent * (ad.Damage + ad.CriticalDamage));
-
-						if (damageAbsorbed > ablativeHp)
-							damageAbsorbed = ablativeHp;
-
-						ablativeHp -= damageAbsorbed;
-						ad.Damage -= damageAbsorbed;
-
-						(effect.SpellHandler as AblativeArmorSpellHandler).OnDamageAbsorbed(ad, damageAbsorbed);
-
-						if (ad.Target is GamePlayer playerTarget)
-							playerTarget.Out.SendMessage(LanguageMgr.GetTranslation(playerTarget.Client, "AblativeArmor.Target", damageAbsorbed), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
-
-						if (ad.Attacker is GamePlayer playerAttacker)
-							playerAttacker.Out.SendMessage(LanguageMgr.GetTranslation(playerAttacker.Client, "AblativeArmor.Attacker", damageAbsorbed), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
-
-						if (ablativeHp <= 0)
-							effect.End();
-						else
-							effect.RemainingValue = ablativeHp;
-					}
-				}
 
 				// Handle DefensiveProcs.
 				List<ECSGameSpellEffect> dProcEffects = effectListComponent.GetSpellEffects(eEffect.DefensiveProc);
@@ -1591,6 +1623,45 @@ namespace DOL.GS
 			else if (ad.IsSpellResisted && ad.Target is GameNPC npc)
 				npc.CancelReturnToSpawnPoint();
 		}
+
+        private void HandleAblatives(AttackData ad)
+        {
+            if (ad.AttackResult is not (eAttackResult.HitStyle or eAttackResult.HitUnstyled))
+                return;
+				// Each ablative handler selects physical, magical, or both damage types.
+				if (ad.Damage > 0 || ad.CriticalDamage > 0)
+				{
+					// Handle ablatives.
+					List<ECSGameSpellEffect> effects = effectListComponent.GetSpellEffects(eEffect.AblativeArmor);
+
+					for (int i = 0; i < effects.Count; i++)
+					{
+						if (effects[i] is not AblativeArmorECSGameEffect effect || effect.IsEnding || effect.IsDisabled)
+							continue;
+
+						AblativeArmorSpellHandler ablativeArmorSpellHandler = effect.SpellHandler as AblativeArmorSpellHandler;
+
+						if (!ablativeArmorSpellHandler.MatchingDamageType(ref ad))
+							continue;
+
+						int ablativeHp = effect.RemainingValue;
+                        int damageAbsorbed = AblativeArmorSpellHandler.AbsorbDamage(ad, ablativeHp, (int)effect.SpellHandler.Spell.Damage);
+                        ablativeHp -= damageAbsorbed;
+
+						(effect.SpellHandler as AblativeArmorSpellHandler).OnDamageAbsorbed(ad, damageAbsorbed);
+
+						if (ad.Target is GamePlayer playerTarget)
+							playerTarget.Out.SendMessage(LanguageMgr.GetTranslation(playerTarget.Client, "AblativeArmor.Target", damageAbsorbed), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+
+						if (ad.Attacker is GamePlayer playerAttacker)
+							playerAttacker.Out.SendMessage(LanguageMgr.GetTranslation(playerAttacker.Client, "AblativeArmor.Attacker", damageAbsorbed), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+
+						effect.RemainingValue = ablativeHp;
+						if (ablativeHp <= 0)
+							effect.End();
+					}
+				}
+        }
 
 		private void HandleControlledPetCombatMessageOnAttacked(AttackData ad)
 		{
@@ -1853,6 +1924,10 @@ namespace DOL.GS
 					// Ignore Whip of Encouragement; Tracker, Chaser, Pursuer Enhancement.
 					// Relying on the `Spell.Target` property to identify these.
 					if (effect.SpellHandler.Spell.Target is eSpellTarget.PET)
+						continue;
+
+					// Vampiir Flight spells stay up in combat (live 1.123).
+					if (effect.SpellHandler.Spell.SpellType is eSpellType.VampiirFlight)
 						continue;
 
 					if (ShouldBeCancelled(attackData, effect))
@@ -3381,7 +3456,10 @@ namespace DOL.GS
 			T tmp;
 			lock (_abilitiesLock)
 			{
-				tmp = (T)m_abilities.Values.FirstOrDefault(a => a.GetType().Equals(typeof(T)));
+				// Preserve exact-type preference, then allow specialized implementations
+				// such as modern RAs to be consumed through their existing base handlers.
+				tmp = (T)m_abilities.Values.FirstOrDefault(a => a.GetType().Equals(typeof(T)))
+					?? m_abilities.Values.OfType<T>().FirstOrDefault();
 			}
 			
 			return tmp;
@@ -3632,33 +3710,6 @@ namespace DOL.GS
 		/// </summary>
 		public override bool HasEffect(Spell spell)
 		{
-			// Cairnheart is a five-rank Sluaghbinder pet regeneration line.  The
-			// ranks intentionally share an effect group so a stronger rank replaces
-			// a weaker one, but the generic check below treats any matching effect
-			// as a block.  That made Cairnheart Rebirth (rank 50) silently fail when
-			// an older rank was still active.  For this isolated line, only the same
-			// or a stronger rank should block the cast; EffectListComponent will
-			// then replace the weaker effect using its normal comparison rules.
-			if (spell != null && spell.ID is >= 59065 and <= 59069)
-			{
-				lock (EffectList.Lock)
-				{
-					foreach (IGameEffect effect in EffectList)
-					{
-						if (effect is not GameSpellEffect existing || existing.Spell == null)
-							continue;
-
-						if (existing.Spell.SpellType == spell.SpellType &&
-							existing.Spell.EffectGroup == spell.EffectGroup &&
-							existing.Spell.ID is >= 59065 and <= 59069 &&
-							existing.Spell.Value >= spell.Value)
-							return true;
-					}
-				}
-
-				return false;
-			}
-
 			lock (EffectList.Lock)
 			{
 				foreach (IGameEffect effect in EffectList)

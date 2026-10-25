@@ -1000,18 +1000,45 @@ namespace DOL.UnitTests
         public void WardensDoNotAlternateAnActiveBladeturnAndPaladinsDoNotToggleActiveChant()
         {
             // A solo Paladin now holds the damage chant in a fight (see SoloPaladinSwitchesOnceToTheDamageChant).
-            foreach (Type type in new[] { typeof(ClassWarden) })
+            // 1.65 rules: one pulse source at a time.
+            bool previous = DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS;
+            DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS = false;
+            try
             {
-                Bot bot = NewBot(type); bot.CaptureCasts = true; bot.Attacking = true;
-                Spell anchor = Song(type == typeof(ClassWarden) ? "Bladeturn" : "EnduranceRegenBuff");
+                foreach (Type type in new[] { typeof(ClassWarden) })
+                {
+                    Bot bot = NewBot(type); bot.CaptureCasts = true; bot.Attacking = true;
+                    Spell anchor = Song(type == typeof(ClassWarden) ? "Bladeturn" : "EnduranceRegenBuff");
+                    bot.InstantMiscSpells = new List<Spell> { anchor, Song("DamageAdd", id: 99972) };
+                    var source = new ECSPulseEffect(new(bot, 0, 1, new SpellHandler(bot, anchor, Line)), anchor.Frequency);
+                    source.Start();
+                    bot.effectListComponent.BeginTick();
+                    typeof(BotBrain).GetMethod("TryMaintainTankChant", Hidden).Invoke(bot.Brain, null);
+                    Assert.That(bot.LastRequested, Is.Null, "No secondary without a safe native child window; never toggle anchor");
+                    Assert.That(source.IsEnding, Is.False);
+                }
+            }
+            finally { DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS = previous; }
+        }
+
+        [Test]
+        public void UnderLiveChantRulesWardenAddsItsDamageChantBesideActiveBladeturn()
+        {
+            bool previous = DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS;
+            DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS = true;
+            try
+            {
+                Bot bot = NewBot(typeof(ClassWarden)); bot.CaptureCasts = true; bot.Attacking = true;
+                Spell anchor = Song("Bladeturn");
                 bot.InstantMiscSpells = new List<Spell> { anchor, Song("DamageAdd", id: 99972) };
                 var source = new ECSPulseEffect(new(bot, 0, 1, new SpellHandler(bot, anchor, Line)), anchor.Frequency);
                 source.Start();
                 bot.effectListComponent.BeginTick();
                 typeof(BotBrain).GetMethod("TryMaintainTankChant", Hidden).Invoke(bot.Brain, null);
-                Assert.That(bot.LastRequested, Is.Null, "No secondary without a safe native child window; never toggle anchor");
+                Assert.That(bot.LastRequested?.ID, Is.EqualTo(99972), "the running Bladeturn is skipped, the damage chant starts beside it");
                 Assert.That(source.IsEnding, Is.False);
             }
+            finally { DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS = previous; }
         }
 
         [Test]

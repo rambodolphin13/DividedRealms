@@ -91,7 +91,7 @@ namespace DOL.GS
 			GameLiving target = (TargetObject as GameLiving);
 			if (target == null || target is Keeps.GuardLord) return; // siege never kills a keep lord
 
-			int damageAmount = CalcDamageToTarget(target) + Util.Random(50);
+			int damageAmount = SiegeDefense.Reduce(target, CalcDamageToTarget(target) + Util.Random(50));
 
 			AttackData ad = new AttackData();
 			ad.Target = target;

@@ -150,14 +150,7 @@ namespace DOL.GS.GameEvents
 					// sort for filling righ hand first...
 					foreach (var cachedItem in m_cachedClassEquipment.Where(k => k.Key == 0 || k.Key == (eCharacterClass)ch.Class).SelectMany(kv => kv.Value).OrderBy(it => it.Item_Type))
 					{
-						// Sluaghbinder characters are stored as the Hibernian Acolyte
-						// base class until level five.  The generic Acolyte starter rows
-						// are Albion leather (Roman models), which gives a Firbolg the
-						// wrong helmet and wrong realm visuals.  Resolve only this
-						// experimental Hibernian base-class loadout to the existing
-						// Hibernian reinforced starter templates; all other classes keep
-						// the database's normal starter equipment unchanged.
-						var item = GetCharacterStarterTemplate(cachedItem, ch);
+						var item = cachedItem;
 
 						// create Inventory item and set to owner.
 						GameInventoryItem inventoryItem = GameInventoryItem.Create(item.IsStackable ? item : new DbItemUnique(item));
@@ -245,33 +238,5 @@ namespace DOL.GS.GameEvents
 			}
 		}
 
-		private static DbItemTemplate GetCharacterStarterTemplate(DbItemTemplate template, DbCoreCharacter character)
-		{
-			if (template == null || character == null || character.Realm != (int)eRealm.Hibernia ||
-				character.Class != (int)eCharacterClass.Acolyte)
-				return template;
-
-			string replacementId = template.Id_nb switch
-			{
-				// The novice follows the Sluaghbinder's Blunt line.  Use the
-				// isolated Hibernian blunt starter template rather than the
-				// copied Hibernian sword template; the latter leaves a level-one
-				// Acolyte holding a weapon it cannot train with.
-				"training_mace" => "training_mace_hib",
-				"small_training_shield" => "training_shield",
-				"rawhide_roman_leather_helm" => "tacuil_helm",
-				"rawhide_roman_leather_boots" => "tacuil_boots",
-				"rawhide_roman_leather_gloves" => "tacuil_gauntlets",
-				"rawhide_roman_leather_jerkin" => "tacuil_vest",
-				"rawhide_roman_leather_leggings" => "tacuil_leggings",
-				"rawhide_roman_leather_sleeves" => "tacuil_sleeves",
-				_ => null,
-			};
-
-			if (replacementId == null)
-				return template;
-
-			return GameServer.Database.FindObjectByKey<DbItemTemplate>(replacementId) ?? template;
-		}
 	}
 }

@@ -46,8 +46,6 @@ namespace DOL.GS.Effects
 				return;
 			if (shield.Object_Type != (int)eObjectType.Shield)
 				return;
-			if (living.TargetObject == null)
-				return;
 			if (living.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
 				return;
 			if (living.ActiveWeapon.Hand == 1)
@@ -100,6 +98,9 @@ namespace DOL.GS.Effects
 			base.Stop();
 			owner.OnMaxSpeedChange();
 		}
+
+		// Reduced movement while covered up; speed buffs and sprint have no effect.
+		public const double SPEED_FACTOR = 0.5;
 
 		public override string Name { get { return "Testudo"; } }
 

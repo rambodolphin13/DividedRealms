@@ -303,9 +303,7 @@ namespace DOL.UnitTests
                 (eRealm.Hibernia, eCharacterClass.Naturalist, eObjectType.Leather, new[] { eObjectType.Blunt, eObjectType.Shield }),
                 (eRealm.Hibernia, eCharacterClass.Stalker, eObjectType.Leather, new[] { eObjectType.Piercing }),
                 (eRealm.Hibernia, eCharacterClass.Magician, eObjectType.Cloth, new[] { eObjectType.Staff }),
-                (eRealm.Hibernia, eCharacterClass.Forester, eObjectType.Cloth, new[] { eObjectType.Staff }),
-                (eRealm.Hibernia, eCharacterClass.Sluaghbinder, eObjectType.Reinforced,
-                    new[] { eObjectType.Blunt, eObjectType.Scythe, eObjectType.Shield })
+                (eRealm.Hibernia, eCharacterClass.Forester, eObjectType.Cloth, new[] { eObjectType.Staff })
             };
 
             foreach (var entry in cases)
@@ -345,7 +343,7 @@ namespace DOL.UnitTests
         [Test]
         public void StormforgedRealRandomRogsUseClassEquipmentAndKeepTheirIdentity()
         {
-            var valid = new[] { eObjectType.Chain, eObjectType.Sword, eObjectType.Hammer, eObjectType.Axe, eObjectType.Shield, eObjectType.Magical };
+            var valid = new[] { eObjectType.Chain, eObjectType.Sword, eObjectType.Hammer, eObjectType.Axe, eObjectType.Spear, eObjectType.Shield, eObjectType.Magical };
             for (int i = 0; i < 256; i++)
             {
                 var item = new GeneratedUniqueItem(eRealm.Midgard, eCharacterClass.Stormforged, 50);
@@ -364,7 +362,7 @@ namespace DOL.UnitTests
             var item = new GeneratedUniqueItem(eRealm.Midgard, eCharacterClass.Stormforged, 50, eObjectType.Chain);
             var flags = BindingFlags.NonPublic | BindingFlags.Instance;
             var valid = typeof(GeneratedUniqueItem).GetMethod("SkillIsValidForClass", flags);
-            foreach (var property in new[] { eProperty.Skill_Sword, eProperty.Skill_Hammer, eProperty.Skill_Axe, eProperty.Skill_Shields, eProperty.Skill_Parry, eProperty.Skill_Stealth })
+            foreach (var property in new[] { eProperty.Skill_Sword, eProperty.Skill_Hammer, eProperty.Skill_Axe, eProperty.Skill_Spear, eProperty.Skill_Shields, eProperty.Skill_Parry, eProperty.Skill_Stealth })
                 Assert.That(valid.Invoke(item, new object[] { property }), Is.True, property.ToString());
             Assert.That(valid.Invoke(item, new object[] { eProperty.Skill_Stormcalling }), Is.False, "The custom class has no trained stock Stormcalling specialization");
             Assert.That(valid.Invoke(item, new object[] { eProperty.Skill_Staff }), Is.False);
@@ -374,37 +372,6 @@ namespace DOL.UnitTests
             var usefulStats = new[] { eProperty.Strength, eProperty.Dexterity, eProperty.Quickness, eProperty.Constitution, eProperty.Piety, eProperty.MaxMana, eProperty.MaxHealth };
             for (int i = 0; i < 64; i++)
                 Assert.That(usefulStats, Does.Contain((eProperty)weighted.Invoke(item, new object[] { eCharacterClass.Stormforged })));
-        }
-
-        [Test]
-        public void SluaghbinderRogArmorProgressesAndAllowsAllShieldSizes()
-        {
-            Assert.That(GeneratedUniqueItem.GetHiberniaArmorType(eCharacterClass.Sluaghbinder, 19),
-                Is.EqualTo(eObjectType.Reinforced));
-            Assert.That(GeneratedUniqueItem.GetHiberniaArmorType(eCharacterClass.Sluaghbinder, 20),
-                Is.EqualTo(eObjectType.Scale));
-
-            MethodInfo shieldSize = typeof(GeneratedUniqueItem).GetMethod("GetMaxShieldSizeFromClass",
-                BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.That(shieldSize, Is.Not.Null);
-            Assert.That(shieldSize.Invoke(null, new object[] { eCharacterClass.Sluaghbinder }),
-                Is.EqualTo(3));
-        }
-
-        [Test]
-        public void SluaghbinderRandomRogsNeverFallBackToClothOrUnsupportedWeapons()
-        {
-            var valid = new[] { eObjectType.Blunt, eObjectType.Scythe, eObjectType.Shield,
-                eObjectType.Reinforced, eObjectType.Scale, eObjectType.Magical };
-
-            for (int i = 0; i < 256; i++)
-            {
-                var item = new GeneratedUniqueItem(eRealm.Hibernia, eCharacterClass.Sluaghbinder, 50);
-                Assert.That(valid, Does.Contain((eObjectType)item.Object_Type),
-                    $"Unexpected Sluaghbinder ROG type {(eObjectType)item.Object_Type}");
-                if ((eObjectType)item.Object_Type == eObjectType.Shield)
-                    Assert.That(item.Type_Damage, Is.InRange(1, 3), "Sluaghbinder shield size");
-            }
         }
 
         // Invoke the existing kill-attribution stage, without changing production

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  *
  * This program is free software; you can redistribute it and/or
@@ -95,9 +95,12 @@ namespace DOL.GS
 		Vampiir = 58,
 		Warden = 46,
 		MaulerHib = 62,
-		// Experimental Hibernian class; only enabled by the isolated Sluaghbinder
-		// test-copy bot catalog (never by the main Offline DAoC installation).
-		Sluaghbinder = 63,
+		// 63 was the retired custom Sluaghbinder; the patched client keeps the slot's name only.
         Stormforged = 64,
+        PendragonSovereign = 65,
+        // Live 1.122B+ Necromancer, beside the classic Necromancer (12); native client slot 66 only.
+        DeathKnight = 66,
+        // Hibernian royal class; native client slot 67, created from the Hibernia entry slot 63 used to have.
+        TuathaSovereign = 67,
 	}
 }

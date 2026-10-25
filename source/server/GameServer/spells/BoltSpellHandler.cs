@@ -52,7 +52,7 @@ namespace DOL.GS.Spells
 
             // Don't send a blocking animation even if the spell gets blocked. Otherwise it will also play a punching animation on the caster.
             DamageTarget(ad, false, 0x14);
-            target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
+            target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
         }
 
         public override double ModifyDamageWithTargetResist(AttackData ad, double damage)

@@ -111,6 +111,40 @@ public class UT_AutonomousBotRealmPointRewards
         Assert.That(actual, Is.EqualTo(expected));
     }
 
+    [TestCase(1, 1)]
+    [TestCase(20, 13)]
+    [TestCase(35, 22)]
+    [TestCase(50, 31)]
+    public void BountyValueMatchesPlayerFormula(int level, int expected)
+    {
+        Assert.That(AutonomousBotRealmPointRewards.GetPlayerEquivalentBountyPointValue((byte)level),
+            Is.EqualTo(expected));
+        Assert.That(expected, Is.EqualTo((int)(1 + level * 0.6)), "GamePlayer.BountyPointsValue formula");
+    }
+
+    [Test]
+    public void BountyRewardMatchesPlayerKillSplitCapAndDamage()
+    {
+        // Solo, full damage, level 50 victim and awarder: the whole value.
+        Assert.That(AutonomousBotRealmPointRewards.CalculateBountyPointReward(31, 31, 1, 1.0), Is.EqualTo(31));
+        // Two-man group dealing 75%: (31 / 2) * 0.75.
+        Assert.That(AutonomousBotRealmPointRewards.CalculateBountyPointReward(31, 31, 2, 0.75), Is.EqualTo((int)(15 * 0.75)));
+        // A low awarder is capped at twice their own value (level 10 player = 7, cap 14).
+        Assert.That(AutonomousBotRealmPointRewards.CalculateBountyPointReward(31, 7, 1, 1.0), Is.EqualTo(14));
+        // Damage above 100% is clamped.
+        Assert.That(AutonomousBotRealmPointRewards.CalculateBountyPointReward(31, 31, 1, 1.5), Is.EqualTo(31));
+    }
+
+    [TestCase(0, 31, 1, 1.0)]
+    [TestCase(31, 0, 1, 1.0)]
+    [TestCase(31, 31, 0, 1.0)]
+    [TestCase(31, 31, 1, 0.0)]
+    public void BountyRewardIsZeroWithoutAValidShare(int victim, int awarder, int participants, double damage)
+    {
+        Assert.That(AutonomousBotRealmPointRewards.CalculateBountyPointReward(victim, awarder, participants, damage),
+            Is.EqualTo(0));
+    }
+
     [Test]
     public void CompanionAndControlledPetResolveToPlayerOwnerWithoutBecomingVictims()
     {

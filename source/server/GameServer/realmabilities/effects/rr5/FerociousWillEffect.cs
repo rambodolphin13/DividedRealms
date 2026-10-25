@@ -31,7 +31,16 @@ namespace DOL.GS.Effects
                 }
             }
             owner.BaseBuffBonusCategory[eProperty.PhysicalAbsorption] += m_currentBonus;
+            foreach (eProperty resist in Resists)
+                owner.OtherBonus[resist] += RESIST_BONUS;
         }
+
+        // Live 1.108: also +25% to all resistances and a 25% chance to shrug off crowd control.
+        public const int RESIST_BONUS = 25;
+        public const int CC_SHRUG = 25;
+        private static readonly eProperty[] Resists = { eProperty.Resist_Body, eProperty.Resist_Cold, eProperty.Resist_Energy,
+            eProperty.Resist_Heat, eProperty.Resist_Matter, eProperty.Resist_Spirit, eProperty.Resist_Crush,
+            eProperty.Resist_Slash, eProperty.Resist_Thrust };
 
 		public override string Name { get { return "Ferocious Will"; } }
 
@@ -40,6 +49,8 @@ namespace DOL.GS.Effects
 		public override void Stop()
 		{
 			owner.BaseBuffBonusCategory[eProperty.PhysicalAbsorption] -= m_currentBonus;
+			foreach (eProperty resist in Resists)
+				owner.OtherBonus[resist] -= RESIST_BONUS;
 			base.Stop();
 		}
 

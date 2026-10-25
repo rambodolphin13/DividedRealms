@@ -31,7 +31,7 @@ namespace DOL.UnitTests
         [Test]
         public void StallMinutesAreNamedByTheirLikelyCause()
         {
-            var top = new[] { new AiTurnStallMonitor.Turn("Conainren", "SluaghbinderBotBrain", 4800) };
+            var top = new[] { new AiTurnStallMonitor.Turn("Conainren", "BotBrain", 4800) };
             Assert.That(AiTurnStallMonitor.IsStallMinute(400, 200), Is.False, "quiet minutes write nothing");
             Assert.That(AiTurnStallMonitor.IsStallMinute(5100, 4900), Is.True);
             Assert.That(AiTurnStallMonitor.LikelyCause(5100, 4900, top), Does.StartWith("garbage-collection"));

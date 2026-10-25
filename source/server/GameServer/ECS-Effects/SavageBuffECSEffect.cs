@@ -9,7 +9,7 @@ namespace DOL.GS
 
         public override void OnStartEffect()
         {
-            ApplyBonus(Owner, (SpellHandler as AbstractSavageBuff).BonusCategory1, (SpellHandler as AbstractSavageBuff).Property1, SpellHandler.Spell.Value, Effectiveness, false);
+            ApplyBonuses(false);
 
             // "You parry with extra skill!"
             // "{0} begins parrying faster!"
@@ -18,8 +18,17 @@ namespace DOL.GS
 
         public override void OnStopEffect()
         {
-            ApplyBonus(Owner, (SpellHandler as AbstractSavageBuff).BonusCategory1, (SpellHandler as AbstractSavageBuff).Property1, SpellHandler.Spell.Value, Effectiveness, true);
+            ApplyBonuses(true);
             OnHealthCost();
+        }
+
+        // Property2 and Property3 are Undefined (ignored) except for the live all-melee resist buff.
+        private void ApplyBonuses(bool isSubtracted)
+        {
+            AbstractSavageBuff buff = SpellHandler as AbstractSavageBuff;
+
+            foreach (eProperty property in new[] { buff.Property1, buff.Property2, buff.Property3 })
+                ApplyBonus(Owner, buff.BonusCategory1, property, SpellHandler.Spell.Value, Effectiveness, isSubtracted);
         }
 
         private void OnHealthCost()

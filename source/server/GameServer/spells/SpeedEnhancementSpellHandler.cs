@@ -16,6 +16,9 @@ namespace DOL.GS.Spells
 
 		public SpeedEnhancementSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
 
+		/// <summary>Cast-time and pulsing speed buffs normally fail on a target that was recently in combat.</summary>
+		protected virtual bool BlockedInCombat => true;
+
 		public override void FinishSpellCast(GameLiving target)
 		{
 			Caster.Mana -= PowerCost(target);
@@ -69,7 +72,7 @@ namespace DOL.GS.Spells
 				return;
 
 			// Graveen: archery speed shot
-			if ((Spell.Pulse != 0 || Spell.CastTime != 0) && target.InCombat)
+			if (BlockedInCombat && (Spell.Pulse != 0 || Spell.CastTime != 0) && target.InCombat)
 			{
 				MessageToLiving(target, "You've been in combat recently, the spell has no effect on you!", eChatType.CT_SpellResisted);
 				return;

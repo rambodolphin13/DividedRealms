@@ -6,7 +6,7 @@ namespace DOL.GS.Spells
         public StormforgedAvatar(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
         public override bool UnstealthCasterOnStart => true;
         public override bool UnstealthCasterOnFinish => true;
-        public override string ShortDescription => "Become a Frost Giant avatar for 60 seconds: double lightning damage, custom spells cast in at most 0.25 seconds, 15% health/power/endurance regeneration and 350-radius lightning every two seconds. Three-minute reuse timer.";
+        public override string ShortDescription => StormSovereignAbilities.Owns(Spell.ID) ? Spell.Description : "Become a Frost Giant avatar for 60 seconds: double lightning damage, custom spells cast in at most 0.25 seconds, 15% health/power/endurance regeneration and 350-radius lightning every two seconds. Three-minute reuse timer.";
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams) =>
             ECSGameEffectFactory.Create(initParams, static (in i) => new StormforgedAvatarEffect(i));
     }

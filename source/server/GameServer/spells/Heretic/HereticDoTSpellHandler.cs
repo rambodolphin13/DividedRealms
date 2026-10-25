@@ -38,7 +38,8 @@ namespace DOL.GS.Spells
 		public override void ApplyEffectOnTarget(GameLiving target)
 		{
 			base.ApplyEffectOnTarget(target);
-			target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
+            if (!SpellCastPushback.AppliesTo(target))
+                target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
 		}
 
 		protected override GameSpellEffect CreateSpellEffect(GameLiving target, double effectiveness)

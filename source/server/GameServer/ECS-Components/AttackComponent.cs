@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +24,20 @@ namespace DOL.GS
         public AttackAction attackAction;
         public ServiceObjectId ServiceObjectId { get; } = new(ServiceObjectType.AttackComponent);
         public AttackerTracker AttackerTracker { get; private set; }
+
+        /// <summary>
+        /// Out of a fight, forgets the start-of-attack target and the last weapon action when their target has left the world
+        /// (see <see cref="GameLiving.ForgetDeparted"/>). A fight in progress keeps them: its own code clears them.
+        /// </summary>
+        public void ForgetDeparted()
+        {
+            if (AttackState) return;
+            if (GameLiving.HasDeparted(_startAttackTarget))
+                _startAttackTarget = null;
+            if (GameLiving.HasDeparted(weaponAction?.Target))
+                weaponAction = null;
+            attackAction?.ForgetDeparted();
+        }
 
         private BlockRoundHandler _blockRoundHandler;
         private GameObject _startAttackTarget;
@@ -101,6 +115,9 @@ namespace DOL.GS
                 if (weapon == null)
                     return eDamageType.Natural;
 
+                if (DOL.GS.Spells.DeathKnight.IsConjured(weapon) && DOL.GS.Spells.DeathKnight.Is(owner))
+                    return eDamageType.Cold;
+
                 switch ((eObjectType) weapon.Object_Type)
                 {
                     case eObjectType.Crossbow:
@@ -113,9 +130,10 @@ namespace DOL.GS
                         return (eDamageType) (ammo == null ? weapon.Type_Damage : ammo.Type_Damage);
                     }
                     case eObjectType.Shield:
-                        return eDamageType.Crush; // TODO: shields do crush damage (!) best is if Type_Damage is used properly
+                        return Spells.MeleeDamageTypeAuraSpellHandler.For(owner) ?? eDamageType.Crush; // TODO: shields do crush damage (!) best is if Type_Damage is used properly
                     default:
-                        return (eDamageType) weapon.Type_Damage;
+                        // Champion's Call turns melee damage to Energy.
+                        return Spells.MeleeDamageTypeAuraSpellHandler.For(owner) ?? (eDamageType) weapon.Type_Damage;
                 }
             }
             else if (owner is GameNPC npcOwner)
@@ -396,6 +414,9 @@ namespace DOL.GS
                 _ => CalculateNpcDamage(weapon),
             };
             damage *= effectiveness;
+            // Adrenaline Rush doubles base damage, so the base cap must double with it.
+            damage *= ModernAdrenalineRush.DamageFactor(owner);
+            damage *= ModernRr5.OutgoingFactor(owner);
             damageCap = CalculateDamageCap(damage);
             damage *= GetWeaponQualityConditionModifier(weapon); // Quality and condition don't affect damage cap.
             return damage;
@@ -580,6 +601,13 @@ namespace DOL.GS
 
                 if (player.ActiveWeaponSlot is eActiveWeaponSlot.Distance)
                 {
+                    // Hunter RR5: no bow while in Dire Wolf form.
+                    if (ModernRr5.BlocksBow(player))
+                    {
+                        player.Out.SendMessage("You cannot use your bow in Dire Wolf form!", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                        return;
+                    }
+
                     if (!Properties.ALLOW_OLD_ARCHERY)
                     {
                         if ((eCharacterClass) player.CharacterClass.ID is eCharacterClass.Scout or eCharacterClass.Hunter or eCharacterClass.Ranger)
@@ -856,6 +884,8 @@ namespace DOL.GS
         /// </summary>
         public AttackData MakeAttack(WeaponAction action, GameObject target, DbInventoryItem weapon, Style style, double effectiveness, int interval, bool dualWield)
         {
+            ModernSpeedOfSoundEffect.BreakOnAction(owner);
+
             if (owner is GamePlayer playerOwner)
             {
                 if (playerOwner.IsCrafting)
@@ -1156,6 +1186,7 @@ namespace DOL.GS
                     double armorMod = CalculateTargetArmor(ad.Target, ad.ArmorHitLocation, out double armorFactor, out double absorb);
 
                     double damageMod = weaponSkill / armorMod;
+                    damageMod *= ModernBadgeOfValor.ArmorFactor(owner, absorb);
                     damageMod *= RelicMgr.GetRelicBonusModifier(owner, eRelicType.Strength);
 
                     // If the target is another player's pet, shouldn't 'PVP_MELEE_DAMAGE' be used?
@@ -1195,6 +1226,13 @@ namespace DOL.GS
                         {
                             // Apply style bonus, calculated on base damage.
                             styleDamage += damage * owner.GetModified(eProperty.StyleDamage) * 0.01;
+                            styleDamage *= ModernRr5.StyleFactor(owner); // Warden RR5 Fury of Nature
+
+                            // Enchantment of Zeal multiplies the style damage bonus and its cap.
+                            double zeal = Spells.StyleZealSpellHandler.StyleFactor(owner);
+                            styleDamage *= zeal;
+                            if (styleDamageCap > 0)
+                                styleDamageCap *= zeal;
 
                             // Save the raw unresisted style damage for the AttackData. To be used by the combat log only.
                             ad.StyleDamage = (int) styleDamage;
@@ -1295,7 +1333,7 @@ namespace DOL.GS
             BroadcastObserverMessage(ad);
 
             // Interrupt the target of the attack.
-            ad.Target.StartInterruptTimer(interval, ad.AttackType, ad.Attacker);
+            ad.Target.StartDamageInterruptTimer(interval, ad);
 
             // If we're attacking via melee, start an interrupt timer on ourselves so we cannot swing + immediately cast.
             if (ad.IsMeleeAttack)
@@ -1398,7 +1436,7 @@ namespace DOL.GS
 
         public static double CalculateTargetArmor(GameLiving target, eArmorSlot armorSlot, out double armorFactor, out double absorb)
         {
-            // Give an extra 0.4–20 armor factor to players.
+            // Give an extra 0.4â€“20 armor factor to players.
             // This matches the formula on https://camelotherald.fandom.com/wiki/Melee_Damage.
             // The formula seems to work when compared against a couple of old combat logs,
             // but not on Live servers, hinting that it was either increased at some point,
@@ -1480,7 +1518,8 @@ namespace DOL.GS
                 // If we consume blocks, then the reduction is lower the lower the base block chance, and identical with a theoretical 100% block chance.
                 if (blockSucceeded)
                 {
-                    if (!_blockRoundHandler.Consume(shieldSize, ad, out int usedBlockRoundCount))
+                    // Call of a Thousand Storms: more attackers can be blocked in a round before blocks run out.
+                    if (!_blockRoundHandler.Consume(shieldSize + ThousandStormsECSGameEffect.ExtraAttackers(owner, ad.Attacker), ad, out int usedBlockRoundCount))
                         blockSucceeded = false;
 
                     // `usedBlockRoundCount` is 0 if the block was allowed without consuming a round.
@@ -1501,7 +1540,7 @@ namespace DOL.GS
 
             if (ad.AttackType is AttackData.eAttackType.Ranged or AttackData.eAttackType.Spell)
             {
-                // Nature's shield, 100% block chance, 120° frontal angle.
+                // Nature's shield, 100% block chance, 120Â° frontal angle.
                 StyleProcInfo styleProcInfo =
                     owner.styleComponent.NextCombatStyle?.Procs.Where(x => x.Spell.SpellType is eSpellType.NaturesShield).FirstOrDefault() ??
                     owner.styleComponent.NextCombatBackupStyle?.Procs.Where(x => x.Spell.SpellType is eSpellType.NaturesShield).FirstOrDefault();
@@ -1588,9 +1627,7 @@ namespace DOL.GS
 
         public static bool CheckDashingDefense(AttackData ad, bool stealthStyle, out eAttackResult result)
         {
-            // Not implemented.
-            result = eAttackResult.Any;
-            return false;
+            return ModernDashingDefense.TryDefend(ad, stealthStyle, out result);
         }
 
         /// <summary>
@@ -1599,6 +1636,14 @@ namespace DOL.GS
         public virtual eAttackResult CalculateEnemyAttackResult(WeaponAction action, AttackData ad, DbInventoryItem attackerWeapon, ref double effectiveness)
         {
             if (owner.EffectList.CountOfType<NecromancerShadeEffect>() > 0)
+                return eAttackResult.NoValidTarget;
+
+            // Death Knight Power Lock: neither the Death Knight nor its target can be damaged by melee attacks.
+            if (ad.IsMeleeAttack && DOL.GS.Spells.DeathKnight.IsPowerLocked(owner))
+                return eAttackResult.NoValidTarget;
+
+            // Live grapples (Ice Grip, Flame Cocoon, Battle Control): no melee lands on the grappled, and Battle Control's swing none.
+            if (ad.IsMeleeAttack && DOL.GS.Spells.LiveRound7.BlocksMelee(owner, ad.Attacker))
                 return eAttackResult.NoValidTarget;
 
             //1.To-Hit modifiers on styles do not any effect on whether your opponent successfully Evades, Blocks, or Parries.  Grab Bag 2/27/03
@@ -1732,7 +1777,7 @@ namespace DOL.GS
 
                 if (ad.IsMeleeAttack)
                 {
-                    double parryChance = owner.TryParry(ad, lastAttackData, AttackerTracker.MeleeCount);
+                    double parryChance = owner.TryParry(ad, lastAttackData, ThousandStormsECSGameEffect.EffectiveAttackers(owner, ad.Attacker, AttackerTracker.MeleeCount));
                     ad.ParryChance = parryChance * 100;
                     double parryRoll = owner.GetPseudoDouble(RandomDeckEvent.Parry);
 
@@ -1756,9 +1801,8 @@ namespace DOL.GS
             if (CheckGuard(ad, stealthStyle))
                 return eAttackResult.Blocked;
 
-            // Not implemented.
-            // if (CheckDashingDefense(ad, stealthStyle, out eAttackResult result)
-            //     return result;
+            if (CheckDashingDefense(ad, stealthStyle, out eAttackResult dashingResult))
+                return dashingResult;
 
             GamePlayer playerTarget = ad.Target as GamePlayer;
 
@@ -1777,6 +1821,10 @@ namespace DOL.GS
             // It also means that a level 50 player will always have at least 0.1% chance to fumble even against a very low level target.
             if (missChance < fumbleChance)
                 missChance = fumbleChance;
+
+            // Enchantment of Truth: melee strikes with 100% accuracy.
+            if (DOL.GS.Spells.MeleeTruthSpellHandler.Strikes(ad))
+                missChance = fumbleChance = 0;
 
             ad.MissChance = missChance * 100;
 
@@ -1814,6 +1862,7 @@ namespace DOL.GS
 
             foreach (ECSGameEffect bladeturn in owner.effectListComponent.GetEffects(eEffect.Bladeturn))
             {
+                if (DOL.GS.Spells.ModernMauler.PierceBladeturn(ad.Attacker) || DOL.GS.Spells.MeleeTruthSpellHandler.Strikes(ad)) continue;
                 if (!bladeturn.IsActive)
                     continue;
 
@@ -2210,12 +2259,13 @@ namespace DOL.GS
             // In 1.117C, every weapon was given the intrinsic 5% flat bonus special weapons (such as artifacts) had, lowering the base miss rate to 13%.
             double missChance = 18;
             missChance -= ad.Attacker.GetModified(eProperty.ToHitBonus);
+            missChance += owner.GetModified(eProperty.MissHit); // Master Level "harder to hit" bonuses.
 
             if (owner is not GamePlayer || ad.Attacker is not GamePlayer)
             {
                 // 1.33 per level difference.
                 missChance -= (ad.Attacker.EffectiveLevel - owner.EffectiveLevel) * (1 + 1 / 3.0);
-                missChance -= Math.Max(0, AttackerTracker.Count - 1) * Properties.MISSRATE_REDUCTION_PER_ATTACKERS;
+                missChance -= Math.Max(0, ThousandStormsECSGameEffect.EffectiveAttackers(owner, ad.Attacker, AttackerTracker.Count) - 1) * Properties.MISSRATE_REDUCTION_PER_ATTACKERS;
             }
 
             // Weapon and armor bonuses.

@@ -413,29 +413,18 @@ namespace DOL.GS.PacketHandler.Client.v168
 
             // Set Realm and Class
             ch.Realm = pdata.Realm;
-            ch.Class = StormforgedRules.CreationClass(pdata.Class, ch.Realm, Properties.ENABLE_STORMFORGED);
+            // A client with native slots 63-65 sends the custom classes directly; 60-62 are then real Maulers.
+            bool nativeSlots = CustomClassSlots.IsNative(client);
+            ch.Class = nativeSlots ? pdata.Class : StormforgedRules.CreationClass(pdata.Class, ch.Realm, Properties.ENABLE_STORMFORGED);
+            if (!nativeSlots && Properties.ENABLE_PENDRAGON && ch.Realm == (int)eRealm.Albion && pdata.Class == (int)eCharacterClass.MaulerAlb)
+                ch.Class = (int)eCharacterClass.PendragonSovereign;
+            if (PendragonRules.IsPendragon(ch.Class) && (!Properties.ENABLE_PENDRAGON || ch.Realm != (int)eRealm.Albion))
+                return true;
+            // The Tuatha Sovereign exists only in the patched client's native slot 67.
+            if (PendragonRules.IsTuatha(ch.Class) && (!nativeSlots || !Properties.ENABLE_TUATHA || ch.Realm != (int)eRealm.Hibernia))
+                return true;
             if (StormforgedRules.IsStormforged(ch.Class) && (!Properties.ENABLE_STORMFORGED || (eRealm)ch.Realm != eRealm.Midgard))
                 return true;
-
-            // The classic client has a fixed Hibernian class slot that is
-            // reserved for MaulerHib.  The isolated Sluaghbinder test build
-            // uses that disabled slot for the new player-only class.  Store
-            // the novice as Hibernian Acolyte (levels 1-4), like Albion's
-            // Disciple -> Necromancer path; the trainer promotes it to the
-            // real Sluaghbinder class at level 5.  The overview packet still
-            // uses the relabeled client slot, so this does not remove the
-            // Sluaghbinder choice from character select.
-            // The 0.33 "no custom class" edition turns this off; the slot is then the
-            // disabled native MaulerHib class again, exactly like the normal v0.32 edition.
-            if (Properties.ENABLE_SLUAGHBINDER && (eRealm)ch.Realm == eRealm.Hibernia &&
-                (ch.Class == (int)eCharacterClass.MaulerHib ||
-                 ch.Class == (int)eCharacterClass.Sluaghbinder))
-            {
-                if (log.IsDebugEnabled)
-                    log.Debug($"Mapping Hibernian client class slot {eCharacterClass.MaulerHib} to experimental Acolyte (Sluaghbinder novice path)");
-
-                ch.Class = (int)eCharacterClass.Acolyte;
-            }
 
             // Set Account Slot, Gender
             ch.AccountSlot = accountSlot + ch.Realm * 100;
@@ -468,13 +457,11 @@ namespace DOL.GS.PacketHandler.Client.v168
             if (log.IsDebugEnabled)
                 log.Debug($"Creation {client.Version} character, class:{ch.Class}, realm:{ch.Realm}");
 
-            // A client asking for the custom class directly is refused when it is switched off.
-            if (!Properties.ENABLE_SLUAGHBINDER && (eRealm)ch.Realm == eRealm.Hibernia &&
-                (ch.Class == (int)eCharacterClass.Sluaghbinder || ch.Class == (int)eCharacterClass.Acolyte) &&
-                (ePrivLevel)client.Account.PrivLevel == ePrivLevel.Player)
+            // The retired custom Sluaghbinder (class 63) and its Hibernian Acolyte novice can't be created.
+            if (ch.Class == 63 || (eRealm)ch.Realm == eRealm.Hibernia && ch.Class == (int)eCharacterClass.Acolyte)
             {
                 if (log.IsDebugEnabled)
-                    log.Debug($"Client {client.Account.Name} tried to create the disabled custom Sluaghbinder class");
+                    log.Debug($"Client {client.Account.Name} tried to create the retired Sluaghbinder class");
 
                 return true;
             }
@@ -496,6 +483,7 @@ namespace DOL.GS.PacketHandler.Client.v168
             }
 
             // check if race disabled
+            // Stormforged is open to every Midgard race; its own EligibleRaces list still applies.
             List<string> disabledRaces = Util.SplitCSV(Properties.DISABLED_RACES);
             occurences =
                 (from j in disabledRaces
@@ -503,7 +491,7 @@ namespace DOL.GS.PacketHandler.Client.v168
                     select j)
                 .Count();
 
-            if (occurences > 0 && (ePrivLevel)client.Account.PrivLevel == ePrivLevel.Player)
+            if (occurences > 0 && !PendragonRules.IsSovereign(ch.Class) && (ePrivLevel)client.Account.PrivLevel == ePrivLevel.Player)
             {
                 if (log.IsDebugEnabled)
                     log.Debug($"Client {client.Account.Name} tried to create a disabled race: {(eRace)ch.Race}");
@@ -981,16 +969,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 
                 ICharacterClass charClass = ScriptMgr.FindCharacterClass(ch.Class);
 
-                // Hibernia has no ordinary Acolyte career.  This isolated
-                // novice path uses the Sluaghbinder race rules until the
-                // level-5 promotion, rather than the Albion-only base list.
-                if ((eRealm)ch.Realm == eRealm.Hibernia &&
-                    ch.Class == (int)eCharacterClass.Acolyte)
-                {
-                    charClass = ScriptMgr.FindCharacterClass((int)eCharacterClass.Sluaghbinder);
-                }
-
-                if(!charClass.EligibleRaces.Exists(s => (int)s.ID == ch.Race))
+                if(!charClass.EligibleRaces.Exists(s => (int)s.ID == ch.Race) &&
+                    !ModernRaceCreationRules.IsAdditionalRaceAllowed(ch.Class, ch.Race, ch.Realm, Properties.ENABLE_MODERN_RACES))
                 {
                     if (log.IsWarnEnabled)
                         log.WarnFormat("Wrong race: {0}, class:{1} on character creation from Account: {2}", ch.Race, ch.Class, ch.AccountName);

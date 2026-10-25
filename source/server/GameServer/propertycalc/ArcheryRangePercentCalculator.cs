@@ -23,7 +23,7 @@ namespace DOL.GS.PropertyCalc
             if (living.rangeAttackComponent.RangedAttackType is eRangedAttackType.Long)
                 ability = 50;
 
-            return item + ability;
+            return item + ability + living.AbilityBonus[property];
         }
     }
 }

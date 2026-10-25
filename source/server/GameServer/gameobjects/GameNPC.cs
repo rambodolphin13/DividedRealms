@@ -1016,6 +1016,18 @@ namespace DOL.GS
 
 		public int AggroHolderCount => _aggroHolders?.Count ?? 0;
 
+		/// <summary>Also drops the aggro holders (monster brains) whose monster has left the world.</summary>
+		public override void ForgetDeparted()
+		{
+			base.ForgetDeparted();
+			(Brain as StandardMobBrain)?.ForgetDeparted();
+			ConcurrentDictionary<StandardMobBrain, byte> holders = _aggroHolders;
+			if (holders == null) return;
+			foreach (StandardMobBrain holder in holders.Keys)
+				if (holder?.Body == null || HasDeparted(holder.Body))
+					holders.TryRemove(holder, out _);
+		}
+
 		private void ForgetFromAggroHolders()
 		{
 			ConcurrentDictionary<StandardMobBrain, byte> holders = _aggroHolders;
@@ -1774,7 +1786,8 @@ namespace DOL.GS
 				AbstractQuest quest = pair.Key;
 
 				// Handle Data Quest here.
-				if (quest is DataQuest dataQuest && dataQuest.TargetName == Name && (dataQuest.TargetRegion == 0 || dataQuest.TargetRegion == CurrentRegionID))
+				// HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
+				if (quest is DataQuest dataQuest && QuestNames.Same(dataQuest.TargetName, Name) && (dataQuest.TargetRegion == 0 || dataQuest.TargetRegion == CurrentRegionID))
 				{
 					switch (dataQuest.StepType)
 					{
@@ -1816,12 +1829,21 @@ namespace DOL.GS
 			AbstractQuest quest = HasQuest(questType);
 			if (quest != null)
 			{
+				// HearthDAoC: a full journal refuses before the quest is built, since building it saves its record (#112).
+				if (QuestJournal.IsFull(player.QuestList.Count))
+				{
+					player.Out.SendMessage(DataQuestOffers.JournalFullText, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					return false;
+				}
 				AbstractQuest newQuest = (AbstractQuest)Activator.CreateInstance(questType, new object[] { player, startStep });
 				if (newQuest != null && player.AddQuest(newQuest))
 				{
 					player.Out.SendNPCsQuestEffect(this, GetQuestIndicator(player));
 					return true;
 				}
+				// HearthDAoC: a quest AddQuest refused (one the player is on) leaves no record behind (#112).
+				if (newQuest != null)
+					newQuest.DeleteFromDatabase();
 			}
 			return false;
 		}

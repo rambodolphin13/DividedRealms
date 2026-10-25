@@ -128,6 +128,12 @@ namespace DOL.GS.Spells
 
         private static string GetSpellDescription(ISpellHandler spellHandler, Spell spell)
         {
+            string text = GetBaseSpellDescription(spellHandler, spell);
+            return ModernWarlock.DelveNote(spell) is { } note ? $"{text}\n\n{note}" : text;
+        }
+
+        private static string GetBaseSpellDescription(ISpellHandler spellHandler, Spell spell)
+        {
             if (spell.SubSpellID == 0)
                 return spellHandler.ShortDescription;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DOL.AI.Brain;
 using DOL.Database;
+using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 using static DOL.GS.ServerRules.IServerRules;
@@ -52,6 +53,37 @@ public static class AutonomousBotRealmPointRewards
             realmPoints += (int)(realmPoints * (groupContributorCount - 1) * 0.125);
 
         return Math.Max(0, realmPoints);
+    }
+
+    /// <summary>Bounty point value of a gamebot, from the same formula as GamePlayer.BountyPointsValue.</summary>
+    public static int GetPlayerEquivalentBountyPointValue(byte level) => (int)(1 + level * 0.6);
+
+    /// <summary>
+    /// Bounty points for a share of a kill, as AbstractServerRules.AwardPlayerOnPlayerKill pays them:
+    /// the victim's value split by participants, capped at twice the awarder's own value, then scaled
+    /// by damage. Outpost (keep bonus) and battleground rules are applied by the caller.
+    /// </summary>
+    public static int CalculateBountyPointReward(int victimBountyPointValue, int awarderBountyPointValue,
+        int participantCount, double damagePercent)
+    {
+        if (victimBountyPointValue <= 0 || awarderBountyPointValue <= 0 ||
+            participantCount <= 0 || damagePercent <= 0)
+        {
+            return 0;
+        }
+
+        int baseBountyPoints = victimBountyPointValue / participantCount;
+        baseBountyPoints = Math.Min(baseBountyPoints, awarderBountyPointValue * 2);
+        return Math.Max(0, (int)(baseBountyPoints * Math.Min(1.0, damagePercent)));
+    }
+
+    private static int CalculateOutpostBountyBonus(GamePlayer player, int bountyPoints)
+    {
+        if (KeepBonusMgr.RealmHasBonus(eKeepBonusType.Bounty_Points_5, player.Realm))
+            return (int)(bountyPoints / 100.0 * 5);
+        if (KeepBonusMgr.RealmHasBonus(eKeepBonusType.Bounty_Points_3, player.Realm))
+            return (int)(bountyPoints / 100.0 * 3);
+        return 0;
     }
 
     private static readonly DOL.Logging.Logger RvrLog = DOL.Logging.LoggerManager.Create(typeof(AutonomousBotRealmPointRewards));
@@ -163,6 +195,19 @@ public static class AutonomousBotRealmPointRewards
 
                     if (realmPointsEarned > 0)
                         player.GainRealmPoints(realmPointsEarned, true);
+
+                    // Bounty points, as for killing a real player (same split, cap, outpost bonus and battleground rule).
+                    bool bountyAllowedHere = Properties.ALLOW_BPS_IN_BGS || killedBot.CurrentZone?.IsBG != true;
+                    if (bountyAllowedHere)
+                    {
+                        int bountyPointsEarned = CalculateBountyPointReward(
+                            GetPlayerEquivalentBountyPointValue(killedBot.Level), player.BountyPointsValue,
+                            contributorCount, damagePercent);
+                        bountyPointsEarned += CalculateOutpostBountyBonus(player, bountyPointsEarned);
+
+                        if (bountyPointsEarned > 0)
+                            player.GainBountyPoints(bountyPointsEarned);
+                    }
                 }
                 else
                 {

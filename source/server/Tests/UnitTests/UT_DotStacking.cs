@@ -12,7 +12,7 @@ namespace DOL.UnitTests
             new(new DbSpell { SpellID = id, Type = "DamageOverTime", Target = "Enemy", EffectGroup = effectGroup }, 1);
 
         [Test]
-        public void SluaghbinderRotBaneAndGraveRotStack()
+        public void DotsOfDifferentEffectGroupsStack()
         {
             Spell rot = Dot(59104, 59110), bane = Dot(59018, 59111), graveRot = Dot(59070, 59070);
             Assert.That(BotBrain.DotsConflict(bane, rot), Is.False);

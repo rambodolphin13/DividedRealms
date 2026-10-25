@@ -106,19 +106,21 @@ namespace DOL.GS.PacketHandler.Client.v168
             sk = null;
             sl = null;
 
-            var snap = player.GetAllUsableListSpells();
+            var lines = player.GetAllUsableListSpells();
+            var snap = StormforgedRules.ClientSpellLines(lines);
 
             if (spellLineIndex >= snap.Count)
                 return;
 
             int index = -1;
+            SpellLine clientLine = snap[spellLineIndex].Item1;
             List<Skill> skills = snap[spellLineIndex].Item2;
 
             for (int i = 0; i < skills.Count; i++)
             {
                 Skill skill = skills[i];
 
-                if (skill is Spell spell && spell.Level == spellLevel)
+                if (skill is Spell spell && StormforgedRules.ClientLevel(clientLine, spell) == spellLevel)
                 {
                     index = i;
                     break;
@@ -138,9 +140,10 @@ namespace DOL.GS.PacketHandler.Client.v168
             }
 
             if (index > -1)
-                sk = snap[spellLineIndex].Item2[index];
+                sk = skills[index];
 
-            sl = snap[spellLineIndex].Item1;
+            // A merged Stormforged entry casts from its real line.
+            sl = sk == null ? clientLine : StormforgedRules.ServerLine(lines, clientLine, sk);
         }
     }
 }

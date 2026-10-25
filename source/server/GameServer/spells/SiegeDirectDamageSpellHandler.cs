@@ -41,13 +41,11 @@ namespace DOL.GS.Spells
         public override AttackData CalculateDamageToTarget(GameLiving target)
         {
             AttackData ad = base.CalculateDamageToTarget(target);
+            // Siege Resistance and the siege-protection songs.
+            ad.Damage = SiegeDefense.Reduce(target, ad.Damage);
             if (target is GamePlayer)
             {
                 GamePlayer player = target as GamePlayer;
-                int id = player.CharacterClass.ID;
-                //50% reduction for tanks
-                if (id == (int)eCharacterClass.Armsman || id == (int)eCharacterClass.Warrior || id == (int)eCharacterClass.Hero)
-                    ad.Damage /= 2;
                 //3000 spec
                 //ram protection
                 //lvl 0 50%

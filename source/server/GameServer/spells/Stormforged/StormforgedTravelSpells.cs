@@ -29,17 +29,19 @@ namespace DOL.GS.Spells
     }
 
     [SpellHandler(eSpellType.StormforgedStep)]
-    public class StormforgedStep : StormforgedGroundSpell
+    public class StormforgedStep : StormforgedMaintainedSpell
     {
         public StormforgedStep(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
         public override bool UnstealthCasterOnStart => true;
         public override bool UnstealthCasterOnFinish => true;
-        public override string ShortDescription => "Instantly travel to your visible ground target up to 2000 units away and unleash 350-radius lightning on arrival. Eight-second reuse timer.";
+        public override string ShortDescription => "Instantly strike to your enemy target up to 2000 units away and unleash 350-radius lightning on arrival. Eight-second reuse timer.";
 
         public override void ApplyEffectOnTarget(GameLiving target)
         {
-            if (GetDestination(out Point3D destination) &&
-                Caster.MoveTo(Caster.CurrentRegionID, destination.X, destination.Y, destination.Z, Caster.Heading))
+            if (target == null || !target.IsAlive || target.CurrentRegion != Caster.CurrentRegion)
+                return;
+            Point3D landing = StormforgedTravel.ResolveBeside(Caster, target);
+            if (Caster.MoveTo(Caster.CurrentRegionID, landing.X, landing.Y, landing.Z, Caster.GetHeading(target)))
                 StormforgedHeroicRules.CastBurst(Caster, Spell, SpellLine, Caster);
         }
     }

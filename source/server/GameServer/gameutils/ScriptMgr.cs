@@ -694,7 +694,7 @@ namespace DOL.GS
         /// Finds a player class by its script/display name.  This is intentionally
         /// separate from the numeric lookup used by the character database so
         /// data-driven NPCs can safely refer to a class by name (for example,
-        /// "Sluaghbinder") without maintaining a second class-ID table.
+        /// "Stormforged") without maintaining a second class-ID table.
         /// </summary>
         public static ICharacterClass FindCharacterClass(string name)
         {

@@ -10,6 +10,19 @@ namespace DOL.GS.Spells
         public override string ShortDescription => $"Decreases {TargetPronoun} {PropertyToString(Property1)} by {Spell.Value}.";
         public override eBuffBonusCategory BonusCategory1 => eBuffBonusCategory.Debuff;
 
+        public override void ApplyEffectOnTarget(GameLiving target)
+        {
+            // Mercenary RR5 Dissolute Swings blocks new stat debuffs.
+            if (RealmAbilities.ModernRr5.BlocksStatDebuff(target, this))
+            {
+                MessageToCaster("Your target is immune to this effect!", PacketHandler.eChatType.CT_SpellResisted);
+                OnSpellNegated(target, SpellNegatedReason.Immune);
+                return;
+            }
+
+            base.ApplyEffectOnTarget(target);
+        }
+
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams)
         {
             return ECSGameEffectFactory.Create(initParams, static (in i) => new StatDebuffECSEffect(i));

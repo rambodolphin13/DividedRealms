@@ -361,13 +361,44 @@ namespace DOL.GS
 
         public void CancelIncompatiblePulseEffects(ISpellHandler spellHandler)
         {
-            if (!PulseSpellGroupsIgnoringOtherPulseSpells.Contains(spellHandler.Spell.Group))
+            foreach (ECSPulseEffect otherPulseEffect in GetPulseEffects())
             {
-                IEnumerable<ECSPulseEffect> otherPulseEffects = GetPulseEffects().Where(x => !PulseSpellGroupsIgnoringOtherPulseSpells.Contains(x.SpellHandler.Spell.Group));
-
-                foreach (ECSPulseEffect otherPulseEffect in otherPulseEffects)
+                if (otherPulseEffect.SpellHandler != spellHandler &&
+                    PulsesConflict(spellHandler.Spell, otherPulseEffect.SpellHandler.Spell, ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS))
                     otherPulseEffect.End();
             }
+        }
+
+        /// <summary>
+        /// Whether starting <paramref name="incoming"/> ends the caster's running <paramref name="running"/> pulse.
+        /// Live rules (allowMultiple): different chants and songs run together; a chant only replaces one of the
+        /// same spell type or effect group (ActivePulseSpells is keyed by type), and only one focus spell runs.
+        /// 1.65 rules: every pulse ends the others, except spell groups listed as ignoring other pulses.
+        /// </summary>
+        public static int MaxPulses(int characterClassId) => characterClassId == (int) eCharacterClass.Skald
+            ? ServerProperties.Properties.SKALD_MAX_PULSES
+            : ServerProperties.Properties.MAX_PULSES;
+
+        /// <summary>
+        /// Live pulse cap: <paramref name="incoming"/> may start if the running pulses it would not replace
+        /// (focus spells aside) number fewer than <paramref name="cap"/>.
+        /// </summary>
+        public static bool CanStartPulse(Spell incoming, IEnumerable<Spell> running, int cap) =>
+            running.Count(spell => !spell.IsFocus && !PulsesConflict(incoming, spell, true)) < cap;
+
+        public static bool PulsesConflict(Spell incoming, Spell running, bool allowMultiple)
+        {
+            if (!allowMultiple)
+                return !PulseSpellGroupsIgnoringOtherPulseSpells.Contains(incoming.Group) &&
+                    !PulseSpellGroupsIgnoringOtherPulseSpells.Contains(running.Group);
+
+            if (incoming.IsFocus && running.IsFocus)
+                return true;
+
+            if (incoming.EffectGroup != 0 || running.EffectGroup != 0)
+                return incoming.EffectGroup == running.EffectGroup || incoming.SpellType == running.SpellType;
+
+            return incoming.SpellType == running.SpellType;
         }
 
         public virtual void RequestPlayerUpdate(EffectHelper.PlayerUpdate playerUpdate)
@@ -711,24 +742,20 @@ namespace DOL.GS
                 }
                 else if (effect.EffectType is eEffect.AblativeArmor)
                 {
-                    // Special handling for ablative effects.
-                    // We use the remaining amount instead of the spell value. They also can't be added as disabled effects.
+                    // Physical, magical and combined buffers are distinct families.
+                    result = AddEffectResult.Added;
                     for (int i = 0; i < existingEffects.Count; i++)
                     {
-                        if (existingEffects[i] is not AblativeArmorECSGameEffect existingEffect)
+                        if (existingEffects[i] is not AblativeArmorECSGameEffect existingEffect || existingEffect.IsEnding)
                             continue;
-
-                        ISpellHandler existingSpellHandler = existingEffect.SpellHandler;
-                        Spell existingSpell = existingSpellHandler.Spell;
-
-                        // Damage represents the absorption% per hit. This check means 50@100% == 100@50% for example.
-                        // RemainingValue is already modified by effectiveness.
-                        if (newSpell.Value * effect.Effectiveness * AblativeArmorSpellHandler.ValidateSpellDamage((int) newSpell.Damage) <=
-                            existingEffect.RemainingValue * AblativeArmorSpellHandler.ValidateSpellDamage((int) existingSpell.Damage))
+                        Spell existingSpell = existingEffect.SpellHandler.Spell;
+                        if (existingSpell.SpellType != newSpell.SpellType)
                             continue;
-
-                        existingEffect.End();
-                        result = AddEffectResult.Added;
+                        if (newSpell.Value * effect.Effectiveness * AblativeArmorSpellHandler.ValidateSpellDamage((int)newSpell.Damage) <=
+                            existingEffect.RemainingValue * AblativeArmorSpellHandler.ValidateSpellDamage((int)existingSpell.Damage))
+                            return AddEffectResult.Failed;
+                        effectsToStop ??= GameLoop.GetListForTick<ECSGameEffect>();
+                        effectsToStop.Add(existingEffect);
                     }
                 }
                 else

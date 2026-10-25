@@ -33,7 +33,7 @@ namespace DOL.GS.PropertyCalc
             else if (living is GameNPC npc)
                 chance += npc.AbilityBonus[property] * 10 + npc.EvadeChance * 10;
 
-            return chance;
+            return DOL.GS.RealmAbilities.ModernStrikePrediction.MinimumChance(living, chance);
         }
     }
 }

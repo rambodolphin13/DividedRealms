@@ -54,7 +54,11 @@ namespace DOL.GS.Spells
 				if (toRemove == "Mesmerize")
 					effect = EffectListService.GetEffectOnTarget(target, eEffect.Mez);
 				if (effect != null)
+                {
+                    if (effect is WarlockChainDotEffect warlockDot)
+                        warlockDot.Cured = true;
 					effect.End();
+                }
 					//effect.Cancel(false);
 			}
 			SendEffectAnimation(target, 0, false, 1);

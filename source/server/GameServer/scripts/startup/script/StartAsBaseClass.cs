@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -80,7 +80,7 @@ namespace DOL.GS.GameEvents
 			
 			DbCoreCharacter ch = chArgs.Character;
             // Stormforged retains its identity and full equipment access from creation.
-            if (StormforgedRules.IsStormforged(ch.Class))
+            if (PendragonRules.IsSovereign(ch.Class))
                 return;
 
 			// Revert to Base Class.

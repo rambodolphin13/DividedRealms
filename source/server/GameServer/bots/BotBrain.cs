@@ -143,6 +143,15 @@ namespace DOL.AI.Brain
         private GameLiving _recentDirectAttacker;
         private long _recentDirectAttackTick;
 
+        /// <summary>Forgets a recent attacker and the controller's remembered monsters that have left the world (see <see cref="GameLiving.ForgetDeparted"/>).</summary>
+        public void ForgetDeparted()
+        {
+            if (GameLiving.HasDeparted(_recentDirectAttacker))
+                _recentDirectAttacker = null;
+            ForgetDepartedAggro();
+            _autonomousWorldController?.ForgetDeparted();
+        }
+
         public const int MAX_AGGRO_DISTANCE = 3600;
         public const int MAX_AGGRO_LIST_DISTANCE = 6000;
         private const int EFFECTIVE_AGGRO_AMOUNT_CALCULATION_DISTANCE_THRESHOLD = 500;
@@ -287,6 +296,17 @@ namespace DOL.AI.Brain
         public virtual void RemoveFromAggroList(GameLiving living)
         {
             AggroList.TryRemove(living, out _);
+        }
+
+        private void ForgetDepartedAggro()
+        {
+            bool removed = false;
+            foreach (GameLiving held in AggroList.Keys)
+                if (GameLiving.HasDeparted(held))
+                    removed |= AggroList.TryRemove(held, out _);
+            if (removed)
+                lock (((ICollection)OrderedAggroList).SyncRoot)
+                    OrderedAggroList.RemoveAll(entry => GameLiving.HasDeparted(entry.Item1));
         }
 
         public long GetBaseAggroAmount(GameLiving living)
@@ -1946,7 +1966,10 @@ namespace DOL.AI.Brain
                                 (spell.Target is not (eSpellTarget.PET or eSpellTarget.CONTROLLED) ||
                                  AutonomousPetSupport.ShouldMaintainRoutinePetBuff(spell, false)) &&
                                 (!waitingForLeader || CompanionFollowPolicy.CanStopForNativeTravelSpeed(bot, spell)) &&
-                                !BotSongTwistPolicy.IsReservedPulse(bot, spell))
+                                !BotSongTwistPolicy.IsReservedPulse(bot, spell) &&
+                                // BUFF_RULES: short timed buffs are not kept up out of combat.
+                                BotBuffRules.IsMaintainedOutOfCombat(spell.SpellType, spell.IsConcentration,
+                                    spell.IsPulsing, spell.Duration))
                 .DistinctBy(spell => spell.ID)
                 .ToList();
             if (known.Count == 0)
@@ -1964,11 +1987,17 @@ namespace DOL.AI.Brain
             int maintenancePulse = BotMaintenancePulsePolicy.Choose(known, traveling);
             IEnumerable<Spell> candidates = known
                 .Where(spell => BotMaintenancePulsePolicy.CanMaintain(spell, maintenancePulse))
-                .Where(spell => spell.SpellType != eSpellType.SpeedEnhancement || traveling)
-                .OrderByDescending(spell => spell.SpellType == eSpellType.SpeedEnhancement && traveling)
-                .ThenByDescending(spell => spell.Value)
-                .ThenByDescending(spell => spell.Level);
+                .Where(spell => spell.SpellType != eSpellType.SpeedEnhancement || traveling);
 
+            // BUFF_RULES order: Shaman group endurance, travel speed, own dex and dex/quickness, then
+            // real players > bots that need it > bots for whom it is optional > pets, then spec before
+            // base, then stronger, then higher rank. Every castable buff is weighed before one is cast.
+            bool grouped = (bot.Group?.MemberCount ?? 1) > 1;
+            eCharacterClass casterClass = bot.CharacterClass == null
+                ? eCharacterClass.Unknown : (eCharacterClass)bot.CharacterClass.ID;
+            List<(BotBuffRules.Candidate Key, Spell Spell, GameLiving Target)> options = new();
+            Spell concentrationShortSpell = null;
+            int concentrationShortTier = int.MaxValue;
             GameLiving outOfRangeBuffTarget = null;
             foreach (Spell spell in candidates)
             {
@@ -1976,12 +2005,8 @@ namespace DOL.AI.Brain
                     continue;
                 if (bot.Mana < bot.PowerCost(spell))
                     continue;
-                if (!bot.CanAffordConcentration(spell))
-                    continue;
-                if (spell.NeedInstrument && !TryEquipRealInstrument(bot, spell.InstrumentRequirement))
-                    continue;
 
-                GameLiving target = FindMissingMaintenanceTarget(spell);
+                GameLiving target = FindMissingMaintenanceTargetWithTier(spell, out int tier);
                 if (target == null)
                 {
                     outOfRangeBuffTarget ??= FindOutOfRangeBuffTarget(spell);
@@ -1991,6 +2016,29 @@ namespace DOL.AI.Brain
                 // old bounded retry window; other missing buffs may go next.
                 if (target == bot.ControlledBrain?.Body && spell.ID == _pendingMaintenancePetBuffId &&
                     GameLoop.GameLoopTime < _pendingMaintenancePetBuffUntil)
+                    continue;
+                if (!bot.CanAffordConcentration(spell))
+                {
+                    // Remembered so an optional concentration buff on a bot can make room.
+                    if (spell.IsConcentration && BotBuffRules.IsRequiredTier(tier) && tier < concentrationShortTier)
+                    {
+                        concentrationShortSpell = spell;
+                        concentrationShortTier = tier;
+                    }
+                    continue;
+                }
+
+                options.Add((new BotBuffRules.Candidate(
+                    BotBuffRules.SpellRank(spell.SpellType, casterClass, grouped, traveling, target == bot),
+                    tier, BotBuffRules.SpecRank(spell.SpellType), spell.Value, spell.Level, spell.ID), spell, target));
+            }
+            options.Sort((a, b) => BotBuffRules.Order.Compare(a.Key, b.Key));
+
+            foreach (var option in options)
+            {
+                Spell spell = option.Spell;
+                GameLiving target = option.Target;
+                if (spell.NeedInstrument && !TryEquipRealInstrument(bot, spell.InstrumentRequirement))
                     continue;
 
                 bool companionPerformerBuff = IsStationaryTemporaryCompanionPerformer();
@@ -2031,6 +2079,14 @@ namespace DOL.AI.Brain
                     return false;
 
                 return cast;
+            }
+
+            // BUFF_RULES: a required concentration buff that does not fit ends this
+            // buffer's largest optional concentration buff on a bot; it goes up next pulse.
+            if (concentrationShortSpell != null && TryFreeConcentrationFor(concentrationShortSpell))
+            {
+                _nextMaintenanceBuffTick = GameLoop.GameLoopTime + 1_000;
+                return true;
             }
 
             // Nothing castable from here, but a group member out of range still needs
@@ -2218,7 +2274,8 @@ namespace DOL.AI.Brain
                                 (!ownerMoving || BotSongTwistPolicy.IsCompanionTravelSong(
                                     (eCharacterClass)bot.CharacterClass.ID, spell.SpellType)))
                 .DistinctBy(spell => spell.ID)
-                .Where(spell => spell.SpellType != eSpellType.SpeedEnhancement || !immediateCombat && (traveling || groupedSupport));
+                .Where(spell => spell.SpellType != eSpellType.SpeedEnhancement || !immediateCombat && (traveling || groupedSupport))
+                .Where(spell => !BotSongTwistPolicy.KeepsRunning(Body, spell));
             if (ownerMoving)
                 songCandidates = songCandidates.GroupBy(spell => spell.SpellType)
                     .Select(group => group.OrderByDescending(spell => spell.Level)
@@ -2268,7 +2325,9 @@ namespace DOL.AI.Brain
             // not its lingering child buffs. Otherwise let the native effect
             // list replace the old source only when the new song actually takes;
             // an asynchronously rejected request must not silence the anchor.
-            if (activePulse?.SpellHandler.Spell is Spell previousSong && previousSong.NeedInstrument &&
+            // Under live chant rules (any instrument plays any song since 1.97) the old song keeps running.
+            if (!DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS &&
+                activePulse?.SpellHandler.Spell is Spell previousSong && previousSong.NeedInstrument &&
                 bot.ActiveWeapon?.DPS_AF != previousSong.InstrumentRequirement)
                 activePulse.End();
 
@@ -2319,7 +2378,8 @@ namespace DOL.AI.Brain
             List<Spell> chants = (bot.MiscSpells ?? []).Concat(bot.InstantMiscSpells ?? [])
                 .Where(spell => spell?.Level <= bot.Level && BotSongTwistPolicy.IsManagedSong(bot, spell))
                 .GroupBy(spell => spell.SpellType)
-                .Select(group => group.OrderByDescending(spell => spell.Level).First()).ToList();
+                .Select(group => group.OrderByDescending(spell => spell.Level).First())
+                .Where(spell => !BotSongTwistPolicy.KeepsRunning(bot, spell)).ToList();
             if (chants.Count == 0) return;
             Spell active = bot.effectListComponent.GetPulseEffects()
                 .FirstOrDefault(effect => !effect.IsEnding && !effect.IsEnded &&
@@ -2423,18 +2483,55 @@ namespace DOL.AI.Brain
         public static bool IsClassicSongClass(eCharacterClass characterClass) => characterClass is
             eCharacterClass.Bard or eCharacterClass.Minstrel or eCharacterClass.Skald;
 
-        private GameLiving FindMissingMaintenanceTarget(Spell spell)
+        private bool HasBuffForUpkeep(GameLiving target, Spell spell)
         {
+            if (!LivingHasEffect(target, spell)) return false;
+            if (target == null || Body.InCombat || target.InCombat || HasAggro || !IsMaintainableClassBuff(spell))
+                return true;
+            // A queued/active refresh must finish before the next upkeep scan can request another.
+            if (Body.castingComponent.SpellHandler is { } casting && casting.Spell.ID == spell.ID && casting.Target == target ||
+                Body.castingComponent.QueuedSpellHandler is { } queued && queued.Spell.ID == spell.ID && queued.Target == target)
+                return true;
+            var effects = target.effectListComponent.GetSpellEffects(EffectHelper.GetEffectFromSpell(spell));
+            bool refresh = false;
+            foreach (var effect in effects)
+            {
+                if (!effect.IsActive || effect.IsEnding) continue;
+                if (!BotBuffUpkeep.CanRefresh(spell, effect.SpellHandler?.Spell,
+                    effect.SpellHandler?.Caster == Body, effect.IsActive, effect.IsEnding,
+                    effect.ExpireTick, GameLoop.GameLoopTime))
+                    return true; // Respect other casters, stronger ranks, pulses and concentration buffs.
+                refresh = true;
+            }
+            return !refresh;
+        }
+
+        private GameLiving FindMissingMaintenanceTarget(Spell spell) => FindMissingMaintenanceTargetWithTier(spell, out _);
+
+        /// <summary>
+        /// The member this buff should go to next, or null. <paramref name="tier"/> is its BUFF_RULES
+        /// target tier: 0 real player, 1 bot that needs it, 2 bot for whom it is optional, 3 pet.
+        /// </summary>
+        private GameLiving FindMissingMaintenanceTargetWithTier(Spell spell, out int tier)
+        {
+            tier = int.MaxValue;
             if (spell.Target is eSpellTarget.PET or eSpellTarget.CONTROLLED)
             {
                 GameLiving pet = Body.ControlledBrain?.Body;
-                return pet?.IsAlive == true && Body.IsWithinRadius(pet, Math.Max(350, spell.Range)) && !LivingHasEffect(pet, spell)
-                    ? pet
-                    : null;
+                if (pet?.IsAlive != true || !Body.IsWithinRadius(pet, Math.Max(350, spell.Range)) || !NeedsBuff(pet, spell) ||
+                    BotBuffRules.NeedFor(spell, pet) == BotBuffNeed.None)
+                    return null;
+                tier = 3;
+                return pet;
             }
 
             if (spell.Target == eSpellTarget.SELF)
-                return LivingHasEffect(Body, spell) ? null : Body;
+            {
+                if (!NeedsBuff(Body, spell))
+                    return null;
+                tier = BotBuffRules.TargetTier(spell, Body);
+                return tier < 0 ? null : Body;
+            }
 
             if (spell.Target == eSpellTarget.GROUP)
             {
@@ -2442,45 +2539,154 @@ namespace DOL.AI.Brain
                 // pulse. A group member briefly missing the child effect is
                 // not grounds to stop again and restart the three-second cast.
                 if (CompanionFollowPolicy.IsNativeCompanionTravelSpeed(BotBody, spell))
-                    return LivingHasEffect(Body, spell) ? null : Body;
+                {
+                    if (!NeedsBuff(Body, spell))
+                        return null;
+                    tier = 1;
+                    return Body;
+                }
+                // One cast reaches the whole group (the class filter is for single-target buffs only);
+                // its tier is that of the most important member still missing it.
                 IEnumerable<GameLiving> members = Body.Group?.GetMembersInTheGroup() ?? [Body];
-                return members.Any(member => member.IsAlive && Body.IsWithinRadius(member, Math.Max(350, spell.Range)) && !LivingHasEffect(member, spell)) ||
-                       FindMissingPartyPetBuffTarget(spell) != null
-                    ? Body
-                    : null;
+                foreach (GameLiving member in members)
+                {
+                    if (member.IsAlive && Body.IsWithinRadius(member, Math.Max(350, spell.Range)) && NeedsBuff(member, spell))
+                        tier = Math.Min(tier, BotBuffRules.TargetTier(BotBuffRules.IsRealPlayer(member), false, BotBuffNeed.Required));
+                }
+                if (tier == int.MaxValue && FindMissingPartyPetBuffTarget(spell) != null)
+                    tier = 3;
+                return tier == int.MaxValue ? null : Body;
             }
 
             if (spell.Target == eSpellTarget.REALM)
             {
                 if (!spell.IsPulsing)
-                    return FindRandomMissingRealmBuffTarget(spell, 350);
-                if (!LivingHasEffect(Body, spell))
+                    return FindRandomMissingRealmBuffTargetWithTier(spell, 350, out tier);
+                if (NeedsBuff(Body, spell))
+                {
+                    tier = 1;
                     return Body;
-                return Body.Group?.GetMembersInTheGroup()
-                    .FirstOrDefault(member => member != Body && member.IsAlive &&
-                                              Body.IsWithinRadius(member, Math.Max(350, spell.Range)) &&
-                                              !LivingHasEffect(member, spell)) ?? FindMissingPartyPetBuffTarget(spell);
+                }
+                GameLiving member = Body.Group?.GetMembersInTheGroup()
+                    .Where(candidate => candidate != Body && candidate.IsAlive &&
+                                        Body.IsWithinRadius(candidate, Math.Max(350, spell.Range)) &&
+                                        NeedsBuff(candidate, spell))
+                    .OrderBy(candidate => BotBuffRules.IsRealPlayer(candidate) ? 0 : 1)
+                    .FirstOrDefault();
+                if (member != null)
+                {
+                    tier = BotBuffRules.IsRealPlayer(member) ? 0 : 1;
+                    return member;
+                }
+                GameLiving pet = FindMissingPartyPetBuffTarget(spell);
+                if (pet != null)
+                    tier = 3;
+                return pet;
             }
 
             return null;
         }
 
+        /// <summary>The target lacks this buff, its upkeep refresh window is open, or it is a long buff with less than a minute left (BUFF_RULES).</summary>
+        private bool NeedsBuff(GameLiving target, Spell spell) =>
+            !HasBuffForUpkeep(target, spell) || IsBuffExpiring(target, spell);
+
+        /// <summary>
+        /// This exact buff is on the target with less than a minute left and nothing else of the same
+        /// kind will outlast it, so it is recast before it runs out. Concentration and pulsing buffs never expire.
+        /// </summary>
+        private static bool IsBuffExpiring(GameLiving target, Spell spell)
+        {
+            if (target?.effectListComponent == null ||
+                !BotBuffRules.NeedsRefresh(spell.IsConcentration, spell.IsPulsing, spell.Duration, 1))
+                return false;
+            bool ownExpiring = false;
+            foreach (ECSGameSpellEffect effect in target.effectListComponent.GetSpellEffects(EffectHelper.GetEffectFromSpell(spell)))
+            {
+                if (effect?.SpellHandler?.Spell is not Spell existing || effect.IsDisabled)
+                    continue;
+                long remaining = effect.GetRemainingTimeForClient();
+                bool expiring = BotBuffRules.NeedsRefresh(existing.IsConcentration, existing.IsPulsing, existing.Duration, remaining);
+                if (!expiring)
+                    return false;
+                if (existing.ID == spell.ID)
+                    ownExpiring = true;
+            }
+            return ownExpiring;
+        }
+
         private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<object, BotBuffReservations<GameLiving>> BuffClaims = new();
 
-        private GameLiving FindRandomMissingRealmBuffTarget(Spell spell, int minimumRange = 0)
+        private GameLiving FindRandomMissingRealmBuffTarget(Spell spell, int minimumRange = 0) =>
+            FindRandomMissingRealmBuffTargetWithTier(spell, minimumRange, out _);
+
+        private GameLiving FindRandomMissingRealmBuffTargetWithTier(Spell spell, int minimumRange, out int tier)
         {
+            tier = int.MaxValue;
             Group group = Body.Group;
             var claims = group == null ? null : BuffClaims.GetValue(AutonomousRealmRaid.SupportScope(BotBody), _ => new());
             int family = (int)EffectHelper.GetEffectFromSpell(spell);
             long now = GameLoop.GameLoopTime;
             int range = Math.Max(minimumRange, spell.CalculateEffectiveRange(Body));
+
+            // BUFF_RULES: the buffer's own dexterity and dexterity/quickness come first.
+            if (spell.SpellType is eSpellType.DexterityBuff or eSpellType.DexterityQuicknessBuff &&
+                Body.IsAlive && NeedsBuff(Body, spell) && !(claims?.IsReserved(Body, family, now) ?? false))
+            {
+                tier = BotBuffRules.TargetTier(spell, Body);
+                if (tier >= 0)
+                    return Body;
+                tier = int.MaxValue;
+            }
+
             IEnumerable<GameLiving> members = spell.Target == eSpellTarget.REALM ? AutonomousRealmRaid.SupportMembers(BotBody) : group?.GetMembersInTheGroup() ?? [Body];
-            // One pool: players, companions, world bots and valid attached pets.
-            // Do not leave pets until every humanoid has been processed first.
-            return BotBuffReservations<GameLiving>.Choose(
-                members.Concat(BotGroupPetBuffTargets.Enumerate(BotBody, spell)),
-                target => target.IsAlive && Body.IsWithinRadius(target, range) &&
-                    !LivingHasEffect(target, spell) && !(claims?.IsReserved(target, family, now) ?? false));
+            // BUFF_RULES: real players first, then bots that need the buff, then bots for whom it is
+            // optional, then pets (only once every member in range has it). Members a buff does
+            // nothing for (acuity on a non-list-caster) are skipped. Ties are picked at random so
+            // several buffers in one group spread out instead of all aiming at the same member.
+            List<GameLiving> best = new();
+            foreach (GameLiving target in members.Concat(BotGroupPetBuffTargets.Enumerate(BotBody, spell)))
+            {
+                if (target == null || !target.IsAlive || !Body.IsWithinRadius(target, range) ||
+                    !NeedsBuff(target, spell) || (claims?.IsReserved(target, family, now) ?? false))
+                    continue;
+                int targetTier = BotBuffRules.TargetTier(spell, target);
+                if (targetTier < 0 || targetTier > tier)
+                    continue;
+                if (targetTier < tier)
+                {
+                    tier = targetTier;
+                    best.Clear();
+                }
+                if (!best.Contains(target))
+                    best.Add(target);
+            }
+            GameLiving chosen = BotBuffReservations<GameLiving>.Choose(best, _ => true);
+            if (chosen == null)
+                tier = int.MaxValue;
+            return chosen;
+        }
+
+        /// <summary>
+        /// BUFF_RULES "concentration running short": ends this buffer's largest optional concentration
+        /// buff on a bot (never on a real player or a pet) so a required one fits on the next pulse.
+        /// Does nothing unless the optional buffs together would free enough.
+        /// </summary>
+        private bool TryFreeConcentrationFor(Spell required)
+        {
+            GameBot bot = BotBody;
+            int needed = required.Concentration - bot.Concentration;
+            if (needed <= 0 || bot.effectListComponent == null)
+                return false;
+            List<ECSGameSpellEffect> optional = bot.effectListComponent.GetConcentrationEffects()
+                .Where(effect => effect?.SpellHandler?.Spell is Spell held && held.IsConcentration && !held.IsPulsing &&
+                                 effect.Owner is GameBot owner &&
+                                 BotBuffRules.NeedFor(held, owner) == BotBuffNeed.Optional)
+                .OrderByDescending(effect => effect.SpellHandler.Spell.Concentration)
+                .ToList();
+            if (optional.Count == 0 || optional.Sum(effect => effect.SpellHandler.Spell.Concentration) < needed)
+                return false;
+            return optional[0].End();
         }
 
         private bool CastCoordinatedBuff(Spell spell, bool? queued = null)
@@ -2491,7 +2697,7 @@ namespace DOL.AI.Brain
                 !spell.IsPulsing && IsMaintainableClassBuff(spell);
             BotBuffReservations<GameLiving> claims = shared ? BuffClaims.GetValue(AutonomousRealmRaid.SupportScope(BotBody), _ => new()) : null;
             int family = shared ? (int)EffectHelper.GetEffectFromSpell(spell) : 0;
-            if (shared && (LivingHasEffect(target, spell) ||
+            if (shared && (!NeedsBuff(target, spell) ||
                 !claims.TryReserve(Body, target, family, GameLoop.GameLoopTime, spell.CastTime)))
                 return false;
             bool cast = false;
@@ -2509,7 +2715,7 @@ namespace DOL.AI.Brain
         private GameLiving FindMissingPartyPetBuffTarget(Spell spell)
         {
             GameNPC pet = BotGroupPetBuffTargets.Enumerate(BotBody, spell)
-                .FirstOrDefault(candidate => !LivingHasEffect(candidate, spell));
+                .FirstOrDefault(candidate => !HasBuffForUpkeep(candidate, spell));
             // Native group spells fan out from the caster; realm buffs target one pet.
             return pet == null ? null : spell.Target == eSpellTarget.GROUP ? Body : pet;
         }
@@ -3381,9 +3587,9 @@ namespace DOL.AI.Brain
             // force the melee fallback.
             // LastInterrupter retains the last actor indefinitely; identity is
             // not proof of a current hit once the interruption window expires.
-            bool actuallyUnderAttack = Body.IsBeingInterruptedByOther ||
+            bool actuallyUnderAttack = SpellCastPushback.RequiresMeleeFallback(Body, Body.IsBeingInterruptedByOther,
                 target == _recentDirectAttacker &&
-                GameLoop.GameLoopTime - _recentDirectAttackTick <= 5_000;
+                GameLoop.GameLoopTime - _recentDirectAttackTick <= 5_000);
             if (!actuallyUnderAttack)
                 return false;
 
@@ -3715,7 +3921,7 @@ namespace DOL.AI.Brain
 
             if (GameLoop.GameLoopTime >= _nextPriorityTauntTick)
             {
-                // Instant taunts (no cast time, like the Sluaghbinder's) are
+                // Instant taunts (no cast time) are
                 // sorted into InstantHarmfulSpells, so look in both lists.
                 Spell taunt = (Body.HarmfulSpells ?? Enumerable.Empty<Spell>())
                     .Concat(Body.InstantHarmfulSpells ?? Enumerable.Empty<Spell>())
@@ -3792,10 +3998,58 @@ namespace DOL.AI.Brain
                             }
                             break;
                         }
+
+                        case Abilities.TauntingShout:
+                        case Abilities.MetalGuard:
+                        case Abilities.BolsteringRoar:
+                        case Abilities.Rampage:
+                        case Abilities.Fury:
+                            TryTankShout(ab);
+                            break;
                     }
                 }
             }
         }
+
+        /// <summary>
+        /// The Armsman, Hero and Warrior shouts (their ability handlers take players only): cast the shout's spell and
+        /// start the ability's reuse. Taunting Shout when tanking a target in front, Metal Guard when a group member
+        /// lacks it, Bolstering Roar when one is mezzed or held, Rampage with a group, Fury when hurt or crowded.
+        /// </summary>
+        private void TryTankShout(Ability ab)
+        {
+            int spellId = TankShoutSpellId(ab.KeyName);
+            Spell spell = spellId > 0 ? SkillBase.GetSpellByID(spellId) : null;
+            if (spell == null || Body.IsCasting || Body.TargetObject is not GameLiving target || !target.IsAlive)
+                return;
+
+            Group group = Body.Group;
+            bool use = ab.KeyName switch
+            {
+                Abilities.TauntingShout => BotPartyRoles.For((eCharacterClass)BotBody.CharacterClass.ID) == BotPartyRole.Tank &&
+                                           Body.IsWithinRadius(target, spell.Range) && Body.IsObjectInFront(target, spell.Radius),
+                Abilities.MetalGuard => group != null && TankShoutTargets.GroupAround(Body, spell)
+                    .Any(member => EffectListService.GetEffectOnTarget(member, eEffect.PhysicalAbsorptionBuff) == null),
+                Abilities.BolsteringRoar => group != null && TankShoutTargets.GroupAround(Body, spell)
+                    .Any(member => member.IsMezzed || EffectListService.GetEffectOnTarget(member, eEffect.MovementSpeedDebuff) != null),
+                Abilities.Rampage => group != null && Body.IsWithinRadius(target, Body.MeleeAttackRange * 2),
+                Abilities.Fury => Body.IsWithinRadius(target, Body.MeleeAttackRange * 2) &&
+                                  (Body.HealthPercent < 75 || Body.attackComponent.AttackerTracker.Count > 1),
+                _ => false,
+            };
+            if (use && Body.CastSpell(spell, SkillBase.GetSpellLine(GlobalSpellsLines.Character_Abilities)))
+                Body.DisableSkill(ab, spell.RecastDelay);
+        }
+
+        public static int TankShoutSpellId(string ability) => ability switch
+        {
+            Abilities.Rampage => 14373,
+            Abilities.Fury => 14374,
+            Abilities.MetalGuard => 14375,
+            Abilities.BolsteringRoar => 14376,
+            Abilities.TauntingShout => 14377,
+            _ => 0,
+        };
 
         #endregion
 
@@ -4721,7 +4975,7 @@ namespace DOL.AI.Brain
             if (pulseEffect != null)
                 return true;
 
-            // DoTs from different effect groups stack (Sluaghbinder Rot + Bane), so
+            // DoTs from different effect groups stack, so
             // only a DoT the server would treat as conflicting blocks a new one.
             if (spellEffect == eEffect.DamageOverTime)
                 return target.effectListComponent.GetSpellEffects(spellEffect)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Linq;
 using DOL.Database;
 using DOL.GS.Effects;
 using DOL.GS.Keeps;
@@ -31,7 +32,8 @@ namespace DOL.GS.PacketHandler
 		}
 
 		public override void SendWarlockChamberEffect(GamePlayer player)
-		{
+        {
+
 			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.VisualEffect)))
 			{
 				pak.WriteShort((ushort)player.ObjectID);

@@ -14,13 +14,15 @@ namespace DOL.GS.Spells
 
         public override void ApplyEffectOnTarget(GameLiving target)
         {
-            if (target.HasAbility(Abilities.CCImmunity))
+            if (target.HasAbility(Abilities.CCImmunity) || target.effectListComponent.ContainsEffectForEffectType(eEffect.Vanish) ||
+                RealmAbilities.ModernRr5.IsControlImmune(target))
             {
                 MessageToCaster("Your target is immune to this effect!", eChatType.CT_SpellResisted);
                 return;
             }
 
-            if (target.EffectList.GetOfType<ChargeEffect>() != null || target.TempProperties.GetProperty<bool>("Charging"))
+            if (target.EffectList.GetOfType<ChargeEffect>() != null || target.TempProperties.GetProperty<bool>("Charging") ||
+                RealmAbilities.ModernRealmControl.IsMovingTooFast(target))
             {
                 MessageToCaster("Your target is moving too fast for this spell to have any effect!", eChatType.CT_SpellResisted);
                 return;
@@ -119,6 +121,10 @@ namespace DOL.GS.Spells
 
             if (resistChance > 100)
                 resistChance = 100;
+
+            // Berserker RR5.
+            if (target.EffectList.GetOfType<FerociousWillEffect>() != null)
+                resistChance = Math.Max(resistChance, FerociousWillEffect.CC_SHRUG);
 
             // Use ResurrectHealth = 1 if the CC should not be resisted.
             if (Spell.ResurrectHealth == 1)

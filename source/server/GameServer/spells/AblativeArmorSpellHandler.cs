@@ -50,6 +50,18 @@ namespace DOL.GS.Spells
 			return true;
 		}
 
+        public static int AbsorbDamage(AttackData attack, int remaining, int percent)
+        {
+            int baseDamage = System.Math.Max(0, attack.Damage);
+            int critical = System.Math.Max(0, attack.CriticalDamage);
+            int absorbed = System.Math.Min(System.Math.Max(0, remaining),
+                (int)((baseDamage + (long)critical) * ValidateSpellDamage(percent) / 100L));
+            int fromBase = System.Math.Min(baseDamage, absorbed);
+            attack.Damage = baseDamage - fromBase;
+            attack.CriticalDamage = critical - (absorbed - fromBase);
+            return absorbed;
+        }
+
 		public virtual void OnDamageAbsorbed(AttackData ad, int DamageAmount) { }
 		
 		public override DbPlayerXEffect GetSavedEffect(GameSpellEffect e)
@@ -149,10 +161,10 @@ namespace DOL.GS.Spells
 		// Check if Melee
 		public override bool MatchingDamageType(ref AttackData ad)
 		{
-			if (ad == null || (ad.AttackResult == eAttackResult.HitStyle && ad.AttackResult == eAttackResult.HitUnstyled))
+			if (ad == null || ad.AttackResult is not (eAttackResult.HitStyle or eAttackResult.HitUnstyled))
 				return false;
 
-			if (ad.IsMeleeAttack && ad.AttackType == AttackData.eAttackType.Ranged)
+			if (ad.AttackType != AttackData.eAttackType.Spell)
 				return false;
 
 			return true;

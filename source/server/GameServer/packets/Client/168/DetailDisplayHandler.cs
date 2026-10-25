@@ -53,7 +53,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 			DbInventoryItem invItem = null;
 
 			var snapSkills = client.Player.GetAllUsableSkills();
-			var snapLists = client.Player.GetAllUsableListSpells();
+			var serverLists = client.Player.GetAllUsableListSpells();
+			var snapLists = StormforgedRules.ClientSpellLines(serverLists);
 			// find the first non-specialization index.
 			int indexAtSpecOid = Math.Max(0, snapSkills.FindIndex(it => (it.Item1 is Specialization) == false)) + (objectId - 100);
 			
@@ -248,7 +249,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 								switch (s)
 								{
 									case Spell sSpell:
-										return sSpell.Level == spellId;
+										return StormforgedRules.ClientLevel(snapLists[lineId].Item1, sSpell) == spellId;
 									case Style sStyle:
 										return sStyle.SpecLevelRequirement == spellId;
 									case Ability sAbility:
@@ -259,7 +260,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 							if (index > -1)
 								sk = snapLists[lineId].Item2[index];
-							sl = snapLists[lineId].Item1;
+							sl = sk == null ? snapLists[lineId].Item1 : StormforgedRules.ServerLine(serverLists, snapLists[lineId].Item1, sk);
 						}
 						
 						if (sk is Spell spell && sl != null)
@@ -1992,6 +1993,15 @@ namespace DOL.GS.PacketHandler.Client.v168
             if (sk != null) 
             {
                 dw.AddKeyValuePair("Name", sk.Name);
+
+                // The client has no text of its own for Vampiir Bolt: describe the rank the player casts.
+                if (sk is Ability bolt && bolt.KeyName == Abilities.VampiirBolt)
+                {
+                    Spell spell = SkillBase.GetSpellByID(DOL.GS.SkillHandler.VampiirBoltAbilityHandler.SpellIdFor(bolt.Level));
+                    string text = spell == null ? null : ScriptMgr.CreateSpellHandler(client.Player, spell, SkillBase.GetSpellLine(GlobalSpellsLines.Character_Abilities))?.ShortDescription;
+                    if (!string.IsNullOrEmpty(text))
+                        dw.AddKeyValuePair("description_string", $"{spell.Name}: {text}");
+                }
             }
             else
             {

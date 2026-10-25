@@ -157,6 +157,10 @@ namespace DOL.GS.Spells
 				{
 					ad.Damage = (int)(ad.Damage * 0.815);
 				}
+
+				// Eagle Eye.
+				if (ArcheryDamageBuffSpellHandler.Bonus(Caster) is int bonus and > 0)
+					ad.Damage = (int)(ad.Damage * (1 + bonus / 100.0));
 			}
 
 			return ad;
@@ -168,15 +172,7 @@ namespace DOL.GS.Spells
 		/// <returns></returns>
 		public override eDamageType DetermineSpellDamageType()
 		{
-			GameSpellEffect ef = FindEffectOnTarget(Caster, "ArrowDamageTypes");
-			if (ef != null)
-			{
-				return ef.SpellHandler.Spell.DamageType;
-			}
-			else
-			{
-				return eDamageType.Slash;
-			}
+			return ArrowDamageTypes.For(Caster);
 		}
 
 		public override void FinishSpellCast(GameLiving target)

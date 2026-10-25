@@ -3,7 +3,7 @@ using DOL.GS.Realm;
 
 namespace DOL.GS.PlayerClass
 {
-    [CharacterClass((int)eCharacterClass.Stormforged, "Stormforged", "Viking")]
+    [CharacterClass((int)eCharacterClass.Stormforged, "Storm Sovereign", "Viking")]
     public class ClassStormforged : ClassThane
     {
         public ClassStormforged()
@@ -16,7 +16,8 @@ namespace DOL.GS.PlayerClass
 
         public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
         {
-            PlayerRace.Norseman, PlayerRace.Troll, PlayerRace.Dwarf
+            PlayerRace.Norseman, PlayerRace.Troll, PlayerRace.Dwarf, PlayerRace.Kobold,
+            PlayerRace.Valkyn, PlayerRace.Frostalf, PlayerRace.Deifrang
         };
     }
 }

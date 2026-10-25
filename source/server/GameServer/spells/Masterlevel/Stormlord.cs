@@ -1,759 +1,389 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
-using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Spells
 {
-    //http://www.camelotherald.com/masterlevels/ma.php?ml=Stormlord
-    //shared timer 1
-    #region Stormlord-1
+    // Stormlord, rebuilt for offline play on the ECS effect system. Storms sit at the caster's ground
+    // target and pulse on monsters and enemy players alike. Each caster keeps one storm of each kind;
+    // casting it again moves it. Storms end with their duration or when the caster dies, leaves the
+    // region or logs out. Classic ML2/ML6 moved drifting storms; these storms stay put, so Vacuum
+    // Vortex gathers them at a new spot and Focusing Winds makes them pulse faster.
+
+    public abstract class StormlordSpell : SpellHandler
+    {
+        protected StormlordSpell(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override bool UnstealthCasterOnStart => false;
+        public override void CastSubSpells(GameLiving target) { }
+        public override double CalculateSpellResistChance(GameLiving target) => 0;
+
+        protected bool GetDestination(out Point3D destination)
+        {
+            destination = null;
+            if (!Caster.GroundTarget.IsValid || !Caster.GroundTargetInView)
+                return false;
+            return StormforgedTravel.TryResolvePoint(Caster,
+                new Point3D(Caster.GroundTarget.X, Caster.GroundTarget.Y, Caster.GroundTarget.Z), Spell.Range, out destination);
+        }
+    }
+
+    public abstract class StormlordGroundSpell : StormlordSpell
+    {
+        protected StormlordGroundSpell(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+        public override bool CheckBeginCast(GameLiving target)
+        {
+            if (!GetDestination(out _))
+            {
+                MessageToCaster("Choose a visible, reachable ground target within spell range.", eChatType.CT_SpellResisted);
+                return false;
+            }
+            return base.CheckBeginCast(target);
+        }
+
+        public override bool CheckEndCast(GameLiving target) => GetDestination(out _) && base.CheckEndCast(target);
+    }
+
+    /// <summary>A storm: what it does to each living inside it on every pulse.</summary>
+    public abstract class StormlordStormSpell : StormlordGroundSpell, IMasterLevelMods
+    {
+        protected StormlordStormSpell(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override bool HasPositiveEffect => Friendly;
+        public override bool HasConflictingEffectWith(ISpellHandler compare) => false;
+        /// <summary>What everyone inside wears while the storm holds them (shown as an effect icon).</summary>
+        public IReadOnlyList<MLMod> Mods => HeldProperties.Select(p => Friendly ? MLMod.Buff(p, HeldValue) : MLMod.Debuff(p, HeldValue)).ToList();
+        public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams) =>
+            ECSGameEffectFactory.Create(initParams, static (in i) => new MasterLevelEffect(i));
+
+        /// <summary>The client effect played on each living a pulse touches.</summary>
+        public abstract ushort PulseEffect { get; }
+        /// <summary>Friendly storms work on the caster's realm, the rest on enemies.</summary>
+        public virtual bool Friendly => false;
+        /// <summary>Bonuses held while inside: allies get buff categories, enemies debuffs.</summary>
+        public virtual IReadOnlyList<eProperty> HeldProperties => Array.Empty<eProperty>();
+        public virtual int HeldValue => (int)Spell.Value;
+        /// <summary>One-off work on each pulse (damage, drains).</summary>
+        public virtual void Pulse(StormlordStorm storm, GameLiving target) { }
+
+        public override void ApplyEffectOnTarget(GameLiving target)
+        {
+            if (GetDestination(out Point3D at))
+                StormlordStorm.Place(Caster, this, at);
+        }
+    }
+
     [SpellHandler(eSpellType.DazzlingArray)]
-    public class DazzlingArraySpellHandler : StormSpellHandler
+    public class DazzlingArraySpellHandler : StormlordStormSpell
     {
-        // constructor
-        public DazzlingArraySpellHandler(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)
-        {
-            //Construct a new storm.
-            storm = new GameStorm();
-            storm.Realm = caster.Realm;
-            storm.X = caster.X;
-            storm.Y = caster.Y;
-            storm.Z = caster.Z;
-            storm.CurrentRegionID = caster.CurrentRegionID;
-            storm.Heading = caster.Heading;
-            storm.Owner = (GamePlayer)caster;
-            storm.Movable = true;
-
-            // Construct the storm spell
-            dbs = new DbSpell();
-            dbs.Name = spell.Name;
-            dbs.Icon = 7210;
-            dbs.ClientEffect = 7210;
-            dbs.Damage = spell.Damage;
-            dbs.DamageType = (int)spell.DamageType;
-            dbs.Target = eSpellTarget.REALM.ToString();
-            dbs.Radius = 0;
-            dbs.Type = eSpellType.StormMissHit.ToString();
-            dbs.Value = spell.Value;
-            dbs.Duration = spell.ResurrectHealth; // should be 4
-            dbs.Frequency = spell.ResurrectMana;
-            dbs.Pulse = 0;
-            dbs.PulsePower = 0;
-            dbs.LifeDrainReturn = spell.LifeDrainReturn;
-            dbs.Power = 0;
-            dbs.CastTime = 0;
-            dbs.Range = WorldMgr.VISIBILITY_DISTANCE;
-            sRadius = 350;
-            s = new Spell(dbs, 1);
-            sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
-            tempest = ScriptMgr.CreateSpellHandler(m_caster, s, sl);
-        }
+        private static readonly eProperty[] Held = { eProperty.MissHit };
+        public DazzlingArraySpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override ushort PulseEffect => 7210;
+        public override bool Friendly => true;
+        public override IReadOnlyList<eProperty> HeldProperties => Held;
+        public override string ShortDescription => $"Ground-targeted storm: you, your group and pets inside are {Spell.Value}% harder to hit.";
     }
-    [SpellHandler(eSpellType.StormMissHit)]
-    public class StormMissHit : MasterlevelBuffHandling
-    {
-        public override eProperty Property1 { get { return eProperty.MissHit; } }
 
-        public override void ApplyEffectOnTarget(GameLiving target)
-        {
-            GameSpellEffect neweffect = CreateSpellEffect(target, CasterEffectiveness);
-            if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            neweffect.Start(target);
-
-            if (target is GamePlayer)
-                ((GamePlayer)target).Out.SendMessage("You're harder to hit!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-
-        }
-
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-
-            effect.Owner.EffectList.Remove(effect);
-            return base.OnEffectExpires(effect, noMessages);
-        }
-
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-
-        // constructor
-        public StormMissHit(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-    }
-    #endregion
-
-    //no shared timer
-    #region Stormlord-2
-    [SpellHandler(eSpellType.VacuumVortex)]
-    public class VacuumVortexSpellHandler : SpellHandler
-    {
-        /// <summary>
-        /// Execute direct damage spell
-        /// </summary>
-        /// <param name="target"></param>
-        public override void FinishSpellCast(GameLiving target)
-        {
-            m_caster.Mana -= PowerCost(target);
-            base.FinishSpellCast(target);
-        }
-
-        public override List<GameLiving> SelectTargets(GameObject CasterTarget)
-        {
-            
-            var list = GameLoop.GetListForTick<GameLiving>();
-            foreach (GameNPC storms in Caster.GetNPCsInRadius(350))
-            {
-                if ((storms is GameStorm) && (GameServer.ServerRules.IsSameRealm(storms, Caster, true))) list.Add(storms);
-            }
-            return list;
-        }
-
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-
-        public override void OnDirectEffect(GameLiving target)
-        {
-            //base.OnDirectEffect(target, effectiveness);
-            var targets = SelectTargets(Caster);
-
-            if (targets == null) return;
-
-            foreach (GameStorm targetStorm in targets)
-            {
-                if (targetStorm.Movable)
-                {
-                    int range = Util.Random(0, 750);
-                    double angle = Util.RandomDouble() * 2 * Math.PI;
-                    targetStorm.WalkTo(new Point3D(targetStorm.X + (int) (range * Math.Cos(angle)), targetStorm.Y + (int) (range * Math.Sin(angle)), targetStorm.Z), targetStorm.MaxSpeed);
-                }
-            }
-        }
-
-        public VacuumVortexSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-    }
-    #endregion
-
-    //shared timer 2
-    #region Stormlord-3
     [SpellHandler(eSpellType.EnervatingGas)]
-    public class EnervatingGasSpellHandler : StormSpellHandler
+    public class EnervatingGasSpellHandler : StormlordStormSpell
     {
-        // constructor
-        public EnervatingGasSpellHandler(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)
-        {
-            //Construct a new storm.
-            storm = new GameStorm();
-            storm.Realm = caster.Realm;
-            storm.X = caster.X;
-            storm.Y = caster.Y;
-            storm.Z = caster.Z;
-            storm.CurrentRegionID = caster.CurrentRegionID;
-            storm.Heading = caster.Heading;
-            storm.Owner = (GamePlayer)caster;
-            storm.Movable = true;
-
-
-
-            // Construct the storm spell
-            dbs = new DbSpell();
-            dbs.Name = spell.Name;
-            dbs.Icon = 7273;
-            dbs.ClientEffect = 7273;
-            dbs.Damage = Math.Abs(spell.Damage);
-            dbs.DamageType = (int)spell.DamageType;
-            dbs.Target = eSpellTarget.ENEMY.ToString();
-            dbs.Radius = 0;
-            dbs.Type = eSpellType.StormEnduDrain.ToString();
-            dbs.Value = spell.Value;
-            dbs.Duration = spell.ResurrectHealth; //should be 2
-            dbs.Frequency = spell.ResurrectMana;
-            dbs.Pulse = 0;
-            dbs.PulsePower = 0;
-            dbs.LifeDrainReturn = spell.LifeDrainReturn;
-            dbs.Power = 0;
-            dbs.CastTime = 0;
-            dbs.Range = WorldMgr.VISIBILITY_DISTANCE;
-            sRadius = 350;
-            s = new Spell(dbs, 1);
-            sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
-            tempest = ScriptMgr.CreateSpellHandler(m_caster, s, sl);
-        }
+        public EnervatingGasSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override ushort PulseEffect => 7273;
+        public override string ShortDescription => $"Ground-targeted storm: each pulse drains {Spell.Value}% endurance from enemies inside; you gain half of it.";
+        public override void Pulse(StormlordStorm storm, GameLiving target) =>
+            StormlordStorm.Drain(storm.StormOwner, target, target.MaxEndurance, Spell.Value, power: false);
     }
-    [SpellHandler(eSpellType.StormEnduDrain)]
-    public class StormEndudrain : SpellHandler
-    {
 
-        public StormEndudrain(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-
-        public override void ApplyEffectOnTarget(GameLiving target)
-        {
-            GameSpellEffect neweffect = CreateSpellEffect(target, CasterEffectiveness);
-
-            neweffect.Start(target);
-
-            if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            //spell damage should 25;
-            int end = (int)(Spell.Damage);
-            target.ChangeEndurance(target, eEnduranceChangeType.Spell, (-end));
-
-            if (target is GamePlayer)
-                ((GamePlayer)target).Out.SendMessage(" You lose " + end + " endurance!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-            (m_caster as GamePlayer).Out.SendMessage("" + target.Name + " loses " + end + " endurance!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-        }
-
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-
-            effect.Owner.EffectList.Remove(effect);
-            return base.OnEffectExpires(effect, noMessages);
-        }
-
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-    }
-    #endregion
-
-    //shared timer 1
-    #region Stormlord-4
     [SpellHandler(eSpellType.InebriatingFumes)]
-    public class InebriatingFumesSpellHandler : StormSpellHandler
+    public class InebriatingFumesSpellHandler : StormlordStormSpell
     {
-        // constructor
-        public InebriatingFumesSpellHandler(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)
-        {
-            //Construct a new storm.
-            storm = new GameStorm();
-            storm.Realm = caster.Realm;
-            storm.X = caster.X;
-            storm.Y = caster.Y;
-            storm.Z = caster.Z;
-            storm.CurrentRegionID = caster.CurrentRegionID;
-            storm.Heading = caster.Heading;
-            storm.Owner = (GamePlayer)caster;
-            storm.Movable = true;
-
-            // Construct the storm spell
-            dbs = new DbSpell();
-            dbs.Name = spell.Name;
-            dbs.Icon = 7258;
-            dbs.ClientEffect = 7258;
-            dbs.Damage = spell.Damage;
-            dbs.DamageType = (int)spell.Damage;
-            dbs.Target = eSpellTarget.ENEMY.ToString();
-            dbs.Radius = 0;
-            dbs.Type = eSpellType.StormDexQuickDebuff.ToString();
-            dbs.Value = spell.Value;
-            dbs.Duration = spell.ResurrectHealth; // should be 2
-            dbs.Frequency = spell.ResurrectMana;
-            dbs.Pulse = 0;
-            dbs.PulsePower = 0;
-            dbs.LifeDrainReturn = spell.LifeDrainReturn;
-            dbs.Power = 0;
-            dbs.CastTime = 0;
-            dbs.Range = WorldMgr.VISIBILITY_DISTANCE;
-            sRadius = 350;
-            s = new Spell(dbs, 1);
-            sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
-            tempest = ScriptMgr.CreateSpellHandler(m_caster, s, sl);
-        }
+        private static readonly eProperty[] Held = { eProperty.Dexterity, eProperty.Quickness };
+        public InebriatingFumesSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override ushort PulseEffect => 7258;
+        public override IReadOnlyList<eProperty> HeldProperties => Held;
+        public override string ShortDescription => $"Ground-targeted storm: enemies inside lose {Spell.Value} dexterity and quickness until they leave.";
     }
-    /// <summary>
-    /// Dex/Qui stat specline debuff
-    /// </summary>
-    [SpellHandler(eSpellType.StormDexQuickDebuff)]
-    public class StormDexQuickDebuff : DualStatDebuff
-    {
-        public override eProperty Property1 { get { return eProperty.Dexterity; } }
-        public override eProperty Property2 { get { return eProperty.Quickness; } }
 
-        public override void ApplyEffectOnTarget(GameLiving target)
-        {
-            GameSpellEffect neweffect = CreateSpellEffect(target, CasterEffectiveness);
-            if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            neweffect.Start(target);
-
-            if (target is GamePlayer)
-                ((GamePlayer)target).Out.SendMessage("Your dexterity and quickness decreased!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-
-        }
-
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-
-            effect.Owner.EffectList.Remove(effect);
-            return base.OnEffectExpires(effect, noMessages);
-        }
-
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-
-        // constructor
-        public StormDexQuickDebuff(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-    }
-    #endregion
-
-    //shared timer 2
-    #region Stormlord-5
     [SpellHandler(eSpellType.MentalSiphon)]
-    public class MentalSiphonSpellHandler : StormSpellHandler
+    public class MentalSiphonSpellHandler : StormlordStormSpell
     {
-        // constructor
-        public MentalSiphonSpellHandler(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)
-        {
-            //Construct a new storm.
-            storm = new GameStorm();
-            storm.Realm = caster.Realm;
-            storm.X = caster.X;
-            storm.Y = caster.Y;
-            storm.Z = caster.Z;
-            storm.CurrentRegionID = caster.CurrentRegionID;
-            storm.Heading = caster.Heading;
-            storm.Owner = (GamePlayer)caster;
-            storm.Movable = true;
-
-            // Construct the storm spell
-            dbs = new DbSpell();
-            dbs.Name = spell.Name;
-            dbs.Icon = 7303;
-            dbs.ClientEffect = 7303;
-            dbs.Damage = Math.Abs(spell.Damage);
-            dbs.DamageType = (int)spell.DamageType;
-            dbs.Target = eSpellTarget.ENEMY.ToString();
-            dbs.Radius = 0;
-            dbs.Type = eSpellType.PowerDrainStorm.ToString();
-            dbs.Value = spell.Value;
-            dbs.Duration = spell.ResurrectHealth; // should be 2
-            dbs.Frequency = spell.ResurrectMana;
-            dbs.Pulse = 0;
-            dbs.PulsePower = 0;
-            dbs.LifeDrainReturn = spell.LifeDrainReturn;
-            dbs.Power = 0;
-            dbs.CastTime = 0;
-            dbs.Range = WorldMgr.VISIBILITY_DISTANCE;
-            sRadius = 350;
-            s = new Spell(dbs, 1);
-            sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
-            tempest = ScriptMgr.CreateSpellHandler(m_caster, s, sl);
-        }
+        public MentalSiphonSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override ushort PulseEffect => 7303;
+        public override string ShortDescription => $"Ground-targeted storm: each pulse drains {Spell.Value}% power from enemies inside; you gain half of it. Monsters' power is bottomless, so against them it only feeds you.";
+        public override void Pulse(StormlordStorm storm, GameLiving target) =>
+            StormlordStorm.Drain(storm.StormOwner, target, target.MaxMana, Spell.Value, power: true);
     }
 
-    [SpellHandler(eSpellType.PowerDrainStorm)]
-    public class PowerDrainStormSpellHandler : SpellHandler
-    {
-        public PowerDrainStormSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-
-        public override void ApplyEffectOnTarget(GameLiving target)
-        {
-            GameSpellEffect neweffect = CreateSpellEffect(target, CasterEffectiveness);
-            if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            neweffect.Start(target);
-            int mana = (int)(Spell.Damage);
-            target.ChangeMana(target, eManaChangeType.Spell, (-mana));
-
-            if (target is GamePlayer)
-            {
-                ((GamePlayer)target).Out.SendMessage(m_caster.Name + " steals you " + mana + " points of power!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-            }
-
-            StealMana(target, mana);
-            // target.StartInterruptTimer(SPELL_INTERRUPT_DURATION, AttackData.eAttackType.Spell, Caster);
-        }
-
-
-        public virtual void StealMana(GameLiving target, int mana)
-        {
-            if (!m_caster.IsAlive) return;
-            m_caster.ChangeMana(target, eManaChangeType.Spell, mana);
-            SendCasterMessage(target, mana);
-
-        }
-
-
-        public virtual void SendCasterMessage(GameLiving target, int mana)
-        {
-            MessageToCaster(string.Format("You steal {0} for {1} power!", target.Name, mana), eChatType.CT_YouHit);
-            if (mana > 0)
-            {
-                MessageToCaster("You steal " + mana + " power points" + (mana == 1 ? "." : "s."), eChatType.CT_Spell);
-            }
-            //else
-            //{
-            //   MessageToCaster("You cannot absorb any more power.", eChatType.CT_SpellResisted);
-            //}
-        }
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-            effect.Owner.EffectList.Remove(effect);
-            return base.OnEffectExpires(effect, noMessages);
-        }
-    }
-
-    #endregion
-
-    //no shared timer
-    #region Stormlord-6
-    [SpellHandler(eSpellType.FocusingWinds)]
-    public class FocusingWindsSpellHandler : SpellHandler
-    {
-        private GameSpellEffect m_effect;
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-        public override void OnEffectStart(GameSpellEffect effect)
-        {
-            base.OnEffectStart(effect);
-            m_effect = effect;
-            if (effect.Owner is GameStorm)
-            {
-                GameStorm targetStorm = effect.Owner as GameStorm;
-                targetStorm.Movable = false;
-                MessageToCaster("Now the vortex of this storm is locked!", eChatType.CT_YouWereHit);
-                GameEventMgr.AddHandler(m_caster, GameLivingEvent.Moving, new DOLEventHandler(LivingMoves));
-            }
-        }
-
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-            if (effect.Owner is GameStorm)
-            {
-                GameStorm targetStorm = effect.Owner as GameStorm;
-                targetStorm.Movable = true;
-                GameEventMgr.RemoveHandler(m_caster, GameLivingEvent.Moving, new DOLEventHandler(LivingMoves));
-            }
-            return base.OnEffectExpires(effect, noMessages);
-        }
-
-        public void LivingMoves(DOLEvent e, object sender, EventArgs args)
-        {
-            GameLiving player = sender as GameLiving;
-            if (player == null) return;
-            if (e == GameLivingEvent.Moving)
-            {
-                MessageToCaster("You are moving. Your concentration fades", eChatType.CT_SpellExpires);
-                OnEffectExpires(m_effect, true);
-                return;
-            }
-        }
-        public FocusingWindsSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-    }
-    #endregion
-
-    //shared timer 1
-    #region Stormlord-7
     [SpellHandler(eSpellType.ChokingVapors)]
-    public class ChokingVaporsSpellHandler : StormSpellHandler
+    public class ChokingVaporsSpellHandler : StormlordStormSpell
     {
-        // constructor
-        public ChokingVaporsSpellHandler(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)
-        {
-            //Construct a new storm.
-            storm = new GameStorm();
-            storm.Realm = caster.Realm;
-            storm.X = caster.X;
-            storm.Y = caster.Y;
-            storm.Z = caster.Z;
-            storm.CurrentRegionID = caster.CurrentRegionID;
-            storm.Heading = caster.Heading;
-            storm.Owner = (GamePlayer)caster;
-            storm.Movable = true;
+        private static readonly eProperty[] Held = { eProperty.Strength, eProperty.Constitution };
+        public ChokingVaporsSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override ushort PulseEffect => 7223;
+        public override IReadOnlyList<eProperty> HeldProperties => Held;
+        public override string ShortDescription => $"Ground-targeted storm: enemies inside lose {Spell.Value} strength and constitution until they leave.";
+    }
 
-            // Construct the storm spell
-            dbs = new DbSpell();
-            dbs.Name = spell.Name;
-            dbs.Icon = 7223;
-            dbs.ClientEffect = 7223;
-            dbs.Damage = spell.Damage;
-            dbs.DamageType = (int)spell.DamageType;
-            dbs.Target = eSpellTarget.ENEMY.ToString();
-            dbs.Radius = 0;
-            dbs.Type = eSpellType.StormStrConstDebuff.ToString();
-            dbs.Value = spell.Value;
-            dbs.Duration = spell.ResurrectHealth; // should be 2
-            dbs.Frequency = spell.ResurrectMana;
-            dbs.Pulse = 0;
-            dbs.PulsePower = 0;
-            dbs.LifeDrainReturn = spell.LifeDrainReturn;
-            dbs.Power = 0;
-            dbs.CastTime = 0;
-            dbs.Range = WorldMgr.VISIBILITY_DISTANCE;
-            sRadius = 350;
-            s = new Spell(dbs, 1);
-            sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
-            tempest = ScriptMgr.CreateSpellHandler(m_caster, s, sl);
+    [SpellHandler(eSpellType.SenseDullingCloud)]
+    public class SenseDullingCloudSpellHandler : StormlordStormSpell
+    {
+        private static readonly eProperty[] Held = { eProperty.Intelligence, eProperty.Piety, eProperty.Empathy, eProperty.Charisma };
+        public SenseDullingCloudSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override ushort PulseEffect => 7305;
+        public override IReadOnlyList<eProperty> HeldProperties => Held;
+        public override string ShortDescription => $"Ground-targeted storm: enemies inside lose {Spell.Value} intelligence, piety, empathy and charisma until they leave.";
+    }
+
+    [SpellHandler(eSpellType.EnergyTempest)]
+    public class EnergyTempestSpellHandler : StormlordStormSpell
+    {
+        private Spell _strike;
+        public EnergyTempestSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override ushort PulseEffect => 7216;
+        public override string ShortDescription => $"Ground-targeted storm: each pulse deals {Spell.Damage} energy damage to every enemy inside.";
+
+        public override void Pulse(StormlordStorm storm, GameLiving target)
+        {
+            _strike ??= new Spell(new DbSpell
+            {
+                SpellID = Spell.ID, Name = Spell.Name, Type = eSpellType.DirectDamage.ToString(), Target = "Enemy",
+                Damage = Spell.Damage, DamageType = (int)eDamageType.Energy, ClientEffect = 0, Icon = Spell.Icon
+            }, 50);
+            ScriptMgr.CreateSpellHandler(storm.StormOwner, _strike, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells))?.StartSpell(target);
         }
     }
-    /// <summary>
-    /// Str/Con stat specline debuff
-    /// </summary>
-    [SpellHandler(eSpellType.StormStrConstDebuff)]
-    public class StormStrConstDebuff : DualStatDebuff
+
+    [SpellHandler(eSpellType.VacuumVortex)]
+    public class VacuumVortexSpellHandler : StormlordGroundSpell
     {
-        public override eProperty Property1 { get { return eProperty.Strength; } }
-        public override eProperty Property2 { get { return eProperty.Constitution; } }
+        public VacuumVortexSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override string ShortDescription => "Gather all of your storms in this region at your ground target.";
 
         public override void ApplyEffectOnTarget(GameLiving target)
         {
-            GameSpellEffect neweffect = CreateSpellEffect(target, CasterEffectiveness);
-            if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            neweffect.Start(target);
-
-            if (target is GamePlayer)
-                ((GamePlayer)target).Out.SendMessage("Your strenght and constitution decreased!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-
-        }
-
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-
-            effect.Owner.EffectList.Remove(effect);
-            return base.OnEffectExpires(effect, noMessages);
-        }
-
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-
-        // constructor
-        public StormStrConstDebuff(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-    }
-    #endregion
-
-    //shared timer 1
-    #region Stormlord-8
-    [SpellHandler(eSpellType.SenseDullingCloud)]
-    public class SenseDullingCloudSpellHandler : StormSpellHandler
-    {
-        // constructor
-        public SenseDullingCloudSpellHandler(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)
-        {
-            //Construct a new storm.
-            storm = new GameStorm();
-            storm.Realm = caster.Realm;
-            storm.X = caster.X;
-            storm.Y = caster.Y;
-            storm.Z = caster.Z;
-            storm.CurrentRegionID = caster.CurrentRegionID;
-            storm.Heading = caster.Heading;
-            storm.Owner = (GamePlayer)caster;
-            storm.Movable = true;
-
-            // Construct the storm spell
-            dbs = new DbSpell();
-            dbs.Name = spell.Name;
-            dbs.Icon = 7305;
-            dbs.ClientEffect = 7305;
-            dbs.Damage = spell.Damage;
-            dbs.DamageType = (int)spell.DamageType;
-            dbs.Target = eSpellTarget.ENEMY.ToString();
-            dbs.Radius = 0;
-            dbs.Type = eSpellType.StormAcuityDebuff.ToString();
-            dbs.Value = spell.Value;
-            dbs.Duration = spell.ResurrectHealth; // should be 2
-            dbs.Frequency = spell.ResurrectMana;
-            dbs.Pulse = 0;
-            dbs.PulsePower = 0;
-            dbs.LifeDrainReturn = spell.LifeDrainReturn;
-            dbs.Power = 0;
-            dbs.CastTime = 0;
-            dbs.Range = WorldMgr.VISIBILITY_DISTANCE;
-            sRadius = 350;
-            s = new Spell(dbs, 1);
-            sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
-            tempest = ScriptMgr.CreateSpellHandler(m_caster, s, sl);
+            if (!GetDestination(out Point3D at))
+                return;
+            int moved = StormlordStorm.OwnedBy(Caster).Count(storm => storm.MoveTo(at));
+            MessageToCaster($"Your winds gather {moved} storm{(moved == 1 ? "" : "s")}.", eChatType.CT_Spell);
         }
     }
-    /// <summary>
-    /// Acuity stat baseline debuff
-    /// </summary>
-    [SpellHandler(eSpellType.StormAcuityDebuff)]
-    public class StormAcuityDebuff : SingleStatDebuff
-    {
-        public override eProperty Property1
-        {
 
+    [SpellHandler(eSpellType.FocusingWinds)]
+    public class FocusingWindsSpellHandler : StormlordSpell
+    {
+        public FocusingWindsSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override string ShortDescription => $"For {Spell.Duration / 1000} seconds your storms pulse twice as often.";
+
+        public override void ApplyEffectOnTarget(GameLiving target)
+        {
+            var storms = StormlordStorm.OwnedBy(Caster);
+            foreach (StormlordStorm storm in storms)
+                storm.FocusedUntil = GameLoop.GameLoopTime + Spell.Duration;
+            MessageToCaster(storms.Count == 0 ? "You have no storms to focus." : "Your storms quicken.", eChatType.CT_Spell);
+        }
+    }
+
+    [SpellHandler(eSpellType.ArcingPower)]
+    public class ArcingPowerSpellHandler : StormlordSpell
+    {
+        public ArcingPowerSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override string ShortDescription => $"Your next single-target damage spell within {Spell.Duration / 1000} seconds also strikes enemies within {Spell.Radius} units of its target for {Spell.Value}% of its damage.";
+        public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams) =>
+            ECSGameEffectFactory.Create(initParams, static (in i) => new ArcingPowerEffect(i));
+    }
+
+    public class ArcingPowerEffect : ECSGameSpellEffect
+    {
+        public ArcingPowerEffect(in ECSGameEffectInitParams initParams) : base(initParams) { }
+
+        public override void OnStartEffect()
+        {
+            base.OnStartEffect();
+            GameEventMgr.AddHandler(Owner, GameLivingEvent.CastFinished, OnCastFinished);
+        }
+
+        public override void OnStopEffect()
+        {
+            GameEventMgr.RemoveHandler(Owner, GameLivingEvent.CastFinished, OnCastFinished);
+            base.OnStopEffect();
+        }
+
+        public static bool Arcs(Spell spell) => spell != null && spell.Damage > 0 && spell.Target == eSpellTarget.ENEMY &&
+            spell.Radius == 0 && spell.SpellType != eSpellType.ArcingPower;
+
+        private void OnCastFinished(DOLEvent e, object sender, EventArgs args)
+        {
+            if (args is not CastingEventArgs { SpellHandler.Spell: Spell spell, Target: GameLiving target } || !Arcs(spell) || !target.IsAlive)
+                return;
+            Spell arc = new(new DbSpell
+            {
+                SpellID = SpellHandler.Spell.ID, Name = SpellHandler.Spell.Name, Type = eSpellType.DirectDamage.ToString(), Target = "Enemy",
+                Damage = spell.Damage * SpellHandler.Spell.Value / 100, DamageType = (int)spell.DamageType, ClientEffect = spell.ClientEffect, Icon = spell.Icon
+            }, spell.Level);
+            SpellLine line = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
+            foreach (GameLiving other in StormlordStorm.Nearby(target, (ushort)SpellHandler.Spell.Radius))
+            {
+                if (other != target && other != Owner && other.IsAlive && GameServer.ServerRules.IsAllowedToAttack(Owner, other, true))
+                    ScriptMgr.CreateSpellHandler(Owner, arc, line)?.StartSpell(other);
+            }
+            End();
+        }
+    }
+}
+
+namespace DOL.GS
+{
+    using DOL.GS.Spells;
+
+    public class StormlordStorm : GameStorm
+    {
+        private static readonly Dictionary<GameLiving, List<StormlordStorm>> _byOwner = new();
+        private static readonly Lock _registryLock = new();
+        private ECSGameTimer _timer;
+
+        public GameLiving StormOwner { get; }
+        public StormlordStormSpell Handler { get; }
+        public long ExpireTick { get; set; }
+        public long FocusedUntil { get; set; }
+        public ushort StormRadius { get; }
+
+        public StormlordStorm(GameLiving owner, StormlordStormSpell handler)
+        {
+            StormOwner = owner;
+            Handler = handler;
+            Owner = owner as GamePlayer;
+            Name = handler.Spell.Name;
+            Realm = eRealm.None;
+            Flags |= eFlags.PEACE;
+            StormRadius = (ushort)Math.Max(1, handler.Spell.Radius);
+        }
+
+        public static IReadOnlyList<StormlordStorm> OwnedBy(GameLiving owner)
+        {
+            lock (_registryLock)
+                return _byOwner.TryGetValue(owner, out var storms) ? storms.ToList() : new List<StormlordStorm>();
+        }
+
+        public static StormlordStorm Place(GameLiving owner, StormlordStormSpell handler, Point3D at)
+        {
+            foreach (StormlordStorm old in OwnedBy(owner).Where(storm => storm.Handler.Spell.SpellType == handler.Spell.SpellType))
+                old.Remove();
+
+            var storm = new StormlordStorm(owner, handler)
+            {
+                X = at.X, Y = at.Y, Z = at.Z, CurrentRegionID = owner.CurrentRegionID, Heading = owner.Heading,
+                ExpireTick = GameLoop.GameLoopTime + handler.Spell.Duration
+            };
+            if (!storm.AddToWorld())
+                return null;
+            lock (_registryLock)
+            {
+                if (!_byOwner.TryGetValue(owner, out var storms))
+                    _byOwner[owner] = storms = new List<StormlordStorm>();
+                storms.Add(storm);
+            }
+            storm._timer = new ECSGameTimer(storm, storm.Tick, storm.Interval);
+            return storm;
+        }
+
+        public int Interval
+        {
             get
             {
-                eProperty temp = eProperty.Acuity;
-                if (Target.Realm == eRealm.Albion) temp = eProperty.Intelligence;
-                if (Target.Realm == eRealm.Midgard) temp = eProperty.Piety;
-                if (Target.Realm == eRealm.Hibernia) temp = eProperty.Intelligence;
-
-                return temp;
+                int frequency = Handler.Spell.Frequency > 0 ? Handler.Spell.Frequency : 4000;
+                return GameLoop.GameLoopTime < FocusedUntil ? Math.Max(500, frequency / 2) : frequency;
             }
         }
 
-        public override void ApplyEffectOnTarget(GameLiving target)
+        public bool MoveTo(Point3D at)
         {
-            GameSpellEffect neweffect = CreateSpellEffect(target, CasterEffectiveness);
-            if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            neweffect.Start(target);
-
-            if (target is GamePlayer)
-                ((GamePlayer)target).Out.SendMessage("Your acuity decreased!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-
+            if (ObjectState != eObjectState.Active || CurrentRegionID != StormOwner.CurrentRegionID)
+                return false;
+            return MoveInRegion(CurrentRegionID, at.X, at.Y, at.Z, Heading, true);
         }
 
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
+        public static IEnumerable<GameLiving> Nearby(GameObject center, ushort radius) =>
+            center.GetPlayersInRadius(radius).Cast<GameLiving>().Concat(center.GetNPCsInRadius(radius))
+                .Where(living => living is not GameStorm && living.IsAlive && living.ObjectState == eObjectState.Active);
 
-            effect.Owner.EffectList.Remove(effect);
-            return base.OnEffectExpires(effect, noMessages);
+        public bool Affects(GameLiving living) => Handler.Friendly
+            ? living.Realm == StormOwner.Realm && (living == StormOwner || living is GamePlayer || living is GameNPC { Brain: IControlledBrain }) &&
+              !GameServer.ServerRules.IsAllowedToAttack(StormOwner, living, true)
+            : living != StormOwner && GameServer.ServerRules.IsAllowedToAttack(StormOwner, living, true);
+
+        private int Tick(ECSGameTimer timer)
+        {
+            if (ObjectState != eObjectState.Active || !StormOwner.IsAlive || StormOwner.ObjectState != eObjectState.Active ||
+                StormOwner.CurrentRegionID != CurrentRegionID || GameLoop.GameLoopTime >= ExpireTick)
+            {
+                Remove();
+                return 0;
+            }
+            Pulse(Nearby(this, StormRadius).Where(Affects).ToList());
+            return Interval;
         }
 
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-
-        // constructor
-        public StormAcuityDebuff(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-    }
-    #endregion
-
-    //no shared timer
-    #region Stormlord-9
-    [SpellHandler(eSpellType.EnergyTempest)]
-    public class EnergyTempestSpellHandler : StormSpellHandler
-    {
-        // constructor
-        public EnergyTempestSpellHandler(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)
-        {
-            //Construct a new storm.
-            storm = new GameStorm();
-            storm.Realm = caster.Realm;
-            storm.X = caster.X;
-            storm.Y = caster.Y;
-            storm.Z = caster.Z;
-            storm.CurrentRegionID = caster.CurrentRegionID;
-            storm.Heading = caster.Heading;
-            storm.Owner = (GamePlayer)caster;
-            storm.Movable = true;
-
-            // Construct the storm spell
-            dbs = new DbSpell();
-            dbs.Name = spell.Name;
-            dbs.Icon = 7216;
-            dbs.ClientEffect = 7216;
-            dbs.Damage = spell.Damage;
-            dbs.DamageType = (int)spell.DamageType;
-            dbs.Target = eSpellTarget.ENEMY.ToString();
-            dbs.Radius = 0;
-            dbs.Type = eSpellType.StormEnergyTempest.ToString();
-            dbs.Value = spell.Value;
-            dbs.Duration = spell.ResurrectHealth;
-            dbs.Frequency = spell.ResurrectMana;
-            dbs.Pulse = 0;
-            dbs.PulsePower = 0;
-            dbs.LifeDrainReturn = spell.LifeDrainReturn;
-            dbs.Power = 0;
-            dbs.CastTime = 0;
-            dbs.Range = WorldMgr.VISIBILITY_DISTANCE;
-            sRadius = 350;
-            s = new Spell(dbs, 1);
-            sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
-            tempest = ScriptMgr.CreateSpellHandler(m_caster, s, sl);
-        }
-    }
-    [SpellHandler(eSpellType.StormEnergyTempest)]
-    public class StormEnergyTempest : SpellHandler
-    {
         /// <summary>
-        /// Calculates the base 100% spell damage which is then modified by damage variance factors
+        /// One pulse over the livings currently inside; exposed for tests. Storms with bonuses give everyone
+        /// inside the storm's effect for a little longer than one pulse, so it fades soon after they leave.
         /// </summary>
-        /// <returns></returns>
-        public override double CalculateDamageBase(GameLiving target)
+        public void Pulse(IReadOnlyCollection<GameLiving> inside)
         {
-            GamePlayer player = Caster as GamePlayer;
-
-            // % damage procs
-            if (Spell.Damage < 0)
+            foreach (GameLiving living in inside)
             {
-                double spellDamage = 0;
+                if (Handler.HeldProperties.Count > 0)
+                    MasterLevelHold.Refresh(Handler, living, Interval + 2000);
+                Handler.Pulse(this, living);
+                if (!Handler.Friendly)
+                    Provoke(living);
+                foreach (GamePlayer viewer in living.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                    viewer.Out.SendSpellEffectAnimation(this, living, Handler.PulseEffect, 0, false, 1);
+            }
+        }
 
-                if (player != null)
+        private void Provoke(GameLiving living)
+        {
+            if (living is GameNPC { Brain: StandardMobBrain brain } && StormOwner.IsAlive)
+                brain.AddToAggroList(StormOwner, 1);
+        }
+
+        public static void Drain(GameLiving owner, GameLiving target, int maximum, double percent, bool power)
+        {
+            int amount = (int)Math.Min(power ? target.Mana : target.Endurance, maximum * percent / 100);
+            if (amount <= 0)
+                return;
+            if (power)
+            {
+                target.ChangeMana(owner, eManaChangeType.Spell, -amount);
+                owner.ChangeMana(owner, eManaChangeType.Spell, amount / 2);
+            }
+            else
+            {
+                target.ChangeEndurance(owner, eEnduranceChangeType.Spell, -amount);
+                owner.ChangeEndurance(owner, eEnduranceChangeType.Spell, amount / 2);
+            }
+        }
+
+        public void Remove()
+        {
+            _timer?.Stop();
+            lock (_registryLock)
+            {
+                if (_byOwner.TryGetValue(StormOwner, out var storms))
                 {
-                    // This equation is used to simulate live values - Tolakram
-                    spellDamage = (target.MaxHealth * -Spell.Damage * .01) / 2.5;
+                    storms.Remove(this);
+                    if (storms.Count == 0)
+                        _byOwner.Remove(StormOwner);
                 }
-
-                if (spellDamage < 0)
-                    spellDamage = 0;
-
-                return spellDamage;
             }
-
-            return base.CalculateDamageBase(target);
+            if (ObjectState == eObjectState.Active)
+                Delete();
         }
 
-        public override double DamageCap(double effectiveness)
-        {
-            if (Spell.Damage < 0)
-            {
-                return (Target.MaxHealth * -Spell.Damage * .01) * 3.0 * effectiveness;
-            }
-
-            return base.DamageCap(effectiveness);
-        }
-        public override void ApplyEffectOnTarget(GameLiving target)
-        {
-            GameSpellEffect neweffect = CreateSpellEffect(target, CasterEffectiveness);
-            if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            neweffect.Start(target);
-
-
-            // calc damage
-            AttackData ad = CalculateDamageToTarget(target);
-            SendDamageMessages(ad);
-            DamageTarget(ad, true);            
-            target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
-        }
-
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-
-            effect.Owner.EffectList.Remove(effect);
-            return base.OnEffectExpires(effect, noMessages);
-        }
-
-        public override double CalculateSpellResistChance(GameLiving target)
-        {
-            return 0;
-        }
-
-        // constructor
-        public StormEnergyTempest(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override void Die(GameObject killer) => Remove();
     }
-    #endregion
-
-    //ML 10 Arcing Power - already handled in another area
 }

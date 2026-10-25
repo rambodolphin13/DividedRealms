@@ -141,7 +141,7 @@ namespace DOL.GS
 				return;
 			}
 
-			int damageAmount = CalcDamageToTarget(target);
+			int damageAmount = SiegeDefense.Reduce(target, CalcDamageToTarget(target));
 
 			AttackData ad = new AttackData();
 			ad.Attacker = this;

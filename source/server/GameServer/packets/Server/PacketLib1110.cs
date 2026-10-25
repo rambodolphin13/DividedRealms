@@ -35,12 +35,11 @@ namespace DOL.GS.PacketHandler
 		/// <summary>
 		/// The classic active-effect packet has separate fields for the visible
 		/// icon and the tooltip identity.  Most stock spells intentionally use
-		/// the same value for both, but the isolated Sluaghbinder spells reuse
-		/// stock icons and have their own tooltip identities.  Sending the icon
-		/// as the delve identity makes Cairn Skin resolve to Shield of Faith (and
-		/// does the same for the other reused icons).  Keep the stock behavior for
-		/// every other spell and substitute the spell's own tooltip identity only
-		/// for the bounded experimental spell range.
+		/// the same value for both, but the custom class spells reuse stock icons
+		/// and have their own tooltip identities.  Sending the icon as the delve
+		/// identity would show the stock spell's tooltip.  Keep the stock behavior
+		/// for every other spell and substitute the spell's own tooltip identity
+		/// only for the bounded custom spell ranges.
 		/// </summary>
 		private static ushort GetActiveEffectTooltipId(ECSGameEffect effect)
 		{
@@ -55,13 +54,16 @@ namespace DOL.GS.PacketHandler
 		}
 
 		/// <summary>
-		/// Every Sluaghbinder spell (59000-59111, including the Dullahan's
-		/// Graveplate, the Cairn Aegis-Stronghold ranks and the Barrow
-		/// Riposte/Wardblade parry ranks) has its own tooltip.
+		/// Stormforged spells (62000-62239) have their own tooltips, as do and the offline Master Level and Champion abilities
+		/// (63000-63199) with the stock effects they apply (ability ID * 1000 + n),
+		/// and the Valkyrie test kit (64990-65150, tooltips 27000-27160; 65151+ are stock spells).
+		/// Their icons are borrowed, so the icon's stock tooltip would be wrong.
 		/// </summary>
 		public static bool UsesOwnTooltipIdentity(int spellId)
 		{
-			return spellId is >= 59000 and <= 59111 or >= 62000 and <= 62239;
+            if (DOL.GS.Spells.ModernMauler.Owns(spellId) || DOL.GS.Spells.ModernWarlock.Owns(spellId))
+                return true;
+			return spellId is >= 64000 and <= 64572 or >= 73000 and <= 73572 or >= 73000000 and <= 73572999 or >= 64990 and <= 65150 or >= 65200 and <= 65260 or >= 64000000 and <= 64572999 or >= 62000 and <= 62239 or >= 62400 and <= 62972 or >= 63000 and <= 63199 or >= 62400000 and <= 62960999 or >= 63000000 and <= 63199999;
 		}
 
         /// <summary>

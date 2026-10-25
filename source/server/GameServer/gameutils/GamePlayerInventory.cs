@@ -717,11 +717,8 @@ namespace DOL.GS
             if (slot is > eInventorySlot.MaxEquipable or (>= eInventorySlot.FirstBackpack and <= eInventorySlot.LastBackpack))
                 return true;
 
-            foreach (string allowed in Util.SplitCSV(item.AllowedClasses, true))
-            {
-                if (m_player.CharacterClass.ID == int.Parse(allowed))
-                    return true;
-            }
+            if (ClassItemRules.Allows(item.AllowedClasses, m_player.CharacterClass.ID))
+                return true;
 
             m_player.Out.SendMessage("Your class cannot use this item!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
             return false;
@@ -1118,12 +1115,6 @@ namespace DOL.GS
 
         protected virtual bool DyeItem(DbInventoryItem dye, DbInventoryItem objectToDye)
         {
-            if (DOL.GS.Quests.Hibernia.SluaghbinderEpicArmor.IsSetItem(objectToDye))
-            {
-                m_player?.Out.SendMessage(DOL.GS.Quests.Hibernia.SluaghbinderEpicArmor.DyeRefusal, eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-
             bool canApply = false;
             //TODO should not be tested via model
 

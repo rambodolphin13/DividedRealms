@@ -546,6 +546,11 @@ namespace DOL.GS.Spells
 
 		public override void ApplyEffectOnTarget(GameLiving target)
 		{
+			if (target.effectListComponent.ContainsEffectForEffectType(eEffect.Juggernaut))
+			{
+				MessageToCaster("Your pet already has Juggernaut active.", eChatType.CT_SpellResisted);
+				return;
+			}
 			foreach (JuggernautEffect jg in target.EffectList.GetAllOfType<JuggernautEffect>())
 			{
 				if (jg != null)

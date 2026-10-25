@@ -125,23 +125,24 @@ def seed(db):
         power = max(1, level // 2)
         damage = 10 + level * 6
         spell(n, f"Stormbolt {level}", "StormforgedStrike", level, "Stormcalling", Target="Enemy", Range=1800,
-              Damage=damage, Power=power, CastTime=2, LifeDrainReturn=50, Value=15, SpellGroup=62000)
+              Damage=damage, Power=power, CastTime=2, LifeDrainReturn=50, Value=15, SpellGroup=62000,
+              Icon=3510, ClientEffect=3510)  # Thane's top bolt, Thor's Full Lightning
         spell(n+1, f"Thunderclap {level}", "StormforgedStrike", level, "Stormcalling", Target="Enemy", Range=1500,
-              Damage=damage*.8, Power=power, CastTime=0, RecastDelay=12, LifeDrainReturn=50, Value=15, SpellGroup=62001, Icon=3521, ClientEffect=3521)
+              Damage=damage*.8, Power=power, CastTime=0, RecastDelay=12, LifeDrainReturn=50, Value=15, SpellGroup=62001, Icon=3549, ClientEffect=3549)
         spell(n+2, f"Chain Lightning {level}", "StormforgedStrike", level, "Stormcalling", Target="Enemy", Range=0,
-              Radius=350, Damage=damage*.75, Power=power, CastTime=0, RecastDelay=12, LifeDrainReturn=50, Value=15, SpellGroup=62002, Icon=3523, ClientEffect=3523)
+              Radius=350, Damage=damage*.75, Power=power, CastTime=0, RecastDelay=12, LifeDrainReturn=50, Value=15, SpellGroup=62002, Icon=3528, ClientEffect=3528)
         spell(n+16, f"Stormhammer {level}", "StormforgedStrike", level, "Stormcalling", Target="Enemy", Range=1500,
-              Radius=350, Damage=damage*.75, Power=power, CastTime=2.5, LifeDrainReturn=50, Value=15, SpellGroup=62016, Icon=3538, ClientEffect=3538)
+              Radius=350, Damage=damage*.75, Power=power, CastTime=2.5, LifeDrainReturn=50, Value=15, SpellGroup=62016, Icon=3541, ClientEffect=3541)
         spell(n+3, f"Stormheart {level}", "StormforgedAura", level, "Stormheart", Duration=3600, Frequency=40,
-              Power=power, Value=level, SubSpellID=n+4, SpellGroup=62003, Icon=3531, ClientEffect=3531)
+              Power=power, Value=level, SubSpellID=n+4, SpellGroup=62003, Icon=3517, ClientEffect=3517)
         spell(n+4, f"Stormheart Pulse {level}", "StormforgedStrike", level, Target="Enemy", Radius=350,
               Damage=damage*.5, LifeDrainReturn=75, Value=25)
         spell(n+5, f"Stormsong {level}", "StormforgedChant", level, "Stormsongs", Duration=3600, Frequency=40,
-              Radius=1500, Value=125+min(level,40)*2, Damage=3+level, SubSpellID=n+6, SpellGroup=62005, Icon=3531, ClientEffect=3531)
+              Radius=1500, Value=125+min(level,40)*2, Damage=3+level, SubSpellID=n+6, SpellGroup=62005, Icon=3534, ClientEffect=3534)
         spell(n+6, f"Stormsong Weapons {level}", "DamageAdd", level, Target="Realm", Range=1500,
               Duration=9, Damage=1+level*.3, SpellGroup=62006, ClientEffect=0)
         spell(n+7, f"Thunderforged Ward {level}", "StormforgedWard", level, "Stormheart", Duration=3600,
-              Value=min(100, level*2.5), SubSpellID=n+8, SpellGroup=62007, Icon=3531, ClientEffect=3531)
+              Value=min(100, level*2.5), SubSpellID=n+8, SpellGroup=62007, Icon=3537, ClientEffect=3537)
         spell(n+8, f"Thunderforged Shield {level}", "DamageShield", level, Duration=3600,
               Damage=1+level*.35, SpellGroup=62008, ClientEffect=0)
         spell(n+15, f"Thunderforged Weapons {level}", "DamageAdd", level, Target="Realm", Range=1500,
@@ -170,18 +171,18 @@ def seed(db):
     spell(62200, "Avatar of Thor", "StormforgedAvatar", 40, "Stormheart", Duration=60, Frequency=20,
           RecastDelay=180, Power=10, Value=918, SubSpellID=62203, SpellGroup=62200, Icon=3537, ClientEffect=3537)
     spell(62201, "Stormguard", "StormforgedStormguard", 10, "Stormheart", Duration=3600,
-          Power=5, SubSpellID=62205, SpellGroup=62201, Icon=3531, ClientEffect=3531)
+          Power=5, SubSpellID=62205, SpellGroup=62201, Icon=3536, ClientEffect=3536)
     spell(62202, "Second Thunder", "StormforgedSecondThunder", 20, "Stormheart", Duration=3600,
           Power=5, SubSpellID=62204, SpellGroup=62202, Icon=3535, ClientEffect=3535)
     spell(62203, "Avatar Lightning", "StormforgedStrike", 40, Target="Enemy", Range=0, Radius=350,
-          Damage=250, LifeDrainReturn=50, Value=15, Icon=3523, ClientEffect=3523)
+          Damage=250, LifeDrainReturn=50, Value=15, Icon=3528, ClientEffect=3528)
     spell(62204, "Second Thunder Rebirth", "StormforgedStrike", 20, Target="Enemy", Range=0, Radius=500,
-          Damage=500, LifeDrainReturn=50, Value=15, Icon=3523, ClientEffect=3523)
+          Damage=500, LifeDrainReturn=50, Value=15, Icon=3528, ClientEffect=3528)
     spell(62205, "Stormguard Retaliation", "StormforgedStrike", 10, Target="Enemy", Range=1500, Radius=350,
-          Damage=150, LifeDrainReturn=50, Value=15, Icon=3538, ClientEffect=3538)
+          Damage=150, LifeDrainReturn=50, Value=15, Icon=3541, ClientEffect=3541)
 
-    spell(62210, "Stormstep", "StormforgedStep", 15, "Stormheart", Range=2000, Power=5,
-          RecastDelay=8, SubSpellID=62216, SpellGroup=62210, Icon=3523, ClientEffect=3523)
+    spell(62210, "Stormstep", "StormforgedStep", 15, "Stormheart", Target="Enemy", Range=2000, Power=5,
+          RecastDelay=8, SubSpellID=62216, SpellGroup=62210, Icon=3548, ClientEffect=3548)
     spell(62211, "Ride the Storm", "StormforgedRide", 30, "Stormheart", Duration=3600, Power=5,
           SubSpellID=62214, SpellGroup=62211, Icon=3537, ClientEffect=3531)
     spell(62212, "Thunder Recall", "StormforgedRecall", 20, "Stormheart", Range=1000, Power=5,
@@ -191,7 +192,7 @@ def seed(db):
     spell(62214, "Ride the Storm Echo", "DirectDamage", 30, Target="Enemy", Range=1800,
           Damage=200, Icon=3508, ClientEffect=3508)
     spell(62216, "Stormstep Arrival", "StormforgedStrike", 15, Target="Enemy", Range=0, Radius=350,
-          Damage=350, LifeDrainReturn=50, Value=15, Icon=3523, ClientEffect=3523)
+          Damage=350, LifeDrainReturn=50, Value=15, Icon=3528, ClientEffect=3528)
 
     # Internal support spells are not player spell-list entries. Pets scale their
     # damage/healing from these level-50 values while staying at the owner's level.
@@ -201,7 +202,7 @@ def seed(db):
     spell(62208, "Stormbound Mending", "Heal", 1, Target="Realm", Range=1800,
           Value=650, CastTime=2, RecastDelay=2, ClientEffect=0)
     spell(62209, "Stormbound Lightning", "DirectDamage", 1, Target="Enemy", Range=1500,
-          Damage=240, CastTime=2, ClientEffect=3521)
+          Damage=240, CastTime=2, ClientEffect=3509)
     spell(62217, "Stormbound Weakening", "CombatSpeedDebuff", 1, Target="Enemy", Range=1500,
           Value=25, Duration=30, RecastDelay=12, ClientEffect=3521, SpellGroup=62217)
     spell(62218, "Stormbound Conductivity", "EnergyResistDebuff", 1, Target="Enemy", Range=1500,
@@ -235,6 +236,9 @@ def seed(db):
     db.execute("DELETE FROM StartupLocation WHERE ClassID=?", (CLASS,))
     for row in db.execute("SELECT * FROM StartupLocation WHERE ClassID=21").fetchall():
         row_copy(db, "StartupLocation", row, {"ClassID": CLASS})
+    # Thane has rows only for Norseman/Troll/Dwarf; Stormforged accepts every Midgard race.
+    # Race-specific rows sort first, so this any-race row only places the other races.
+    row_copy(db, "StartupLocation", source_row(db, "StartupLocation", "ClassID=21 AND RaceID=5"), {"ClassID": CLASS, "RaceID": 0})
     db.execute("DELETE FROM StarterEquipment WHERE Class=?", (CLASS,))
     starter_row = source_row(db, "StarterEquipment", "1=1")
     starter_items = ["bronze_pansarkedja_"+piece for piece in ("boots", "gloves", "hauberk", "helm", "leggings", "sleeves")]

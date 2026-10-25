@@ -54,11 +54,6 @@ internal static class BotCharacterGenerator
             new(50, "Ranger", (9, "Celt"), (11, "Elf"), (12, "Lurikeen")),
             new(55, "Animist", (9, "Celt"), (10, "Firbolg"), (15, "Sylvan")),
             new(56, "Valewalker", (9, "Celt"), (10, "Firbolg"), (15, "Sylvan")),
-            // Isolated Sluaghbinder test class. Keep this as one peer choice
-            // in the Hibernian pool so launcher batches roll it at the same
-            // rate as every other Hibernian class; only its legal player
-            // races are offered.
-            new(63, "Sluaghbinder", (9, "Celt"), (10, "Firbolg")),
         ],
     };
 
@@ -80,11 +75,11 @@ internal static class BotCharacterGenerator
         [3] = ["", "ae", "el", "in", "or"],
     };
 
-    public static Identity Generate(int realm, ISet<string> reservedNames, bool allowSluaghbinder = true)
+    public static Identity Generate(int realm, ISet<string> reservedNames)
     {
         int gender = Random.Shared.Next(1, 3);
-        // The "no custom class" edition (0.33, 0.34, 0.35; classes/enable_sluaghbinder = False) never rolls class 63.
-        Choice[] pool = allowSluaghbinder ? Choices[realm] : Choices[realm].Where(entry => entry.ClassId != 63).ToArray();
+        // The retired Sluaghbinder (class 63) is never rolled.
+        Choice[] pool = Choices[realm];
         Choice choice = pool[Random.Shared.Next(pool.Length)];
         var race = choice.Races[Random.Shared.Next(choice.Races.Length)];
         var parts = Names[(realm, gender)];

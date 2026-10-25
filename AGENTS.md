@@ -87,11 +87,13 @@ In a playable folder:
 ## Useful facts
 
 - **Edition switch:**
-  - The switch is `ServerProperties.Properties.ENABLE_SLUAGHBINDER`. It defaults to on, is read
-    from the database and is honored by the bot generator, character creation and launcher bot
-    batches.
-  - The Sluaghbinder uses the client's Hibernian Mauler slot (class 62), and the novice is stored
-    as Acolyte (16) until promotion to class 63.
+  - This fork has retired the Sluaghbinder (class 63): its server code is gone and
+    `source/tools/remove_sluaghbinder.py` drops its world rows (`install_hybrid_lines.py` and
+    `build_custom_release_037.py` run it). Character creation refuses class 63 and the Hibernian
+    Acolyte novice.
+  - The database row `classes / enable_sluaghbinder` stays `False`: the launcher and progress
+    importer still read it to name the edition, and the importer refuses saves with Sluaghbinder
+    characters.
 - **Item model chain:** `objects.csv` model ID → `items.csv` row → `items/<nif>`.
   - Shields that carry an emblem take their base texture from a `pskins.csv` override.
   - `tools/pet-art/nif4_geom.py` reads the old 4.x item NIFs that pyffi can't.

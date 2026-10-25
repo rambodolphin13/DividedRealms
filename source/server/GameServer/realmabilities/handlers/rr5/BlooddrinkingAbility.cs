@@ -30,8 +30,8 @@ namespace DOL.GS.RealmAbilities
     /// /// <author>Stexx</author>
     public class BloodDrinkingAbility : RR5RealmAbility
     {
-        public const int DURATION = 30 * 1000; // 30 secs
-        public const double HEALPERCENT = 20; // 20% heal
+        public const int DURATION = 15 * 1000; // Live 1.121: 15 secs
+        public const double HEALPERCENT = 45; // Live 1.121b: 45% heal
         public const int EFFECT = 1567;
 
         public BloodDrinkingAbility(DbAbility dba, int level) : base(dba, level) { }

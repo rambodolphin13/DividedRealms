@@ -111,7 +111,7 @@ namespace DOL.GS
             this.Object_Type = (int)type;
             this.Item_Type = (int)slot;
             this.Type_Damage = (int)dmg;
-            this.charClass = charClass;
+            this.charClass = ClassItemRules.ItemClass(charClass);  // Death Knights receive Necromancer loot
 
             // shouldn't need more Randomized public set values
 
@@ -1104,6 +1104,7 @@ namespace DOL.GS
 
         private eProperty GetWeightedStatForClass(eCharacterClass charClass)
         {
+            charClass = ExpansionClassLoot.StatTemplate(charClass);
             if (Util.Chance(10))
                 return eProperty.MaxHealth;
 
@@ -1212,6 +1213,8 @@ namespace DOL.GS
                         return eProperty.Piety;
                     else return eProperty.Constitution;
                 
+                case eCharacterClass.PendragonSovereign:
+                case eCharacterClass.TuathaSovereign:
                 case eCharacterClass.Stormforged:
                 case eCharacterClass.Thane:
                 case eCharacterClass.Reaver:
@@ -1268,7 +1271,6 @@ namespace DOL.GS
 
                 case eCharacterClass.Champion:
                 case eCharacterClass.Valewalker:
-                case eCharacterClass.Sluaghbinder:
                     if (Util.Chance(10))
                         return eProperty.MaxMana;
                     if (rand <= 22)
@@ -1313,6 +1315,12 @@ namespace DOL.GS
 
         private bool SkillIsValidForClass(eProperty property)
         {
+            if (ExpansionClassLoot.Covers(charClass))
+                return ExpansionClassLoot.SkillValid(charClass, property);
+            if (charClass == eCharacterClass.PendragonSovereign)
+                return PendragonRules.IsRogSkill(property);
+            if (charClass == eCharacterClass.TuathaSovereign)
+                return PendragonRules.IsTuathaSkill(property);
             if (charClass == eCharacterClass.Stormforged)
                 return StormforgedRules.IsRogSkill(property);
             switch (charClass)
@@ -1641,16 +1649,6 @@ namespace DOL.GS
                         )
                         return true;
                     return false;
-                case eCharacterClass.Sluaghbinder:
-                    if (property == eProperty.Skill_Blunt ||
-                        property == eProperty.Skill_Shields ||
-                        property == eProperty.Skill_Scythe ||
-                        property == eProperty.AllMeleeWeaponSkills ||
-                        property == eProperty.AllMagicSkills ||
-                        property == eProperty.AllSkills
-                        )
-                        return true;
-                    return false;
                 case eCharacterClass.Eldritch:
                     if (property == eProperty.Skill_Light ||
                         property == eProperty.Skill_Mana ||
@@ -1933,6 +1931,7 @@ namespace DOL.GS
 
         private bool StatIsValidForClass(eProperty property)
         {
+            eCharacterClass charClass = ExpansionClassLoot.StatTemplate(this.charClass);
             switch (property)
             {
                 case eProperty.MaxMana: //mana isn't a thing!! >:(
@@ -2031,7 +2030,13 @@ namespace DOL.GS
 
         private bool SkillIsValidForMagical(eProperty property)
         {
-            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
+            if (ExpansionClassLoot.Covers(this.charClass))
+                return ExpansionClassLoot.SkillValid(this.charClass, property);
+            if (this.charClass == eCharacterClass.PendragonSovereign)
+                return PendragonRules.IsRogSkill(property);
+            if (this.charClass == eCharacterClass.TuathaSovereign)
+                return PendragonRules.IsTuathaSkill(property);
+            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Stealth || property == eProperty.Skill_Spear))
                 return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
@@ -2089,8 +2094,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Ranger &&
                             charClass != eCharacterClass.Nightshade &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Warden)
                         {
                             return false;
                         }
@@ -2103,8 +2107,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Bard &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Warden)
                         {
                             return false;
                         }
@@ -2347,8 +2350,7 @@ namespace DOL.GS
                 case eProperty.Skill_Large_Weapon:
                     {
                         if (charClass != eCharacterClass.Champion &&
-                            charClass != eCharacterClass.Hero &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Hero)
                         {
                             return false;
                         }
@@ -2405,7 +2407,6 @@ namespace DOL.GS
                             charClass != eCharacterClass.Valewalker &&
                             charClass != eCharacterClass.Blademaster &&
                             charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder &&
                             charClass != eCharacterClass.Armsman && //albion
                             charClass != eCharacterClass.Friar &&
                             charClass != eCharacterClass.Mercenary &&
@@ -2423,8 +2424,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Nightshade &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Ranger &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Ranger)
                         {
                             return false;
                         }
@@ -2451,8 +2451,7 @@ namespace DOL.GS
                     }
                 case eProperty.Skill_Scythe:
                     {
-                        if (charClass != eCharacterClass.Valewalker &&
-                            charClass != eCharacterClass.Sluaghbinder) { return false; }
+                        if (charClass != eCharacterClass.Valewalker) { return false; }
                         return true;
                     }
                 case eProperty.Skill_Shields:
@@ -2466,8 +2465,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Mercenary &&
                             charClass != eCharacterClass.Paladin &&
                             charClass != eCharacterClass.Reaver &&
-                            charClass != eCharacterClass.Scout &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Scout)
                         {
                             return false;
                         }
@@ -2642,7 +2640,6 @@ namespace DOL.GS
                             charClass != eCharacterClass.Ranger &&
                             charClass != eCharacterClass.Valewalker &&
                             charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder &&
                             charClass != eCharacterClass.Armsman && //albion
                             charClass != eCharacterClass.Friar &&
                             charClass != eCharacterClass.Infiltrator &&
@@ -2678,7 +2675,13 @@ namespace DOL.GS
 
         private bool SkillIsValidForArmor(eProperty property)
         {
-            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
+            if (ExpansionClassLoot.Covers(this.charClass))
+                return ExpansionClassLoot.SkillValid(this.charClass, property);
+            if (this.charClass == eCharacterClass.PendragonSovereign)
+                return PendragonRules.IsRogSkill(property);
+            if (this.charClass == eCharacterClass.TuathaSovereign)
+                return PendragonRules.IsTuathaSkill(property);
+            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Stealth || property == eProperty.Skill_Spear))
                 return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
@@ -2779,8 +2782,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Nightshade &&
                             charClass != eCharacterClass.Bard &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Warden)
                         {
                             return false;
                         }
@@ -2795,8 +2797,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Bard &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Warden)
                         {
                             return false;
                         }
@@ -3177,8 +3178,7 @@ namespace DOL.GS
                 case eProperty.Skill_Large_Weapon:
                     {
                         if (charClass != eCharacterClass.Champion &&
-                            charClass != eCharacterClass.Hero &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Hero)
                         {
                             return false;
                         }
@@ -3317,7 +3317,6 @@ namespace DOL.GS
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Valewalker &&
                             charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder &&
                             charClass != eCharacterClass.Blademaster &&
                             charClass != eCharacterClass.Armsman && //albion
                             charClass != eCharacterClass.Friar &&
@@ -3352,8 +3351,7 @@ namespace DOL.GS
                         if (charClass != eCharacterClass.Champion &&
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Nightshade &&
-                            charClass != eCharacterClass.Ranger &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Ranger)
                         {
                             return false;
                         }
@@ -3409,12 +3407,8 @@ namespace DOL.GS
                     }
                 case eProperty.Skill_Scythe:
                     {
-                        if (charClass != eCharacterClass.Valewalker &&
-                            charClass != eCharacterClass.Sluaghbinder) { return false; }
+                        if (charClass != eCharacterClass.Valewalker) { return false; }
                         if (charClass == eCharacterClass.Valewalker && type == eObjectType.Cloth)
-                            return true;
-                        if (charClass == eCharacterClass.Sluaghbinder &&
-                            (type == eObjectType.Reinforced || type == eObjectType.Scale))
                             return true;
                         break;
                     }
@@ -3429,8 +3423,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Mercenary &&
                             charClass != eCharacterClass.Paladin &&
                             charClass != eCharacterClass.Reaver &&
-                            charClass != eCharacterClass.Scout &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Scout)
                         {
                             return false;
                         }
@@ -3724,7 +3717,13 @@ namespace DOL.GS
 
         private bool SkillIsValidForWeapon(eProperty property)
         {
-            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
+            if (ExpansionClassLoot.Covers(this.charClass))
+                return ExpansionClassLoot.SkillValid(this.charClass, property);
+            if (this.charClass == eCharacterClass.PendragonSovereign)
+                return PendragonRules.IsRogSkill(property);
+            if (this.charClass == eCharacterClass.TuathaSovereign)
+                return PendragonRules.IsTuathaSkill(property);
+            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Stealth || property == eProperty.Skill_Spear))
                 return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
@@ -3950,8 +3949,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Ranger &&
                             charClass != eCharacterClass.Nightshade &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Warden)
                         {
                             return false;
                         }
@@ -3966,8 +3964,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Bard &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Warden)
                         {
                             return false;
                         }
@@ -4092,8 +4089,7 @@ namespace DOL.GS
                 case eProperty.Skill_Large_Weapon:
                     {
                         if (charClass != eCharacterClass.Champion &&
-                            charClass != eCharacterClass.Hero &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Hero)
                         {
                             return false;
                         }
@@ -4151,7 +4147,6 @@ namespace DOL.GS
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Valewalker &&
                             charClass != eCharacterClass.Warden &&
-                            charClass != eCharacterClass.Sluaghbinder &&
                             charClass != eCharacterClass.Armsman && //albion
                             charClass != eCharacterClass.Friar &&
                             charClass != eCharacterClass.Mercenary &&
@@ -4177,8 +4172,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Hero &&
                             charClass != eCharacterClass.Nightshade &&
                             charClass != eCharacterClass.Blademaster &&
-                            charClass != eCharacterClass.Ranger &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Ranger)
                         {
                             return false;
                         }
@@ -4202,8 +4196,7 @@ namespace DOL.GS
                     }
                 case eProperty.Skill_Scythe:
                     {
-                        if (charClass != eCharacterClass.Valewalker &&
-                            charClass != eCharacterClass.Sluaghbinder) { return false; }
+                        if (charClass != eCharacterClass.Valewalker) { return false; }
                         if (type == eObjectType.Scythe)
                             return true;
                         break;
@@ -4228,8 +4221,7 @@ namespace DOL.GS
                             charClass != eCharacterClass.Mercenary &&
                             charClass != eCharacterClass.Paladin &&
                             charClass != eCharacterClass.Reaver &&
-                            charClass != eCharacterClass.Scout &&
-                            charClass != eCharacterClass.Sluaghbinder)
+                            charClass != eCharacterClass.Scout)
                         {
                             return false;
                         }
@@ -5399,6 +5391,8 @@ namespace DOL.GS
 
         public static eObjectType GetAlbionWeapon(eCharacterClass charClass)
         {
+            if (ExpansionClassLoot.TryWeapon(charClass, out eObjectType expansionWeapon))
+                return expansionWeapon;
             List<eObjectType> weaponTypes = new List<eObjectType>();
             /*
 			 * Albion Weapons
@@ -5452,6 +5446,14 @@ namespace DOL.GS
                     weaponTypes.Add(eObjectType.Staff);
                     weaponTypes.Add(eObjectType.CrushingWeapon);
                     weaponTypes.Add(eObjectType.Shield);
+                    break;
+                case eCharacterClass.PendragonSovereign:
+                    weaponTypes.AddRange(new[] { eObjectType.SlashingWeapon, eObjectType.CrushingWeapon,
+                        eObjectType.ThrustWeapon, eObjectType.TwoHandedWeapon, eObjectType.PolearmWeapon, eObjectType.Shield });
+                    break;
+                case eCharacterClass.TuathaSovereign:
+                    weaponTypes.AddRange(new[] { eObjectType.Blades, eObjectType.Blunt, eObjectType.Piercing,
+                        eObjectType.LargeWeapons, eObjectType.CelticSpear, eObjectType.Shield });
                     break;
                 case eCharacterClass.Armsman:
                     weaponTypes.Add(eObjectType.PolearmWeapon);
@@ -5555,6 +5557,8 @@ namespace DOL.GS
 
         public static eObjectType GetAlbionArmorType(eCharacterClass charClass, byte level)
         {
+            if (ExpansionClassLoot.TryArmor(charClass, out eObjectType expansionArmor))
+                return expansionArmor;
 
             switch (charClass)
             {
@@ -5578,6 +5582,10 @@ namespace DOL.GS
                 case eCharacterClass.Infiltrator:
                     return eObjectType.Leather;
 
+                case eCharacterClass.PendragonSovereign:
+                    return eObjectType.Plate;
+                case eCharacterClass.TuathaSovereign:
+                    return eObjectType.Scale;
                 case eCharacterClass.Armsman:
                     if (level < 5)
                     {
@@ -5658,6 +5666,8 @@ namespace DOL.GS
 
         public static eObjectType GetMidgardWeapon(eCharacterClass charClass)
         {
+            if (ExpansionClassLoot.TryWeapon(charClass, out eObjectType expansionWeapon))
+                return expansionWeapon;
 
             List<eObjectType> weaponTypes = new List<eObjectType>();
             /*
@@ -5748,6 +5758,8 @@ namespace DOL.GS
                     weaponTypes.Add(eObjectType.Shield);
                     break;
                 case eCharacterClass.Stormforged:
+                    weaponTypes.Add(eObjectType.Spear);
+                    goto case eCharacterClass.Thane;
                 case eCharacterClass.Thane:
                 case eCharacterClass.Warrior:
                     weaponTypes.Add(eObjectType.Sword);
@@ -5796,6 +5808,8 @@ namespace DOL.GS
 
         public static eObjectType GetMidgardArmorType(eCharacterClass charClass, byte level)
         {
+            if (ExpansionClassLoot.TryArmor(charClass, out eObjectType expansionArmor))
+                return expansionArmor;
 
             switch (charClass)
             {
@@ -5877,6 +5891,8 @@ namespace DOL.GS
 
         public static eObjectType GetHiberniaWeapon(eCharacterClass charClass)
         {
+            if (ExpansionClassLoot.TryWeapon(charClass, out eObjectType expansionWeapon))
+                return expansionWeapon;
             List<eObjectType> weaponTypes = new List<eObjectType>();
             /*
 			 * Hibernia Weapons
@@ -5948,18 +5964,6 @@ namespace DOL.GS
                     weaponTypes.Add(eObjectType.LargeWeapons);
                     weaponTypes.Add(eObjectType.LargeWeapons);
                     weaponTypes.Add(eObjectType.LargeWeapons);
-                    weaponTypes.Add(eObjectType.Shield);
-                    break;
-                case eCharacterClass.Sluaghbinder:
-                    // Sluaghbinder ROGs follow the three usable equipment
-                    // lines: one-handed blunt, scythe, and shields.  Do not
-                    // generate blades, piercing, or large-weapon items that
-                    // the class cannot train or equip through its trees.
-                    weaponTypes.Add(eObjectType.Blunt);
-                    weaponTypes.Add(eObjectType.Blunt);
-                    weaponTypes.Add(eObjectType.Scythe);
-                    weaponTypes.Add(eObjectType.Scythe);
-                    weaponTypes.Add(eObjectType.Shield);
                     weaponTypes.Add(eObjectType.Shield);
                     break;
                 case eCharacterClass.Hero:
@@ -6038,6 +6042,8 @@ namespace DOL.GS
 
         public static eObjectType GetHiberniaArmorType(eCharacterClass charClass, byte level)
         {
+            if (ExpansionClassLoot.TryArmor(charClass, out eObjectType expansionArmor))
+                return expansionArmor;
 
             /* Hib Armor
 			eObjectType.Cloth,
@@ -6080,16 +6086,6 @@ namespace DOL.GS
                     }
 
                 case eCharacterClass.Champion:
-                    if (level < 20)
-                    {
-                        return eObjectType.Reinforced;
-                    }
-                    else { return eObjectType.Scale; }
-
-                // Sluaghbinder uses the existing Hibernian heavy progression:
-                // reinforced while leveling, then scale at level 20+.  No plate
-                // armor type is introduced for Hibernia.
-                case eCharacterClass.Sluaghbinder:
                     if (level < 20)
                     {
                         return eObjectType.Reinforced;
@@ -6244,6 +6240,8 @@ namespace DOL.GS
 
         private static int GetMaxShieldSizeFromClass(eCharacterClass charClass)
         {
+            if (ExpansionClassLoot.TryShieldSize(charClass, out int expansionShield) && expansionShield > 0)
+                return expansionShield;
             //shield size is based off of damage type
             //1 = small shield
             //2 = medium
@@ -6273,10 +6271,11 @@ namespace DOL.GS
                 case eCharacterClass.Cleric:
                     return 2;
 
-                // Sluaghbinder can use small, medium, and large shields.  The
+                // The royal classes can use small, medium, and large shields.  The
                 // damage-type field on a shield is the classic size marker.
+                case eCharacterClass.PendragonSovereign:
+                case eCharacterClass.TuathaSovereign:
                 case eCharacterClass.Stormforged:
-                case eCharacterClass.Sluaghbinder:
                     return 3;
 
                 case eCharacterClass.Warrior:

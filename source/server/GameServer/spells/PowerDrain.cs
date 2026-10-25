@@ -27,7 +27,7 @@ namespace DOL.GS.Spells
 			SendDamageMessages(ad);
 			DamageTarget(ad, true);
 			DrainPower(ad);
-			target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
+			target.StartDamageInterruptTimer(target.SpellInterruptDuration, ad);
 		}
 
 		/// <summary>

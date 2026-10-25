@@ -3,6 +3,9 @@
         <BaseIntermediateOutputPath>..\build\GameServer\$(Configuration)\</BaseIntermediateOutputPath>
     </PropertyGroup>
     <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+    <ItemGroup>
+        <EmbeddedResource Include="gameutils/modern-races-1130.json" LogicalName="DOL.GS.ModernRaceRegistrations.json" />
+    </ItemGroup>
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>

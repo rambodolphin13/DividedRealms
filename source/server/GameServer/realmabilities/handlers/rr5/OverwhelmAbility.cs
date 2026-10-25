@@ -31,7 +31,7 @@ namespace DOL.GS.RealmAbilities
     public class OverwhelmAbility : RR5RealmAbility
     {
         public const int DURATION = 30 * 1000; // 30 secs
-        public const double BONUS = 0.15; // 15% bonus
+        public const double BONUS = 0.10; // Live 1.108: 10% bonus
         public const int EFFECT = 1564;
 
         public OverwhelmAbility(DbAbility dba, int level) : base(dba, level) { }

@@ -21,6 +21,7 @@ internal sealed partial class MainForm : Form
     private readonly string _launcherRoot = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
     private readonly string _root = ServerRoot();
     private readonly bool _newClient = IsNewClientLauncher();
+    private readonly ModernClientProfile? _modernClient;
     private readonly string _database;
     private readonly string _serverDirectory;
     private readonly string _serverExecutable;
@@ -152,10 +153,16 @@ internal sealed partial class MainForm : Form
 
     public MainForm()
     {
+        _modernClient = _newClient ? null : ModernClientProfile.Load(_root);
         _database = Path.Combine(_root, "data", "opendaoc.sqlite3.db");
         _serverDirectory = Path.Combine(_root, "server");
         _serverExecutable = Path.Combine(_serverDirectory, "CoreServer.exe");
-        if (_newClient)
+        if (_modernClient != null)
+        {
+            _clientDirectory = _modernClient.ClientDirectory;
+            _clientConnector = _modernClient.ConnectorPath;
+        }
+        else if (_newClient)
         {
             // 0.36c: the new client (new-client\godot, run by new-client\tools\godot_net) instead of game.dll
             _clientDirectory = Path.GetFullPath(Path.Combine(_launcherRoot, "..", "godot"));
@@ -172,6 +179,7 @@ internal sealed partial class MainForm : Form
         _logsDirectory = Path.Combine(_root, "logs");
 
         Text = _newClient ? $"Offline DAoC {DisplayVersion}c — New client" : "Offline DAoC — Classic + Shrouded Isles";
+        if (_modernClient != null) Text = $"Offline DAoC {DisplayVersion} — Modern 1.130 Client Test";
         MinimumSize = new Size(960, 620);
         Size = new Size(1100, 700);
         StartPosition = FormStartPosition.CenterScreen;
@@ -368,7 +376,7 @@ internal sealed partial class MainForm : Form
         titlePanel.Controls.Add(new Label
         {
             AutoSize = true,
-            Text = _newClient ? $"VERSION {DisplayVersion}c" : VersionLabel(InstalledEditionHasCustomClass(_database)),
+            Text = _modernClient != null ? "MODERN CLIENT 1.130 • TEST" : _newClient ? $"VERSION {DisplayVersion}c" : VersionLabel(InstalledEditionHasCustomClass(_database)),
             Font = new Font("Georgia", 12f, FontStyle.Bold),
             ForeColor = DaocTheme.GoldLight,
             Location = new Point(97, 79),
@@ -2187,11 +2195,10 @@ internal sealed partial class MainForm : Form
             while (reader.Read()) reserved.Add(reader.GetString(0));
         }
 
-        bool allowSluaghbinder = SluaghbinderEnabled(connection, transaction);
         var identities = new List<BotCharacterGenerator.Identity>(count);
         for (int index = 0; index < count; index++)
         {
-            BotCharacterGenerator.Identity identity = BotCharacterGenerator.Generate(realm, reserved, allowSluaghbinder);
+            BotCharacterGenerator.Identity identity = BotCharacterGenerator.Generate(realm, reserved);
             BotStartingLocation start = level == 50
                 ? CapitalBotStartingLocation(identity.Realm)
                 : ChooseBotStartingLocation(connection, transaction, identity.Realm, identity.RaceId, identity.ClassId);
@@ -2824,6 +2831,19 @@ internal sealed partial class MainForm : Form
         }
 
         var credentials = ReadCredentials();
+        if (_modernClient != null)
+        {
+            try
+            {
+                _modernClient.ValidateServer(_root);
+                Process.Start(_modernClient.CreateStartInfo(credentials.Account, credentials.Password));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Modern client not ready", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            return;
+        }
         EnsureBorderlessFullscreen();
         ClientSessionDiagnostics.Prepare(_logsDirectory);
         Process? client = Process.Start(new ProcessStartInfo(_clientConnector)
@@ -2911,7 +2931,8 @@ internal sealed partial class MainForm : Form
 
     private bool IsServerRunning()
     {
-        return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Any(endpoint => endpoint.Port == 10300);
+        int port = _modernClient?.Port ?? 10300;
+        return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Any(endpoint => endpoint.Port == port);
     }
 
     private void BeginServerReadinessPolling()

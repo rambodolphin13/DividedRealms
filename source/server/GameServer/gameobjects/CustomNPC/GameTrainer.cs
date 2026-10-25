@@ -100,7 +100,7 @@ namespace DOL.GS
 
 			// Some data-driven NPCs do not use the conventional "<Class> Trainer"
 			// guild label.  Resolve the registered class as a safe fallback so new
-			// player classes (including Sluaghbinder) still appear correctly.
+			// player classes (including the royal classes) still appear correctly.
 			if (string.IsNullOrEmpty(TrainerClassName) && TrainedClass != eCharacterClass.Unknown)
 			{
 				TrainerClassName = ScriptMgr.FindCharacterClass((int)TrainedClass)?.Name ?? TrainedClass.ToString();

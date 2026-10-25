@@ -15,8 +15,13 @@ namespace DOL.GS.Spells
 
         public HealSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
 
+        /// <summary>Strongest resolved heal this cast, including variance, disease and criticals,
+        /// before limiting it to missing health. Used by Perfecter's next-heal abilities.</summary>
+        public int ResolvedHealAmount { get; private set; }
+
         public override bool StartSpell(GameLiving target)
         {
+            ResolvedHealAmount = 0;
             if (target is null && Spell.Target is eSpellTarget.PET)
                 target = Caster;
 
@@ -65,10 +70,19 @@ namespace DOL.GS.Spells
             return true;
         }
 
+        // Only the seven owned Valkyrie PBAE heals use distance falloff.
+        // The local curve retains a quarter of the heal at the edge.
+        public static double ValkyrieAreaHealFactor(int spellId, int distance, int radius) =>
+            spellId is >= 65055 and <= 65061 && radius > 0
+                ? Math.Clamp(1.0 - Math.Max(0,distance) / (double)radius,0.25,1.0) : 1.0;
+
         public virtual bool HealTarget(GameLiving target, double amount, bool affectedByDisease)
         {
             if (target == null || target.ObjectState is not GameObject.eObjectState.Active)
                 return false;
+
+            if (Spell.ID is >= 65055 and <= 65061)
+                amount *= ValkyrieAreaHealFactor(Spell.ID, Caster.GetDistanceTo(target), Spell.Radius);
 
             if (DOL.GS.ServerRules.HybridCoopRules.Enabled &&
                 !GameServer.ServerRules.IsSameRealm(Caster, target, true))
@@ -113,11 +127,15 @@ namespace DOL.GS.Spells
             else
                 effectiveness = 1.0;
 
+            // Enchanter Light line (heals cast by the buffed healer) and Shaman Frigg's Grace (heals cast on the target).
+            effectiveness += HealingDoneBuffSpellHandler.Percent(Caster) * 0.01;
+            effectiveness *= 1 + HealingReceivedBuffSpellHandler.Percent(target) * 0.01;
+
             if (Caster is GamePlayer spellCaster && spellCaster.UseDetailedCombatLog && effectiveness != 1)
                 spellCaster.Out.SendMessage($"heal effectiveness: {effectiveness:0.##}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
 
             amount *= RelicMgr.GetRelicBonusModifier(Caster, eRelicType.Magic);
-            amount *= effectiveness;
+            amount *= effectiveness * DOL.GS.RealmAbilities.ModernMasteryOfConcentration.SpellFactor(Caster, SpellLine);
 
             /*if (playerTarget != null)
             {
@@ -165,6 +183,7 @@ namespace DOL.GS.Spells
             if (target.EffectList.GetOfType<NecromancerShadeEffect>() != null && target.ControlledBrain?.Body is NecromancerPet necromancerPet)
                 target = necromancerPet;
 
+            ResolvedHealAmount = Math.Max(ResolvedHealAmount, (int) amount);
             int effectiveAmount = target.ChangeHealth(Caster, eHealthChangeType.Spell, (int) amount);
 
             if (effectiveAmount <= 0)
