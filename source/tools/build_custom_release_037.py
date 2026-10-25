@@ -144,7 +144,7 @@ def main():
     counts = {"player files": assemble.copy_tree(repo / "package-files", out)}
     for name in assemble.ROOT_FILES:
         shutil.copy2(repo / name, out / name)
-    # PROJECT-HANDOFF.md is the developer's own session hand-off (it names local folders); it stays in the repository.
+    # PROJECT-HANDOFF.md is the developer's own session hand-off (it names local folders); it is kept local, never shipped.
     counts["docs"] = assemble.copy_tree(repo / "docs", out / "docs", lambda rel: rel.as_posix() not in PRIVATE_DOCS)
     counts["source"] = assemble.copy_tree(repo / "source", out / "source", assemble.keep)
     for tool in ("pet-art", "claude-version", "asset-tool"):
