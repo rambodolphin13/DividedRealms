@@ -18,6 +18,23 @@ internal static class Program
             catch { Environment.ExitCode = 1; }
             return;
         }
+        if (args.Length == 2 && args[0] == "--setup-modern-client")
+        {
+            // Headless client setup (package tests): copy and patch the given 1.130 client, then verify the profile.
+            try
+            {
+                var profile = ModernClientProfile.Load(AppContext.BaseDirectory)
+                    ?? throw new InvalidDataException("No modern client profile is installed.");
+                ModernClientSetup.Install(args[1], profile.ClientDirectory, ModernClientSetup.Load(AppContext.BaseDirectory), null, CancellationToken.None);
+                _ = profile.CreateStartInfo("verification-only", "not-used");
+            }
+            catch (Exception ex)
+            {
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "modern-client-setup-error.txt"), ex.ToString());
+                Environment.ExitCode = 1;
+            }
+            return;
+        }
         if (args.Length == 1 && args[0] == "--prepare-portable-account")
         {
             // the new client's launcher keeps its account with the game it plays (server_root.txt)

@@ -41,10 +41,12 @@ public sealed record ModernClientProfile
         var server = XDocument.Load(Path.Combine(runtime, "server", "config", "serverconfig.xml")).Root?.Element("Server")
             ?? throw new InvalidDataException("Test server configuration is missing.");
         var connection = new DbConnectionStringBuilder { ConnectionString = server.Element("DBConnectionString")?.Value ?? "" };
+        // A relative Data Source (the packages' ../data/opendaoc.sqlite3.db) is relative to the server folder.
         string database = connection.TryGetValue("Data Source", out object? value) ? Convert.ToString(value) ?? "" : "";
         if (server.Element("IP")?.Value != "127.0.0.1" || server.Element("Port")?.Value != Port.ToString() ||
             server.Element("DBType")?.Value != "SQLITE" ||
-            !string.Equals(Path.GetFullPath(database), Path.GetFullPath(Path.Combine(runtime, "data", "opendaoc.sqlite3.db")), StringComparison.OrdinalIgnoreCase))
+            !string.Equals(Path.GetFullPath(database, Path.GetFullPath(Path.Combine(runtime, "server"))),
+                Path.GetFullPath(Path.Combine(runtime, "data", "opendaoc.sqlite3.db")), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Modern test profile must use its own SQLite database and loopback endpoint.");
     }
 

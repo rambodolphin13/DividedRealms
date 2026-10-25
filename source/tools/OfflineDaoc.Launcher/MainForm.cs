@@ -245,6 +245,9 @@ internal sealed partial class MainForm : Form
         _serverReadinessPoll.Tick += async (_, _) => await RefreshWhenServerReadyAsync();
         Shown += async (_, _) =>
         {
+            // The modern test package ships without a client: offer to set up the player's own on first start.
+            if (_modernClient != null && !ModernClientSetup.IsSetUp(_modernClient))
+                ModernClientSetupForm.EnsureSetUp(this, _modernClient, _root);
             await RefreshDashboardAsync();
             await RefreshRealmExchangeAsync();
             _displayClock.Start();
@@ -2824,6 +2827,8 @@ internal sealed partial class MainForm : Form
             LaunchNewClient();
             return;
         }
+        if (_modernClient != null && !ModernClientSetupForm.EnsureSetUp(this, _modernClient, _root))
+            return;
         if (!File.Exists(_clientConnector) || !File.Exists(Path.Combine(_clientDirectory, "game.dll")))
         {
             MessageBox.Show(this, "The isolated client or connection utility is missing.", "Client not ready", MessageBoxButtons.OK, MessageBoxIcon.Error);
