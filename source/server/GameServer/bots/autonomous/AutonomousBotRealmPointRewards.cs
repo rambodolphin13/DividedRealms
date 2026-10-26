@@ -184,6 +184,7 @@ public static class AutonomousBotRealmPointRewards
                 int contributorCount = Math.Max(1, contribution.Count);
                 int groupContributorCount = player.Group == null ? 1 : contributorCount;
                 int realmPointsEarned = 0;
+                int bountyPointsPaid = 0;
 
                 if (isWorthRealmPoints)
                 {
@@ -207,6 +208,7 @@ public static class AutonomousBotRealmPointRewards
 
                         if (bountyPointsEarned > 0)
                             player.GainBountyPoints(bountyPointsEarned);
+                        bountyPointsPaid = bountyPointsEarned;
                     }
                 }
                 else
@@ -218,6 +220,7 @@ public static class AutonomousBotRealmPointRewards
                 bool deathBlow = ReferenceEquals(player, creditedKiller);
                 bool soloKill = damagePercent >= 1.0 && contributorCount == 1;
                 player.UpdateKillStatsOnPlayerKill(killedBot.Realm, deathBlow, soloKill, realmPointsEarned);
+                BotTesterLog.PvpReward(killedBot, player, realmPointsEarned, bountyPointsPaid, isWorthRealmPoints, damagePercent);
             }
         }
     }

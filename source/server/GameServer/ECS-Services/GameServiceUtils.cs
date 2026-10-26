@@ -28,6 +28,7 @@ namespace DOL.GS
                 ServiceObjectStore.Remove(entity);
 
             List<string> logMessages = [$"Critical error encountered in {serviceName}: {exception}"];
+            BotTesterLog.ServiceException(serviceName, entityOwner, exception);
 
             Action action;
             string actionMessage;

@@ -75,11 +75,46 @@ internal static class BotCharacterGenerator
         [3] = ["", "ae", "el", "in", "or"],
     };
 
-    public static Identity Generate(int realm, ISet<string> reservedNames)
+    // Expansion, live and royal classes, each behind its server switch (classes / <key>); bots keep classic races.
+    // These mirror AutonomousBotIdentityGenerator.ModernChoices on the server.
+    private static readonly IReadOnlyDictionary<int, (string Switch, Choice Choice)[]> ModernChoices =
+        new Dictionary<int, (string, Choice)[]>
+    {
+        [1] =
+        [
+            ("enable_heretic_test", new(33, "Heretic", (2, "Avalonian"), (1, "Briton"), (13, "Inconnu"), (4, "Saracen"))),
+            ("enable_mauler_test", new(60, "Mauler", (1, "Briton"), (13, "Inconnu"))),
+            ("enable_death_knight_test", new(66, "Death Knight", (1, "Briton"), (13, "Inconnu"), (4, "Saracen"))),
+            ("enable_pendragon", new(65, "Pendragon Sovereign", (2, "Avalonian"), (1, "Briton"), (3, "Highlander"), (13, "Inconnu"), (4, "Saracen"))),
+        ],
+        [2] =
+        [
+            ("enable_valkyrie_test", new(34, "Valkyrie", (7, "Dwarf"), (5, "Norseman"), (14, "Valkyn"))),
+            ("enable_warlock_test", new(59, "Warlock", (8, "Kobold"), (5, "Norseman"), (6, "Troll"))),
+            ("enable_mauler_test", new(61, "Mauler", (8, "Kobold"), (5, "Norseman"))),
+            ("enable_stormforged", new(64, "Storm Sovereign", (7, "Dwarf"), (8, "Kobold"), (5, "Norseman"), (6, "Troll"), (14, "Valkyn"))),
+        ],
+        [3] =
+        [
+            ("enable_bainshee_test", new(39, "Bainshee", (9, "Celt"), (11, "Elf"), (12, "Lurikeen"))),
+            ("enable_vampiir_test", new(58, "Vampiir", (9, "Celt"), (12, "Lurikeen"))),
+            ("enable_mauler_test", new(62, "Mauler", (9, "Celt"), (12, "Lurikeen"))),
+            ("enable_tuatha", new(67, "Tuatha Sovereign", (9, "Celt"), (11, "Elf"), (10, "Firbolg"), (12, "Lurikeen"), (15, "Sylvan"))),
+        ],
+    };
+
+    /// <summary>The class switches the roster reads from the ServerProperty table.</summary>
+    public static IEnumerable<string> ModernClassSwitches =>
+        ModernChoices.Values.SelectMany(entries => entries).Select(entry => entry.Switch).Distinct();
+
+    public static Identity Generate(int realm, ISet<string> reservedNames, ISet<string>? enabledSwitches = null)
     {
         int gender = Random.Shared.Next(1, 3);
-        // The retired Sluaghbinder (class 63) is never rolled.
-        Choice[] pool = Choices[realm];
+        // The retired Sluaghbinder (class 63) is never rolled. With no newer class switched on the
+        // original pool is used unchanged.
+        Choice[] modern = enabledSwitches == null ? [] :
+            ModernChoices[realm].Where(entry => enabledSwitches.Contains(entry.Switch)).Select(entry => entry.Choice).ToArray();
+        Choice[] pool = modern.Length == 0 ? Choices[realm] : [.. Choices[realm], .. modern];
         Choice choice = pool[Random.Shared.Next(pool.Length)];
         var race = choice.Races[Random.Shared.Next(choice.Races.Length)];
         var parts = Names[(realm, gender)];

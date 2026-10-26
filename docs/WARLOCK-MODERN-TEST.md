@@ -99,6 +99,30 @@ release while moving, and verify shared reuse and their fixed effects. Check
 tooltips/icons, chain prerequisites, cure versus Purge, target death, friendly
 healing and resurrection. Automated checks do not replace this pass.
 
+## Primer and chamber fix, October 25
+
+**Tester report:**
+- Primers switched off at once, so a secondary only went off when the primer and the spell were pressed together.
+- Chambers announced they were loading and then did nothing.
+
+**Cause:** the primer stance and the loaded-chamber state were spell effects with no duration. The effect service ends
+such an effect on its next tick unless its expiry is pushed out, as the Death Knight forms and the Storm Sovereign chant
+already do.
+- Primers (`WarlockPrimerEffect`) are now held until changed or cancelled.
+- Loaded chambers (`WarlockReadyEffect`) are now held until released.
+- The Mauler aura (`MaulerStanceEffect`) had the same fault and is fixed with them.
+
+**Chambers:** the kit follows live since the 1.114b redesign.
+- Each of the six chambers loads a fixed effect: 6 seconds, standing still.
+- Using the same chamber again releases it instantly, even while moving.
+- Releases share a 10-second reuse.
+
+Storing an arbitrary spell in a chamber is the pre-1.114b design and is not the target. A regression test covers the
+three effects.
+
+**Still to recheck in game:** bolt cooldowns, and whether primary (non-secondary) spells cast without a primer. The data
+and server code allow both; the tester's reports may have come from the primer fault.
+
 ## Current-live pass, October 24 (Claude)
 
 Built on Codex's first kit, using its research guide plus the Warlock sections of the official 1.114b, 1.116,

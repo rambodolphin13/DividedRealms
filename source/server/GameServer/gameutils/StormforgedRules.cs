@@ -63,15 +63,17 @@ namespace DOL.GS
         /// <summary>The level written to and read from the client for a spell in this line.</summary>
         public static int ClientLevel(SpellLine line, Spell spell) =>
             PendragonSpellbook.For(line) is RoyalSpellbook book ? book.ClientLevel(spell) :
-            ReferenceEquals(line, ClientLine) && ClientSlots.TryGetValue(spell.ID, out int slot) ? slot : spell.Level;
+            ReferenceEquals(line, ClientLine) && ClientSlots.TryGetValue(spell.ID, out int slot) ? slot :
+            SpellLineMerge.TryClientLevel(line, spell, out int merged) ? merged : spell.Level;
 
         /// <summary>
         /// The spell lines as the client sees them: all Stormforged.* lines merged into one, at the
-        /// position of the first. Other classes get the same list back unchanged.
+        /// position of the first, and each stock line with its "(Live)" / "(1.130)" extras merged into
+        /// one (<see cref="SpellLineMerge"/>). Other lists come back unchanged.
         /// </summary>
         public static IList<(SpellLine, List<Skill>)> ClientSpellLines(IList<(SpellLine, List<Skill>)> lines)
         {
-            lines = PendragonSpellbook.ClientSpellLines(lines);
+            lines = SpellLineMerge.ClientSpellLines(PendragonSpellbook.ClientSpellLines(lines));
             int first = -1;
             for (int i = 0; i < lines.Count && first < 0; i++)
                 if (lines[i].Item1.KeyName.StartsWith(LinePrefix, StringComparison.Ordinal))
@@ -88,7 +90,7 @@ namespace DOL.GS
 
         /// <summary>The real line a client-view spell belongs to, for casting and delves.</summary>
         public static SpellLine ServerLine(IList<(SpellLine, List<Skill>)> lines, SpellLine clientLine, Skill skill) =>
-            (ReferenceEquals(clientLine, ClientLine) || PendragonSpellbook.For(clientLine) != null) ? lines.FirstOrDefault(line => line.Item2.Contains(skill)).Item1 : clientLine;
+            (ReferenceEquals(clientLine, ClientLine) || PendragonSpellbook.For(clientLine) != null || SpellLineMerge.IsMerged(clientLine)) ? lines.FirstOrDefault(line => line.Item2.Contains(skill)).Item1 : clientLine;
 
         public static bool IsRogSkill(eProperty property) => property is
             eProperty.Skill_Sword or eProperty.Skill_Hammer or eProperty.Skill_Axe or eProperty.Skill_Spear or

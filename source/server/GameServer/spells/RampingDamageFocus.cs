@@ -83,7 +83,8 @@ namespace DOL.GS.Spells
 
 			foreach (GameLiving t in targets)
 			{
-				if (Util.Chance(CalculateSpellResistChance(t)))
+				// The resist chance is a percentage; Util.Chance(double) takes a 0-1 fraction.
+				if (Util.Chance(CalculateSpellResistChance(t) / 100.0))
 				{
 					OnSpellNegated(target, SpellNegatedReason.Resisted);
 					continue;

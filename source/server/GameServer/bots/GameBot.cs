@@ -8,6 +8,7 @@ using System.Threading;
 using DOL.Logging;
 using DOL.AI.Brain;
 using DOL.Database;
+using DOL.Language;
 using DOL.Events;
 using DOL.GS.Effects;
 using DOL.GS.GameEvents;
@@ -115,6 +116,10 @@ namespace DOL.GS
         private int m_leftOverSpecPoints;
         private long _nextWeaponRepairWarningTick;
 
+        /// <summary>
+        /// Clicking a bot of your own realm reads like clicking a player, with its class, as on live. Enemy
+        /// gamebots keep their faction message (their names are masked too).
+        /// </summary>
         public override IList GetExamineMessages(GamePlayer player)
         {
             if (IsAutonomousWorldBot && player != null && Realm != eRealm.None && player.Realm != eRealm.None &&
@@ -125,7 +130,13 @@ namespace DOL.GS
                     $"You examine {GetName(0, false)}. {GetPronoun(0, true)} is a member of an enemy faction."
                 };
             }
-            return base.GetExamineMessages(player);
+            if (player == null || CharacterClass == null || Realm == eRealm.None || player.Realm != Realm)
+                return base.GetExamineMessages(player);
+            return new ArrayList(1)
+            {
+                LanguageMgr.GetTranslation(player.Client?.Account?.Language, "GamePlayer.GetExamineMessages.RealmMember",
+                    GetName(0, false), GetPronoun(0, true), ClassName)
+            };
         }
 
         #endregion
@@ -940,6 +951,8 @@ namespace DOL.GS
 
         public override void ProcessDeath(GameObject killer)
         {
+            // Before the death bookkeeping below overwrites the activity and target.
+            BotTesterLog.Died(this, killer);
             AutonomousPetSupport.CancelPendingCharm(this);
             _deathTick = GameLoop.GameLoopTime;
             _deathRegionId = CurrentRegionID;
@@ -2157,6 +2170,7 @@ namespace DOL.GS
 
         public override void SortStyles()
         {
+            BotTesterLog.RegisterKit(this);
             StylesChain?.Clear();
             StylesDefensive?.Clear();
             StylesBack?.Clear();
@@ -2444,8 +2458,20 @@ namespace DOL.GS
 
         private void OnOwnerRegionChanged(DOLEvent e, object sender, EventArgs arguments)
         {
-            if (IsTemporaryGroupHelper && sender is GamePlayer player)
+            if (sender is GamePlayer player && TemporaryGroupStableTravel.FollowsThroughTransfers(this, player))
                 TemporaryGroupStableTravel.RelocateHelpersAfterPlayerTransfer(player);
+        }
+
+        // A gamebot following a player's group watches that player's region changes, like a /spawn helper
+        // watches its owner's, so it comes along through dungeon doors and portals.
+        private void WatchLeaderRegionChanges(GamePlayer leader)
+        {
+            if (IsTemporaryGroupHelper || ReferenceEquals(leader, PlayerGroupLeader))
+                return;
+            if (PlayerGroupLeader != null)
+                GameEventMgr.RemoveHandler(PlayerGroupLeader, GamePlayerEvent.RegionChanged, new DOLEventHandler(OnOwnerRegionChanged));
+            if (leader != null)
+                GameEventMgr.AddHandler(leader, GamePlayerEvent.RegionChanged, new DOLEventHandler(OnOwnerRegionChanged));
         }
 
         public bool EnterPlayerLedGroup(GamePlayer leader)
@@ -2453,6 +2479,7 @@ namespace DOL.GS
             if (leader == null || leader.Realm != Realm)
                 return false;
 
+            WatchLeaderRegionChanges(leader);
             PlayerGroupLeader = leader;
             if (Brain is BotBrain brain)
             {
@@ -2466,6 +2493,7 @@ namespace DOL.GS
         {
             if (IsTemporaryGroupHelper)
                 CompleteStableMasterRoute();
+            WatchLeaderRegionChanges(null);
             PlayerGroupLeader = null;
             if (Brain is BotBrain brain)
                 brain.RebindAssistedPlayer();
@@ -2766,6 +2794,7 @@ namespace DOL.GS
                 if (IsTemporaryGroupHelper)
                     GameEventMgr.RemoveHandler(Owner, GamePlayerEvent.RegionChanged, new DOLEventHandler(OnOwnerRegionChanged));
             }
+            WatchLeaderRegionChanges(null);
             base.Delete();
         }
 
@@ -3667,6 +3696,10 @@ namespace DOL.GS
             else
                 SetHybridSpells();
 
+            // The expansion and royal kits have player-only spells (Warlock chambers, ground spells, toggles).
+            if (Spells != null && Spells.Any(spell => !BotClassKitPolicy.IsUsableByBot(spell)))
+                Spells = BotClassKitPolicy.UsableByBot(Spells);
+
             if (IsEndgameCompanion)
                 Spells = TemporaryCompanionBalance.HighestRanks(Spells, Level, SkillBase.GetSpellByID);
         }
@@ -3720,6 +3753,19 @@ namespace DOL.GS
                         eSpellType.BolaShot or eSpellType.ArrowDamageTypes or eSpellType.ArcheryDamageBuff or eSpellType.TrackStealth or
                         eSpellType.PoisonCoating or eSpellType.ConsumeVenom))
                     spells.Add(spell);
+            }
+
+            // The royal classes learn their abilities from a career line (LiveCareerSpecialization), which is a
+            // list line rather than a hybrid one; players see it in their spellbook, so bots take it too.
+            if (PendragonRules.IsSovereign(CharacterClass.ID))
+            {
+                foreach (var line in GetAllUsableListSpells())
+                    foreach (Spell spell in line.Item2.OfType<Spell>())
+                        if (spell.Level <= Level && !spells.Contains(spell))
+                        {
+                            spells.Add(spell);
+                            _powerSpellLines.TryAdd(spell.ID, line.Item1);
+                        }
             }
 
             if (spells.Count > 0)
@@ -3914,7 +3960,7 @@ namespace DOL.GS
                     break;
 
                 default:
-                    if (CharacterClass.ClassType == eClassType.ListCaster ||
+                    if (CharacterClass.ClassType == eClassType.ListCaster && CharacterClass.ID != (int)eCharacterClass.Vampiir ||
                         CharacterClass.ID == (int)eCharacterClass.Friar ||
                         CharacterClass.ID == (int)eCharacterClass.Valewalker)
                         BotEquipment.SetMeleeWeapon(this, BotSpec.WeaponOneType, eHand.twoHand);
@@ -3962,7 +4008,7 @@ namespace DOL.GS
         private bool PrimaryWeaponUsesTwoHands =>
             ShouldUsePlannedTwoHandedPrimary((eCharacterClass)(CharacterClass?.ID ?? 0),
                 Level, BotSpec?.Is2H == true, BotSpec?.WeaponTwoType ?? 0) ||
-            CharacterClass?.ClassType == eClassType.ListCaster ||
+            CharacterClass?.ClassType == eClassType.ListCaster && CharacterClass.ID != (int)eCharacterClass.Vampiir ||
             CharacterClass?.ID is (int)eCharacterClass.Friar or (int)eCharacterClass.Valewalker;
 
         private eObjectType PreferredPrimaryWeaponType

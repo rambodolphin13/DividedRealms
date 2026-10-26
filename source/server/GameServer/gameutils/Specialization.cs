@@ -330,7 +330,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public virtual List<Ability> PretendAbilitiesForLiving(GameLiving living, int step)
 		{
-			return SkillBase.GetSpecAbilityList(KeyName, living is GamePlayer ? ((GamePlayer)living).CharacterClass.ID : 0)
+			return SkillBase.GetSpecAbilityList(KeyName, ResolveClassId(living))
 				.Where(k => k.SpecLevelRequirement <= step)
 				.OrderBy(k => k.SpecLevelRequirement).ToList();
 		}
@@ -345,8 +345,9 @@ namespace DOL.GS
 		/// <returns></returns>
 		protected virtual List<Ability> GetAbilitiesForLiving(GameLiving living, int level)
 		{
-			// Select only Enabled and Max Level Abilities
-			List<Ability> abs = SkillBase.GetSpecAbilityList(KeyName, living is GamePlayer ? ((GamePlayer)living).CharacterClass.ID : 0);
+			// Select only Enabled and Max Level Abilities. Bots resolve their class like players do: the
+			// expansion and royal careers grant their weapon and armor abilities only on class-specific rows.
+			List<Ability> abs = SkillBase.GetSpecAbilityList(KeyName, ResolveClassId(living));
 			
 			// Get order of first appearing skills
 			IOrderedEnumerable<Ability> order = abs.GroupBy(item => item.KeyName)

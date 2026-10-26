@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DOL.GS.ServerProperties;
 
 namespace DOL.GS
 {
@@ -68,6 +69,60 @@ namespace DOL.GS
                 ],
             };
 
+        // Expansion, live and royal classes. Each joins its realm's pool only while its own
+        // server switch is on (the modern client test world), so Classic + SI worlds are unchanged.
+        // Bots keep to the classic races each class allows.
+        private static readonly IReadOnlyDictionary<eRealm, ClassChoice[]> ModernChoices =
+            new Dictionary<eRealm, ClassChoice[]>
+            {
+                [eRealm.Albion] =
+                [
+                    new(eCharacterClass.Heretic, eRace.Avalonian, eRace.Briton, eRace.Inconnu, eRace.Saracen),
+                    new(eCharacterClass.MaulerAlb, eRace.Briton, eRace.Inconnu),
+                    new(eCharacterClass.DeathKnight, eRace.Briton, eRace.Inconnu, eRace.Saracen),
+                    new(eCharacterClass.PendragonSovereign, eRace.Avalonian, eRace.Briton, eRace.Highlander, eRace.Inconnu, eRace.Saracen),
+                ],
+                [eRealm.Midgard] =
+                [
+                    new(eCharacterClass.Valkyrie, eRace.Dwarf, eRace.Norseman, eRace.Valkyn),
+                    new(eCharacterClass.Warlock, eRace.Kobold, eRace.Norseman, eRace.Troll),
+                    new(eCharacterClass.MaulerMid, eRace.Kobold, eRace.Norseman),
+                    new(eCharacterClass.Stormforged, eRace.Dwarf, eRace.Kobold, eRace.Norseman, eRace.Troll, eRace.Valkyn),
+                ],
+                [eRealm.Hibernia] =
+                [
+                    new(eCharacterClass.Bainshee, eRace.Celt, eRace.Elf, eRace.Lurikeen),
+                    new(eCharacterClass.Vampiir, eRace.Celt, eRace.Lurikeen),
+                    new(eCharacterClass.MaulerHib, eRace.Celt, eRace.Lurikeen),
+                    new(eCharacterClass.TuathaSovereign, eRace.Celt, eRace.Elf, eRace.Firbolg, eRace.Lurikeen, eRace.Sylvan),
+                ],
+            };
+
+        /// <summary>True for every Classic + SI class, and for a newer class while its server switch is on.</summary>
+        public static bool IsClassAvailable(eCharacterClass characterClass) => characterClass switch
+        {
+            eCharacterClass.Heretic => Properties.ENABLE_HERETIC_TEST,
+            eCharacterClass.DeathKnight => Properties.ENABLE_DEATH_KNIGHT_TEST,
+            eCharacterClass.Valkyrie => Properties.ENABLE_VALKYRIE_TEST,
+            eCharacterClass.Warlock => Properties.ENABLE_WARLOCK_TEST,
+            eCharacterClass.Bainshee => Properties.ENABLE_BAINSHEE_TEST,
+            eCharacterClass.Vampiir => Properties.ENABLE_VAMPIIR_TEST,
+            eCharacterClass.MaulerAlb or eCharacterClass.MaulerMid or eCharacterClass.MaulerHib => Properties.ENABLE_MAULER_TEST,
+            eCharacterClass.Stormforged => Properties.ENABLE_STORMFORGED,
+            eCharacterClass.PendragonSovereign => Properties.ENABLE_PENDRAGON,
+            eCharacterClass.TuathaSovereign => Properties.ENABLE_TUATHA,
+            _ => true,
+        };
+
+        private static ClassChoice[] ActiveChoices(eRealm realm)
+        {
+            if (!Choices.TryGetValue(realm, out ClassChoice[] classic))
+                return null;
+            ClassChoice[] modern = ModernChoices[realm].Where(choice => IsClassAvailable(choice.CharacterClass)).ToArray();
+            // With every switch off (Classic, Stormforged-less worlds) the original array is used, so rolls are unchanged.
+            return modern.Length == 0 ? classic : [.. classic, .. modern];
+        }
+
         private static readonly IReadOnlyDictionary<(eRealm Realm, eGender Gender), (string[] Starts, string[] Middles, string[] Ends)> NameParts =
             new Dictionary<(eRealm, eGender), (string[], string[], string[])>
             {
@@ -106,7 +161,8 @@ namespace DOL.GS
 
         public static Identity Generate(eRealm realm, eGender gender, ISet<string> reservedNames = null, Random random = null)
         {
-            if (!Choices.TryGetValue(realm, out ClassChoice[] realmChoices))
+            ClassChoice[] realmChoices = ActiveChoices(realm);
+            if (realmChoices == null)
                 throw new ArgumentOutOfRangeException(nameof(realm), "Autonomous bots must belong to Albion, Midgard, or Hibernia.");
             if (gender is not eGender.Male and not eGender.Female)
                 throw new ArgumentOutOfRangeException(nameof(gender), "Autonomous bots must have a male or female identity.");
@@ -125,11 +181,12 @@ namespace DOL.GS
             ISet<string> reservedNames = null,
             Random random = null)
         {
-            if (!Choices.TryGetValue(realm, out ClassChoice[] realmChoices))
+            ClassChoice[] realmChoices = ActiveChoices(realm);
+            if (realmChoices == null)
                 throw new ArgumentOutOfRangeException(nameof(realm));
             ClassChoice choice = realmChoices.FirstOrDefault(entry => entry.CharacterClass == characterClass);
             if (choice == null)
-                throw new ArgumentException($"{characterClass} is not a Classic + SI {GlobalConstants.RealmToName(realm)} class.", nameof(characterClass));
+                throw new ArgumentException($"{characterClass} is not an available {GlobalConstants.RealmToName(realm)} bot class.", nameof(characterClass));
             if (gender is not eGender.Male and not eGender.Female)
                 throw new ArgumentOutOfRangeException(nameof(gender));
 
@@ -144,12 +201,12 @@ namespace DOL.GS
         }
 
         public static IReadOnlyCollection<eCharacterClass> GetEraClasses(eRealm realm) =>
-            Choices.TryGetValue(realm, out ClassChoice[] choices)
+            ActiveChoices(realm) is ClassChoice[] choices
                 ? choices.Select(choice => choice.CharacterClass).ToArray()
                 : Array.Empty<eCharacterClass>();
 
         public static IReadOnlyCollection<eRace> GetEligibleRaces(eCharacterClass characterClass) =>
-            Choices.Values.SelectMany(value => value)
+            Choices.Values.Concat(ModernChoices.Values).SelectMany(value => value)
                 .FirstOrDefault(choice => choice.CharacterClass == characterClass)?.Races ?? Array.Empty<eRace>();
 
         private static string GenerateUniqueName(eRealm realm, eGender gender, ISet<string> reservedNames, Random random)

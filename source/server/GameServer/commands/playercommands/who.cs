@@ -71,19 +71,30 @@ namespace DOL.GS.Commands
 			}
 
 			// no params
+			Zone zoneOnly = null;
 			if (args.Length == 1)
 			{
 				int playing = clientsList.Count + worldBots.Length;
 
 				// including anon?
 				DisplayMessage(client, string.Format(MESSAGE_PLAYERS_ONLINE, playing, playing > 1 ? "s" : ""));
-				DisplayMessage(client, MESSAGE_NO_ARGS);
-				return;
+				// Then everyone in the caller's zone, players and bots, as on live.
+				zoneOnly = client.Player.CurrentZone;
+				if (zoneOnly == null)
+				{
+					DisplayMessage(client, MESSAGE_NO_ARGS);
+					return;
+				}
+				DisplayMessage(client, $"In {zoneOnly.Description}:");
+				filters = new ArrayList(1);
+				filters.Add(new ZoneFilter(zoneOnly));
 			}
-			
+
 			// any params passed?
-			switch (args[1].ToLower())
+			switch (zoneOnly != null ? string.Empty : args[1].ToLower())
 			{
+				case "":
+					break;
 				case "all": // display all players, no filter
 				{
 					filters = null;
@@ -179,7 +190,7 @@ namespace DOL.GS.Commands
 
 			foreach (GameBot bot in worldBots)
 			{
-				if (!ApplyBotFilter(args, bot))
+				if (zoneOnly != null ? bot.CurrentZone != zoneOnly : !ApplyBotFilter(args, bot))
 					continue;
 				resultCount++;
 				if (resultMessages.Count < MAX_LIST_SIZE && resultCount >= listStart)
@@ -195,6 +206,8 @@ namespace DOL.GS.Commands
 			{
 				DisplayMessage(client, MESSAGE_NO_MATCHES);
 			}
+			if (zoneOnly != null)
+				DisplayMessage(client, MESSAGE_NO_ARGS);
 			else if (resultCount > MAX_LIST_SIZE)
 			{
 				DisplayMessage(client, string.Format(MESSAGE_LIST_TRUNCATED, resultCount));
@@ -317,6 +330,8 @@ namespace DOL.GS.Commands
 		private static string FormatBotLine(GameBot bot, GameClient source)
 		{
 			StringBuilder result = new StringBuilder(bot.Name, 100);
+			if (!string.IsNullOrEmpty(bot.GuildName))
+				result.Append(" <").Append(bot.GuildName).Append('>');
 			result.Append(" the Level ").Append(bot.Level).Append(' ').Append(bot.ClassName);
 			if (bot.CurrentZone != null && GameServer.Instance.Configuration.ServerType != EGameServerType.GST_PvP)
 			{
@@ -432,6 +447,13 @@ namespace DOL.GS.Commands
 					return true;
 				return false;
 			}
+		}
+
+		private class ZoneFilter : IWhoFilter
+		{
+			private readonly Zone _zone;
+			public ZoneFilter(Zone zone) { _zone = zone; }
+			public bool ApplyFilter(GamePlayer player) => player.CurrentZone == _zone;
 		}
 
 		private class LevelRangeFilter : IWhoFilter

@@ -35,5 +35,36 @@ namespace DOL.UnitTests
             Assert.That(ExpansionClassLoot.TryShieldSize(eCharacterClass.Valkyrie, out int size) && size == 3, Is.True);
             Assert.That(ClassItemRules.ItemClass(eCharacterClass.DeathKnight), Is.EqualTo(eCharacterClass.Necromancer));
         }
+
+        [Test]
+        public void HibernianTuathaDropsUseItsOwnWeaponsAndScale()
+        {
+            for (int i = 0; i < 50; i++)
+                Assert.That(GeneratedUniqueItem.GetHiberniaWeapon(eCharacterClass.TuathaSovereign), Is.AnyOf(eObjectType.Blades, eObjectType.Blunt,
+                    eObjectType.Piercing, eObjectType.LargeWeapons, eObjectType.CelticSpear, eObjectType.Shield));
+            Assert.That(GeneratedUniqueItem.GetHiberniaArmorType(eCharacterClass.TuathaSovereign, 50), Is.EqualTo(eObjectType.Scale));
+        }
+
+        [Test]
+        public void OutOfClassPoolAddsNewClassesOnlyWhileSwitchedOn()
+        {
+            bool previous = DOL.GS.ServerProperties.Properties.ENABLE_TUATHA;
+            bool mauler = DOL.GS.ServerProperties.Properties.ENABLE_MAULER_TEST;
+            try
+            {
+                DOL.GS.ServerProperties.Properties.ENABLE_TUATHA = false;
+                DOL.GS.ServerProperties.Properties.ENABLE_MAULER_TEST = false;
+                Assert.That(ROGMobGenerator.RealmLootClasses(eRealm.Hibernia), Has.Count.EqualTo(13));
+                DOL.GS.ServerProperties.Properties.ENABLE_TUATHA = true;
+                DOL.GS.ServerProperties.Properties.ENABLE_MAULER_TEST = true;
+                Assert.That(ROGMobGenerator.RealmLootClasses(eRealm.Hibernia), Does.Contain(eCharacterClass.TuathaSovereign).And.Contain(eCharacterClass.MaulerHib));
+                Assert.That(ROGMobGenerator.RealmLootClasses(eRealm.Albion), Does.Contain(eCharacterClass.MaulerAlb).And.Not.Contain(eCharacterClass.MaulerHib));
+            }
+            finally
+            {
+                DOL.GS.ServerProperties.Properties.ENABLE_TUATHA = previous;
+                DOL.GS.ServerProperties.Properties.ENABLE_MAULER_TEST = mauler;
+            }
+        }
     }
 }

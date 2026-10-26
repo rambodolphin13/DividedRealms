@@ -94,6 +94,7 @@ public static class AutonomousBotRealmAbilities
         [(int)eCharacterClass.Bainshee] = Archetype.Caster, [(int)eCharacterClass.Eldritch] = Archetype.Caster,
         [(int)eCharacterClass.Enchanter] = Archetype.Caster, [(int)eCharacterClass.Mentalist] = Archetype.Caster,
         [(int)eCharacterClass.Animist] = Archetype.Caster, [(int)eCharacterClass.Warlock] = Archetype.Caster,
+        [(int)eCharacterClass.DeathKnight] = Archetype.Caster,
     };
 
     public static Archetype ArchetypeOf(int classId, ICollection<string> available)

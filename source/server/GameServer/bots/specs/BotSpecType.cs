@@ -101,5 +101,21 @@ namespace DOL.GS
 
         OneHandHybrid,
         TwoHandHybrid,
+
+        // Expansion, live and royal classes. Appended so saved build plans keep their values.
+        EnhanceHeretic,
+        RejuvHeretic,
+
+        DeathsightDeathKnight,
+        PainworkingDeathKnight,
+        ServantDeathKnight,
+
+        CursingWarlock,
+        HexingWarlock,
+        WitchcraftWarlock,
+
+        ShriekBainshee,
+        WailBainshee,
+        GuardBainshee,
     }
 }

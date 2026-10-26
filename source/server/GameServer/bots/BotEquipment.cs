@@ -80,7 +80,8 @@ namespace DOL.GS
                 item.MaxCount == 1 &&
                 BotWeaponStats.IsNormalCompanionWeapon(item) &&
                 item.Level >= Math.Max(1, level - 2) && item.Level <= level &&
-                item.Realm == (int)realm && item.Object_Type == (int)type && item.IsPickable &&
+                (item.Realm == (int)realm || item.Realm == 0 && type is eObjectType.MaulerStaff or eObjectType.FistWraps) &&
+                item.Object_Type == (int)type && item.IsPickable &&
                 (!BotRangedCombat.IsRangedWeaponType(type) || BotRangedCombat.IsUsableTemplate(item)) &&
                 item.LevelRequirement <= level &&
                 ClassItemRules.Allows(item.AllowedClasses, (int)characterClass) &&
@@ -114,13 +115,22 @@ namespace DOL.GS
             var candidates = bot.IsEndgameCompanion ? Array.Empty<DbItemTemplate>() :
                 GameServer.Database.SelectObjects<DbItemTemplate>(DB.Column("Level").IsGreaterOrEqualTo(Math.Max(1, bot.Level - 2))
                     .And(DB.Column("Level").IsLessOrEqualTo(bot.Level))
-                    .And(DB.Column("Realm").IsEqualTo((int)bot.Realm))
+                    .And(WeaponRealm(bot.Realm, type))
                     .And(DB.Column("Object_Type").IsEqualTo((int)type))).ToArray();
             var item = SelectCompanionWeapon(candidates, bot.Level, bot.Realm,
                 (eCharacterClass)bot.CharacterClass.ID, type, slot, damage, shieldSize);
             if (!bot.Inventory.AddItem(slot, GameInventoryItem.Create(item)))
                 throw new InvalidOperationException($"Could not equip temporary companion {bot.Name}: {slot} ({type}).");
         }
+
+        /// <summary>
+        /// Most Mauler Staves and Fist Wraps are realm-neutral (Realm 0) rows, and Midgard and Hibernia have
+        /// almost none of their own below level 37, so Mauler weapons also match Realm 0.
+        /// </summary>
+        public static WhereClause WeaponRealm(eRealm realm, eObjectType type) =>
+            type is eObjectType.MaulerStaff or eObjectType.FistWraps
+                ? DB.Column("Realm").IsIn(new[] { 0, (int)realm })
+                : DB.Column("Realm").IsEqualTo((int)realm);
 
         public static void SetWeaponROG(GameLiving living, eRealm realm, eCharacterClass charClass, byte level, eObjectType objectType, eInventorySlot slot, eDamageType damageType)
         {
@@ -204,7 +214,7 @@ namespace DOL.GS
             itemList = GameServer.Database.SelectObjects<DbItemTemplate>(DB.Column("Level").IsGreaterOrEqualTo(min).And(
                                                                        DB.Column("Level").IsLessOrEqualTo(max).And(
                                                                        DB.Column("Object_Type").IsEqualTo((int)weapType).And(
-                                                                       DB.Column("Realm").IsEqualTo((int)player.Realm)).And(
+                                                                       WeaponRealm(player.Realm, weapType)).And(
                                                                        DB.Column("IsPickable").IsEqualTo(1)))));
             itemList = WithoutCrossRealmLooks(itemList);
 
@@ -515,7 +525,9 @@ namespace DOL.GS
                         player.CharacterClass.ID == (int)eCharacterClass.Blademaster ||
                         player.CharacterClass.ID == (int)eCharacterClass.Shadowblade ||
                         player.CharacterClass.ID == (int)eCharacterClass.Berserker ||
-                        player.CharacterClass.ID == (int)eCharacterClass.Savage))
+                        player.CharacterClass.ID == (int)eCharacterClass.Savage ||
+                        player.CharacterClass.ID == (int)eCharacterClass.Vampiir ||
+                        DOL.GS.Spells.ModernMauler.IsMauler(player.CharacterClass.ID)))
                     {
                         player.Inventory.AddItem(player.Inventory.FindFirstEmptySlot(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack), item);
                     }

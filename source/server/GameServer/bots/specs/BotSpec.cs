@@ -70,6 +70,19 @@ namespace DOL.GS
                 case eCharacterClass.Spiritmaster: return new SpiritmasterBotSpec(spec);
                 case eCharacterClass.Thane: return new ThaneBotSpec(spec);
                 case eCharacterClass.Warrior: return new WarriorBotSpec(spec);
+
+                case eCharacterClass.Heretic: return new HereticBotSpec(spec);
+                case eCharacterClass.DeathKnight: return new DeathKnightBotSpec(spec);
+                case eCharacterClass.Valkyrie: return new ValkyrieBotSpec(spec);
+                case eCharacterClass.Warlock: return new WarlockBotSpec(spec);
+                case eCharacterClass.Bainshee: return new BainsheeBotSpec(spec);
+                case eCharacterClass.Vampiir: return new VampiirBotSpec();
+                case eCharacterClass.MaulerAlb:
+                case eCharacterClass.MaulerMid:
+                case eCharacterClass.MaulerHib: return new MaulerBotSpec(spec);
+                case eCharacterClass.Stormforged:
+                case eCharacterClass.PendragonSovereign:
+                case eCharacterClass.TuathaSovereign: return new SovereignBotSpec(charClass, spec);
             }
 
             return null;
@@ -106,6 +119,14 @@ namespace DOL.GS
             eCharacterClass.Thane => [eSpecType.OneHandAndShield, eSpecType.TwoHanded],
             eCharacterClass.Skald => [eSpecType.OneHandAndShield, eSpecType.TwoHanded],
             eCharacterClass.Warrior => [eSpecType.OneHandAndShield, eSpecType.TwoHanded],
+            eCharacterClass.Heretic => [eSpecType.EnhanceHeretic, eSpecType.RejuvHeretic],
+            eCharacterClass.DeathKnight => [eSpecType.DeathsightDeathKnight, eSpecType.PainworkingDeathKnight, eSpecType.ServantDeathKnight],
+            eCharacterClass.Valkyrie => [eSpecType.OneHandAndShield, eSpecType.TwoHanded],
+            eCharacterClass.Warlock => [eSpecType.CursingWarlock, eSpecType.HexingWarlock, eSpecType.WitchcraftWarlock],
+            eCharacterClass.Bainshee => [eSpecType.ShriekBainshee, eSpecType.WailBainshee, eSpecType.GuardBainshee],
+            eCharacterClass.MaulerAlb or eCharacterClass.MaulerMid or eCharacterClass.MaulerHib => [eSpecType.TwoHanded, eSpecType.DualWield],
+            eCharacterClass.Stormforged or eCharacterClass.PendragonSovereign or eCharacterClass.TuathaSovereign =>
+                [eSpecType.OneHandAndShield, eSpecType.TwoHanded],
             _ => [eSpecType.None],
         };
 

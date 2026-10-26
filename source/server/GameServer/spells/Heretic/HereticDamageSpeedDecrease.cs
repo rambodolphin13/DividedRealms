@@ -141,7 +141,8 @@ namespace DOL.GS.Spells
         {
             if (target == null) return;
             if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
-            if (Util.Chance(CalculateSpellResistChance(target)))
+            // The resist chance is a percentage; Util.Chance(double) takes a 0-1 fraction.
+            if (Util.Chance(CalculateSpellResistChance(target) / 100.0))
             {
                 OnSpellResist(target);
                 return;

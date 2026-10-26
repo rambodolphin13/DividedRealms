@@ -1144,6 +1144,7 @@ namespace DOL.GS.Spells
                 }
 				case eCastState.Precast:
 				{
+					BotTesterLog.CastStarted(this);
 					if (CheckBeginCast(Target))
 					{
 						_castStartTick = GameLoop.GameLoopTime;
@@ -1176,6 +1177,7 @@ namespace DOL.GS.Spells
 					}
 					else
 					{
+						BotTesterLog.CastRefused(this);
 						if (Caster.IsBeingInterrupted)
 							CastState = eCastState.Interrupted;
 						else
@@ -1216,6 +1218,7 @@ namespace DOL.GS.Spells
 			{
 				case eCastState.Interrupted:
 				{
+					BotTesterLog.CastInterrupted(this);
 					InterruptCasting(false);
 					CastState = eCastState.Cleanup;
 					break;
@@ -1223,6 +1226,7 @@ namespace DOL.GS.Spells
 				case eCastState.Finished:
 				{
 					FinishSpellCast(Target);
+					BotTesterLog.CastFinished(this);
 
 					if (Spell.IsFocus)
 					{
@@ -2625,6 +2629,7 @@ namespace DOL.GS.Spells
 
 		protected virtual void OnSpellNegated(GameLiving target, SpellNegatedReason reason)
 		{
+			BotTesterLog.SpellNegated(this, target, reason.ToString());
 			if (reason is SpellNegatedReason.Resisted)
 				SendSpellResistMessages(target);
 
@@ -2730,6 +2735,7 @@ namespace DOL.GS.Spells
 		{
             if (!Spell.IsHarmful)
                 CabalistRestDiagnostics.Message(Caster, Spell, message);
+            BotTesterLog.SpellMessage(Caster, Spell, message);
 			if (Caster is GamePlayer playerCaster)
 				playerCaster.MessageToSelf(message, type);
 			else if (Caster is GameNPC npcCaster && npcCaster.Brain is IControlledBrain npcCasterBrain
@@ -3431,6 +3437,7 @@ namespace DOL.GS.Spells
 
 			ad.Target.OnAttackedByEnemy(ad);
 			ad.Attacker.DealDamage(ad);
+			BotTesterLog.SpellDamage(this, ad);
 
 
 			foreach (GamePlayer player in ad.Target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))

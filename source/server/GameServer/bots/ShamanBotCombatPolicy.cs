@@ -13,6 +13,13 @@ namespace DOL.GS
 
         public static bool IsHybrid(eCharacterClass characterClass) => characterClass == eCharacterClass.Shaman;
 
+        /// <summary>
+        /// Melee classes whose spells are cast between swings: the Shaman, and the Vampiir, a list caster that
+        /// fights with a weapon. Their ready spells wait out the bot's own swing instead of never being cast.
+        /// </summary>
+        public static bool CastsBetweenSwings(eCharacterClass characterClass) =>
+            characterClass is eCharacterClass.Shaman or eCharacterClass.Vampiir;
+
         public static bool IsRoot(Spell spell) =>
             spell != null && spell.SpellType == eSpellType.SpeedDecrease && spell.Value >= 99;
 

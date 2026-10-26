@@ -9,7 +9,13 @@ namespace DOL.GS.Spells
     {
         public static bool Owns(int id) => id is >= 67000 and <= 67999;
         public static bool IsMauler(int id) => id is >= 60 and <= 62;
-        public static bool IsPlayer(GameLiving living) => living is GamePlayer p && IsMauler(p.CharacterClass.ID);
+        // Mauler players and Mauler bots (the bot companions and gamebots) follow the same rules.
+        public static bool IsPlayer(GameLiving living) => living switch
+        {
+            GamePlayer p => IsMauler(p.CharacterClass.ID),
+            IGamePlayer bot => bot.CharacterClass != null && IsMauler(bot.CharacterClass.ID),
+            _ => false
+        };
         public static int Param(Spell spell, string key)
         {
             spell.TryGetParamSingle(key, out int value);
@@ -100,7 +106,13 @@ namespace DOL.GS.Spells
     }
     public sealed class MaulerStanceEffect : ECSGameSpellEffect
     {
-        public MaulerStanceEffect(in ECSGameEffectInitParams p) : base(p) { EffectType = eEffect.MaulerStance; }
+        // The aura is held until another aura replaces it; with no duration it would expire on the next tick.
+        public MaulerStanceEffect(in ECSGameEffectInitParams p) : base(p)
+        {
+            EffectType = eEffect.MaulerStance;
+            Duration = 0;
+            ExpireTick = long.MaxValue;
+        }
         public override bool IsBetterThan(ECSGameEffect other) => true;
         public override DbPlayerXEffect GetSavedEffect() => null;
     }
@@ -118,7 +130,8 @@ namespace DOL.GS.Spells
         }.Where(x => !string.IsNullOrEmpty(x)));
         private bool Requirements()
         {
-            if (Caster is not GamePlayer p || !ModernMauler.IsPlayer(p)) return false;
+            if (!ModernMauler.IsPlayer(Caster)) return false;
+            GameLiving p = Caster;
             int required = ModernMauler.Param(Spell, "MaulerStaffRequired");
             bool equipped = p.ActiveWeapon?.Object_Type == (int)eObjectType.MaulerStaff;
             return ModernMauler.Aura(p) != null && ModernMauler.MeetsStaffRequirement(required, p.GetBaseSpecLevel(Specs.Mauler_Staff), equipped);

@@ -98,6 +98,14 @@ public static class TemporaryGroupStableTravel
         ushort playerZone) =>
         hasConfirmedPlayerTransfer && isTemporaryHelper && sharesGroup && followsPlayer;
 
+    /// <summary>
+    /// Bots that follow a player through portals, doors and region changes: the player's /spawn helpers and
+    /// account companions, and gamebots that joined the player's group and follow them. Other gamebots travel
+    /// on their own.
+    /// </summary>
+    public static bool FollowsThroughTransfers(GameBot bot, GamePlayer player) =>
+        bot != null && player != null && (bot.IsTemporaryGroupHelper || bot.PlayerGroupLeader == player);
+
     public static void MarkAcceptedPlayerTransfer(GamePlayer player)
     {
         if (player != null)
@@ -174,14 +182,14 @@ public static class TemporaryGroupStableTravel
                 continue; // Dead helpers retain their corpse/recovery timer.
             bool needsRelocation = ShouldRelocateForOwnerTransfer(
                     hasConfirmedTransfer,
-                    bot.IsTemporaryGroupHelper,
+                    FollowsThroughTransfers(bot, player),
                     bot.Group == player.Group,
                     bot.PlayerGroupLeader == player,
                     bot.CurrentRegionID,
                     player.CurrentRegionID,
                     bot.CurrentZone?.ID ?? 0,
                     player.CurrentZone.ID);
-            if (!needsRelocation || !bot.IsTemporaryGroupHelper || bot.Group != player.Group || bot.PlayerGroupLeader != player)
+            if (!needsRelocation || !FollowsThroughTransfers(bot, player) || bot.Group != player.Group || bot.PlayerGroupLeader != player)
                 continue;
 
             bot.CompleteStableMasterRoute();
@@ -211,11 +219,10 @@ public static class TemporaryGroupStableTravel
     /// </summary>
     public static bool EnsureOwnerTransferCohesion(GameBot bot)
     {
-        if (bot is not { IsTemporaryGroupHelper: true, IsOnStableMasterRoute: false } || bot.Owner == null ||
-            !HasPendingPlayerTransfer(bot.Owner))
+        GamePlayer player = bot?.IsTemporaryGroupHelper == true ? bot.Owner : bot?.PlayerGroupLeader;
+        if (bot == null || bot.IsOnStableMasterRoute || !FollowsThroughTransfers(bot, player) || !HasPendingPlayerTransfer(player))
             return false;
 
-        GamePlayer player = bot.Owner;
         if (!ShouldRelocateForOwnerTransfer(
                 true,
                 true,

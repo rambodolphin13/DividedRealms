@@ -126,7 +126,13 @@ namespace DOL.GS.Spells
 
     public sealed class WarlockPrimerEffect : ECSGameSpellEffect
     {
-        public WarlockPrimerEffect(in ECSGameEffectInitParams p) : base(p) { EffectType = eEffect.WarlockPrimer; }
+        // A spell effect with no duration would expire on the next tick; a primer is held until changed or cancelled.
+        public WarlockPrimerEffect(in ECSGameEffectInitParams p) : base(p)
+        {
+            EffectType = eEffect.WarlockPrimer;
+            Duration = 0;
+            ExpireTick = long.MaxValue;
+        }
         public override bool IsBetterThan(ECSGameEffect effect) => true;
         public override DbPlayerXEffect GetSavedEffect() => null;
     }
@@ -151,7 +157,13 @@ namespace DOL.GS.Spells
 
     public sealed class WarlockReadyEffect : ECSGameSpellEffect
     {
-        public WarlockReadyEffect(in ECSGameEffectInitParams p) : base(p) { EffectType = eEffect.WarlockChamber; }
+        // A loaded chamber stays ready until it is released (or the Warlock logs out).
+        public WarlockReadyEffect(in ECSGameEffectInitParams p) : base(p)
+        {
+            EffectType = eEffect.WarlockChamber;
+            Duration = 0;
+            ExpireTick = long.MaxValue;
+        }
         public override DbPlayerXEffect GetSavedEffect() => null;
     }
 

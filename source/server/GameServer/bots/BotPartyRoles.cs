@@ -14,14 +14,16 @@ namespace DOL.GS
             eCharacterClass.Paladin or
             eCharacterClass.Armsman or eCharacterClass.Reaver or
             eCharacterClass.Warrior or eCharacterClass.Thane or
-            eCharacterClass.Hero or eCharacterClass.Champion => BotPartyRole.Tank,
+            eCharacterClass.Hero or eCharacterClass.Champion or
+            eCharacterClass.Stormforged or eCharacterClass.PendragonSovereign or
+            eCharacterClass.TuathaSovereign => BotPartyRole.Tank,
             _ => BotPartyRole.Damage
         };
 
         public static bool IsHealingClass(eCharacterClass characterClass) => characterClass is
             eCharacterClass.Cleric or eCharacterClass.Friar or eCharacterClass.Druid or
             eCharacterClass.Warden or eCharacterClass.Healer or eCharacterClass.Shaman or
-            eCharacterClass.Paladin;
+            eCharacterClass.Paladin or eCharacterClass.Valkyrie;
 
         public static bool CanFill(eCharacterClass characterClass, BotPveGroupRole role) => role switch
         {
@@ -43,7 +45,8 @@ namespace DOL.GS
         public static bool IsHybridSupport(eCharacterClass characterClass) => characterClass is
             eCharacterClass.Warden or eCharacterClass.Paladin or eCharacterClass.Shaman or eCharacterClass.Friar or
             eCharacterClass.Sorcerer or eCharacterClass.Mentalist or
-            eCharacterClass.Bard or eCharacterClass.Minstrel or eCharacterClass.Skald;
+            eCharacterClass.Bard or eCharacterClass.Minstrel or eCharacterClass.Skald or
+            eCharacterClass.Valkyrie;
 
         /// <summary>
         /// A support class is a non-combat role only when the party has an

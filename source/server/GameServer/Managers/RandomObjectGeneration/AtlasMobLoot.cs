@@ -255,6 +255,22 @@ namespace DOL.GS {
 
         private eCharacterClass GetRandomClassFromRealm(eRealm realm)
         {
+            List<eCharacterClass> classesForRealm = RealmLootClasses(realm);
+            return classesForRealm[Util.Random(classesForRealm.Count - 1)];
+        }
+
+        // Expansion, live and royal classes join the out-of-class pool while their server switch is on
+        // (the same switches as character creation and bots). The Death Knight rolls Necromancer items.
+        private static readonly Dictionary<eRealm, eCharacterClass[]> ModernLootClasses = new()
+        {
+            [eRealm.Albion] = [eCharacterClass.Heretic, eCharacterClass.MaulerAlb, eCharacterClass.DeathKnight, eCharacterClass.PendragonSovereign],
+            [eRealm.Midgard] = [eCharacterClass.Valkyrie, eCharacterClass.Warlock, eCharacterClass.MaulerMid, eCharacterClass.Stormforged],
+            [eRealm.Hibernia] = [eCharacterClass.Bainshee, eCharacterClass.Vampiir, eCharacterClass.MaulerHib, eCharacterClass.TuathaSovereign],
+        };
+
+        /// <summary>The classes a level 50 solo player's out-of-class ROG drop can be rolled for.</summary>
+        public static List<eCharacterClass> RealmLootClasses(eRealm realm)
+        {
             List<eCharacterClass> classesForRealm = new List<eCharacterClass>();
             switch (realm)
             {
@@ -303,7 +319,10 @@ namespace DOL.GS {
                     break;
             }
 
-            return classesForRealm[Util.Random(classesForRealm.Count - 1)];
+            if (ModernLootClasses.TryGetValue(realm, out eCharacterClass[] modern))
+                classesForRealm.AddRange(modern.Where(AutonomousBotIdentityGenerator.IsClassAvailable));
+
+            return classesForRealm;
         }
     }
 }

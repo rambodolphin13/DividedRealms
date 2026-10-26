@@ -1851,6 +1851,7 @@ namespace DOL.GS.ServerRules
             // This award path already resolves pets, sub-pets, Animist
             // turrets, Theurgist elementals, and ordinary group contributors
             // to the persistent bot that legitimately earned the XP.
+            BotTesterLog.Killed(botToAward);
             if (recordKillCredit && !accountCompanion)
             {
                 AutonomousObjectiveAssignments.RecordPveKill(botToAward);

@@ -114,6 +114,17 @@ namespace DOL.GS
                 eCharacterClass.Berserker => "Berserker",
                 eCharacterClass.Savage => "Savage",
 
+                eCharacterClass.Heretic => "Heretic",
+                eCharacterClass.MaulerAlb or eCharacterClass.MaulerMid or eCharacterClass.MaulerHib => "Mauler",
+                eCharacterClass.DeathKnight => "Death Knight",
+                eCharacterClass.PendragonSovereign => "Pendragon Sovereign",
+                eCharacterClass.Valkyrie => "Valkyrie",
+                eCharacterClass.Warlock => "Warlock",
+                eCharacterClass.Stormforged => "Storm Sovereign",
+                eCharacterClass.Bainshee => "Bainshee",
+                eCharacterClass.Vampiir => "Vampiir",
+                eCharacterClass.TuathaSovereign => "Tuatha Sovereign",
+
                 _ => "Fighter"
             };
         }

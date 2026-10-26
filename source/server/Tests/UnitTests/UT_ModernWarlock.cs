@@ -64,4 +64,21 @@ public sealed class UT_ModernWarlock
         Assert.That(lowPenalty.IsBetterThan(highPenalty), Is.True);
         Assert.That(highPenalty.Duration, Is.Zero);
     }
+
+    [Test]
+    public void PrimersLoadedChambersAndMaulerAurasAreHeldUntilCancelled()
+    {
+        // October 25 tester report: primers switched off at once and chambers never stayed loaded. A spell
+        // effect with no duration expires on the next tick unless its expiry is pushed out.
+        var line = new SpellLine("test", "test", "Cursing", false);
+        var primer = new WarlockPrimerEffect(new(null, 0, 1, new WarlockPrimerHandler(null, S(66010, "WarlockPrimer"), line)));
+        var chamber = new WarlockReadyEffect(new(null, 0, 1, new WarlockChamberHandler(null, S(66180, "WarlockChamber"), line)));
+        var aura = new MaulerStanceEffect(new(null, 0, 1, new MaulerStanceHandler(null, S(67000, "MaulerStance"), line)));
+        Assert.Multiple(() =>
+        {
+            Assert.That(primer.ExpireTick, Is.EqualTo(long.MaxValue));
+            Assert.That(chamber.ExpireTick, Is.EqualTo(long.MaxValue));
+            Assert.That(aura.ExpireTick, Is.EqualTo(long.MaxValue));
+        });
+    }
 }

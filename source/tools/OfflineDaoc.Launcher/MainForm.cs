@@ -2172,6 +2172,22 @@ internal sealed partial class MainForm : Form
         return value is not string text || !text.Trim().Equals("false", StringComparison.OrdinalIgnoreCase);
     }
 
+    // The newer class switches (classes / enable_*_test, enable_stormforged, ...) that are True in this world.
+    private static HashSet<string> EnabledModernClassSwitches(SQLiteConnection connection, SQLiteTransaction transaction)
+    {
+        var enabled = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string key in BotCharacterGenerator.ModernClassSwitches)
+        {
+            using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = "SELECT Value FROM ServerProperty WHERE `Key`=@key LIMIT 1";
+            command.Parameters.AddWithValue("@key", key);
+            if (command.ExecuteScalar() is string text && text.Trim().Equals("true", StringComparison.OrdinalIgnoreCase))
+                enabled.Add(key);
+        }
+        return enabled;
+    }
+
     private IReadOnlyList<BotCharacterGenerator.Identity> GenerateBotCharacters(int realm, int count, int level = 1)
     {
         if (!File.Exists(_database))
@@ -2198,10 +2214,11 @@ internal sealed partial class MainForm : Form
             while (reader.Read()) reserved.Add(reader.GetString(0));
         }
 
+        HashSet<string> modernClasses = EnabledModernClassSwitches(connection, transaction);
         var identities = new List<BotCharacterGenerator.Identity>(count);
         for (int index = 0; index < count; index++)
         {
-            BotCharacterGenerator.Identity identity = BotCharacterGenerator.Generate(realm, reserved);
+            BotCharacterGenerator.Identity identity = BotCharacterGenerator.Generate(realm, reserved, modernClasses);
             BotStartingLocation start = level == 50
                 ? CapitalBotStartingLocation(identity.Realm)
                 : ChooseBotStartingLocation(connection, transaction, identity.Realm, identity.RaceId, identity.ClassId);
@@ -2284,9 +2301,47 @@ internal sealed partial class MainForm : Form
         int raceId,
         int classId)
     {
+        List<BotStartingLocation> starts = ReadBotStartingLocations(connection, transaction, realm, raceId, classId, modernClassRows: false);
+        // The expansion classes (modern client test world) have only their own 1.130 start rows. Classic
+        // classes never reach this fallback, so their starts are unchanged.
+        if (starts.Count == 0)
+            starts = ReadBotStartingLocations(connection, transaction, realm, raceId, classId, modernClassRows: true);
+
+        if (starts.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"No authoritative starting location exists for realm {realm}, race {raceId}, class {classId}. No capital fallback was used.");
+        }
+
+        return starts[Random.Shared.Next(starts.Count)];
+    }
+
+    private static List<BotStartingLocation> ReadBotStartingLocations(
+        SQLiteConnection connection,
+        SQLiteTransaction transaction,
+        int realm,
+        int raceId,
+        int classId,
+        bool modernClassRows)
+    {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = """
+        command.CommandText = modernClassRows ? MODERN_CLASS_STARTS : CLASSIC_STARTS;
+        command.Parameters.AddWithValue("@realm", realm);
+        command.Parameters.AddWithValue("@race", raceId);
+        command.Parameters.AddWithValue("@class", classId);
+
+        var starts = new List<BotStartingLocation>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            starts.Add(new BotStartingLocation(
+                reader.GetInt32(0), reader.GetInt32(1), reader.GetInt32(2), reader.GetInt32(3)));
+        }
+        return starts;
+    }
+
+    private const string CLASSIC_STARTS = """
             SELECT Region, XPos, YPos, ZPos
             FROM StartupLocation
             WHERE MinVersion <= 168
@@ -2299,26 +2354,21 @@ internal sealed partial class MainForm : Form
                 OR (@realm=3 AND Region IN (200,181)))
             GROUP BY Region, XPos, YPos, ZPos
             """;
-        command.Parameters.AddWithValue("@realm", realm);
-        command.Parameters.AddWithValue("@race", raceId);
-        command.Parameters.AddWithValue("@class", classId);
 
-        var starts = new List<BotStartingLocation>();
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
-        {
-            starts.Add(new BotStartingLocation(
-                reader.GetInt32(0), reader.GetInt32(1), reader.GetInt32(2), reader.GetInt32(3)));
-        }
-
-        if (starts.Count == 0)
-        {
-            throw new InvalidOperationException(
-                $"No authoritative Classic/Shrouded Isles starting location exists for realm {realm}, race {raceId}, class {classId}. No capital fallback was used.");
-        }
-
-        return starts[Random.Shared.Next(starts.Count)];
-    }
+    // A class's own start rows from the modern (1.130) client, used only when it has no classic row.
+    private const string MODERN_CLASS_STARTS = """
+            SELECT Region, XPos, YPos, ZPos
+            FROM StartupLocation
+            WHERE ClassID=@class
+              AND MinVersion <= 1130
+              AND (RealmID=0 OR RealmID=@realm)
+              AND (RaceID=0 OR RaceID=@race)
+              AND (XPos<>0 OR YPos<>0 OR ZPos<>0)
+              AND ((@realm=1 AND Region IN (1,51))
+                OR (@realm=2 AND Region IN (100,151))
+                OR (@realm=3 AND Region IN (200,181)))
+            GROUP BY Region, XPos, YPos, ZPos
+            """;
 
     private async Task DeleteSelectedBotAsync()
     {

@@ -5911,6 +5911,11 @@ namespace DOL.GS
 			*/
             switch (charClass)
             {
+                // Hibernian drops for the Tuatha Sovereign come here, not to the Albion list.
+                case eCharacterClass.TuathaSovereign:
+                    weaponTypes.AddRange(new[] { eObjectType.Blades, eObjectType.Blunt, eObjectType.Piercing,
+                        eObjectType.LargeWeapons, eObjectType.CelticSpear, eObjectType.Shield });
+                    break;
                 // Match each starter trainer's guaranteed practice weapon.
                 case eCharacterClass.Guardian:
                     weaponTypes.Add(eObjectType.Blades);
@@ -6053,6 +6058,8 @@ namespace DOL.GS
 			 */
             switch (charClass)
             {
+                case eCharacterClass.TuathaSovereign:
+                    return eObjectType.Scale;
                 case eCharacterClass.Guardian:
                     return eObjectType.Reinforced;
                 case eCharacterClass.Naturalist:

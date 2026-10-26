@@ -447,6 +447,7 @@ namespace DOL.GS.Styles
 			else
 				animationId = style.Icon;
 
+			BotTesterLog.StyleExecuted(living, style, perfect, styleDamage);
 			return perfect;
 		}
 

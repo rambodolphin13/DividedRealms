@@ -194,7 +194,7 @@ namespace DOL.GS.Commands
             string requestedClass = string.Join(' ', args.Skip(1));
             if (!TemporaryGroupClassCatalog.TryResolve(player.Realm, requestedClass, out eCharacterClass characterClass))
             {
-                DisplayMessage(client, $"'{requestedClass}' is not a Classic + SI {GlobalConstants.RealmToName(player.Realm)} class. Type /classes.");
+                DisplayMessage(client, $"'{requestedClass}' is not an available {GlobalConstants.RealmToName(player.Realm)} companion class. Type /classes.");
                 return;
             }
 

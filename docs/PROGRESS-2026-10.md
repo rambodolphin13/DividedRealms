@@ -79,6 +79,15 @@ Each pet uses a copy of the closest stock template under the live name. Their pe
 - Heart of Nature's root grants no immunity afterwards.
 - Enchantment of Ice doesn't change the melee damage type.
 
+**One spellbook line per specialization:** the migrations put spells whose level clashed with a stock spell into
+extra lines "<line> (Live)" and "<line> (1.130)" (the client casts a list spell by line index + level, first match
+winning). The server now shows each stock line and its extras to the client as one line (`SpellLineMerge`, through
+`StormforgedRules.ClientSpellLines`): stock spells keep their level, each extra spell gets a free client level (its own,
+else the nearest free one below, else above), and casting and delves map back to the real line. The world database is
+unchanged and bots still use the real lines. 44 groups merge; Spirit Enhancement, Witchcraft, Valewalker Arb Path Spec,
+Creeping Path Spec and Calefaction hold more spells than levels 1-50, so 35 spells show client levels 51-68.
+Hotbar buttons for spells in the old extra lines, and for lines after them, need placing again.
+
 **Local-only data:** six data files the class migrations read (`archery_data.py`, `class_lines_data.py`,
 `class_lines_data_v2.py`, `dot_timing_data.py`, `spell_drift_data.py`, `audit_corrections_data.py`) are derived from
 daoc.gg's data. They are kept out of the repository for now, and so is the class research behind them. A clone can't
@@ -113,6 +122,8 @@ rerun the class migrations; the playable build carries their results in its worl
 ## Bots and companions
 
 - **Buffs:** the order bots and companions hand out buffs in ([BUFF_RULES.md](BUFF_RULES.md)).
+- **Newer classes:** bots and companions can be every expansion, live and royal class while its switch is on ([BOT-MODERN-CLASSES.md](BOT-MODERN-CLASSES.md)).
+- **Bot tester log:** every bot records refused and failed spells and styles, resists, exceptions and deaths, with a report in `logs/bot-tester` and the `/bottester` command ([BOT-TESTER-LOG.md](BOT-TESTER-LOG.md)).
 - **Account companions:** specialization lines trained by hand and a free respec from the training page.
 - **Gamebots:** AI fixes from the soak runs, such as healer bots finishing a spell they're already casting, and
   pet-combat and loot-flow fixes.

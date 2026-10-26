@@ -24,6 +24,9 @@ namespace DOL.GS.PropertyCalc
             {
                 if (living is IGamePlayer bot && bot.CharacterClass?.ManaStat is eStat stat && stat != eStat.UNDEFINED)
                     return ApplyBonuses(living, bot.CalculateMaxMana(bot.Level, living.GetModified((eProperty)stat)));
+                // Vampiir bots: no mana stat, so Strength sizes the pool, as for Vampiir players below.
+                if (living is IGamePlayer vampiir && vampiir.CharacterClass?.ID == (int)eCharacterClass.Vampiir)
+                    return ApplyBonuses(living, vampiir.CalculateMaxMana(vampiir.Level, living.GetModified(eProperty.Strength)));
                 return 0;
             }
 

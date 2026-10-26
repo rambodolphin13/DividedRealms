@@ -17,7 +17,9 @@ namespace DOL.GS
         public static bool CanOperate(eCharacterClass characterClass) => characterClass is
             eCharacterClass.Armsman or eCharacterClass.Mercenary or eCharacterClass.Paladin or eCharacterClass.Reaver or eCharacterClass.Scout or
             eCharacterClass.Warrior or eCharacterClass.Berserker or eCharacterClass.Savage or eCharacterClass.Thane or
-            eCharacterClass.Hero or eCharacterClass.Champion or eCharacterClass.Blademaster or eCharacterClass.Ranger or eCharacterClass.Valewalker;
+            eCharacterClass.Hero or eCharacterClass.Champion or eCharacterClass.Blademaster or eCharacterClass.Ranger or eCharacterClass.Valewalker or
+            eCharacterClass.Valkyrie or eCharacterClass.MaulerAlb or eCharacterClass.MaulerMid or eCharacterClass.MaulerHib or
+            eCharacterClass.Stormforged or eCharacterClass.PendragonSovereign or eCharacterClass.TuathaSovereign;
         public static bool Eligible(GameBot bot) => bot is { IsAutonomousWorldBot: true, IsPlayerLedGroup: false, IsAlive: true } &&
             bot.CharacterClass != null && CanOperate((eCharacterClass)bot.CharacterClass.ID);
 

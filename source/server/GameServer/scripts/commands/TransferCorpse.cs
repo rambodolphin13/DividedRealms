@@ -3,9 +3,9 @@ using DOL.GS.Keeps;
 
 namespace DOL.GS.Commands
 {
+    // No /tc alias: /tc is the Realm Exchange teleport (TeleportToExchangeCommand); the shared alias failed at load.
     [CmdAttribute(
         "&transfercorpse",
-        new string[] {"&tc"},
         ePrivLevel.Player, // Set to player.
         "/transfercorpse <Keep name> ie: /transfercorpse dun crauchon")]
     public class transfercorpseCommandHandler : AbstractCommandHandler, ICommandHandler

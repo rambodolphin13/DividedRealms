@@ -1352,9 +1352,9 @@ namespace DOL.AI.Brain
 
             WakeNearbyNaturalAggroBrains();
 
-            // Narrow failsafe for an ephemeral /spawn companion whose owner's
-            // completed portal/region transfer was not observed by its event.
-            // Persistent bots and ordinary player group members never enter it.
+            // Narrow failsafe for a /spawn companion, or a gamebot following a
+            // player's group, whose leader's completed portal/region transfer was
+            // not observed by its event. Independent gamebots never enter it.
             if (TemporaryGroupStableTravel.EnsureOwnerTransferCohesion(BotBody))
                 return;
 
@@ -3397,7 +3397,8 @@ namespace DOL.AI.Brain
                     if (Body.ControlledBrain != null && !UsesDefensiveOnlyPet)
                         CommandPetAttack(Body.TargetObject as GameLiving);
 
-                    if (BotBody.CharacterClass.ClassType == eClassType.ListCaster && BotBody.CharacterClass.ID != (int)eCharacterClass.Valewalker)
+                    if (BotBody.CharacterClass.ClassType == eClassType.ListCaster &&
+                        BotBody.CharacterClass.ID is not (int)eCharacterClass.Valewalker and not (int)eCharacterClass.Vampiir)
                     {
                         if (Body.TargetObject is GameLiving casterTarget && ApproachForOffensiveSpell(casterTarget))
                             return;
@@ -3749,7 +3750,7 @@ namespace DOL.AI.Brain
             bool oneHandUsable = rightUsable;
             bool preferTwoHand = PreferTwoHandedSlot(twoHandUsable, oneHandUsable,
                 BotBody.BotSpec?.Is2H == true ||
-                BotBody.CharacterClass.ClassType == eClassType.ListCaster ||
+                BotBody.CharacterClass.ClassType == eClassType.ListCaster && BotBody.CharacterClass.ID != (int)eCharacterClass.Vampiir ||
                 BotBody.CharacterClass.ID is (int)eCharacterClass.Friar or (int)eCharacterClass.Valewalker);
 
             if (preferTwoHand)
@@ -4113,6 +4114,7 @@ namespace DOL.AI.Brain
                 if (TryBardPveAddMez()) return true;
                 if (TryShamanPveAddRoot()) return true;
                 if (TryShortCombatShield()) return true;
+                if (TryClassKitCombatSupport()) return true;
                 if (BotBody.CharacterClass.ID == (int)eCharacterClass.Cleric)
                 {
                     if (!Util.Chance(Math.Max(5, Body.ManaPercent - 50)))
@@ -4158,8 +4160,9 @@ namespace DOL.AI.Brain
                 if (BotBody.CharacterClass.ID == (int)eCharacterClass.Nightshade)
                     return false;
 
-                // Melee hybrids prefer melee when in range
-                if (!PrefersCurrentSpellRange() && (BotBody.CanUsePositionalStyles || BotBody.CanUseAnytimeStyles) && (Body.IsWithinRadius(Body.TargetObject, 550) || Body.ManaPercent <= 10))
+                // Melee hybrids prefer melee when in range (the Shaman and Vampiir cast between swings instead)
+                if (!PrefersCurrentSpellRange() && !ShamanBotCombatPolicy.CastsBetweenSwings((eCharacterClass)BotBody.CharacterClass.ID) &&
+                    (BotBody.CanUsePositionalStyles || BotBody.CanUseAnytimeStyles) && (Body.IsWithinRadius(Body.TargetObject, 550) || Body.ManaPercent <= 10))
                     return false;
 
                 if (BotBody.CanCastCrowdControlSpells)
@@ -4222,12 +4225,13 @@ namespace DOL.AI.Brain
                     // its refusal for a reason to abandon ranged combat.
                     spellsToCast.RemoveAll(spell => !NeedsOffensiveSpellApplication((GameLiving)Body.TargetObject, spell));
                     if (spellsToCast.Count == 0) return Body.IsCasting;
+                    // A point-blank spell (range 0, a radius around the caster) stays: it already passed its radius check.
                     if (PrefersCurrentSpellRange() &&
                         spellsToCast.Exists(spell => spell.Range > Body.MeleeAttackRange))
-                        spellsToCast.RemoveAll(spell => spell.Range <= Body.MeleeAttackRange);
+                        spellsToCast.RemoveAll(spell => spell.Range <= Body.MeleeAttackRange && !(spell.Range <= 0 && spell.Radius > 0));
                     if (PrefersCurrentSpellRange() && spellsToCast.Exists(BotCasterPriority.IsDamage))
                         spellsToCast.RemoveAll(spell => !BotCasterPriority.IsDamage(spell));
-                    bool shamanHybrid = ShamanBotCombatPolicy.IsHybrid((eCharacterClass)BotBody.CharacterClass.ID);
+                    bool shamanHybrid = ShamanBotCombatPolicy.CastsBetweenSwings((eCharacterClass)BotBody.CharacterClass.ID);
                     Spell spellToCast = shamanHybrid
                         ? spellsToCast.OrderBy(ShamanBotCombatPolicy.RotationPriority)
                             .ThenByDescending(spell => spell.Level).First()
@@ -4383,14 +4387,18 @@ namespace DOL.AI.Brain
 
             if (spell.CastTime > 0 && spell.Target is eSpellTarget.ENEMY or eSpellTarget.AREA or eSpellTarget.CONE)
             {
-                int range = spell.Target == eSpellTarget.AREA && spell.Range <= 0
-                    ? Math.Max(1, spell.Radius)
-                    : Math.Max(1, spell.CalculateEffectiveRange(Body));
-                return Body.IsWithinRadius(target, range);
+                return Body.IsWithinRadius(target, OffensiveReach(spell.Range, spell.Radius, spell.CalculateEffectiveRange(Body)));
             }
 
             return false;
         }
+
+        /// <summary>
+        /// How close the target must be for a cast-time attack spell. A point-blank spell (range 0, a radius
+        /// around the caster) reaches its radius, whether it is aimed at an area or at an enemy.
+        /// </summary>
+        public static int OffensiveReach(int range, int radius, int effectiveRange) =>
+            range <= 0 && radius > 0 ? radius : Math.Max(1, effectiveRange);
 
         protected bool CanCastDefensiveSpell(Spell spell)
         {
@@ -4436,6 +4444,9 @@ namespace DOL.AI.Brain
                 BotSongTwistPolicy.IsReservedPulse(BotBody, spell) ||
                 spell.HasRecastDelay && Body.GetSkillDisabledDuration(spell) > 0)
                 return false;
+
+            if (BotClassKitPolicy.Handles(spell))
+                return BotClassKitPolicy.UpkeepTarget(BotBody, spell) != null && Body.CastSpell(spell, m_mobSpellLine);
 
             bool castSpell = false;
 
@@ -4522,8 +4533,14 @@ namespace DOL.AI.Brain
                 case eSpellType.EffectivenessDebuff:
                 case eSpellType.Disease:
                 case eSpellType.Stun:
+                case eSpellType.CommanderCommand:
+                    castSpell = BotClassKitPolicy.CommanderCanAct(BotBody, spell, Body.TargetObject as GameLiving);
+                    break;
+
                 case eSpellType.Mez:
                 case eSpellType.Mesmerize:
+                // Sovereign strikes, storms and Hammerfall: harmful royal abilities, reuse-gated.
+                case eSpellType.StormSovereignAbility:
                     if (spell.IsPBAoE && !Body.IsWithinRadius(Body.TargetObject, spell.Radius))
                         break;
 
@@ -4568,6 +4585,13 @@ namespace DOL.AI.Brain
 
             if (spell.NeedInstrument)
                 return false;
+
+            // Stances, chants, Sovereign group buffs and the kit summons (BotClassKitPolicy).
+            if (BotClassKitPolicy.Handles(spell))
+            {
+                Body.TargetObject = BotClassKitPolicy.UpkeepTarget(BotBody, spell);
+                return Body.TargetObject != null && CastCoordinatedBuff(spell);
+            }
 
             switch (spell.SpellType)
             {
@@ -4791,6 +4815,30 @@ namespace DOL.AI.Brain
             return casted;
         }
 
+        /// <summary>
+        /// Kit spells meant for the middle of a fight (BotClassKitPolicy.IsCombatSupport): the generic in-combat
+        /// selectors only cover instant buffs, so cast-time support spells were never used while fighting.
+        /// </summary>
+        private bool TryClassKitCombatSupport()
+        {
+            foreach (Spell spell in (Body.InstantMiscSpells ?? []).Concat(Body.MiscSpells ?? []))
+            {
+                if (!BotClassKitPolicy.IsCombatSupport(spell) || !CanCastDefensiveSpell(spell))
+                    continue;
+                GameLiving target = BotClassKitPolicy.UpkeepTarget(BotBody, spell);
+                if (target == null)
+                    continue;
+                GameObject oldTarget = Body.TargetObject;
+                Body.TargetObject = target;
+                bool cast = Body.CastSpell(spell, m_mobSpellLine);
+                if (!cast || spell.IsInstantCast)
+                    Body.TargetObject = oldTarget;
+                if (cast)
+                    return true;
+            }
+            return false;
+        }
+
         bool CheckDefensiveSpells(List<Spell> spells)
         {
             List<(Spell, GameLiving)> spellsToCast = new(spells.Count);
@@ -4854,6 +4902,8 @@ namespace DOL.AI.Brain
 
         protected virtual GameLiving FindTargetForDefensiveSpell(Spell spell)
         {
+            if (BotClassKitPolicy.Handles(spell))
+                return BotClassKitPolicy.UpkeepTarget(BotBody, spell);
             // Do not let the secondary defensive selector undo stationary PBT
             // upkeep by starting caster speed again on the next FOLLOW pulse.
             if (spell.SpellType == eSpellType.SpeedEnhancement && spell.IsPulsing && !IsMaintenanceTraveling())
@@ -5368,6 +5418,15 @@ namespace DOL.AI.Brain
                         BotBody.StopCurrentSpellcast();
                     else if (BotBody.IsAttacking)
                         BotBody.StopAttack();
+
+                    // A melee healer's own last swing (Friar, Bard) still blocks a cast for a moment after the
+                    // attack stops; the cast would only be refused. Hold the turn and heal once it clears.
+                    if (HealWaitsForOwnSwing(spellToCast.IsInstantCast, spellToCast.Uninterruptible,
+                            BotBody.IsBeingSelfInterrupted, BotBody.IsBeingInterruptedByOther))
+                    {
+                        BotGroupSupport.CancelHeal(BotBody);
+                        return true;
+                    }
                 }
 
                 GameObject oldTarget = BotBody.TargetObject;
@@ -5393,6 +5452,10 @@ namespace DOL.AI.Brain
 
             return startedCasting || isCastingHeal;
         }
+
+        /// <summary>A cast-time heal waits while only the healer's own swing interrupts it.</summary>
+        public static bool HealWaitsForOwnSwing(bool instant, bool uninterruptible, bool selfInterrupted, bool interruptedByOther) =>
+            !instant && !uninterruptible && selfInterrupted && !interruptedByOther;
 
         private bool CanHealRelicCarrier(GameLiving carrier)
         {
