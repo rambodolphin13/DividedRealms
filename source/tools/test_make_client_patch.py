@@ -43,13 +43,28 @@ class ClientPatchTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             m.apply(b'z' * 100, entry(original, patched))
 
+    def test_a_whole_file_replacement_is_one_guarded_edit(self):
+        stock, ours = b'stock splash archive' * 50, b'our splash'
+        e = entry(stock, ours) | dict(Edits=[dict(At=at, Remove=remove, Insert=base64.b64encode(block).decode('ascii'))
+                                             for at, remove, block in m.replace_whole(stock, ours)])
+        self.assertEqual(len(e['Edits']), 1)
+        self.assertEqual(m.apply(stock, e), ours)
+        with self.assertRaises(ValueError):
+            m.apply(b'a different splash', e)
+
     def test_the_real_client_patch_rebuilds_the_test_client(self):
         if not (PRISTINE / 'game.dll').is_file():
             self.skipTest('No pristine 1.130 client on this machine')
         patch = m.build(PRISTINE)
-        self.assertEqual([f['Path'] for f in patch['Files']], ['game.dll', 'pregame/character_creation.xml'])
+        self.assertEqual([f['Path'] for f in patch['Files']], ['game.dll', 'pregame/character_creation.xml', 'pregame/splash.mpk'])
         game = patch['Files'][0]
         self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '9e09af81'))
+        # The stock 1.130 loading screen in, the Divided Realms splash out, in one edit.
+        splash = patch['Files'][2]
+        self.assertEqual(splash['InputSha256'][:8], '9348c3a6')
+        self.assertEqual(splash['OutputSha256'], m.sha(m.SPLASH.read_bytes()))
+        self.assertEqual(len(splash['Edits']), 1)
+        self.assertEqual(m.apply((PRISTINE / 'pregame/splash.mpk').read_bytes(), splash), m.SPLASH.read_bytes())
         if MODERN_TEST.is_dir():
             for f in patch['Files']:
                 self.assertEqual(hashlib.sha256((MODERN_TEST / f['Path']).read_bytes()).hexdigest(), f['OutputSha256'], f['Path'])

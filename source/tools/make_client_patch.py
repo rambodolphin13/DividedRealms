@@ -6,8 +6,13 @@ Runs the hash-guarded class-slot patch (classslots/patch_class_slots.py: game.dl
 the creation screen's extra class buttons in pregame/character_creation.xml) on the pristine files, then records
 only the edits (our hooks, section and added buttons, not Broadsword's bytes) with each file's input and output
 SHA256. The launcher's client setup (OfflineDaoc.Launcher/ModernClientSetup.cs) copies the player's client and applies
-these edits in order; it refuses any input that isn't the pristine 1.130 file. These two files are the only client
-files the modern test changes (a full hash comparison of the test client with a pristine 1.130 client, 2026-10-25).
+these edits in order; it refuses any input that isn't the pristine 1.130 file. These two files and the splash below are
+the only client files the modern test changes (a full hash comparison of the test client with a pristine 1.130 client,
+2026-10-25, before the splash).
+
+The loading screen, pregame/splash.mpk, is replaced whole by the Divided Realms splash (our own art,
+OfflineDaoc.Launcher/Assets/divided-realms-client-splash.mpk): one edit that removes the stock archive and inserts ours,
+guarded by the stock file's SHA256 like the others.
 """
 import argparse
 import base64
@@ -23,6 +28,7 @@ import patch_class_slots  # noqa: E402
 FORMAT = 1
 CLIENT_VERSION = '1.130'
 MERGE_GAP = 32  # in-place changes this close together are kept in one edit
+SPLASH = Path(__file__).resolve().parent / 'OfflineDaoc.Launcher/Assets/divided-realms-client-splash.mpk'
 
 
 def sha(data: bytes) -> str:
@@ -68,15 +74,25 @@ def apply(original: bytes, entry: dict) -> bytes:
     return bytes(out)
 
 
-def build(client: Path) -> dict:
+def replace_whole(original: bytes, replacement: bytes):
+    """One edit that swaps the whole file (the splash archive shares no bytes worth diffing with the stock one)."""
+    return [(0, len(original), replacement)]
+
+
+def build(client: Path, splash: Path = SPLASH) -> dict:
     game = (client / 'game.dll').read_bytes()
     layout = (client / 'pregame/character_creation.xml').read_bytes()
+    stock_splash = (client / 'pregame/splash.mpk').read_bytes()
     patched_game, _ = patch_class_slots.patch(game)
     patched_layout = patch_class_slots.patch_layout(layout)
+    our_splash = splash.read_bytes()
     files = []
-    for path, original, patched in [('game.dll', game, patched_game), ('pregame/character_creation.xml', layout, patched_layout)]:
+    for path, original, patched, changes in [
+            ('game.dll', game, patched_game, edits),
+            ('pregame/character_creation.xml', layout, patched_layout, edits),
+            ('pregame/splash.mpk', stock_splash, our_splash, replace_whole)]:
         entry = dict(Path=path, InputSha256=sha(original), OutputSha256=sha(patched), OutputSize=len(patched),
-                     Edits=[dict(At=at, Remove=remove, Insert=base64.b64encode(block).decode('ascii')) for at, remove, block in edits(original, patched)])
+                     Edits=[dict(At=at, Remove=remove, Insert=base64.b64encode(block).decode('ascii')) for at, remove, block in changes(original, patched)])
         assert apply(original, entry) == patched
         files.append(entry)
     return dict(Format=FORMAT, ClientVersion=CLIENT_VERSION, Files=files)

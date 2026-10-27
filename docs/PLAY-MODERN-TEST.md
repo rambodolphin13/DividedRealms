@@ -18,9 +18,10 @@ The download contains **no game client**. You use your own Dark Age of Camelot i
 1. Extract the whole download, then double-click **START DIVIDED REALMS.cmd**.
 2. The launcher asks you to set up your client. Choose your Dark Age of Camelot folder: the one with `game.dll` and
    `camelot.exe`.
-3. It copies the client into `runtime/client-modern/app` and patches the copy. The patch changes two files:
+3. It copies the client into `runtime/client-modern/app` and patches the copy. The patch changes three files:
    - `game.dll`: native class slots for the custom and expansion classes.
    - `pregame/character_creation.xml`: room for the extra class buttons.
+   - `pregame/splash.mpk`: the Divided Realms loading screen.
 
    **Your own install is not changed**, so you can still play live with it. Your login and logs aren't copied.
 4. **START SERVER**, then **ENTER REALM**. The server creates your account on the first login.

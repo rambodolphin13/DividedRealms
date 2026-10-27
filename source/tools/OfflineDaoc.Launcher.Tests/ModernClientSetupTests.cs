@@ -59,6 +59,17 @@ public sealed class ModernClientSetupTests
     }
 
     [Test]
+    public void AWholeFileReplacementSwapsTheSplashAndRefusesAnotherOne()
+    {
+        // pregame/splash.mpk: one edit removes the stock archive and inserts the Divided Realms one.
+        byte[] stock = "stock 1.130 splash archive"u8.ToArray(), ours = "divided realms splash"u8.ToArray();
+        var splash = new ModernClientSetup.PatchedFile("pregame/splash.mpk", Hash(stock), Hash(ours), ours.Length,
+            [new(0, stock.Length, Convert.ToBase64String(ours))]);
+        Assert.That(ModernClientSetup.Apply(stock, splash), Is.EqualTo(ours));
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Apply("a player's own splash"u8.ToArray(), splash));
+    }
+
+    [Test]
     public void InstallCopiesAndPatchesWithoutTouchingTheSource()
     {
         string client = PristineClient(), destination = Path.Combine(root, "game", "client-modern", "app");
