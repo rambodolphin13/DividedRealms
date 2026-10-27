@@ -12,6 +12,7 @@ Starts from the pristine 1.130 game.dll (the input of patch_modern_client.py) an
   * (off: TUATHA_HOVER) the Vampiir hover alone for the player's own Tuatha Sovereign;
   * the creation primary/secondary/tertiary stat highlight for 63-66 (switch at 0x5B400A);
   * Codex's Storm Sovereign resist-display fix (0x41A639), which is class-independent;
+  * the stable-horse rider fix (0x42BE14, see RIDE_ANIM_EDIT): riders on NPC steeds sit instead of standing;
   * the creation screen's class-indexed entry array (container +0x34) sized for 68 classes instead of 63.
     Without this, registering class 63 writes one slot past the 0xFC-byte array and corrupts the heap
     (first test install crashed opening character creation);
@@ -31,7 +32,7 @@ from pathlib import Path
 SUPPORTED = '3915a495253040a4cdfc79d265a8d268797304eb46b9a34d51a88d49a8445022'
 # Earlier native-slot builds installers may replace with the current one (the current build's own hash
 # is computed from patch()): Death Knight slots 63-66, the first Tuatha build (full Vampiir flag for 67),
-# Tuatha without hover, and the hover-only test build.
+# Tuatha without hover (3954..., the build before the stable-horse rider fix), and the hover-only test build.
 KNOWN_NATIVE_CLIENTS = {
     '97755b32677f4482d410bcb2fca08c7918265854a869a6a298fdc4e3dec89d84',
     '26392ed8c8948ff5f5604b24e54c5ada5657bf50719b3502bc0c8fd1820452dd',
@@ -90,6 +91,11 @@ RESIST_HOOK, RESIST_ORIGINAL, RESIST_BACK = 0x41A639, '89904c93d400', 0x41A63F
 # Creation container constructor: vector at +0x34 indexed by class ID (written at 0x5AFCF4, bounds-checked
 # by size at 0x5B4236). 'lea edi,[esi+0x34]; push 0x3f' -> push 0x44 (classes 0-67).
 CLASS_ARRAY_SIZE = 0x5AFA55, '8d7e346a3f', '8d7e346a44'
+# 1.130's anim player (0x42BC86) gained a branch for attached personal horses. When a rider has none and the
+# call is the NPC-steed ride path (mode 2, only from 0x42C945), it replays walk/run/idle from the rider's own
+# speed (0x42BE10..0x42BE72), overwriting "Ride Horse" (slot 0x47): taxi riders stand. 1.127 has no such
+# branch. jne -> jmp always takes the 1.127 path at 0x42BE75; personal mounts take the earlier branch.
+RIDE_ANIM_EDIT = 0x42BE14, '755f', 'eb5f'
 # Vampiir hover without the rest of the Vampiir look. The character record's "is Vampiir" byte (+0x15D,
 # set from class == 58 at 0x402A66 and 0x417F9B) becomes the world object's flag +0x19C4 (0x433814).
 # Animation and ground-contact code tests that flag for nonzero (the hover); the skin and model code
@@ -378,7 +384,7 @@ def patch(original):
         raise ValueError('Strings overlap the adapter slot storage')
     payload = payload.ljust(SLOT_STORAGE, b'\0') + b'\0' * (4 * (BUTTONS - 16))
 
-    for at, before, after in [CLASS_ARRAY_SIZE]+SCREEN_EDITS:
+    for at, before, after in [CLASS_ARRAY_SIZE, RIDE_ANIM_EDIT]+SCREEN_EDITS:
         old, new = bytes.fromhex(before), bytes.fromhex(after)
         pos = offset(at)
         if len(old) != len(new) or data[pos:pos+len(old)] != old:

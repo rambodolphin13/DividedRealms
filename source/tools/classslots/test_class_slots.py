@@ -47,6 +47,7 @@ class ClassSlotPatchTests(unittest.TestCase):
             pos = self.offset(self.original, va)
             allowed.update(range(pos, pos+size))
         allowed.add(self.offset(self.original, slots.CLASS_ARRAY_SIZE[0])+4)  # the array-size immediate
+        allowed.add(self.offset(self.original, slots.RIDE_ANIM_EDIT[0]))  # jne -> jmp opcode
         for va, before, after in slots.SCREEN_EDITS:
             pos = self.offset(self.original, va)
             allowed.update(pos+k for k in range(len(bytes.fromhex(before))))
@@ -70,6 +71,10 @@ class ClassSlotPatchTests(unittest.TestCase):
         self.assertEqual([s.class_id for s in slots.SLOTS], [63, 64, 65, 66, 67])
         self.assertEqual([s.class_id for s in slots.REALMS['Albion']['slots']], [65, 66], 'Death Knight after Pendragon')
         self.assertEqual([s.class_id for s in slots.REALMS['Hibernia']['slots']], [67], 'Tuatha takes the Sluaghbinder entry')
+
+    def test_ride_anim_takes_the_1127_path(self):
+        pos = self.offset(self.patched, slots.RIDE_ANIM_EDIT[0])
+        self.assertEqual(self.patched[pos:pos+2], bytes.fromhex('eb5f'))  # jmp 0x42BE75
 
     def test_class_array_covers_new_slots(self):
         pos = self.offset(self.patched, slots.CLASS_ARRAY_SIZE[0])

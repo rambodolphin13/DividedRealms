@@ -49,7 +49,7 @@ class ClientPatchTests(unittest.TestCase):
         patch = m.build(PRISTINE)
         self.assertEqual([f['Path'] for f in patch['Files']], ['game.dll', 'pregame/character_creation.xml'])
         game = patch['Files'][0]
-        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '3954474f'))
+        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '9e09af81'))
         if MODERN_TEST.is_dir():
             for f in patch['Files']:
                 self.assertEqual(hashlib.sha256((MODERN_TEST / f['Path']).read_bytes()).hexdigest(), f['OutputSha256'], f['Path'])
