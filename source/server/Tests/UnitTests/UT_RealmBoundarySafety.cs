@@ -36,6 +36,19 @@ namespace DOL.GS.Tests
             Assert.That(BotReleaseBindPoints.Nearest(region,0,0).X, Is.EqualTo(1), "Legacy companion default is unchanged");
         }
 
+        [Test]
+        public void ThirdQuickReturnToTheSameBindReleasesAtTheCapital()
+        {
+            long soon = BotReleaseBindPoints.QuickReturnMilliseconds - 1;
+            int returns = BotReleaseBindPoints.NextQuickReturns(0, true, soon);
+            Assert.That(BotReleaseBindPoints.SendsToCapital(returns), Is.False, "the second death there");
+            returns = BotReleaseBindPoints.NextQuickReturns(returns, true, soon);
+            Assert.That(BotReleaseBindPoints.SendsToCapital(returns), Is.True, "the third death there");
+            Assert.That(BotReleaseBindPoints.NextQuickReturns(1, false, soon), Is.Zero, "another bind starts over");
+            Assert.That(BotReleaseBindPoints.NextQuickReturns(1, true, BotReleaseBindPoints.QuickReturnMilliseconds), Is.Zero,
+                "a death long after the release starts over");
+        }
+
         [TestCase((ushort)1, eRealm.Albion)]
         [TestCase((ushort)100, eRealm.Midgard)]
         [TestCase((ushort)200, eRealm.Hibernia)]
