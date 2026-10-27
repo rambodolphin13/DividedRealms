@@ -267,9 +267,9 @@ public sealed class LauncherPresentationTests
         using var artwork = Image.FromStream(resource);
         Assert.That(artwork.Width, Is.GreaterThanOrEqualTo(1_000));
         Assert.That(artwork.Width / (double)artwork.Height, Is.GreaterThan(4.5));
-        using Stream emblemResource = Launcher.GetManifestResourceStream("OfflineDaoc.Launcher.Assets.offline-daoc-realm-emblem.png")!;
+        using Stream emblemResource = Launcher.GetManifestResourceStream("OfflineDaoc.Launcher.Assets.divided-realms-shield.png")!;
         using var emblem = Image.FromStream(emblemResource);
-        Assert.That((emblem.Width, emblem.Height), Is.EqualTo((256, 256)));
+        Assert.That((emblem.Width, emblem.Height), Is.EqualTo((234, 256)));
 
         Type mainFormType = Launcher.GetType("OfflineDaoc.Launcher.MainForm")!;
         using var form = (Form)Activator.CreateInstance(mainFormType)!;

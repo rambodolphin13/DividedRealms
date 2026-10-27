@@ -45,7 +45,7 @@ internal static class Program
         try { Application.Run(new MainForm()); }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Offline DAoC launcher could not start", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(ex.Message, "Divided Realms launcher could not start", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

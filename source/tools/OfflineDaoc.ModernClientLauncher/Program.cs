@@ -105,7 +105,7 @@ internal sealed class LauncherForm : Form
 
     internal LauncherForm()
     {
-        Text = "Offline DAoC — Modern Client Test (1.130)";
+        Text = "Divided Realms — Modern Client Test (1.130)";
         ClientSize = new Size(800, 550);
         MinimumSize = new Size(740, 500);
         StartPosition = FormStartPosition.CenterScreen;

@@ -179,8 +179,8 @@ internal sealed partial class MainForm : Form
         }
         _logsDirectory = Path.Combine(_root, "logs");
 
-        Text = _newClient ? $"Offline DAoC {DisplayVersion}c — New client" : "Offline DAoC — Classic + Shrouded Isles";
-        if (_modernClient != null) Text = $"Offline DAoC {DisplayVersion} — Modern 1.130 Client Test";
+        Text = _newClient ? $"Divided Realms {DisplayVersion}c — New client" : "Divided Realms";
+        if (_modernClient != null) Text = $"Divided Realms {DisplayVersion} — Modern 1.130 Client Test";
         MinimumSize = new Size(960, 620);
         Size = new Size(1100, 700);
         StartPosition = FormStartPosition.CenterScreen;
@@ -366,7 +366,7 @@ internal sealed partial class MainForm : Form
         titlePanel.Controls.Add(new Label
         {
             AutoSize = true,
-            Text = "OFFLINE DAoC",
+            Text = "DIVIDED REALMS",
             Font = new Font("Georgia", 28f, FontStyle.Bold),
             ForeColor = DaocTheme.GoldLight,
             Location = new Point(94, 5),
@@ -374,7 +374,7 @@ internal sealed partial class MainForm : Form
         titlePanel.Controls.Add(new Label
         {
             AutoSize = true,
-            Text = "CLASSIC + SHROUDED ISLES  •  PLAY ALONE OR ADVENTURE WITH LIVING PLAYER BOTS",
+            Text = "THREE REALMS  •  PLAY ALONE OR ADVENTURE WITH LIVING PLAYER BOTS",
             Font = new Font("Georgia", 9f),
             ForeColor = Color.FromArgb(196, 145, 70),
             Location = new Point(97, 57),
@@ -1609,8 +1609,8 @@ internal sealed partial class MainForm : Form
         command.Parameters.AddWithValue("@updated", DateTime.UtcNow.ToString("O"));
         foreach (var (name, text, on) in new[]
         {
-            ("rvr_battleground_announcements", "RvR and battleground announcements (keeps, relics, sieges), set in the Offline DAoC launcher.", rvr),
-            ("pve_realm_event_announcements", "PvE realm event announcements (raids forming, raid final bosses), set in the Offline DAoC launcher.", pve),
+            ("rvr_battleground_announcements", "RvR and battleground announcements (keeps, relics, sieges), set in the Divided Realms launcher.", rvr),
+            ("pve_realm_event_announcements", "PvE realm event announcements (raids forming, raid final bosses), set in the Divided Realms launcher.", pve),
         })
         {
             key.Value = name;
@@ -1693,8 +1693,8 @@ internal sealed partial class MainForm : Form
 
         string stored = multiplier.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
         string description = key == "xp_rate"
-            ? "Real player character experience rate selected in the Offline DAoC launcher."
-            : "Autonomous player-bot experience rate selected in the Offline DAoC launcher.";
+            ? "Real player character experience rate selected in the Divided Realms launcher."
+            : "Autonomous player-bot experience rate selected in the Divided Realms launcher.";
         using var connection = new SQLiteConnection($"Data Source={_database};Version=3;Pooling=False;Default Timeout=10");
         connection.Open();
         using var transaction = connection.BeginTransaction();

@@ -6,8 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>OfflineDAoC</AssemblyName>
-    <Product>Offline DAoC: Classic + Shrouded Isles</Product>
-    <AssemblyTitle>Offline DAoC Launcher and Population Monitor</AssemblyTitle>
+    <Product>Divided Realms</Product>
+    <AssemblyTitle>Divided Realms Launcher and Population Monitor</AssemblyTitle>
     <!-- Windows enlarges fonts for display scaling; UiScale scales the pixel layout to match. -->
     <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
   </PropertyGroup>
@@ -22,7 +22,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Assets\offline-daoc-header.png"
                       LogicalName="OfflineDaoc.Launcher.Assets.offline-daoc-header.png" />
-    <EmbeddedResource Include="Assets\offline-daoc-realm-emblem.png"
-                      LogicalName="OfflineDaoc.Launcher.Assets.offline-daoc-realm-emblem.png" />
+    <EmbeddedResource Include="Assets\divided-realms-shield.png"
+                      LogicalName="OfflineDaoc.Launcher.Assets.divided-realms-shield.png" />
   </ItemGroup>
 </Project>
