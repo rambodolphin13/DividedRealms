@@ -45,6 +45,12 @@ namespace DOL.Config
 		private IPAddress _udpIP;
 
 		/// <summary>
+		/// The internet (public) address of the server, given to clients connecting from the internet.
+		/// Null until set in the config or found by UPnP.
+		/// </summary>
+		private IPAddress _publicIP;
+
+		/// <summary>
 		/// The UDP listening port of the server.
 		/// </summary>
 		private ushort _udpPort;
@@ -119,6 +125,16 @@ namespace DOL.Config
 		}
 
 		/// <summary>
+		/// Gets/sets the internet (public) address of the server: what clients connecting from the internet are told
+		/// to use for the game connection. "auto" in the config leaves it for UPnP to find.
+		/// </summary>
+		public IPAddress PublicIP
+		{
+			get { return _publicIP; }
+			set { _publicIP = value; }
+		}
+
+		/// <summary>
 		/// Whether or not to enable UPnP mapping.
 		/// </summary>
 		public bool EnableUPnP
@@ -158,6 +174,9 @@ namespace DOL.Config
 			_enableUPnP = root["Server"]["EnableUPnP"].GetBoolean(_enableUPnP);
 			_detectRegionIP = root["Server"]["DetectRegionIP"].GetBoolean(_detectRegionIP);
 
+			ip = root["Server"]["PublicIP"].GetString("auto");
+			_publicIP = ip is "auto" or "" ? null : IPAddress.Parse(ip);
+
 
 		}
 
@@ -188,6 +207,7 @@ namespace DOL.Config
 			root["Server"]["UdpPort"].Set(_udpPort);
 			root["Server"]["EnableUPnP"].Set(_enableUPnP);
 			root["Server"]["DetectRegionIP"].Set(_detectRegionIP);
+			root["Server"]["PublicIP"].Set(_publicIP?.ToString() ?? "auto");
 		}
 
 		/// <summary>

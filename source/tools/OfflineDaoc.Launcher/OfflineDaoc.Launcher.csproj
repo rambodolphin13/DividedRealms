@@ -18,6 +18,8 @@
     <Compile Include="../../server/GameServer/Managers/GameLoop/BotAiDelayReport.cs" Link="Records/BotAiDelayReport.cs" />
     <!-- Living Server: the server's own XP-by-level parser, so the launcher checks a setting by the same rules. -->
     <Compile Include="../../server/GameServer/gameutils/LevelRangeXpRates.Parsing.cs" Link="SocialExpansion/LevelRangeXpRates.Parsing.cs" />
+    <!-- Host for Friends: the server's own UPnP client, so the router check asks the router the same way. -->
+    <Compile Include="../../server/CoreBase/Network/UpnpNat.cs" Link="Friends/UpnpNat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Join Friend.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

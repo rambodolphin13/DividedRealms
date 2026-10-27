@@ -75,6 +75,12 @@ The newest version is first. For the full detail of every earlier update, see
 - HOST FOR FRIENDS lets friends join your server: it opens the server to Tailscale and your home network (never your
   router), shows the address to send, and adds Windows Firewall rules for this game's server only, after Windows
   asks you. Turning it off puts the server back on this PC only. See [docs/PLAY-WITH-FRIENDS.md](docs/PLAY-WITH-FRIENDS.md).
+- Internet mode in HOST FOR FRIENDS, for friends without Tailscale: while the server runs it opens its ports on the
+  router (UPnP) and closes them when it stops; only the friends' internet addresses you list (and Tailscale and your
+  home network) get past the firewall. The window checks the router first and says when your provider shares
+  addresses (CGNAT) and it can't work. Friends from the internet are given your internet address for the game
+  connection; you and friends on Tailscale or at home keep theirs. The server's UPnP now maps to the PC's real
+  address on the router's network and also works with WANPPPConnection routers.
 - A friend's characters live in the host's world for now. Taking your own character along and back is planned:
   [docs/CHARACTER-PASSPORT.md](docs/CHARACTER-PASSPORT.md).
 

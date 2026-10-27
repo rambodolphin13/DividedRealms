@@ -25,6 +25,7 @@ namespace DOL.Network
         private Socket _listen;
         private Socket _udpSocket;
         private SessionIdAllocator _sessionIdAllocator = new();
+        private UpnpNat _upnp; // Set while this server's router port mappings are in place.
 
         public BaseServerConfig Configuration { get; }
         public bool IsRunning => _listen != null; // Not a great way to check if the server is running.
@@ -73,9 +74,14 @@ namespace DOL.Network
                             log.Debug($"[UPNP] {info.description} - {info.externalPort} -> {info.internalIP}:{info.internalPort}({info.protocol}) ({(info.enabled ? "enabled" : "disabled")})");
                     }
 
-                    IPAddress localAddress = Configuration.IP;
-                    nat.ForwardPort(Configuration.UDPPort, Configuration.UDPPort, ProtocolType.Udp, "DOL UDP", localAddress);
-                    nat.ForwardPort(Configuration.Port, Configuration.Port, ProtocolType.Tcp, "DOL TCP", localAddress);
+                    // Listening on every interface (Host for Friends): map to this PC's address on the router's network.
+                    IPAddress localAddress = Configuration.IP.Equals(IPAddress.Any) ? nat.LocalAddress : Configuration.IP;
+                    nat.ForwardPort(Configuration.UDPPort, Configuration.UDPPort, ProtocolType.Udp, $"Divided Realms UDP {Configuration.UDPPort}", localAddress);
+                    nat.ForwardPort(Configuration.Port, Configuration.Port, ProtocolType.Tcp, $"Divided Realms TCP {Configuration.Port}", localAddress);
+                    _upnp = nat;
+
+                    if (log.IsInfoEnabled)
+                        log.Info($"[UPNP] Router forwards TCP {Configuration.Port} and UDP {Configuration.UDPPort} to {localAddress}");
 
                     if (Configuration.DetectRegionIP)
                     {
@@ -90,6 +96,22 @@ namespace DOL.Network
                         {
                             if (log.IsErrorEnabled)
                                 log.Error("[UPNP] Unable to detect the RegionIP, It is possible that no mappings exist yet", e);
+                        }
+                    }
+                    else if (Configuration.PublicIP == null)
+                    {
+                        // The region address stays per client (this PC, LAN, Tailscale); internet clients get this one.
+                        try
+                        {
+                            Configuration.PublicIP = nat.GetExternalIP();
+
+                            if (log.IsInfoEnabled)
+                                log.Info($"[UPNP] Internet address for friends: {Configuration.PublicIP}");
+                        }
+                        catch (Exception e)
+                        {
+                            if (log.IsErrorEnabled)
+                                log.Error("[UPNP] Unable to read the router's internet address; set PublicIP in serverconfig.xml", e);
                         }
                     }
                 }
@@ -319,6 +341,23 @@ namespace DOL.Network
 
         public virtual void Stop()
         {
+            if (_upnp != null)
+            {
+                // Close the router ports this server opened.
+                try
+                {
+                    _upnp.DeleteForwardingRule(Configuration.Port, ProtocolType.Tcp);
+                    _upnp.DeleteForwardingRule(Configuration.UDPPort, ProtocolType.Udp);
+                }
+                catch (Exception e)
+                {
+                    if (log.IsWarnEnabled)
+                        log.Warn("[UPNP] Unable to remove the router port mappings", e);
+                }
+
+                _upnp = null;
+            }
+
             try
             {
                 if (_listen != null)

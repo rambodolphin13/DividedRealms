@@ -39,16 +39,13 @@ public sealed record JoinClient(string ClientDirectory, string Connector, int Lo
 /// <summary>Input checks and the reachability probe behind the Join Friend window.</summary>
 public static class JoinFriend
 {
-    // Tailscale's address range, and the private LAN ranges for friends in the same house.
+    // A host on Tailscale, the home network or (internet mode) the internet; never this PC or a non-host address.
     public static bool IsAllowedHost(IPAddress address)
     {
-        if (address.AddressFamily != AddressFamily.InterNetwork)
+        if (address.AddressFamily != AddressFamily.InterNetwork || IPAddress.IsLoopback(address))
             return false;
         byte[] b = address.GetAddressBytes();
-        return (b[0] == 100 && b[1] is >= 64 and <= 127)
-            || b[0] == 10
-            || (b[0] == 172 && b[1] is >= 16 and <= 31)
-            || (b[0] == 192 && b[1] == 168);
+        return b[0] != 0 && b[0] < 224 && !(b[0] == 169 && b[1] == 254);
     }
 
     public static bool TryParseHost(string text, out IPAddress address, out string error)
@@ -64,7 +61,7 @@ public static class JoinFriend
         if (!IsAllowedHost(parsed))
         {
             address = IPAddress.None;
-            error = "Use the host's Tailscale address (100.64.x.x–100.127.x.x) or a home-network address (192.168.x.x, 10.x.x.x).";
+            error = "Use the host's Tailscale, home-network or internet address, not this PC's own.";
             return false;
         }
         address = parsed;

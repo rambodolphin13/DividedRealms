@@ -115,4 +115,90 @@ public sealed class HostForFriendsTests
     [TestCase("192.168.1.2", false)]
     public void TailscaleRange(string address, bool tailscale) =>
         Assert.That(HostForFriends.IsTailscale(IPAddress.Parse(address)), Is.EqualTo(tailscale));
+
+    [Test]
+    public void InternetModeNeedsHostingAndOpensTheRouterWithoutChangingTheRegionAddress()
+    {
+        Assert.Throws<InvalidOperationException>(() => HostForFriends.EnableInternet(_runtime));
+
+        HostForFriends.Enable(_runtime);
+        HostForFriends.EnableInternet(_runtime);
+
+        var state = HostForFriends.Read(_runtime);
+        Assert.That(state.Hosting && state.Internet, Is.True);
+        Assert.That(Value("EnableUPnP"), Is.EqualTo("True"));
+        Assert.That(Value("DetectRegionIP"), Is.EqualTo("False"));
+        Assert.That(Value("RegionIP"), Is.EqualTo("127.0.0.1"));
+        Assert.That(Value("PublicIP"), Is.EqualTo("auto"));
+    }
+
+    [Test]
+    public void TurningHostingOffAlsoClosesTheRouter()
+    {
+        HostForFriends.Enable(_runtime);
+        HostForFriends.EnableInternet(_runtime);
+        HostForFriends.Disable(_runtime);
+
+        var state = HostForFriends.Read(_runtime);
+        Assert.That(state.Hosting || state.Internet, Is.False);
+        Assert.That(Value("EnableUPnP"), Is.EqualTo("False"));
+    }
+
+    [Test]
+    public void InternetModeOffKeepsHosting()
+    {
+        HostForFriends.Enable(_runtime);
+        HostForFriends.EnableInternet(_runtime);
+        HostForFriends.DisableInternet(_runtime);
+
+        var state = HostForFriends.Read(_runtime);
+        Assert.That(state.Hosting, Is.True);
+        Assert.That(state.Internet, Is.False);
+    }
+
+    [Test]
+    public void ManualPublicAddressIsKept()
+    {
+        HostForFriends.Enable(_runtime);
+        var document = XDocument.Load(Config);
+        document.Root!.Element("Server")!.Add(new XElement("PublicIP", "203.0.113.7"));
+        document.Save(Config);
+
+        HostForFriends.EnableInternet(_runtime);
+        Assert.That(Value("PublicIP"), Is.EqualTo("203.0.113.7"));
+    }
+
+    [Test]
+    public void FriendAddressesMustBeInternetAddresses()
+    {
+        Assert.That(HostForFriends.TryParseFriendAddresses("203.0.113.25, 198.51.100.4\n203.0.113.25", out var friends, out _), Is.True);
+        Assert.That(friends, Is.EqualTo(new[] { "203.0.113.25", "198.51.100.4" }));
+        Assert.That(HostForFriends.TryParseFriendAddresses("", out friends, out _), Is.True);
+        Assert.That(friends, Is.Empty);
+
+        Assert.That(HostForFriends.TryParseFriendAddresses("192.168.1.5", out _, out string error), Is.False);
+        Assert.That(error, Does.Contain("not an internet address"));
+        Assert.That(HostForFriends.TryParseFriendAddresses("my friend", out _, out _), Is.False);
+        Assert.That(HostForFriends.TryParseFriendAddresses("203.0.113.0/24", out _, out _), Is.False);
+    }
+
+    [Test]
+    public void FirewallAdmitsListedInternetFriendsOnly()
+    {
+        var state = HostForFriends.Read(_runtime);
+        string add = HostForFriends.FirewallScript(_runtime, state, add: true, ["203.0.113.25", "198.51.100.4"]);
+        Assert.That(add, Does.Contain("remoteip=100.64.0.0/10,LocalSubnet,203.0.113.25,198.51.100.4 "));
+    }
+
+    [Test]
+    public void FriendListRoundTrips()
+    {
+        HostForFriends.SaveSettings(_runtime, new HostForFriends.Settings { FriendAddresses = ["203.0.113.25"], FirewallAppliedFor = ["203.0.113.25"] });
+        var loaded = HostForFriends.LoadSettings(_runtime);
+        Assert.That(loaded.FriendAddresses, Is.EqualTo(new[] { "203.0.113.25" }));
+        Assert.That(loaded.FirewallAppliedFor, Is.EqualTo(new[] { "203.0.113.25" }));
+
+        File.WriteAllText(HostForFriends.SettingsPath(_runtime), "{ broken");
+        Assert.That(HostForFriends.LoadSettings(_runtime).FriendAddresses, Is.Empty);
+    }
 }

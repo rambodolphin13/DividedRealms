@@ -92,13 +92,14 @@ internal sealed class JoinFriendForm : Form
         }, 0, 0);
         layout.Controls.Add(new Label
         {
-            Text = "Plays in your friend's world with an account on their server. Your own server and save are not started or touched.",
+            Text = "Plays in your friend's world with an account on their server, over Tailscale, your home network or the internet. " +
+                   "Your own server and save are not touched.",
             Dock = DockStyle.Fill,
             ForeColor = DaocTheme.Parchment,
             Font = new Font("Georgia", 9f),
             TextAlign = ContentAlignment.MiddleLeft,
         }, 0, 1);
-        layout.Controls.Add(Field("Host address (their Tailscale IPv4, or home-network address)", _hostAddress), 0, 2);
+        layout.Controls.Add(Field("Host address (their Tailscale, home-network or internet address)", _hostAddress), 0, 2);
         layout.Controls.Add(Field("Your account on the host (made on your first login there)", _guestAccount), 0, 3);
         layout.Controls.Add(Field("Your password on the host", _password), 0, 4);
         layout.Controls.Add(_rememberPassword, 0, 5);
@@ -207,8 +208,8 @@ internal sealed class JoinFriendForm : Form
         if (!reachable)
         {
             SetStatus(
-                $"Cannot reach {hostAddress}:{_client.LoginPort}. Check that Tailscale is on for both of you, the host's server is running " +
-                "with HOST FOR FRIENDS on, and the host added the firewall rules.",
+                $"Cannot reach {hostAddress}:{_client.LoginPort}. Check the host's server is running with HOST FOR FRIENDS on and their firewall " +
+                "rules added; over Tailscale that it is on for both of you, over the internet that INTERNET is on and your address is in their list.",
                 DaocTheme.Danger);
             _joinButton.Enabled = true;
             return;

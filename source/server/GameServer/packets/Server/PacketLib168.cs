@@ -476,8 +476,7 @@ namespace DOL.GS.PacketHandler
 
 							//Try to fix the region ip so UDP is enabled!
 							string ip = entries[index].ip;
-							if (ip == "any" || ip == "0.0.0.0" || ip == "127.0.0.1" || ip.StartsWith("10.13.") || ip.StartsWith("192.168."))
-								ip = ((IPEndPoint) m_gameClient.Socket.LocalEndPoint).Address.ToString();
+							ip = RegionAddress.ForClient(m_gameClient, ip);
 							pak.FillString(ip, 20);
 							index++;
 						}
@@ -567,8 +566,7 @@ namespace DOL.GS.PacketHandler
 				{
 					//Try to fix the region ip so UDP is enabled!
 					string ip = playerRegion.ServerIP;
-					if (ip == "any" || ip == "0.0.0.0" || ip == "127.0.0.1" || ip.StartsWith("10.13.") || ip.StartsWith("192.168."))
-						ip = ((IPEndPoint) m_gameClient.Socket.LocalEndPoint).Address.ToString();
+					ip = RegionAddress.ForClient(m_gameClient, ip);
 					pak.FillString(ip, 22);
 					pak.WriteShort(playerRegion.ServerPort);
 				}

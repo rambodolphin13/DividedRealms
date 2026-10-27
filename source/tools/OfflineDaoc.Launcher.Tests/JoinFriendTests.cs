@@ -63,14 +63,16 @@ public sealed class JoinFriendTests
     [TestCase("192.168.1.20", true)]
     [TestCase("10.0.0.7", true)]
     [TestCase("172.20.1.1", true)]
-    [TestCase("100.63.0.1", false)]
-    [TestCase("100.128.0.1", false)]
-    [TestCase("8.8.8.8", false)]
+    [TestCase("100.63.0.1", true)]
+    [TestCase("203.0.113.25", true)] // internet mode
+    [TestCase("169.254.1.1", false)]
+    [TestCase("224.0.0.1", false)]
+    [TestCase("0.1.2.3", false)]
     [TestCase("127.0.0.1", false)]
     [TestCase("100.64.1", false)]
     [TestCase(" 100.64.0.1 ", true)]
     [TestCase("friend.example.com", false)]
-    public void HostAddressMustBeTailscaleOrHomeNetwork(string text, bool accepted)
+    public void HostAddressIsAnyHostButThisPc(string text, bool accepted)
     {
         Assert.That(JoinFriend.TryParseHost(text, out _, out string error), Is.EqualTo(accepted));
         Assert.That(error, accepted ? Is.Empty : Is.Not.Empty);
