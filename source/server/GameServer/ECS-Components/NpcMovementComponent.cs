@@ -793,7 +793,9 @@ namespace DOL.GS
 
                     if (Owner.Brain is not ControlledMobBrain petBrain)
                     {
-                        if (JumpToClosestReachableNode(this, destination))
+                        bool jumped = JumpToClosestReachableNode(this, destination);
+                        RunTelemetry.MobPathFailure(Owner, _pathfinder.PathfindingStatus.ToString(), jumped);
+                        if (jumped)
                             break;
                     }
                     else if (!Owner.InCombat && !petBrain.Owner.InCombat && FollowTarget != null && petBrain.Owner == FollowTarget)

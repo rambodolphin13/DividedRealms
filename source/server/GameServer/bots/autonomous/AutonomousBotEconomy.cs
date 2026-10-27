@@ -448,6 +448,7 @@ namespace DOL.GS;
                 Log.Warn($"AUTONOMOUS_BLOCKED_BACKPACK_CLEARED bot=\"{bot.Name}\" id={bot.DatabaseID} removed={removed} capacity={capacity}");
             }
             catch { } // A diagnostics failure must not interrupt the persisted cleanup.
+            RunTelemetry.Trade(bot, "backpack-clear", null, null, 0, removed);
             return true;
         }
 
@@ -635,6 +636,7 @@ namespace DOL.GS;
             bot.MarkAutonomousStateDirty();
             MarkInventoryChanged(bot);
             AutonomousBotStatusPersistence.Queue(bot, true);
+            RunTelemetry.Trade(bot, "sell", merchant, item, copper, Math.Max(1, item.Count));
             return true;
         }
 
@@ -706,6 +708,7 @@ namespace DOL.GS;
             MarkInventoryChanged(bot);
             bot.MarkAutonomousStateDirty();
             AutonomousBotStatusPersistence.Queue(bot, true);
+            RunTelemetry.Trade(bot, "buy", merchant, purchased, copper);
             return true;
         }
 

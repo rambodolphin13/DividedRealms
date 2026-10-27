@@ -1041,6 +1041,7 @@ namespace DOL.GS.ServerRules
                 return;
             }
 
+            RunTelemetry.MobKilled(killedNpc, killer);
             GameNPC.RewardEligibility rewardEligibility = killedNpc.RewardStatus;
 
             if (rewardEligibility is not GameNPC.RewardEligibility.Eligible)
@@ -1656,7 +1657,10 @@ namespace DOL.GS.ServerRules
         {
             List<GamePlayer> playersInRadius = killedNpc.GetPlayersInRadius(WorldMgr.INFO_DISTANCE);
 
-            foreach (DbItemTemplate itemTemplate in LootMgr.GetLoot(killedNpc, killer))
+            DbItemTemplate[] drops = LootMgr.GetLoot(killedNpc, killer);
+            RunTelemetry.Loot(killedNpc, killer, drops);
+
+            foreach (DbItemTemplate itemTemplate in drops)
             {
                 if (GameMoney.IsItemMoney(itemTemplate.Name))
                     CreateMoney(killedNpc, itemTemplate, itemOwners, playersInRadius);

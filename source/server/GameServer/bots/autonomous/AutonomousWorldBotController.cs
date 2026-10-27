@@ -278,6 +278,7 @@ namespace DOL.GS
                 long nowTick = GameLoop.GameLoopTime;
                 // Living Server body language for a bot that is just standing around (no-op when the switch is off).
                 AutonomousBotBodyLanguage.Ambient(bot, brain.HasAggro);
+                RunTelemetry.BotTick(bot);
                 if (nowTick >= _nextPocketCheckTick)
                 {
                     _nextPocketCheckTick = nowTick + 5_000 + bot.ObjectID % 1_000;
@@ -2904,6 +2905,7 @@ namespace DOL.GS
             }
 
             GameNPC target = FindCampTarget(bot);
+            RunTelemetry.PullTarget(bot, target, _camp.Id, _camp.MonsterName, _groupDirective?.IsDynamic == true);
             // A level-up can turn a whole low-level camp grey. Those kills give no
             // experience, so a solo bot fought on in place until the stuck watchdog
             // rescued it fifteen minutes later. Targets are sorted by con, so a grey
