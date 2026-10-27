@@ -239,6 +239,23 @@ python Source/source/tools/modern_world_overlay.py rollback "TARGET CLIENT/app" 
 
 **Client sync does not prove that server navmeshes, door IDs, scripted coordinates or bot routes match a different world version.** It is useful for bringing a newer client onto the existing classic world. Migrating the server onto newer world geometry also requires reviewed world migration, rebuilt navigation and route checks; the existing `live_world_migration.py` / `live_world_navmesh.py` tools remain separate. No navigation files are silently replaced.
 
+## Command line
+
+`cli.py` runs the same checks without the browser, for scripted fixes (and for an AI assistant fixing things):
+
+```
+python source/tools/world_editor/cli.py --profile classic find Mob --where "Name=Master Elementalist" --columns Mob_ID,Region,Level
+python source/tools/world_editor/cli.py --profile classic item <Id_nb>
+python source/tools/world_editor/cli.py --profile classic items --issue nowhere
+python source/tools/world_editor/cli.py --profile classic sql "SELECT count(*) FROM Mob WHERE Region=1"
+python source/tools/world_editor/cli.py --profile classic plan edits.json --out fix.patch.json
+python source/tools/world_editor/cli.py --profile classic apply fix.patch.json
+python source/tools/world_editor/cli.py --profile classic history
+python source/tools/world_editor/cli.py --profile classic undo <backup id>
+```
+
+Pick the world with `--profile classic|stormforged|modern`, `--game <folder>`, or `--db` with `--client`. `plan` turns an edits file (change a row by key or every row matching `where`, copy a row, insert, delete; the format is in `cli.py`) into a normal editor patch and prints what would change, without applying it. `apply` and `undo` use the editor's own save path: the same validation, a refusal while the game or server runs, a database snapshot, and backups shared with the browser editor's **Restore edits**. `sql` opens the database read-only, so it can't change anything. Unlike the Game data view it can read every table, including accounts and characters, which is useful for diagnosing a save, but it never writes to them.
+
 ## Geometry exporter
 
 Build once with the .NET 10 SDK (already built in this workspace):

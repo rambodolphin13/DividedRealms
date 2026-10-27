@@ -429,6 +429,37 @@ class EditorTests(unittest.TestCase):
         finally:
             server.shutdown();server.server_close();thread.join()
 
+    def test_cli_plan_apply_undo(self):
+        from . import cli
+        edits=self.root/'edits.json'
+        edits.write_text(json.dumps([{'table':'Mob','key':'Mob-1','set':{'X':'9300'}},
+                                     {'table':'Mob','copy':'Mob-1','key':'Mob-2','set':{'Name':'Copy'}},
+                                     {'table':'Door','delete':'Door-1'}]))
+        base=['--db',str(self.db),'--client',str(self.client),'--state',str(self.root/'state')]
+        out=self.root/'fix.patch.json'
+        cli.main(base+['plan',str(edits),'--out',str(out)])
+        self.assertEqual(self.value(),9000)            # plan writes nothing
+        cli.main(base+['apply',str(out)])
+        with closing(sqlite3.connect(self.db)) as con:
+            self.assertEqual(con.execute("SELECT X FROM Mob WHERE Mob_ID='Mob-1'").fetchone()[0],9300)
+            self.assertEqual(con.execute("SELECT Name, X FROM Mob WHERE Mob_ID='Mob-2'").fetchone(),('Copy',9000))
+            self.assertEqual(con.execute('SELECT count(*) FROM Door').fetchone()[0],0)
+            self.assertEqual(con.execute('SELECT Value FROM PlayerProgress').fetchone()[0],10)
+        with self.assertRaises(SystemExit):           # the same patch again conflicts
+            cli.main(base+['apply',str(out)])
+        backup=next(b.name for b in (self.root/'state/backups').iterdir())
+        cli.main(base+['undo',backup])
+        with closing(sqlite3.connect(self.db)) as con:
+            self.assertEqual(con.execute('SELECT count(*) FROM Mob').fetchone()[0],1)
+            self.assertEqual(con.execute('SELECT count(*) FROM Door').fetchone()[0],1)
+        self.assertEqual(self.value(),9000)
+
+    def test_cli_sql_is_read_only(self):
+        from . import cli
+        with self.assertRaises(SystemExit):
+            cli.main(['--db',str(self.db),'--client',str(self.client),'sql','DELETE FROM Mob'])
+        self.assertEqual(self.value(),9000)
+
 
 if __name__=='__main__':
     unittest.main()
