@@ -1,6 +1,6 @@
 # Playing the modern test (original 1.130 client)
 
-The modern test is Offline DAoC for the **original retail 1.130 client**. It includes the live 1.130a class work, the
+The modern test is Divided Realms for the **original retail 1.130 client**. It includes the live 1.130a class work, the
 expansion and royal classes, Master and Champion Levels and the other changes in
 [PROGRESS-2026-10.md](PROGRESS-2026-10.md). It is a development test build.
 
@@ -15,7 +15,7 @@ The download contains **no game client**. You use your own Dark Age of Camelot i
 - **Disk:** about 7 GB free where you extract the game, since your client is copied into it.
 
 ## First start
-1. Extract the whole download, then double-click **START OFFLINE DAOC MODERN.cmd**.
+1. Extract the whole download, then double-click **START DIVIDED REALMS.cmd**.
 2. The launcher asks you to set up your client. Choose your Dark Age of Camelot folder: the one with `game.dll` and
    `camelot.exe`.
 3. It copies the client into `runtime/client-modern/app` and patches the copy. The patch changes two files:

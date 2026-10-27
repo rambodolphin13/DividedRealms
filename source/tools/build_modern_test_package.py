@@ -52,7 +52,7 @@ TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.cs
 START_CMD = r'''@echo off
 setlocal
 cd /d "%~dp0"
-rem Offline DAoC {label} (the original 1.130 client). Uses the .NET runtime bundled in tools\dotnet, so nothing has to
+rem Divided Realms {label} (the original 1.130 client). Uses the .NET runtime bundled in tools\dotnet, so nothing has to
 rem be installed except the Windows .NET Framework 3.5 feature (for the client's connector).
 if not exist "%~dp0runtime\OfflineDAoC.exe" (
   echo This folder is incomplete. Extract the whole download again, then retry.
@@ -65,7 +65,7 @@ set "DOTNET_MULTILEVEL_LOOKUP=0"
 start "" "%~dp0runtime\OfflineDAoC.exe"
 '''
 
-READ_ME = '''Offline DAoC {label}
+READ_ME = '''Divided Realms {label}
 {rule}
 
 A single-player Dark Age of Camelot server with gamebots, for the ORIGINAL retail 1.130 client.
@@ -74,7 +74,7 @@ This download contains no game client: you use your own.
 1. You need Dark Age of Camelot installed (the 1.130 client), and the Windows feature
    ".NET Framework 3.5" turned on (Control Panel > Programs > Turn Windows features on or off).
 2. Extract this whole folder somewhere with about 7 GB free.
-3. Double-click START OFFLINE DAOC MODERN.cmd.
+3. Double-click START DIVIDED REALMS.cmd.
 4. On first start the launcher asks for your Dark Age of Camelot folder (the one with game.dll
    and camelot.exe). It copies it into this folder and patches the copy. Your own install is
    not changed. It only accepts the 1.130 client this game is made for.
@@ -233,8 +233,8 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
             shutil.copy2(dotnet / name, out / 'tools/dotnet' / name)
 
     print('Writing the start file, read-me, licences and docs...', flush=True)
-    (out / 'START OFFLINE DAOC MODERN.cmd').write_text(START_CMD.format(label=label).replace('\n', '\r\n'), encoding='ascii')
-    title = f'Offline DAoC {label}'
+    (out / 'START DIVIDED REALMS.cmd').write_text(START_CMD.format(label=label).replace('\n', '\r\n'), encoding='ascii')
+    title = f'Divided Realms {label}'
     (out / 'READ ME FIRST.txt').write_text(READ_ME.format(label=label, rule='=' * len(title)).replace('\n', '\r\n'), encoding='utf-8')
     (out / 'EDITION.txt').write_text(f'{title}: the original 1.130 client (bring your own), modern test classes.\r\n', encoding='utf-8')
     for name in ('LICENSE', 'THIRD_PARTY.md'):
