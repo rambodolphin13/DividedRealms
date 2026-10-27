@@ -13,6 +13,153 @@
 > of Camelot, which is a very different, modern experience. If that interests you, please visit the
 > official site: [darkageofcamelot.com](https://www.darkageofcamelot.com/).
 
+# Offline DAoC: Living Server
+
+### Your single-player Camelot, alive like a 2003 server. **Beta 1.0 is out.**
+
+It's eight o'clock and the realm is already busy. A guildmate types "wb". A level 12 asks where the
+trainer is. Two clerics are arguing smite against rejuv in /faction while an officer calls the keep
+under attack, and somewhere a raid is forming for Darkness Falls. None of them are people, and all of
+them are playing.
+
+**Living Server** is a free add-on for [shadowofze's Offline DAoC](https://github.com/shadowofze/OfflineDAoC),
+the single-player Classic + Shrouded Isles server. Its bots already level, group and fight. Living
+Server gives them a life: personalities, guilds, memories, opinions and a voice, and an endgame they
+run themselves, whether or not you come along.
+
+> **[Download Beta 1.0](https://github.com/chris4aker/OfflineDAoC-SocialExpansion/releases)** for Offline
+> DAoC 0.37 or 0.37b, with or without the 0.37c new client. Free, switched off until you turn it on, and
+> one click to roll back. Formerly the **Social Expansion**: if you had it, install over it and keep
+> everything. [What's new](CHANGELOG-LIVING-SERVER.md) · [Known issues](docs/KNOWN-ISSUES.md)
+
+## Features
+
+### The endgame runs itself
+- **Raids on their own schedule.** Every realm draws its next raid from 17 targets: its dragon, its epic
+  dungeon, Summoner's Hall, Darkness Falls and nine raid dungeons from Krondon to Marfach Caverns. It
+  rallies, musters at the nearest town and clears its way to the final boss.
+- **Wipe, regroup, go again.** A wiped raid rests, rebuffs, walks back in and tries once more, and up to 24
+  geared level 50s of the **Epic Special Forces** answer the call.
+- **Contested raids.** Two realms in Darkness Falls fight each other on the way. Whoever does the most damage
+  to the final boss takes the kill and the loot.
+- **Keep sieges with a fight on both sides.** Warbands open sieges, defenders turn out to match the attacking
+  army, and attackers break off to save their own keep.
+- **Parties go for the boss.** A party grinding a dungeon goes after its named boss when a quest or its loot
+  makes the fight worth it.
+
+### Bots that talk like 2003
+- **2,326 lines of period chat** written for the game from launch to patch 1.65, chosen by realm, class,
+  level, zone, time of day, situation and personality, in five writing styles (one of them typo-prone,
+  "*fixes" and all). A line doesn't repeat in a realm for three days.
+- **296 /faction debates.** Smite versus rejuv, buffbots, zergs, relic panic, dragon raids. A new cast plays
+  one every 30 to 45 minutes while you're online.
+- **They read what you type.** "ty", "inc", "rez pls", "lfg 24 cleric" and "is friar good?" are read for what
+  they are, and the answers come from the live world: ask "where are the mids?" and you're told where they
+  really are.
+
+### Bots with lives
+- **Personalities.** Every bot is a Leveler, Socialite, Daredevil, Explorer, Crafter or No-lifer, with five
+  traits that decide who grinds, who parks in town, who hunts orange cons and who lives in the frontier.
+  Target one and type `/personality`.
+- **Bot guilds.** Leveling, social, RvR, raiding and crafting guilds that recruit you, talk in /gu, claim
+  and defend keeps, pay dues, earn merit, buy guild buffs and form alliances.
+- **Server life.** Bots remember you (your rezzes, and your insults), say grats, announce server firsts,
+  ask you for a rez, call incoming zergs, hold grudges against their killers, take "brb" breaks, go
+  linkdead, and wave when you walk up. The **Camelot Herald** prints your world's news.
+
+### Smarter, safer bots
+- Levelling bots bend their road around monsters far above them, remember where bots keep dying, and bind
+  somewhere else when one spot keeps killing them.
+- New bots level in their realm's classic zones first, melee bots stop standing under flying monsters,
+  parties walk around epic monsters they didn't come for, and warbands ride their porter instead of
+  walking past Aidon.
+- A bot looking for a group stands at its camp between pulls like a player with /lfg on.
+
+### And more
+- **Talk to bots by name:** `/send` any bot of your realm, and `/invite` or `/target` a nearby one.
+- **XP by level range:** separate rates for you and the bots, so levels 1 to 34 stay worth playing and 35
+  to 50 goes faster.
+- **Fixes:** keep gates that never opened in the new client, Lord Gildas's room in Hall of the Corrupt, a
+  boss spell chain that could stop the server, and memory leaks found in overnight soak tests.
+
+## Safe to try
+
+- **Your rules stay.** Real loot, the Realm Exchange, stablemaster routes and bots that earn their armor are
+  untouched.
+- **Switched off until you turn it on.** Chat, personalities, guilds, server life and XP rates each have a
+  switch in the launcher's **Living Server** tab. The bots' own endgame and safer routes are always on.
+- **Undo any time.** The installer checks your game version, backs up every file it replaces and verifies
+  each copy. `ROLLBACK.cmd` puts the originals back.
+- **Tested hard.** 3,400+ automated server tests on every build, and overnight runs on a real PC with 600
+  bots per realm. It's a beta: what hasn't been seen in game yet is listed in
+  [docs/KNOWN-ISSUES.md](docs/KNOWN-ISSUES.md).
+
+## How to get it
+
+1. Install Offline DAoC 0.37 or 0.37b (or 0.37c) from [shadowofze's releases](https://github.com/shadowofze/OfflineDAoC/releases),
+   or update your 0.36 game to it (below).
+2. Download the Living Server zip from this repository's [Releases](https://github.com/chris4aker/OfflineDAoC-SocialExpansion/releases),
+   unzip it and put its folder in your game folder.
+3. Close the game and server, then double-click `INSTALL.cmd` in that folder.
+4. Open the launcher as usual. It now has a **Living Server** tab.
+
+**Had the Social Expansion?** Run Beta 1.0's `INSTALL.cmd` over it. Your characters, bots, bot guilds, bot
+memory and settings stay as they were.
+
+**Still on 0.36 with the Social Expansion?** The 0.37 update only applies to the game's own files, so put
+them back first: put the Beta 1.0 folder in your game folder and double-click `PREPARE-FOR-UPDATE.cmd` (it
+restores the released 0.36 server and launcher from the installer's backups and checks each one). Then
+update the game to 0.37 with its downloader (choice 1, Update), and run `INSTALL.cmd`. If you install 0.37
+fresh instead and bring your progress over, see the package's README.txt for the one extra step.
+
+## Getting started
+
+A fresh world has no bots yet, and most of these features need some.
+
+1. **Make bots.** On the launcher's main screen, use the **+ Lv.1** and **+ Lv.50** buttons for each
+   realm. Raids need level 50s, and a realm needs 8 bots of level 5 or higher before it forms a guild.
+2. **Switch features on.** With the server stopped, open the **Living Server** tab, tick what you want
+   and click **Save settings**. Good first picks: Bot voices with /faction debates, Bot personalities and
+   the Server life parts. Add Bot guilds once you have enough bots.
+3. **Start the server and play.** Settings apply at the next server start. The first /faction debate
+   comes 5 to 10 minutes after the server starts, and the first raids 20 to 40 minutes in.
+4. **Check it's running.** The server log (`runtime\server\logs\server.log`) has a line starting
+   `FORK_BUILD name=1.0-beta` that lists which features are on.
+
+## Undo and uninstall
+
+- **Turn a feature off:** untick it in the Living Server tab (or click **ALL OFF**), save, and restart the
+  server.
+- **Remove bot guilds from your world:** turning bot guilds off keeps the guilds, their alliances and any
+  keeps they claimed. To remove them, close the game and server and run
+  `python tools\claude-version\set_bot_guilds.py --purge --apply` in your game folder (Python 3). It backs
+  up your database first, releases keeps claimed by bot guilds, removes bot guilds and their alliances, and
+  moves any of your characters in a bot guild back to the starting guild.
+- **Uninstall:** after the steps above, double-click `ROLLBACK.cmd`. It restores the server, launcher and
+  game files the install replaced or fixed. If you installed more than one build, run it once per build.
+  The new tables and settings stay in your database; the original server ignores them.
+
+## Details
+
+- [Known issues and what's not tested yet](docs/KNOWN-ISSUES.md)
+- [Every change, with its numbers](CHANGELOG-LIVING-SERVER.md)
+- [Bot guilds: design and status](docs/BOT-GUILDS.md)
+- [Bot personalities, voices and debates](docs/BOT-PERSONALITIES.md)
+- [Server life and the Camelot Herald](docs/LIVING-SERVER.md)
+- [XP by level range](docs/XP-BY-LEVEL-RANGE.md)
+
+## Credits
+
+[shadowofze](https://github.com/shadowofze/OfflineDAoC) made Offline DAoC, and everything here builds on it.
+[OpenDAoC](https://github.com/OpenDAoC/OpenDAoC-Core) is the server underneath. Bot-guild membership, route
+bends and danger memory are adapted from [stefanrows' fork](https://github.com/stefanrows/OfflineDAoC).
+Living Server is directed and play-tested by [chris4aker](https://github.com/chris4aker) and coded with
+Claude (Anthropic). Same license as the original: GPL-3.0.
+
+---
+
+*Everything below is the original Offline DAoC README.*
+
 # Offline DAoC — single-player Dark Age of Camelot with bots
 
 Offline DAoC is a local, single-player Dark Age of Camelot (Classic + Shrouded Isles, 1.65 rules)

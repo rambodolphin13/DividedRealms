@@ -109,15 +109,15 @@ public sealed class UT_GamebotReviewOct18
     {
         long early = AutonomousBotGroupCoordinator.ExtendedPveRecruitmentAfterMilliseconds - 1;
         long late = AutonomousBotGroupCoordinator.ExtendedPveRecruitmentAfterMilliseconds;
-        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentDistance(0, early), Is.EqualTo(30_000));
-        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentDistance(late, 0), Is.EqualTo(60_000));
-        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentDistance(0, late), Is.EqualTo(60_000));
-        Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, false, false, false, 45_000), Is.False);
-        Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, false, false, false, 45_000,
-            AutonomousBotGroupCoordinator.ExtendedPveRecruitmentDistance), Is.True);
+        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentMinutes(0, early), Is.EqualTo(8));
+        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentMinutes(late, 0), Is.EqualTo(16));
+        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentMinutes(0, late), Is.EqualTo(16));
+        Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, false, false, false, 12), Is.False);
+        Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, false, false, false, 12,
+            AutonomousBotGroupCoordinator.ExtendedPveRecruitmentMinutes), Is.True);
         // Combat still blocks recruitment at any distance.
         Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, true, false, false, 0,
-            AutonomousBotGroupCoordinator.ExtendedPveRecruitmentDistance), Is.False);
+            AutonomousBotGroupCoordinator.ExtendedPveRecruitmentMinutes), Is.False);
     }
 
     [Test]

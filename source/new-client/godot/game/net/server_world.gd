@@ -1915,6 +1915,22 @@ func _change_target(oid: int) -> void:
 
 
 ## A raid window slot clicked: target that member (its view if drawn, else straight on the server).
+## The server's ChangeTarget (/target <name>, /assist): select that object as a click would - the client then sends
+## its Target packet, which is what sets the server's target. Missing until 2026-10-17: "/target Haralhelm" answered
+## "[GM] You target Haralhelm." but the target window stayed empty and /invite found no target.
+var _server_chose_target := false
+
+
+func _change_target(oid: int) -> void:
+	if oid <= 0:
+		if target or target_door:
+			clear_target()
+		return
+	_server_chose_target = true
+	target_oid(oid)
+	_server_chose_target = false
+
+
 func target_oid(oid: int) -> void:
 	if oid <= 0:
 		return

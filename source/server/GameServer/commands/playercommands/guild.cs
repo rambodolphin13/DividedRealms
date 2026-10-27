@@ -379,14 +379,21 @@ namespace DOL.GS.Commands
 								: client.Player.TargetObject as GameBot;
 							if (invitedBot != null)
 							{
+								// Living Server: a member of a bot guild answers for itself first; a leader or officer stays
+								// with its guild (docs/BOT-GUILDS.md).
+								if (AutonomousBotRealmGuilds.RefusesPlayerGuild(client.Player, invitedBot))
+									return;
 								string refusal = AutonomousBotGuilds.JoinRefusal(client.Player, invitedBot);
 								if (refusal != null)
 								{
 									client.Out.SendMessage(refusal, eChatType.CT_System, eChatLoc.CL_SystemWindow);
 									return;
 								}
+								string leftGuild = AutonomousBotRealmGuilds.BotGuildNameOf(invitedBot);
 								if (!AutonomousBotGuilds.Join(client.Player, invitedBot))
 									client.Out.SendMessage($"{invitedBot.Name} could not join the guild.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+								else
+									AutonomousBotRealmGuilds.LeaveForPlayerGuild(invitedBot, leftGuild, client.Player);
 								break;
 							}
 						}
@@ -468,6 +475,13 @@ namespace DOL.GS.Commands
 								AutonomousBotGuilds.Remove(botMember.BotId, client.Player.Name);
 								break;
 							}
+						}
+						if (obj == null)
+						{
+							// A bot member is not a character row (docs/BOT-GUILDS.md).
+							string botName = playername == string.Empty ? (client.Player.TargetObject as GameBot)?.Name : playername;
+							if (AutonomousBotRealmGuilds.TryRemove(client.Player, botName))
+								return;
 						}
 						if (obj == null)
 						{
@@ -1578,8 +1592,19 @@ namespace DOL.GS.Commands
 									client.Out.SendMessage(mesg, eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
 							}
 						}
-						if (ind > WhoCommandHandler.MAX_LIST_SIZE && ind < onlineGuildMembers.Count)
-							client.Out.SendMessage(string.Format(WhoCommandHandler.MESSAGE_LIST_TRUNCATED, onlineGuildMembers.Count), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+						// Online autonomous gamebot members (docs/BOT-GUILDS.md).
+						List<string> botLines = AutonomousBotRealmGuilds.WhoLines(client.Player.Guild);
+						foreach (string botLine in botLines)
+						{
+							if (startInd + ind > startInd + WhoCommandHandler.MAX_LIST_SIZE)
+								break;
+							ind++;
+							if (ind >= startInd)
+								client.Out.SendMessage(ind.ToString() + ") " + botLine, eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+						}
+						int onlineTotal = onlineGuildMembers.Count + botLines.Count;
+						if (ind > WhoCommandHandler.MAX_LIST_SIZE && ind < onlineTotal)
+							client.Out.SendMessage(string.Format(WhoCommandHandler.MESSAGE_LIST_TRUNCATED, onlineTotal), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
 						else client.Out.SendMessage("total member online:        " + ind.ToString(), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
 
 						break;

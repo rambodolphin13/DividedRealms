@@ -170,6 +170,37 @@ namespace DOL.GS
             try { LogNpcCensus(); } catch (Exception exception) { Log.Warn("SERVER_NPC_CENSUS failed", exception); }
             try { LogStaticCensus(); } catch (Exception exception) { Log.Warn("SERVER_STATIC_CENSUS failed", exception); }
             try { LogBotFieldCensus(); } catch (Exception exception) { Log.Warn("SERVER_BOT_FIELD_CENSUS failed", exception); }
+            try { ServerHolderCensus.MaybeRun(DetachedNpcs, ActiveNpcs); } catch (Exception exception) { Log.Warn("SERVER_HOLDER_CENSUS failed", exception); }
+            try { ServerHolderCensus.LogOrphans(); } catch (Exception exception) { Log.Warn("SERVER_ORPHAN_TIMERS failed", exception); }
+            try { ServerHandleCensus.MaybeRun(); } catch (Exception exception) { Log.Warn("SERVER_HANDLE_CENSUS failed", exception); }
+            try { ServerLockEventCensus.MaybeRun(() => ServerLockEventCensus.DefaultRoots(CensusNpcs())); }
+            catch (Exception exception) { Log.Warn("SERVER_LOCK_EVENTS failed", exception); }
+        }
+
+        /// <summary>NPC objects still in memory but no longer in the world (census on only).</summary>
+        private static List<GameNPC> DetachedNpcs()
+        {
+            var detached = new List<GameNPC>();
+            foreach (var entry in NpcCensus)
+                if (entry.Key.ObjectState != GameObject.eObjectState.Active) detached.Add(entry.Key);
+            return detached;
+        }
+
+        /// <summary>Every NPC object still in memory, in or out of the world (census on only).</summary>
+        private static List<GameNPC> CensusNpcs()
+        {
+            var all = new List<GameNPC>();
+            foreach (var entry in NpcCensus) all.Add(entry.Key);
+            return all;
+        }
+
+        /// <summary>NPC objects in the world now (census on only): the holder census walks their fields too.</summary>
+        private static List<GameNPC> ActiveNpcs()
+        {
+            var active = new List<GameNPC>();
+            foreach (var entry in NpcCensus)
+                if (entry.Key.ObjectState == GameObject.eObjectState.Active) active.Add(entry.Key);
+            return active;
         }
 
         private static int ThreadCount(Process process)

@@ -48,6 +48,7 @@ public static class AutonomousPopulationController
     {
         Interlocked.Increment(ref _loginGeneration);
         _startedUtc = DateTime.UtcNow;
+        AutonomousBotSchedule.NoteServerStarted(_startedUtc);
         OfflineWorldBotRecord[] previouslyOnline = DOLDB<OfflineWorldBotRecord>
             .SelectObjects(DB.Column("IsOnline").IsEqualTo(true))
             .ToArray();
@@ -104,7 +105,25 @@ public static class AutonomousPopulationController
 
             OfflineWorldBotRecord[] roster = _cachedRoster;
             int desired = AutonomousPopulationRamp.DesiredActiveCount(_cachedEnabled, roster.Length, _cachedRampMinutes, nowUtc - _startedUtc);
-            int missing = desired - AutonomousBotRegistry.Count - PendingSpawns.Count;
+            int online = AutonomousBotRegistry.Count;
+            // Living Server schedules (off by default): only bots scheduled online are logged in, and the
+            // count is of those, so bots still finishing a fight before logging out don't block the rest.
+            bool scheduled = AutonomousBotSchedule.Active;
+            if (scheduled)
+            {
+                OfflineWorldBotRecord[] wanted = roster.Where(record => AutonomousBotSchedule.WantsOnline(record, nowUtc)).ToArray();
+                desired = Math.Min(desired, wanted.Length);
+                online = wanted.Count(record => AutonomousBotRegistry.Contains(record.BotId));
+            }
+            int missing = desired - online - PendingSpawns.Count;
+            // Scheduled-off bots still finishing something (often a group) stay online. For their first 15 minutes
+            // they count, so logins wait for them (10% slack); after that they no longer hold the schedule back.
+            if (scheduled)
+            {
+                missing = Math.Min(missing, desired + desired / 10 - online - AutonomousBotSchedule.RecentOverstays - PendingSpawns.Count);
+                // Hard ceiling: never more than a quarter above the schedule's number in total.
+                missing = Math.Min(missing, desired + desired / 4 - AutonomousBotRegistry.Count - PendingSpawns.Count);
+            }
             _populationSatisfied = missing <= 0;
             if (missing <= 0)
                 return;
@@ -118,6 +137,7 @@ public static class AutonomousPopulationController
 
             List<OfflineWorldBotRecord> available = roster
                 .Where(record => !record.IsOnline && !AutonomousBotRegistry.Contains(record.BotId) && !PendingSpawns.ContainsKey(record.BotId))
+                .Where(record => !scheduled || AutonomousBotSchedule.WantsOnline(record, nowUtc))
                 .ToList();
 
             // Ten thousand actors require about eleven scheduled logins per
@@ -148,7 +168,7 @@ public static class AutonomousPopulationController
                     int generation = Volatile.Read(ref _loginGeneration);
                     string ownerId = AutonomousBotEconomy.GetOwnerId(next.BotId);
                     var inventory = new BotInventory(ownerId);
-                    var items = inventory.StartLoadFromDatabaseTask(ownerId).GetAwaiter().GetResult();
+                    var items = inventory.SelectPersonalItems(ownerId);
                     if (generation != Volatile.Read(ref _loginGeneration) || _timer == null)
                     {
                         PendingSpawns.TryRemove(next.BotId, out _);
@@ -206,6 +226,15 @@ public static class AutonomousPopulationController
             // not mistaken for an invalid origin and replaced by a capital.
             bot.SynchronizePositionForLoginValidation();
             AutonomousStuckWatchdog.RepairInvalidLoginPosition(bot);
+            if (LogsInBesideABoss(record))
+            {
+                // Morning 2026-10-19: level 50s saved inside the Hall of the Corrupt logged in beside Aidon the
+                // Archwizard and his illusions and died within seconds, 41 times in 41 minutes. A player who logged
+                // out there would recall first; the bot starts in its capital instead.
+                Log.Info($"AUTONOMOUS_LOGIN_MOVED_FROM_BOSS bot=\"{record.Name}\" region={record.RegionId} at={record.X},{record.Y},{record.Z}");
+                PlaceAtCapitalFallback(bot, record);
+                bot.SynchronizePositionForLoginValidation();
+            }
             if (string.IsNullOrWhiteSpace(record.LastSavedUtc) && record.Experience == 0)
             {
                 bot.Health = bot.MaxHealth;
@@ -229,6 +258,7 @@ public static class AutonomousPopulationController
             record.ObjectiveProgress = "Entered world through staggered login queue";
             bot.MarkAutonomousStateDirty();
             AutonomousBotStatusPersistence.QueueLogin(bot);
+            AutonomousBotSchedule.OnLoggedIn(bot);
             Log.Info($"Autonomous character {record.Name} entered the live world from the staggered queue.");
         }
         catch (Exception exception)
@@ -245,6 +275,19 @@ public static class AutonomousPopulationController
     public static bool IsFreshUnplacedLevelOneRecord(OfflineWorldBotRecord record) =>
         record != null && record.Level == 1 && record.Experience == 0 && record.RealmPoints == 0 &&
         record.RegionId == 0 && string.IsNullOrWhiteSpace(record.LastSavedUtc);
+
+    /// <summary>How close to a boss (an epic or a scripted named monster with its own tether) a saved spot may be.</summary>
+    public const int LoginBossClearance = 2_500;
+
+    private static bool LogsInBesideABoss(OfflineWorldBotRecord record)
+    {
+        Region region = record.RegionId == 0 ? null : WorldMgr.GetRegion((ushort)record.RegionId);
+        if (region == null)
+            return false;
+        var npcs = new List<GameNPC>();
+        region.GetInRadius(new Point3D(record.X, record.Y, record.Z), eGameObjectType.NPC, LoginBossClearance, npcs);
+        return npcs.Any(npc => npc.IsAlive && npc.Realm == eRealm.None && AutonomousTetherReset.HasEncounterTether(npc));
+    }
 
     private static void PlaceAtCapitalFallback(GameBot bot, OfflineWorldBotRecord record)
     {
@@ -339,6 +382,9 @@ public static class AutonomousPopulationController
     }
 
     private static volatile bool _populationSatisfied;
+
+    /// <summary>The non-retired roster as last read by the control plane (read-only; empty before the first read).</summary>
+    internal static OfflineWorldBotRecord[] CachedRoster => _cachedRoster;
 
     private static void QueueOwnerCommands(bool repairOrphans)
     {

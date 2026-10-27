@@ -74,9 +74,9 @@ def quat_row_matrix(q):
 
 def door_spec(leaf, parent_m, m_closed, index):
     """{id, name, closed, open, seconds}: the leaf's model-space pose (Godot axes, metres, 4x3 basis + origin) when
-    closed and when open (its keyframe controller's first / last rotation key around the leaf's own pivot, and its
-    first / last translation key: a portcullis only slides - owner 2026-10-20, Snowdonia Fortress's gates stayed shut
-    in the new client while the old one raised them)."""
+    closed and when open: its keyframe controller's first / last rotation key around the leaf's own pivot, and its
+    first / last translation key. Owner 2026-10-21: a portcullis (Snowdonia Fortress, borderkeep1 'nopick portcullis')
+    only slides up - translation keys, no rotation - and was exported with open == closed, so it never moved."""
     c = leaf.get('controller')
     while c is not None and c.type != 'NiKeyframeController':
         c = c.get('next_controller')
@@ -106,8 +106,9 @@ def door_spec(leaf, parent_m, m_closed, index):
         q1 = [keys[-1]['value'][k] for k in ('x', 'y', 'z', 'w')]
     t0 = tkeys[0]['value'] if tkeys else None
     t1 = tkeys[-1]['value'] if tkeys else None
-    return {'id': index, 'name': leaf.get('name'), 'closed': godot(pose(q0, t0) if q0 or t0 else m_closed),
-            'open': godot(pose(q1, t1) if q1 or t1 else m_closed),
+    keyed = q0 is not None or t0 is not None
+    return {'id': index, 'name': leaf.get('name'), 'closed': godot(pose(q0, t0) if keyed else m_closed),
+            'open': godot(pose(q1, t1) if keyed else m_closed),
             'seconds': float(c.get('stop_time', 1.0)) - float(c.get('start_time', 0.0)) if c is not None else 1.0}
 
 

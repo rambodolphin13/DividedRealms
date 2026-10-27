@@ -11,6 +11,10 @@ namespace DOL.GS;
 public static class AutonomousBotRegistry
 {
     private static readonly ConcurrentDictionary<long, GameBot> Active = new();
+    // Epic Special Forces members (GameBot.IsEpicSpecialForce): found by id like any gamebot, so their raid keeps
+    // them, but never part of the population, the planners' roster, the guild roster or the save sweep.
+    private static readonly ConcurrentDictionary<long, GameBot> SpecialForces = new();
+    public static int SpecialForcesOnline => SpecialForces.Count;
     private static int _populationForBrainTick;
     private static long _nextPopulationSampleTick;
     private const int PopulationSampleIntervalMs = 1_000;
@@ -62,9 +66,9 @@ public static class AutonomousBotRegistry
     // Population targets are counts of live actors, never dictionary slots.
     public static int Count => Active.Values.Count(bot => bot?.ObjectState == GameObject.eObjectState.Active);
 
-    public static bool Contains(long botId) => Active.ContainsKey(botId);
+    public static bool Contains(long botId) => Active.ContainsKey(botId) || SpecialForces.ContainsKey(botId);
 
-    public static bool TryGet(long botId, out GameBot bot) => Active.TryGetValue(botId, out bot);
+    public static bool TryGet(long botId, out GameBot bot) => Active.TryGetValue(botId, out bot) || SpecialForces.TryGetValue(botId, out bot);
 
     // One array per game-loop tick, shared by every caller (all read-only): RvR planning built a
     // fresh 9,000-entry array per AI turn (55 MB of allocations in 40 s, run 9 trace).
@@ -102,21 +106,44 @@ public static class AutonomousBotRegistry
         return bot != null;
     }
 
+    /// <summary>An online autonomous gamebot of the realm, by its exact name: /send, /invite and /target reach
+    /// bots as they reach players (in-game check 2026-10-17: "pst me" lines, but "/send Haralhelm" answered
+    /// "not in the game"). Companion bots and temporary helpers are not included.</summary>
+    public static bool TryGetOnline(string name, eRealm realm, out GameBot bot)
+    {
+        bot = TryGetByName(name, out GameBot found) && found.Realm == realm && found.IsAutonomousWorldBot &&
+              !found.IsTemporaryGroupHelper ? found : null;
+        return bot != null;
+    }
+
     public static void Register(GameBot bot)
     {
+        if (bot?.IsAutonomousWorldBot == true && bot.DatabaseID > 0 && bot.IsEpicSpecialForce)
+        {
+            SpecialForces[bot.DatabaseID] = bot;
+            return;
+        }
         if (bot?.IsAutonomousWorldBot == true && bot.DatabaseID > 0)
         {
             Active[bot.DatabaseID] = bot;
             _snapshot = new(-1, []);
+            AutonomousBotRealmGuilds.OnBotOnline(bot);
         }
     }
 
     public static void Unregister(GameBot bot)
     {
+        if (bot?.DatabaseID > 0 && bot.IsEpicSpecialForce)
+        {
+            SpecialForces.TryRemove(bot.DatabaseID, out _);
+            AutonomousBotEconomy.ForgetCachedDecision(bot.DatabaseID);
+            return;
+        }
         if (bot?.DatabaseID > 0)
         {
             AutonomousGoalDiagnostics.End(bot, GoalAttemptEnd.Logout, "Bot left the active world; not a goal failure");
             Active.TryRemove(bot.DatabaseID, out _);
+            AutonomousBotRealmGuilds.OnBotOffline(bot);
             _snapshot = new(-1, []);
             AutonomousBotEconomy.ForgetCachedDecision(bot.DatabaseID);
         }
