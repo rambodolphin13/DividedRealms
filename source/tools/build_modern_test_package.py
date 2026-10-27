@@ -43,7 +43,8 @@ CONNECTOR = 'connect-local1130.exe'
 # Runtime files of the developer's install that the package writes itself or never ships.
 # world-workshop-data holds the developer's editor backups (database snapshots): never shipped. The editor itself
 # (world-workshop) is installed from the repository's clean package build instead of the install's copy.
-RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data'}
+# server-backups holds deploy backups (developer builds), herald the launcher's Herald page written from this game's records.
+RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', 'server-backups', 'herald'}
 WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
 RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json'}
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json')
