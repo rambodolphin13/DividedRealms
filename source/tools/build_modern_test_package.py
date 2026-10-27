@@ -46,8 +46,11 @@ CONNECTOR = 'connect-local1130.exe'
 # server-backups holds deploy backups (developer builds), herald the launcher's Herald page written from this game's records.
 RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', 'server-backups', 'herald'}
 WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
-RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json'}
-LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json')
+# host-for-friends.json and the firewall script are the developer's Host for Friends state (friends' addresses, local paths).
+RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json',
+                      'host-for-friends.json', 'host-for-friends-firewall.cmd'}
+LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json',
+                  'Join Friend.cmd')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}
 
 START_CMD = r'''@echo off
@@ -66,6 +69,22 @@ set "DOTNET_MULTILEVEL_LOOKUP=0"
 start "" "%~dp0runtime\OfflineDAoC.exe"
 '''
 
+# Join a friend's world without the launcher's dashboard or this folder's server (docs/PLAY-WITH-FRIENDS.md).
+JOIN_CMD = r'''@echo off
+setlocal
+cd /d "%~dp0"
+rem Divided Realms {label}: play in a friend's world. Starts only the game client, never this folder's server or save.
+if not exist "%~dp0runtime\OfflineDAoC.exe" (
+  echo This folder is incomplete. Extract the whole download again, then retry.
+  pause
+  exit /b 1
+)
+set "DOTNET_ROOT=%~dp0tools\dotnet"
+set "DOTNET_ROOT_X64=%~dp0tools\dotnet"
+set "DOTNET_MULTILEVEL_LOOKUP=0"
+start "" "%~dp0runtime\OfflineDAoC.exe" --join
+'''
+
 READ_ME = '''Divided Realms {label}
 {rule}
 
@@ -80,6 +99,9 @@ This download contains no game client: you use your own.
    and camelot.exe). It copies it into this folder and patches the copy. Your own install is
    not changed. It only accepts the 1.130 client this game is made for.
 5. START SERVER, then ENTER REALM. Your account is created on the first login.
+
+Playing with friends: one of you hosts (HOST FOR FRIENDS in the launcher), the others double-click
+JOIN FRIEND.cmd (set up your client once with step 4 first). See docs/PLAY-WITH-FRIENDS.md.
 
 This is a development test build. See docs/PLAY-MODERN-TEST.md and docs/PROGRESS-2026-10.md.
 '''
@@ -235,6 +257,7 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
 
     print('Writing the start file, read-me, licences and docs...', flush=True)
     (out / 'START DIVIDED REALMS.cmd').write_text(START_CMD.format(label=label).replace('\n', '\r\n'), encoding='ascii')
+    (out / 'JOIN FRIEND.cmd').write_text(JOIN_CMD.format(label=label).replace('\n', '\r\n'), encoding='ascii')
     title = f'Divided Realms {label}'
     (out / 'READ ME FIRST.txt').write_text(READ_ME.format(label=label, rule='=' * len(title)).replace('\n', '\r\n'), encoding='utf-8')
     (out / 'EDITION.txt').write_text(f'{title}: the original 1.130 client (bring your own), modern test classes.\r\n', encoding='utf-8')

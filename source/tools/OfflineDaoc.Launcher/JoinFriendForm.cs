@@ -195,7 +195,7 @@ internal sealed class JoinFriendForm : Form
         if (!_client.IsInstalled)
         {
             SetStatus(_client.Modern != null
-                ? "The modern client is not set up yet. Open the launcher and press ENTER REALM once to set it up."
+                ? "Your client is not set up yet. Open the launcher once (START DIVIDED REALMS.cmd); it asks for your DAoC folder."
                 : "The game client is missing. Restore connect.exe and game.dll in the client folder.", DaocTheme.Danger);
             return;
         }
