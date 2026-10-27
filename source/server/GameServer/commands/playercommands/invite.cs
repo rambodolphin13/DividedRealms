@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Commands
@@ -22,14 +24,16 @@ namespace DOL.GS.Commands
             string targetName = string.Join(" ", args, 1, args.Length - 1);
             GamePlayer target;
 
-            if (args.Length >= 2 && BotManager.GetActiveBotByName(targetName, client.Player.Realm) is GameBot namedBot)
+            if (args.Length >= 2 && SearchRealms(client.Player).Select(realm => BotManager.GetActiveBotByName(targetName, realm))
+                    .FirstOrDefault(bot => bot != null) is GameBot namedBot)
             {
                 BotGroupInvite.TryInvite(client.Player, namedBot);
                 return;
             }
 
+            GameBot worldBot = null;
             if (args.Length >= 2 && ClientService.Instance.GetPlayerByPartialName(targetName, out _) == null &&
-                AutonomousBotRegistry.TryGetOnline(targetName, client.Player.Realm, out GameBot worldBot))
+                SearchRealms(client.Player).Any(realm => AutonomousBotRegistry.TryGetOnline(targetName, realm, out worldBot)))
             {
                 if (!BotGroupInvite.CloseEnoughToInviteByName(client.Player, worldBot))
                 {
@@ -131,6 +135,17 @@ namespace DOL.GS.Commands
                 target.Out.SendGroupInviteCommand(client.Player, $"{client.Player.Name} has invited you to join\n{client.Player.GetPronoun(1, false)} group. Do you wish to join?");
                 target.Out.SendMessage($"{client.Player.Name} has invited you to join {client.Player.GetPronoun(1, false)} group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
             }
+        }
+
+        /// <summary>Gamebots are found by name in the inviter's realm, and in every realm when co-op is on.</summary>
+        private static IEnumerable<eRealm> SearchRealms(GamePlayer player)
+        {
+            yield return player.Realm;
+            if (!ServerRules.HybridCoopRules.Enabled)
+                yield break;
+            foreach (eRealm realm in new[] { eRealm.Albion, eRealm.Midgard, eRealm.Hibernia })
+                if (realm != player.Realm)
+                    yield return realm;
         }
     }
 }

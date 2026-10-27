@@ -119,36 +119,52 @@ public class UT_HybridCoopRules
         Assert.That(HybridCoopRules.IsWarLocation((ushort)region, (ushort)zone), Is.EqualTo(war));
 
     [Test]
-    public void DifferentRealmsCooperateAtHomeAndSameRealmEnemiesCanFightInFrontier()
+    public void DifferentRealmsCooperateAtHomeAndFightRealmAgainstRealmInFrontier()
     {
         var region = Region(1); var a = Player(region, eRealm.Albion,100); var b = Player(region, eRealm.Midgard,200);
         var rules = new Rules();
         Assert.That(rules.IsAllowedToAttack(a,b,true), Is.False);
         Assert.That(rules.IsSameRealm(a,b,true), Is.True);
-        a.Position = b.Position = 11000; b.Realm = a.Realm;
+        Assert.That(rules.GetLivingRealm(a,b), Is.EqualTo((byte)eRealm.Albion), "Shown as a friend at home.");
+        a.Position = b.Position = 11000;
         Assert.That(rules.IsAllowedToAttack(a,b,true), Is.True);
         Assert.That(rules.IsSameRealm(a,b,true), Is.False);
-        Assert.That(rules.GetLivingRealm(a,b), Is.Not.EqualTo((byte)a.Realm));
+        Assert.That(rules.GetLivingRealm(a,b), Is.EqualTo((byte)eRealm.Midgard), "Shown as the enemy realm it is.");
         Assert.That(HybridCoopRules.RewardEnemies(a,b), Is.True);
+        b.Realm = a.Realm;
+        Assert.That(rules.IsAllowedToAttack(a,b,true), Is.False, "Same realm is friendly in the frontier, as normal.");
+        Assert.That(rules.IsSameRealm(a,b,true), Is.True);
+        Assert.That(HybridCoopRules.RewardEnemies(a,b), Is.False);
     }
     [Test]
-    public void GuildsGroupsAndAlliancesAreFriendlyAndNullGuildsAreNotATeam()
+    public void GroupsStayOneTeamButGuildsDoNotOverrideRealms()
     {
         var region = Region(249); var a = Player(region,eRealm.Albion); var b = Player(region,eRealm.Midgard);
         var rules = new Rules();
         Assert.That(rules.IsAllowedToAttack(a,b,true), Is.True);
         var guild = Guild("one"); Join(a,guild); Join(b,guild);
-        Assert.That(rules.IsAllowedToAttack(a,b,true), Is.False);
-        Assert.That(rules.IsSameRealm(a,b,true), Is.True);
-        var second = Guild("two"); Join(b,second);
-        var alliance = new Alliance();
-        typeof(Alliance).GetField("_guilds", BindingFlags.NonPublic|BindingFlags.Instance).SetValue(alliance,new List<Guild>{guild,second});
-        guild.alliance = alliance; second.alliance = alliance;
-        Assert.That(rules.IsAllowedToAttack(a,b,true), Is.False);
-        guild.alliance = second.alliance = null;
+        Assert.That(rules.IsAllowedToAttack(a,b,true), Is.True, "A mixed-realm guild still fights by realm in DF.");
         a.Group = b.Group = new Group(a);
         Assert.That(rules.IsAllowedToAttack(a,b,true), Is.False);
+        Assert.That(rules.IsSameRealm(a,b,true), Is.True);
         Assert.That(HybridCoopRules.RewardEnemies(a,b), Is.False);
+    }
+    [Test]
+    public void RealmsGroupAcrossOnlyOutsideTheWarAreas()
+    {
+        var region = Region(1); var a = Player(region,eRealm.Albion,100); var b = Player(region,eRealm.Midgard,200);
+        var rules = new Rules();
+        Assert.That(rules.IsAllowedToGroup(a,b,true), Is.True);
+        GS.ServerProperties.Properties.HYBRID_COOP_PVP=false;
+        Assert.That(HybridCoopRules.CanGroup(a,b), Is.False, "Bots keep their realm unless co-op is on.");
+        GS.ServerProperties.Properties.HYBRID_COOP_PVP=true;
+        Assert.That(HybridCoopRules.CanGroup(a,b), Is.True);
+        b.Position = 11000;
+        Assert.That(rules.IsAllowedToGroup(a,b,true), Is.False);
+        Assert.That(HybridCoopRules.CanGroup(a,b), Is.False);
+        b.Realm = a.Realm;
+        Assert.That(rules.IsAllowedToGroup(a,b,true), Is.True);
+        Assert.That(HybridCoopRules.CanGroup(a,b), Is.True);
     }
     [Test]
     public void PetTreeAndAreaAttacksRespectOwnerTeamsAndBothSidesOfSafeBoundary()
@@ -171,20 +187,19 @@ public class UT_HybridCoopRules
         Assert.That(rules.IsAllowedToAttack(bomb,b,true), Is.False, "Core immunity/GM/peace checks still gate attacks.");
     }
     [Test]
-    public void GuildOwnedKeepsProtectMembersAndAlliedGroupGuests()
+    public void KeepsBelongToRealmsAndProtectGroupGuests()
     {
         var region=Region(249); var owner=Player(region,eRealm.Albion); var guest=Player(region,eRealm.Midgard);
-        var guild=Guild("keep"); Join(owner,guild);
-        var keep=new TestKeep { DBKeep=new DbKeep { Region=249 }, Guild=guild, CurrentRegion=region };
+        var keep=new TestKeep { DBKeep=new DbKeep { Region=249, Realm=(byte)eRealm.Albion }, CurrentRegion=region };
         Assert.That(HybridCoopRules.KeepEnemy(keep,owner), Is.False);
         Assert.That(HybridCoopRules.KeepEnemy(keep,guest), Is.True);
+        Assert.That(HybridCoopRules.KeepEnemy(keep,Summon(guest)), Is.True, "A pet answers for its owner.");
         owner.Group=guest.Group=new Group(owner);
         typeof(Group).GetField("_groupMembers",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(owner.Group,new List<GameLiving>{owner,guest});
         Assert.That(HybridCoopRules.KeepEnemy(keep,guest), Is.False);
-        keep.Guild=null;
-        Assert.That(HybridCoopRules.KeepEnemy(keep,guest), Is.True);
+        Assert.That(HybridCoopRules.KeepEnemy(keep,guest,false), Is.True);
         keep.Portal=true;
-        Assert.That(HybridCoopRules.KeepEnemy(keep,guest), Is.False);
+        Assert.That(HybridCoopRules.KeepEnemy(keep,guest,false), Is.False);
     }
     [Test]
     public void CaptureByOwnedPetAssignsGuildAndPortalKeepsCannotBeCaptured()

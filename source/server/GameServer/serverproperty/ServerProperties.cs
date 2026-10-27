@@ -33,7 +33,7 @@ namespace DOL.GS.ServerProperties
 			AllCurrentProperties = propDict.ToDictionary(k => k.Key, v => v.Value.Item2.GetValue(null));
 		}
 
-        [ServerProperty("server", "hybrid_coop_pvp", "Cross-realm co-op with guild PvP in DF, battlegrounds and frontier zones. Requires restart.", false)]
+        [ServerProperty("server", "hybrid_coop_pvp", "Cross-realm co-op, with normal realm vs realm in DF, battlegrounds and frontier zones. Requires restart.", false)]
         public static bool HYBRID_COOP_PVP;
 
         [ServerProperty("spells", "spell_damage_pushback", "Damage delays player/gamebot casts instead of interrupting or imposing a casting lockout.", true)]

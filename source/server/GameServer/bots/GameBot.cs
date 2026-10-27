@@ -2584,7 +2584,7 @@ namespace DOL.GS
 
         public bool EnterPlayerLedGroup(GamePlayer leader)
         {
-            if (leader == null || leader.Realm != Realm)
+            if (!ServerRules.HybridCoopRules.CanGroup(leader, this))
                 return false;
 
             WatchLeaderRegionChanges(leader);

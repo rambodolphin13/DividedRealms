@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using DOL.Database;
 using DOL.GS.Housing;
 using DOL.GS.PacketHandler;
@@ -99,7 +100,7 @@ namespace DOL.GS.Scripts
         {
             if (!base.Interact(player) || GameRelic.IsPlayerCarryingRelic(player)) return false;
 
-            if (player.Realm != this.Realm && player.Client.Account.PrivLevel == 1) return false;
+            if (player.Realm != this.Realm && player.Client.Account.PrivLevel == 1 && !WelcomesVisitors) return false;
 
             TurnTo(player, 10000);
             
@@ -150,6 +151,12 @@ namespace DOL.GS.Scripts
                     break;
             }
             
+            if (WelcomesVisitors)
+            {
+                var capitals = Capitals.Where(capital => capital.Realm != Realm).Select(capital => $"[{capital.Name}]");
+                message += "\n\nWith the realms at peace, I can also send you to " + string.Join(" or ", capitals) + ".";
+            }
+
             message += "\n\n" +
                        "Perhaps you would like the challenge of the [Epic Dungeon]?";
             message += BattlegroundTeleportOptions.MenuLine;
@@ -174,8 +181,32 @@ namespace DOL.GS.Scripts
 
         }
 
+        /// <summary>The three capitals, and the realm whose teleport rows hold each one.</summary>
+        private static readonly (eRealm Realm, string Name)[] Capitals =
+        {
+            (eRealm.Albion, "Camelot"), (eRealm.Midgard, "Jordheim"), (eRealm.Hibernia, "Tir na Nog")
+        };
+
+        /// <summary>
+        /// In the co-op world (hybrid rules) a teleporter outside the war areas serves every realm and reaches
+        /// every capital; in the frontiers it stays its own realm's, as normal.
+        /// </summary>
+        protected bool WelcomesVisitors => ServerRules.HybridCoopRules.Enabled && !ServerRules.HybridCoopRules.IsWarLocation(this);
+
         protected virtual bool GetTeleportLocation(GamePlayer player, string text)
         {
+            if (WelcomesVisitors &&
+                Capitals.FirstOrDefault(capital => capital.Realm != Realm &&
+                    string.Equals(capital.Name, text, StringComparison.OrdinalIgnoreCase)) is { Name: not null } foreign)
+            {
+                DbTeleport capital = WorldMgr.GetTeleportLocation(foreign.Realm, String.Format("{0}:{1}", Type, foreign.Name));
+                if (capital != null)
+                    OnDestinationPicked(player, capital);
+                else
+                    SayTo(player, $"I can't reach {foreign.Name} right now.");
+                return false;
+            }
+
             switch (Realm) // Only offer locations based on what realm i am set at.
             {
                 case eRealm.Albion:

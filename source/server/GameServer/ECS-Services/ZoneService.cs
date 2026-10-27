@@ -74,6 +74,7 @@ namespace DOL.GS
                         {
                             currentZone.OnObjectRemovedFromZone();
                             destinationZone.OnObjectAddedToZone();
+                            ServerRules.HybridCoopRules.OnZoneCrossed(node.Value, currentZone, destinationZone);
                         }
                     }
                     else

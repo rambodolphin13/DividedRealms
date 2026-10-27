@@ -2,11 +2,16 @@ using System;
 using System.Linq;
 using DOL.AI.Brain;
 using DOL.GS.Keeps;
+using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 
 namespace DOL.GS.ServerRules
 {
-    /// <summary>Opt-in co-op world with explicitly bounded guild warfare.</summary>
+    /// <summary>
+    /// Opt-in co-op world (owner 2026-10-27): realms cooperate in the home lands, cities and dungeons, and fight
+    /// realm against realm, as normal, in the frontiers, Darkness Falls and the battlegrounds. A group stays one
+    /// team everywhere, so a mixed-realm group that walks into the frontier is not split.
+    /// </summary>
     public class HybridCoopRules : AbstractServerRules
     {
         private readonly NormalServerRules _normal = new();
@@ -45,21 +50,12 @@ namespace DOL.GS.ServerRules
             return null;
         }
         public static bool IsCombatant(GameLiving living) => living is GamePlayer or IGamePlayer;
-        public static Guild GuildOf(GameLiving living) => living switch
-        {
-            GamePlayer player => player.Guild,
-            IGamePlayer bot => bot.Guild,
-            _ => null
-        };
-        public static bool AlliedGuilds(Guild a, Guild b) => a != null && b != null &&
-            (ReferenceEquals(a, b) || !string.IsNullOrEmpty(a.GuildID) && a.GuildID == b.GuildID ||
-             a.alliance != null && a.alliance.Guilds.Contains(b) ||
-             b.alliance != null && b.alliance.Guilds.Contains(a));
         public static bool Friends(GameLiving a, GameLiving b)
         {
             if (a == b) return true;
-            if (a?.Group != null && a.Group == b?.Group) return true;
-            if (AlliedGuilds(GuildOf(a), GuildOf(b))) return true;
+            if (a == null || b == null) return false;
+            if (a.Realm != eRealm.None && a.Realm == b.Realm) return true;
+            if (a.Group != null && a.Group == b.Group) return true;
             if (a is GamePlayer pa && b is GamePlayer pb)
             {
                 var group = pa.TempProperties?.GetProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY);
@@ -77,13 +73,22 @@ namespace DOL.GS.ServerRules
         public static bool KeepEnemy(AbstractGameKeep keep, GameLiving living, bool includeGroup = true)
         {
             if (keep == null || keep.IsPortalKeep) return false;
-            if (keep.Guild == null) return true;
-            if (AlliedGuilds(keep.Guild, GuildOf(living))) return false;
-            if (includeGroup && living?.Group != null)
-                foreach (GameLiving member in living.Group.GetMembersInTheGroup())
-                    if (AlliedGuilds(keep.Guild, GuildOf(Controller(member)))) return false;
+            GameLiving owner = Controller(living);
+            if (owner == null || owner.Realm == keep.Realm) return false;
+            // A guest of another realm grouped with one of the keep's realm is that group's teammate.
+            if (includeGroup && owner.Group != null)
+                foreach (GameLiving member in owner.Group.GetMembersInTheGroup())
+                    if (Controller(member)?.Realm == keep.Realm) return false;
             return true;
         }
+
+        /// <summary>Realms group freely in the co-op lands; in a war area only within a realm, as normal.</summary>
+        public static bool CanGroupAcrossRealms(GameLiving a, GameLiving b) =>
+            !IsWarLocation(a) && !IsWarLocation(b);
+
+        /// <summary>The realm test for a gamebot joining a player's group, under whichever rules are running.</summary>
+        public static bool CanGroup(GameLiving a, GameLiving b) => a != null && b != null &&
+            (a.Realm == b.Realm || Enabled && CanGroupAcrossRealms(a, b));
 
         protected virtual bool ProtectedArea(GameLiving living) => living?.CurrentRegion != null &&
             living.CurrentRegion.GetAreasOfSpot(living).Any(area =>
@@ -154,15 +159,21 @@ namespace DOL.GS.ServerRules
             StartImmunityTimer(player, (player.LastDeathPvP ? Properties.TIMER_KILLED_BY_PLAYER : Properties.TIMER_KILLED_BY_MOB) * 1000);
         }
 
-        public override string RulesDescription() => "Co-op world / guild PvP in DF, battlegrounds and frontiers";
+        public override string RulesDescription() => "Co-op world / realm vs realm in DF, battlegrounds and frontiers";
         public override bool IsAllowedCharsInAllRealms(GameClient client) => true;
-        public override bool IsAllowedToGroup(GamePlayer a, GamePlayer b, bool quiet) => true;
+        public override bool IsAllowedToGroup(GamePlayer a, GamePlayer b, bool quiet)
+        {
+            if (a == null || b == null || a.Realm == b.Realm || CanGroupAcrossRealms(a, b)) return true;
+            if (!quiet) a.Out.SendMessage("You can't group with another realm in the frontier.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return false;
+        }
         public override bool IsAllowedToJoinGuild(GamePlayer player, Guild guild) => true;
         public override bool IsAllowedToTrade(GameLiving a, GameLiving b, bool quiet) => true;
         public override bool IsAllowedToUnderstand(GameLiving a, GamePlayer b) => true;
         public override byte GetColorHandling(GameClient client) => 2;
         public override byte GetLivingRealm(GamePlayer player, GameLiving target) => IsSameRealm(player, target, true)
-            ? (byte)player.Realm : IsCombatant(Controller(target)) ? (byte)((int)player.Realm % 3 + 1) : (byte)target.Realm;
+            ? (byte)player.Realm : IsCombatant(Controller(target)) && target.Realm == player.Realm
+                ? (byte)((int)player.Realm % 3 + 1) : (byte)target.Realm;
         public override bool IsAllowedToClaim(GamePlayer player, Region region) =>
             base.IsAllowedToClaim(player, region) && IsWarLocation(player) && !ProtectedArea(player);
         public override void ResetKeep(GuardLord lord, GameObject killer)
@@ -180,6 +191,44 @@ namespace DOL.GS.ServerRules
             if (winner is GamePlayer player && player.Guild != null &&
                 player.Guild.ClaimedKeeps.Count < Properties.GUILDS_CLAIM_LIMIT)
                 keep.Claim(player);
+        }
+
+        /// <summary>
+        /// The client keeps a living's realm, name and title from when it was created, and the old frontier zones
+        /// share their regions with the home lands, so crossing between them changes nothing on screen by itself.
+        /// When a player, gamebot or pet crosses that border, rebuild the nameplates that depend on it.
+        /// </summary>
+        public static void OnZoneCrossed(GameObject obj, Zone from, Zone to)
+        {
+            if (!Enabled || obj is not GameLiving living || from == null || to == null || from.ZoneRegion != to.ZoneRegion ||
+                IsWarLocation(from.ZoneRegion.ID, from.ID) == IsWarLocation(to.ZoneRegion.ID, to.ID))
+                return;
+            GameLiving owner = Controller(living);
+            if (!IsCombatant(owner)) return;
+            foreach (GamePlayer viewer in living.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                Recreate(viewer, living);
+            if (living is not GamePlayer player) return;
+            foreach (GamePlayer other in player.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                Recreate(player, other);
+            foreach (GameNPC npc in player.GetNPCsInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                if (IsCombatant(Controller(npc)))
+                    Recreate(player, npc);
+        }
+
+        private static void Recreate(GamePlayer viewer, GameLiving target)
+        {
+            // Teammates look the same on both sides of the border.
+            if (viewer == target || viewer.Client?.ClientState != GameClient.eClientState.Playing ||
+                Friends(viewer, Controller(target)) || !target.IsVisibleTo(viewer))
+                return;
+            viewer.Out.SendObjectRemove(target);
+            if (target is GamePlayer player)
+            {
+                viewer.Out.SendPlayerCreate(player);
+                viewer.Out.SendLivingEquipmentUpdate(player);
+            }
+            else
+                ClientService.CreateObjectForPlayer(viewer, target);
         }
     }
 }
