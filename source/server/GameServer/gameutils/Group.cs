@@ -486,7 +486,7 @@ namespace DOL.GS
 
             UpdateMembers([oldLeader, living], true, true);
             UpdateGroupWindow();
-            SendMessageToGroupMembers($"{Leader.Name} is the new group leader.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            SendMessageToGroupMembers($"{living.Name} is the new group leader.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
             return true;
         }
 
