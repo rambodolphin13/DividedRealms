@@ -67,6 +67,17 @@ The newest version is first. For the full detail of every earlier update, see
   door stayed shut. The server log now also names any door it doesn't know (DOOR_NOT_IN_DATABASE), so missing
   ones can be found and added.
 
+**Playing with friends**
+- JOIN FRIEND in the launcher (or `Join Friend.cmd`) starts your client against a friend's server over Tailscale or
+  your home network, without starting your own server or touching your save. It remembers the address and account,
+  and the password too if you ask (encrypted for your Windows user). Works with the original and the modern 1.130
+  client; not yet with the new client. (From the stefanrows/OfflineDAoC fork.)
+- HOST FOR FRIENDS lets friends join your server: it opens the server to Tailscale and your home network (never your
+  router), shows the address to send, and adds Windows Firewall rules for this game's server only, after Windows
+  asks you. Turning it off puts the server back on this PC only. See [docs/PLAY-WITH-FRIENDS.md](docs/PLAY-WITH-FRIENDS.md).
+- A friend's characters live in the host's world for now. Taking your own character along and back is planned:
+  [docs/CHARACTER-PASSPORT.md](docs/CHARACTER-PASSPORT.md).
+
 **The new client (0.38c)**
 - A monster or NPC that dies stops attacking at once. It sometimes went on swinging for a second or two over its
   death, when a blow of its own arrived just after the killing blow; the original client never animates a dead body.
@@ -134,6 +145,8 @@ The newest version is first. For the full detail of every earlier update, see
   fork for the fix for groups waiting on members that keep dying on the way to their meetup, and for three new-client
   fixes: the FACE / FOLLOW / STICK buttons, the server's target changes (/target, /assist) and abilities on the
   quickbar.
+- Thanks to the [stefanrows/OfflineDAoC](https://github.com/stefanrows/OfflineDAoC) fork for Join Friend: the client-only
+  join window, its remembered details and the remote-session diagnostics.
 
 ## 0.37 / 0.37b / 0.37c — 2026-10-18
 

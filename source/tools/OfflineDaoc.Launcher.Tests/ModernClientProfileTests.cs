@@ -67,6 +67,25 @@ public sealed class ModernClientProfileTests
         Assert.Throws<InvalidDataException>(() => ModernClientProfile.Load(root));
     }
 
+    [Test]
+    public void HostForFriendsServerStillValidatesAndJoinTargetsTheFriend()
+    {
+        var profile = WriteProfile();
+        HostForFriends.Enable(root);
+        Assert.That(ModernClientProfile.Load(root), Is.Not.Null);
+        var info = profile.CreateStartInfo("guest", "pw", "100.101.102.103");
+        Assert.That(info.ArgumentList[1], Is.EqualTo("100.101.102.103:10330"));
+    }
+
+    [Test]
+    public void ServerOnAnotherAddressIsRejected()
+    {
+        WriteProfile();
+        var config = Path.Combine(root, "server", "config", "serverconfig.xml");
+        File.WriteAllText(config, File.ReadAllText(config).Replace("127.0.0.1", "192.168.1.5"));
+        Assert.Throws<InvalidDataException>(() => ModernClientProfile.Load(root));
+    }
+
     private ModernClientProfile WriteProfile()
     {
         Directory.CreateDirectory(Path.Combine(root, "server", "config"));

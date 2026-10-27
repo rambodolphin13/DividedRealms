@@ -42,6 +42,21 @@ internal static class Program
             return;
         }
         ApplicationConfiguration.Initialize();
+        if (args.Length == 1 && args[0] == "--join")
+        {
+            // Join Friend.cmd: client only. No dashboard, no local server, no local save.
+            try
+            {
+                string root = MainForm.ServerRootFor(AppContext.BaseDirectory);
+                ModernClientProfile? modern = MainForm.IsNewClientFolder(AppContext.BaseDirectory) ? null : ModernClientProfile.Load(root);
+                Application.Run(new JoinFriendForm(root, modern));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Join Friend could not start", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            return;
+        }
         try { Application.Run(new MainForm()); }
         catch (Exception ex)
         {

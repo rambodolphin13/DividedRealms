@@ -135,6 +135,8 @@ internal sealed partial class MainForm : Form
     private readonly Button _stopButton;
     private readonly Button _playButton;
     private readonly Button _editorButton;
+    private readonly Button _joinFriendButton;
+    private readonly Button _hostFriendsButton;
     private Process? _serverProcess;
     private RollingServerLog? _serverLog;
     private bool _stoppingServer;
@@ -211,10 +213,14 @@ internal sealed partial class MainForm : Form
         _stopButton = ActionButton("STOP SERVER", Color.FromArgb(151, 67, 57));
         _playButton = ActionButton("ENTER REALM", Color.FromArgb(65, 94, 145));
         _editorButton = ActionButton("WORLD EDITOR", Color.FromArgb(92, 84, 128));
+        _joinFriendButton = ActionButton("JOIN FRIEND", Color.FromArgb(104, 111, 77));
+        _hostFriendsButton = ActionButton("HOST FOR FRIENDS", Color.FromArgb(150, 112, 52));
         _startButton.Click += (_, _) => StartServer();
         _stopButton.Click += async (_, _) => await StopServerAsync();
         _playButton.Click += (_, _) => LaunchClient();
         _editorButton.Click += (_, _) => OpenWorldEditor();
+        _joinFriendButton.Click += (_, _) => OpenJoinFriend();
+        _hostFriendsButton.Click += (_, _) => OpenHostForFriends();
 
         rootLayout.Controls.Add(BuildHeader(), 0, 0);
         rootLayout.Controls.Add(BuildCards(), 0, 1);
@@ -355,7 +361,8 @@ internal sealed partial class MainForm : Form
         var banner = new FantasyBanner { Dock = DockStyle.Fill, Margin = new Padding(2, 2, 2, 3) };
         var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, BackColor = Color.Transparent, Padding = new Padding(12, 7, 10, 6) };
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
+        // Two button columns: the server on the left; the world editor and playing with friends on the right.
+        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 284));
 
         var titlePanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
         titlePanel.Controls.Add(new RealmShieldPicture
@@ -389,8 +396,8 @@ internal sealed partial class MainForm : Form
         });
         header.Controls.Add(titlePanel, 0, 0);
 
-        var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, Padding = new Padding(3, 5, 0, 0), BackColor = Color.Transparent };
-        foreach (var button in new[] { _startButton, _stopButton, _playButton, _editorButton })
+        var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = true, Padding = new Padding(3, 5, 0, 0), BackColor = Color.Transparent };
+        foreach (var button in new[] { _startButton, _stopButton, _playButton, _editorButton, _joinFriendButton, _hostFriendsButton })
         {
             button.Width = 132;
             button.Height = 24;
@@ -400,11 +407,34 @@ internal sealed partial class MainForm : Form
         actions.Controls.Add(_stopButton);
         actions.Controls.Add(_playButton);
         actions.Controls.Add(_editorButton);
+        actions.Controls.Add(_joinFriendButton);
+        actions.Controls.Add(_hostFriendsButton);
+        if (_newClient)
+        {
+            // Join Friend starts the original or modern client; the new client is not supported yet.
+            _joinFriendButton.Enabled = false;
+            SetToolTip(_joinFriendButton, "Join Friend is not available for the new client yet. Use the original client's launcher.");
+        }
+        else
+            SetToolTip(_joinFriendButton, "Play in a friend's world over Tailscale or your home network. Your own server and save are not touched.");
+        SetToolTip(_hostFriendsButton, "Let friends join this game's server over Tailscale or your home network, and set up the firewall for it.");
         SetToolTip(_editorButton, "World Workshop: edit the world, NPCs, items, merchants and server settings of this game in your browser. "
             + "Close the game and stop the server before saving changes.");
         header.Controls.Add(actions, 1, 0);
         banner.Controls.Add(header);
         return banner;
+    }
+
+    private void OpenJoinFriend()
+    {
+        using var form = new JoinFriendForm(_root, _modernClient);
+        form.ShowDialog(this);
+    }
+
+    private void OpenHostForFriends()
+    {
+        using var form = new HostForFriendsForm(_root, IsServerRunning);
+        form.ShowDialog(this);
     }
 
     // World Workshop (the world / item / data editor) installed beside the server: runtime\world-workshop.
@@ -3051,51 +3081,7 @@ internal sealed partial class MainForm : Form
             _serverReadinessPoll.Stop();
     }
 
-    private void EnsureBorderlessFullscreen()
-    {
-        // Use this installation's own client profile (paths.dat settings=), never another copy's preferences.
-        string profile = "OfflineDAoC036";
-        string pathsFile = Path.Combine(_clientDirectory, "paths.dat");
-        if (File.Exists(pathsFile))
-        {
-            string? value = File.ReadLines(pathsFile).FirstOrDefault(line => line.TrimStart().StartsWith("settings=", StringComparison.OrdinalIgnoreCase));
-            if (value != null)
-            {
-                string candidate = value[(value.IndexOf('=') + 1)..].Trim();
-                if (candidate.Length > 0 && candidate.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-')) profile = candidate;
-            }
-        }
-        var profileDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Electronic Arts", "Dark Age of Camelot", profile);
-        Directory.CreateDirectory(profileDirectory);
-        var path = Path.Combine(profileDirectory, "user.dat");
-        var lines = File.Exists(path) ? File.ReadAllLines(path).ToList() : new List<string>();
-        var mainIndex = lines.FindIndex(line => line.Trim().Equals("[main]", StringComparison.OrdinalIgnoreCase));
-        if (mainIndex < 0)
-        {
-            if (lines.Count > 0 && lines[^1].Length != 0) lines.Add(string.Empty);
-            lines.Add("[main]");
-            lines.Add("fullscreen_windowed=1");
-        }
-        else
-        {
-            var sectionEnd = lines.FindIndex(mainIndex + 1, line => line.TrimStart().StartsWith('['));
-            if (sectionEnd < 0) sectionEnd = lines.Count;
-            var settingIndex = -1;
-            for (var index = mainIndex + 1; index < sectionEnd; index++)
-            {
-                if (lines[index].TrimStart().StartsWith("fullscreen_windowed=", StringComparison.OrdinalIgnoreCase))
-                {
-                    settingIndex = index;
-                    break;
-                }
-            }
-            if (settingIndex >= 0) lines[settingIndex] = "fullscreen_windowed=1";
-            else lines.Insert(sectionEnd, "fullscreen_windowed=1");
-        }
-        File.WriteAllLines(path, lines);
-    }
+    private void EnsureBorderlessFullscreen() => ClientDisplayPreferences.EnsureBorderlessFullscreen(_clientDirectory);
 
     private Process? FindExactServerProcess()
     {

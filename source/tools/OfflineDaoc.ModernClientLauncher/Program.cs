@@ -66,7 +66,8 @@ internal static class Program
         // Parse the value, not a substring: a path sharing the prefix is not our test database.
         var connection = new System.Data.Common.DbConnectionStringBuilder { ConnectionString = Value("DBConnectionString") };
         string configuredDatabase = connection.TryGetValue("Data Source", out object? value) ? Convert.ToString(value) ?? "" : "";
-        if (Value("Port") != "10330" || Value("IP") != "127.0.0.1" || Value("DBType") != "SQLITE" ||
+        // 0.0.0.0: the main launcher's Host for Friends; the test client still connects on loopback.
+        if (Value("Port") != "10330" || Value("IP") is not ("127.0.0.1" or "0.0.0.0") || Value("DBType") != "SQLITE" ||
             !string.Equals(Path.GetFullPath(configuredDatabase), database, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Configuration does not point to the isolated test server/database.");
         if (!File.Exists(database) || !File.Exists(Path.Combine(ServerRoot, "CoreServer.exe")))

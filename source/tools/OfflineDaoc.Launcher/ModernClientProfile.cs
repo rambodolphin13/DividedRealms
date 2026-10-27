@@ -43,19 +43,20 @@ public sealed record ModernClientProfile
         var connection = new DbConnectionStringBuilder { ConnectionString = server.Element("DBConnectionString")?.Value ?? "" };
         // A relative Data Source (the packages' ../data/opendaoc.sqlite3.db) is relative to the server folder.
         string database = connection.TryGetValue("Data Source", out object? value) ? Convert.ToString(value) ?? "" : "";
-        if (server.Element("IP")?.Value != "127.0.0.1" || server.Element("Port")?.Value != Port.ToString() ||
+        if (!HostForFriends.IsAllowedListenAddress(server.Element("IP")?.Value) || server.Element("Port")?.Value != Port.ToString() ||
             server.Element("DBType")?.Value != "SQLITE" ||
             !string.Equals(Path.GetFullPath(database, Path.GetFullPath(Path.Combine(runtime, "server"))),
                 Path.GetFullPath(Path.Combine(runtime, "data", "opendaoc.sqlite3.db")), StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Modern test profile must use its own SQLite database and loopback endpoint.");
+            throw new InvalidDataException("Modern test profile must use its own SQLite database and loopback endpoint (or Host for Friends).");
     }
 
-    public ProcessStartInfo CreateStartInfo(string account, string password)
+    // host: a friend's server address (Join Friend); null starts against this install's own server.
+    public ProcessStartInfo CreateStartInfo(string account, string password, string? host = null)
     {
         Verify(Path.Combine(ClientDirectory, "game.dll"), GameSha256);
         Verify(ConnectorPath, ConnectorSha256);
         var info = new ProcessStartInfo(ConnectorPath) { WorkingDirectory = ClientDirectory, UseShellExecute = false };
-        foreach (string argument in new[] { Path.Combine(ClientDirectory, "game.dll"), Endpoint, account, password })
+        foreach (string argument in new[] { Path.Combine(ClientDirectory, "game.dll"), host == null ? Endpoint : $"{host}:{Port}", account, password })
             info.ArgumentList.Add(argument);
         return info;
     }
