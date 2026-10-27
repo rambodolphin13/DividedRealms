@@ -9,6 +9,7 @@ using DOL.GS.Effects;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
 using DOL.GS.RealmAbilities;
+using DOL.GS.PropertyCalc;
 using DOL.GS.ServerProperties;
 using DOL.GS.SkillHandler;
 using DOL.GS.Styles;
@@ -382,7 +383,7 @@ namespace DOL.GS
                         if (Properties.ALLOW_OLD_ARCHERY)
                             speed *= 1.0 - owner.GetModified(eProperty.ArcherySpeed) * 0.01;
                         else
-                            speed *= 1.0 - owner.GetModified(eProperty.CastingSpeed) * 0.01;
+                            speed *= 1.0 - (owner.GetModified(eProperty.CastingSpeed) + ModernItemBonusRules.BowSpeedAlias(owner)) * 0.01; // Modern rules add item archery speed.
                     }
                     else
                         speed *= owner.GetModified(eProperty.MeleeSpeed) * 0.01;
@@ -1350,7 +1351,7 @@ namespace DOL.GS
                 return 1 + owner.GetModified(eProperty.MeleeDamage) * 0.01;
 
             if (weapon.Item_Type is Slot.RANGED && (eObjectType) weapon.Object_Type is eObjectType.Longbow or eObjectType.RecurvedBow or eObjectType.CompositeBow)
-                return 1 + owner.GetModified(eProperty.RangedDamage) * 0.01;
+                return 1 + (owner.GetModified(eProperty.RangedDamage) + ModernItemBonusRules.BowDamageAlias(owner)) * 0.01; // Modern rules add item spell damage.
 
             return 1.0;
         }
@@ -1471,7 +1472,7 @@ namespace DOL.GS
 
         public static double CalculateTargetConversionFactor(GameLiving target)
         {
-            if (target is not GamePlayer)
+            if (target is not GamePlayer and not IGamePlayer)
                 return 1.0;
 
             double conversionMod = 1 - target.GetModified(eProperty.Conversion) * 0.01;
@@ -1480,8 +1481,10 @@ namespace DOL.GS
 
         public static void ApplyTargetConversionRegen(GameLiving target, int conversionAmount)
         {
-            if (target is not GamePlayer playerTarget)
+            if (target is not GamePlayer and not IGamePlayer)
                 return;
+
+            GamePlayer playerTarget = target as GamePlayer;
 
             int powerConversion = conversionAmount;
             int enduranceConversion = conversionAmount;
@@ -1492,10 +1495,10 @@ namespace DOL.GS
             if (target.Endurance + conversionAmount > target.MaxEndurance)
                 enduranceConversion = target.MaxEndurance - target.Endurance;
 
-            if (powerConversion > 0)
+            if (powerConversion > 0 && playerTarget != null)
                 playerTarget.Out.SendMessage(string.Format(LanguageMgr.GetTranslation(playerTarget.Client.Account.Language, "GameLiving.AttackData.GainPowerPoints"), powerConversion), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 
-            if (enduranceConversion > 0)
+            if (enduranceConversion > 0 && playerTarget != null)
                 playerTarget.Out.SendMessage(string.Format(LanguageMgr.GetTranslation(playerTarget.Client.Account.Language, "GameLiving.AttackData.GainEndurancePoints"), enduranceConversion), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 
             target.Mana = Math.Min(target.MaxMana, target.Mana + powerConversion);

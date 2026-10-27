@@ -1466,6 +1466,11 @@ namespace DOL.GS
 			m_propertyNames.Add(eProperty.MythicalSafeFall, "Mythical Safe Fall");
 			m_propertyNames.Add(eProperty.MythicalDiscumbering, "Mythical Discumbering");
 			m_propertyNames.Add(eProperty.MythicalCoin, "Mythical Coin");
+			m_propertyNames.Add(eProperty.MythicalHealthRegen, "Mythical Health Regen");
+			m_propertyNames.Add(eProperty.MythicalPowerRegen, "Mythical Power Regen");
+			m_propertyNames.Add(eProperty.MythicalEnduranceRegen, "Mythical Endurance Regen");
+			m_propertyNames.Add(eProperty.MythicalCrowdControlReduction, "Mythical Crowd Control Reduction");
+			m_propertyNames.Add(eProperty.MythicalPhysicalDefense, "Mythical Physical Defense");
 			m_propertyNames.Add(eProperty.SpellLevel, "Spell Focus");
 			//Eden - special artifacts bonus
 			m_propertyNames.Add(eProperty.Conversion, "Conversion");

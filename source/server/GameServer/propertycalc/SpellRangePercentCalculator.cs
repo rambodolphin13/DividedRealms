@@ -58,7 +58,7 @@ namespace DOL.GS.PropertyCalc
 
         public override int CalcValueFromItems(GameLiving living, eProperty property)
         {
-            return Math.Min(10, living.ItemBonus[property]);
+            return Math.Min(ModernItemBonusRules.PercentCap10(living), living.ItemBonus[property]);
         }
 	}
 }

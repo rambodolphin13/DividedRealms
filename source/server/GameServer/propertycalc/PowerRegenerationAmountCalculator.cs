@@ -34,6 +34,7 @@ namespace DOL.GS.PropertyCalc
                 debuff = -debuff;
 
             regen += living.BaseBuffBonusCategory[property] + living.AbilityBonus[property] + living.ItemBonus[property] - debuff;
+            regen += ModernItemBonusRules.MythicalRegen(living, property);
 
             bool listCasterBelowHalf = living switch
             {

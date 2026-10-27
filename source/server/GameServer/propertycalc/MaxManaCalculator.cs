@@ -60,8 +60,8 @@ namespace DOL.GS.PropertyCalc
 
         private static int ApplyBonuses(GameLiving living, int manaBase)
         {
-            int flatItemBonusCap = living.Level / 2 + 1;
-            int poolItemBonusCap = living.Level / 2 + Math.Min(living.ItemBonus[eProperty.PowerPoolCapBonus], living.Level);
+            int flatItemBonusCap = ModernItemBonusRules.FlatPowerCap(living);
+            int poolItemBonusCap = living.Level / 2 + Math.Min(living.ItemBonus[eProperty.PowerPoolCapBonus], ModernItemBonusRules.PowerPoolCapIncreaseCap(living));
             int flatItemBonus = Math.Min(flatItemBonusCap, living.ItemBonus[eProperty.MaxMana]); // Pre-ToA flat bonus.
             int poolItemBonus = Math.Min(poolItemBonusCap, living.ItemBonus[eProperty.PowerPool]); // ToA bonus.
             int flatAbilityBonus = living.AbilityBonus[eProperty.MaxMana] + StormforgedInnate.Bonus(living, eProperty.MaxMana); // New Ethereal Bond.
@@ -69,6 +69,16 @@ namespace DOL.GS.PropertyCalc
 
             double result = manaBase;
             result *= 1 + poolAbilityBonus * 0.01;
+
+            // Modern rules: Ethereal Bond's flat power is not amplified by the item power pool percentage.
+            if (ModernItemBonusRules.Enabled)
+            {
+                result += flatItemBonus;
+                result *= 1 + poolItemBonus * 0.01;
+                result += flatAbilityBonus;
+                return (int) result;
+            }
+
             result += flatItemBonus + flatAbilityBonus;
             result *= 1 + poolItemBonus * 0.01;
             return (int) result;

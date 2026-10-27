@@ -42,7 +42,8 @@ namespace DOL.GS.PropertyCalc
 				+living.BaseBuffBonusCategory[property]
 				+living.SpecBuffBonusCategory[property]
 				-living.DebuffCategory[property]
-				+living.OtherBonus[property]);
+				+living.OtherBonus[property]
+				+ModernItemBonusRules.ItemDps(living));
 		}
 	}
 }

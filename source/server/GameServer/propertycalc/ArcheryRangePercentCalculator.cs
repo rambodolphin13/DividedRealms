@@ -17,7 +17,7 @@ namespace DOL.GS.PropertyCalc
         public override int CalcValue(GameLiving living, eProperty property)
         {
             int debuff = living.DebuffCategory[property];
-            int item = Math.Max(0, 100 - debuff + Math.Min(10, living.ItemBonus[property]));// http://www.camelotherald.com/more/1325.shtml
+            int item = Math.Max(0, 100 - debuff + Math.Min(ModernItemBonusRules.PercentCap10(living), living.ItemBonus[property]));// http://www.camelotherald.com/more/1325.shtml
             int ability = 0;
 
             if (living.rangeAttackComponent.RangedAttackType is eRangedAttackType.Long)

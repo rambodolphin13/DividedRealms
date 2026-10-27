@@ -306,6 +306,13 @@
         ArcaneSyphon = 254,
         LivingEffectiveness = 255,
         PhysicalAbsorption = 256,
-        MaxProperty = 256
+
+        // Modern (1.126+) mythical bonuses. Only read when `modern_item_bonuses` is on.
+        MythicalHealthRegen = 257,
+        MythicalPowerRegen = 258,
+        MythicalEnduranceRegen = 259,
+        MythicalCrowdControlReduction = 260,
+        MythicalPhysicalDefense = 261,
+        MaxProperty = 261
     }
 }

@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using DOL.Database;
+using DOL.GS.PropertyCalc;
 using DOL.GS.Styles;
 using DOL.Language;
 
@@ -251,61 +252,39 @@ namespace DOL.GS
             info.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerBonusesListRequestHandler.HandlePacket.Special"));
 
             //This is an Array of the bonuses that show up in the Bonus Snapshot on Live, the only ones that really need to be there.
-            int[] bonusToBeDisplayed = [9, 10, 150, 151, 153, 154, 155, 173, 174, 179, 180, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 210, 247, 248, 251, 252, 253, 254];
-            foreach (eProperty property in Enum.GetValues<eProperty>())
+            // 230 (DPS) and 257-261 (modern mythical bonuses) only show their effect with `modern_item_bonuses` on.
+            int[] bonusToBeDisplayed = [9, 10, 150, 151, 153, 154, 155, 173, 174, 179, 180, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 210, 230, 247, 248, 251, 252, 253, 254, 257, 258, 259, 260, 261];
+            // Walk the list, not the enum: aliases such as ToABonus_First and MaxProperty would list a bonus twice.
+            foreach (int bonusId in bonusToBeDisplayed)
             {
-                if ((player.ItemBonus[property] > 0) && (Array.BinarySearch(bonusToBeDisplayed, (int) property) >= 0)) //Tiny edit here to add the binary serach to weed out the non essential bonuses
+                eProperty property = (eProperty) bonusId;
+
+                if (player.ItemBonus[property] > 0)
                 {
                     if (player.ItemBonus[property] != 0)
                     {
                         //LIFEFLIGHT Add, to correct power pool from showing too much
                         //This is where we need to correct the display, make it cut off at the cap if
                         //Same with hits and hits cap
+                        // Show the effective bonus, cut off at the same caps the calculators use.
                         if (property == eProperty.PowerPool)
                         {
-                            int powercap = player.ItemBonus[eProperty.PowerPoolCapBonus];
-                            if (powercap > 50)
-                            {
-                                powercap = 50;
-                            }
-                            int powerpool = player.ItemBonus[eProperty.PowerPool];
-                            if (powerpool > 26)
-                                powerpool = 26;
-                            if (powerpool > powercap + 25)
-                            {
-                                int tempbonus = powercap + 25;
-                                info.Add(ItemBonusDescription(tempbonus, (int) property));
-                            }
-                            else
-                            {
-                                int tempbonus = powerpool;
-                                info.Add(ItemBonusDescription(tempbonus, (int) property));
-                            }
-
-
+                            int powerCapIncrease = Math.Min(player.ItemBonus[eProperty.PowerPoolCapBonus], ModernItemBonusRules.PowerPoolCapIncreaseCap(player));
+                            int powerPool = Math.Min(player.ItemBonus[eProperty.PowerPool], player.Level / 2 + powerCapIncrease);
+                            info.Add(ItemBonusDescription(player, powerPool, (int) property));
                         }
                         else if (property == eProperty.MaxHealth)
                         {
-                            int hitscap = player.ItemBonus[eProperty.MaxHealthCapBonus];
-                            if (hitscap > 200)
-                            {
-                                hitscap = 200;
-                            }
-                            int hits = player.ItemBonus[eProperty.MaxHealth];
-                            if (hits > hitscap + 200)
-                            {
-                                int tempbonus = hitscap + 200;
-                                info.Add(ItemBonusDescription(tempbonus, (int) property));
-                            }
-                            else
-                            {
-                                int tempbonus = hits;
-                                info.Add(ItemBonusDescription(tempbonus, (int) property));
-                            }
+                            int hitsCap = MaxHealthCalculator.GetItemBonusCap(player) + MaxHealthCalculator.GetItemBonusCapIncrease(player);
+                            info.Add(ItemBonusDescription(player, Math.Min(player.ItemBonus[eProperty.MaxHealth], hitsCap), (int) property));
                         }
+                        else if (property == eProperty.MaxHealthCapBonus)
+                            info.Add(ItemBonusDescription(player, MaxHealthCalculator.GetItemBonusCapIncrease(player), (int) property));
+                        else if (property >= eProperty.MythicalHealthRegen && !ModernItemBonusRules.Enabled)
+                            continue;
                         else
                         {
-                            info.Add(ItemBonusDescription(player.ItemBonus[property], (int) property));
+                            info.Add(ItemBonusDescription(player, player.ItemBonus[property], (int) property));
                         }
                     }
                 }
@@ -339,10 +318,11 @@ namespace DOL.GS
         /// <param name="iBonus"></param>
         /// <param name="iBonusType"></param>
         /// <returns></returns>
-        private static string ItemBonusDescription(int iBonus, int iBonusType)
+        private static string ItemBonusDescription(GamePlayer player, int iBonus, int iBonusType)
         {
             //This displays the bonuses just like the Live servers. there is a check against the pts/% differences
-            string str = ((iBonusType == 9) | (iBonusType == 150) | (iBonusType == 210) | (iBonusType == 10) | (iBonusType == 151) | (iBonusType == 186)) ? "pts of " : "% to ";  //150(Health Regen) 151(PowerRegen) and 186(Style reductions) need the prefix of "pts of " to be correct
+            string str = ((iBonusType == 9) | (iBonusType == 150) | (iBonusType == 210) | (iBonusType == 10) | (iBonusType == 151) | (iBonusType == 186)
+                | (iBonusType == 230) | (iBonusType == (int) eProperty.MythicalHealthRegen) | (iBonusType == (int) eProperty.MythicalPowerRegen) | (iBonusType == (int) eProperty.MythicalEnduranceRegen)) ? "pts of " : "% to ";  //150(Health Regen) 151(PowerRegen) and 186(Style reductions) need the prefix of "pts of " to be correct
 
             //we need to only display the effective bonus, cut off caps
 
@@ -355,8 +335,7 @@ namespace DOL.GS
                 || iBonusType == (int)eProperty.MeleeDamage || iBonusType == (int)eProperty.RangedDamage || iBonusType == (int)eProperty.ArcherySpeed
                 || iBonusType == (int)eProperty.CastingSpeed || iBonusType == (int)eProperty.ResistPierce || iBonusType == (int)eProperty.SpellDamage || iBonusType == (int)eProperty.StyleDamage)
             {
-                if (iBonus > 10)
-                    iBonus = 10;
+                iBonus = Math.Min(iBonus, ModernItemBonusRules.PercentCap10(player));
             }
 
             //cap at 25 with no chance of going over
@@ -364,29 +343,18 @@ namespace DOL.GS
             //SpellDuration
             if (iBonusType == (int)eProperty.DebuffEffectiveness || iBonusType == (int)eProperty.BuffEffectiveness || iBonusType == (int)eProperty.HealingEffectiveness || iBonusType == (int)eProperty.SpellDuration || iBonusType == (int)eProperty.ArcaneSyphon)
             {
-                if (iBonus > 25)
-                    iBonus = 25;
+                iBonus = Math.Min(iBonus, ModernItemBonusRules.PercentCap25(player));
             }
-            //hitscap, caps at 200
-            if (iBonusType == (int)eProperty.MaxHealthCapBonus)
+            // Hits and power pool are capped by the caller, which knows the player's level.
+            // Modern mythical bonuses, shown only when they do something.
+            if (ModernItemBonusRules.Enabled)
             {
-                if (iBonus > 200)
-                    iBonus = 200;
-            }
-            //cap at 25, but can get overcaps
-            //PowerPool
-            //This will need to be done in the method that calls this method.
-            //if (iBonusType == (int)eProperty.PowerPool)
-            //{
-            //    if (iBonus > 25)
-            //        iBonus = 50;
-            //}
-            //caps at 50
-            //PowerPoolCapBonus
-            if (iBonusType == (int)eProperty.PowerPoolCapBonus)
-            {
-                if (iBonus > 50)
-                    iBonus = 50;
+                if (iBonusType == (int)eProperty.DPS || iBonusType == (int)eProperty.Conversion)
+                    iBonus = Math.Min(iBonus, 10);
+                else if (iBonusType == (int)eProperty.MythicalHealthRegen || iBonusType == (int)eProperty.MythicalPowerRegen || iBonusType == (int)eProperty.MythicalEnduranceRegen)
+                    iBonus = Math.Min(iBonus, ModernItemBonusRules.MythicalRegenCap);
+                else if (iBonusType == (int)eProperty.MythicalCrowdControlReduction)
+                    iBonus = Math.Min(iBonus, ModernItemBonusRules.MythicalCrowdControlCap);
             }
 
             return string.Format("+{0}{1}{2}", iBonus, str, SkillBase.GetPropertyName(((eProperty)iBonusType)));

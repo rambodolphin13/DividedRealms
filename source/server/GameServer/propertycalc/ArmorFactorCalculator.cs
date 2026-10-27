@@ -34,6 +34,9 @@ namespace DOL.GS.PropertyCalc
                     return CalculateLivingArmorFactor(living, property, 12.5, 175);
                 case GuardLord:
                     return CalculateLivingArmorFactor(living, property, 12.5, 134);
+                case IGamePlayer:
+                    // NPC-backed bots keep their NPC base and add their gear's AF bonus like players.
+                    return CalculateLivingArmorFactor(living, property, 12.5, 200) + Math.Min(living.Level, living.ItemBonus[property]);
                 default:
                     return CalculateLivingArmorFactor(living, property, 12.5, 200);
             }

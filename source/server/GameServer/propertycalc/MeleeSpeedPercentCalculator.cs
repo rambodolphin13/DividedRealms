@@ -47,13 +47,17 @@ namespace DOL.GS.PropertyCalc
 					buffs = buffs >> 1;
 				buffs -= debuff;
 
+				// NPC-backed bots also wear real gear.
+				if (living is IGamePlayer)
+					buffs += Math.Min(ModernItemBonusRules.PercentCap10(living), living.ItemBonus[property]);
+
 				return 100 - buffs;
 			}
 
 			return Math.Max(1, 100
 				-living.BaseBuffBonusCategory[property] // less is faster = buff
 				+Math.Abs(living.DebuffCategory[property]) // more is slower = debuff
-				-Math.Min(10, living.ItemBonus[property])) // http://www.camelotherald.com/more/1325.shtml
+				-Math.Min(ModernItemBonusRules.PercentCap10(living), living.ItemBonus[property])) // http://www.camelotherald.com/more/1325.shtml
 				- living.AbilityBonus[property] ;
 		}
 	}

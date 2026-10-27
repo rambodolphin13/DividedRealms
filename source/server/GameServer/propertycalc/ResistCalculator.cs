@@ -92,10 +92,11 @@ namespace DOL.GS.PropertyCalc
             else
                 livingToCheck = living;
 
-            if (livingToCheck is GameNPC && living is not NecromancerPet { Owner: GamePlayer or IGamePlayer })
+            // NPC-backed bots wear real gear and get its resists, like players.
+            if (livingToCheck is GameNPC && livingToCheck is not IGamePlayer && living is not NecromancerPet { Owner: GamePlayer or IGamePlayer })
                 return 0;
 
-            int itemBonus = livingToCheck.ItemBonus[property];
+            int itemBonus = livingToCheck.ItemBonus[property] + ModernItemBonusRules.MythicalPhysicalDefense(livingToCheck, property);
 
             // Item bonus cap and cap increase from Mythirians.
             int itemBonusCap = livingToCheck.Level / 2 + 1;
@@ -106,14 +107,16 @@ namespace DOL.GS.PropertyCalc
 
         /// <summary>
         /// Returns the resist cap increase for the given living and the given
-        /// resist type. It is hardcapped at 5% for the time being.
+        /// resist type: 5% with the classic rules, 15% with the modern ones.
         /// </summary>
         public static int GetItemBonusCapIncrease(GameLiving living, eProperty property)
         {
             if (living == null)
                 return 0;
 
-            return Math.Min(living.ItemBonus[eProperty.ResCapBonus_First - eProperty.Resist_First + property], 5);
+            int capIncrease = living.ItemBonus[eProperty.ResCapBonus_First - eProperty.Resist_First + property];
+            capIncrease += ModernItemBonusRules.MythicalPhysicalDefense(living, property);
+            return Math.Min(capIncrease, ModernItemBonusRules.ResistCapIncreaseCap);
         }
 
         /// <summary>

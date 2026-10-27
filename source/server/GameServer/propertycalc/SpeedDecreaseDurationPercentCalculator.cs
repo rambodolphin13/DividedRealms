@@ -44,7 +44,7 @@ namespace DOL.GS.PropertyCalc
 			if (living.HasAbility(Abilities.Stoicism))
 				percent -= 25;
 
-			return Math.Max(1, percent);
+			return ModernItemBonusRules.ApplyMythicalCrowdControl(living, Math.Max(1, percent));
 		}
 	}
 }

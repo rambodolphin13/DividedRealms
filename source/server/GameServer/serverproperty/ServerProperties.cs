@@ -110,6 +110,9 @@ namespace DOL.GS.ServerProperties
         [ServerProperty("classes", "enable_modern_races", "Enable expansion-race player creation with the bundled 1.130 client class/race combinations. Requires modern starting-location data.", false)]
         public static bool ENABLE_MODERN_RACES;
 
+        [ServerProperty("items", "modern_item_bonuses", "Modern (1.126+) item bonus rules: 600 item hits, +15 resist caps, 25 flat power / 50% power pool, mythical regen, crowd control and physical defense, item DPS and the 10% conversion cap. False keeps the classic ToA caps.", false)]
+        public static bool MODERN_ITEM_BONUSES;
+
         [ServerProperty("system", "tempproperties_to_register", "Serialized list of tempprop string, separated by semi-colon for be registered when a player disconnect", "LastPotionItemUsedTick;SpellAvailableTime;ItemUseDelay;LastChargedItemUsedTick")]
 		public static string TEMPPROPERTIES_TO_REGISTER;
 		/// <summary>

@@ -169,7 +169,7 @@ namespace DOL.GS.PropertyCalc
 
         public static int GetItemBonusCapIncreaseCap(GameLiving living)
         {
-            return living == null ? 0 : living.Level * 4;
+            return ModernItemBonusRules.MaxHealthCapIncreaseCap(living);
         }
     }
 }

@@ -35,13 +35,10 @@ namespace DOL.GS.PropertyCalc
     {
         public override int CalcValue(GameLiving living, eProperty property)
         {
-            GamePlayer player = living as GamePlayer;
-            if(player == null)
-            {
+            if (!ModernItemBonusRules.IsPlayerLike(living))
                 return 0;
-            }
 
-            return Math.Min(living.ItemBonus[property], 25);
+            return Math.Min(living.ItemBonus[property], ModernItemBonusRules.PercentCap25(living));
         }
     }
 }

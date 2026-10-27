@@ -38,6 +38,7 @@ namespace DOL.GS.PropertyCalc
                 debuff = -debuff;
 
             regen += living.BaseBuffBonusCategory[property] + living.AbilityBonus[property] + living.ItemBonus[property] - debuff;
+            regen += ModernItemBonusRules.MythicalRegen(living, property);
 
             if (living is GameNPC npc && living is not GameBot)
             {

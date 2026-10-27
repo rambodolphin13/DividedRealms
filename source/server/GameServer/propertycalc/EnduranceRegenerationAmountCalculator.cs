@@ -45,6 +45,7 @@ namespace DOL.GS.PropertyCalc
             double regen = ActiveRegeneration(living.BaseBuffBonusCategory[property], living.AbilityBonus[property],
                 living.ItemBonus[property], debuff, living.HasAbility(Abilities.Tireless));
 
+            regen += ModernItemBonusRules.MythicalRegen(living, property);
             bool playerRules = living is GamePlayer || living is GameBot;
             if (playerRules)
                 regen += ClassicRestRegeneration.BaseEndurancePerTick(living.IsSitting, living.InCombat, living.IsMoving);

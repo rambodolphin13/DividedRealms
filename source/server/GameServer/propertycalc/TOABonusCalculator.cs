@@ -19,7 +19,7 @@ namespace DOL.GS.PropertyCalc
         public override int CalcValue(GameLiving living, eProperty property)
         {
             // Hardcap at 25%
-            return Math.Min(25, living.ItemBonus[property] - living.DebuffCategory[property]);
+            return Math.Min(ModernItemBonusRules.PercentCap25(living), living.ItemBonus[property] - living.DebuffCategory[property]);
         }
     }
 
@@ -38,7 +38,7 @@ namespace DOL.GS.PropertyCalc
                 livingToCheck = living;
 
             // Hardcap at 25%
-            return Math.Min(25, livingToCheck.ItemBonus[property] + livingToCheck.AbilityBonus[property] - living.DebuffCategory[property]);
+            return Math.Min(ModernItemBonusRules.PercentCap25(livingToCheck), livingToCheck.ItemBonus[property] + livingToCheck.AbilityBonus[property] - living.DebuffCategory[property]);
         }
     }
 
@@ -49,7 +49,7 @@ namespace DOL.GS.PropertyCalc
         public override int CalcValue(GameLiving living, eProperty property)
         {
             // Hardcap at 25%
-            int percent = Math.Min(25, living.BaseBuffBonusCategory[property]
+            int percent = Math.Min(ModernItemBonusRules.PercentCap25(living), living.BaseBuffBonusCategory[property]
                 - living.DebuffCategory[property]
                 + living.ItemBonus[property]);
             if (MasterLevelRules.HasPassive(living, "Perfecter", 4))
@@ -97,7 +97,7 @@ namespace DOL.GS.PropertyCalc
             int abilityBonus = livingToCheck.AbilityBonus[property]; // Mastery of the Art (OF), capped at 15%.
             int abilityBonusOverCap = Math.Max(0, abilityBonus - 15);
             int itemBonus = livingToCheck.ItemBonus[property]; // ToA item bonus, capped at 10%.
-            int itemBonusOverCap = Math.Max(0, itemBonus - 10);
+            int itemBonusOverCap = Math.Max(0, itemBonus - ModernItemBonusRules.PercentCap10(livingToCheck));
             int cappedBonus = (abilityBonus - abilityBonusOverCap) + (itemBonus - itemBonusOverCap);
             int remainingDebuff = Math.Max(0, living.DebuffCategory[property] - (abilityBonusOverCap + itemBonusOverCap));
             return cappedBonus - remainingDebuff;
@@ -111,7 +111,7 @@ namespace DOL.GS.PropertyCalc
         public override int CalcValue(GameLiving living, eProperty property)
         {
             //hardcap at 25%
-            return Math.Min(25, living.ItemBonus[property] - living.DebuffCategory[property]);
+            return Math.Min(ModernItemBonusRules.PercentCap25(living), living.ItemBonus[property] - living.DebuffCategory[property]);
         }
     }
 
@@ -130,7 +130,7 @@ namespace DOL.GS.PropertyCalc
                 livingToCheck = living;
 
             int abilityBonus = livingToCheck.AbilityBonus[property];
-            int itemBonus = Math.Min(10, livingToCheck.ItemBonus[property]);
+            int itemBonus = Math.Min(ModernItemBonusRules.PercentCap10(livingToCheck), livingToCheck.ItemBonus[property]);
             int buffBonus = living.BaseBuffBonusCategory[property] + living.SpecBuffBonusCategory[property];
             int debuffMalus = Math.Abs(livingToCheck.DebuffCategory[property]);
             return abilityBonus + buffBonus + itemBonus - debuffMalus;

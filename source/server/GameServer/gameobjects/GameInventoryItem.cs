@@ -1306,7 +1306,7 @@ namespace DOL.GS
                         ((bonusCat == (int)eProperty.PowerPool)
                          || (bonusCat >= (int)eProperty.Resist_First && bonusCat <= (int)eProperty.Resist_Last)
                          || (bonusCat >= (int)eProperty.ResCapBonus_First && bonusCat <= (int)eProperty.ResCapBonus_Last)
-                         || bonusCat == (int)eProperty.Conversion
+                         || bonusCat == (int)eProperty.Conversion || bonusCat == (int)eProperty.MythicalCrowdControlReduction || bonusCat == (int)eProperty.MythicalPhysicalDefense
                          || bonusCat == (int)eProperty.ExtraHP
                          || bonusCat == (int)eProperty.RealmPoints
                          || bonusCat == (int)eProperty.StyleAbsorb
