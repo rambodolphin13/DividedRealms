@@ -127,6 +127,7 @@ namespace DOL.GS.Scripts
                               "[Svasud Faste] in Mularn or \n[Vindsaul Faste] in West Svealand,\n" +
                               "Beaches of [Gotar] near Nailiten,\n" +
                               "[Aegirhamn] in the [Shrouded Isles],\n" +
+                              "The ruins of [Atlantis],\n" +
                               "Our glorious city of [Jordheim],\n" +
                               "[Entrance] to the areas of [Housing]\n\n" +
                               "or one of the many [towns] throughout Midgard.";
