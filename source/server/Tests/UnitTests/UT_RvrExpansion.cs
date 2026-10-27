@@ -19,7 +19,8 @@ public sealed class UT_RvrExpansion
     private sealed class InertServer : GameServer
     {
         protected override IObjectDatabase DataBaseImpl => DispatchProxy.Create<IObjectDatabase, DOL.UnitTests.UT_UnobservedConcentration.EmptyReads>();
-        protected override DOL.GS.ServerRules.IServerRules ServerRulesImpl => new DOL.GS.ServerRules.NormalServerRules();
+        public static DOL.GS.ServerRules.IServerRules Rules;
+        protected override DOL.GS.ServerRules.IServerRules ServerRulesImpl => Rules ?? new DOL.GS.ServerRules.NormalServerRules();
     }
     [SetUp]
     public void SetUp()
@@ -297,6 +298,35 @@ public sealed class UT_RvrExpansion
 
         Assert.That(bot.GetExamineMessages(viewer).Cast<string>().Single(),
             Does.Contain("member of an enemy faction"));
+    }
+
+    [Test]
+    public void OtherRealmBotExaminesAsAFriendInTheCoopLands()
+    {
+        var viewer = (Human)RuntimeHelpers.GetUninitializedObject(typeof(Human));
+        viewer.Realm = eRealm.Midgard;
+        viewer.Connection = (GameClient)RuntimeHelpers.GetUninitializedObject(typeof(GameClient));
+        viewer.Connection.Account = new DbAccount { Name = "test", PrivLevel = 1, Language = "EN" };
+        var bot = (Carrier)RuntimeHelpers.GetUninitializedObject(typeof(Carrier));
+        bot.Realm = eRealm.Albion;
+        bot.Name = "FriendlyBot";
+        typeof(GameBot).GetField("<IsAutonomousWorldBot>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(bot, true);
+        typeof(GameBot).GetField("m_characterClass", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(bot, new DOL.GS.PlayerClass.ClassArmsman());
+        typeof(GameNPC).GetField("m_brains", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(bot, new ArrayList());
+        bool enabled = DOL.GS.ServerProperties.Properties.HYBRID_COOP_PVP;
+        try
+        {
+            DOL.GS.ServerProperties.Properties.HYBRID_COOP_PVP = true;
+            InertServer.Rules = new DOL.GS.ServerRules.HybridCoopRules();
+            Assert.That(bot.GetExamineMessages(viewer).Cast<string>().Single(), Does.Not.Contain("enemy"));
+        }
+        finally
+        {
+            DOL.GS.ServerProperties.Properties.HYBRID_COOP_PVP = enabled;
+            InertServer.Rules = null;
+        }
     }
 
     [Test]
