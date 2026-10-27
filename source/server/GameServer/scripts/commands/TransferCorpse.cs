@@ -6,8 +6,6 @@ namespace DOL.GS.Commands
     // No /tc alias: /tc is the Realm Exchange teleport (TeleportToExchangeCommand); the shared alias failed at load.
     [CmdAttribute(
         "&transfercorpse",
-        // HearthDAoC: no "/tc" alias; OfflineDAoC's /tc (teleport to the Realm Exchange) owns it, and the duplicate
-        // key made ScriptMgr.LoadCommands log an ArgumentException at every start (whichever loaded second lost).
         ePrivLevel.Player, // Set to player.
         "/transfercorpse <Keep name> ie: /transfercorpse dun crauchon")]
     public class transfercorpseCommandHandler : AbstractCommandHandler, ICommandHandler
