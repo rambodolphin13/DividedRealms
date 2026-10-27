@@ -168,11 +168,11 @@ namespace DOL.GS.Commands
             DisplayMessage(client, $"{GlobalConstants.RealmToName(client.Player.Realm)} Classic + SI classes:");
             foreach (string line in entries.Chunk(4).Select(chunk => string.Join("  |  ", chunk)))
                 DisplayMessage(client, line);
-            DisplayMessage(client, "Use /spawn <class name> to create a temporary same-level party helper.");
+            DisplayMessage(client, "Use /spawn <class name> [spec] to create a temporary same-level party helper (for example /spawn wizard fire).");
         }
     }
 
-    [CmdAttribute("&spawn", ePrivLevel.Player, "Opens the companion class menu or creates a temporary helper", "/spawn [class name]")]
+    [CmdAttribute("&spawn", ePrivLevel.Player, "Opens the companion class menu or creates a temporary helper", "/spawn [class name] [spec]")]
     public sealed class SpawnTemporaryGroupBotCommandHandler : AbstractCommandHandler, ICommandHandler
     {
         public void OnCommand(GameClient client, string[] args)
@@ -192,16 +192,28 @@ namespace DOL.GS.Commands
             }
 
             string requestedClass = string.Join(' ', args.Skip(1));
+            eSpecType spec = eSpecType.None;
             if (!TemporaryGroupClassCatalog.TryResolve(player.Realm, requestedClass, out eCharacterClass characterClass))
             {
-                DisplayMessage(client, $"'{requestedClass}' is not an available {GlobalConstants.RealmToName(player.Realm)} companion class. Type /classes.");
-                return;
+                // "/spawn wizard fire": the last word may name the spec.
+                string classPart = args.Length > 2 ? string.Join(' ', args.Skip(1).Take(args.Length - 2)) : null;
+                if (classPart == null || !TemporaryGroupClassCatalog.TryResolve(player.Realm, classPart, out characterClass))
+                {
+                    DisplayMessage(client, $"'{requestedClass}' is not an available {GlobalConstants.RealmToName(player.Realm)} companion class. Type /classes.");
+                    return;
+                }
+                if (!BotSpec.TryResolveSpecialization(characterClass, args[^1], out spec))
+                {
+                    DisplayMessage(client, $"'{args[^1]}' is not a {characterClass} spec. Choices: " +
+                        string.Join(", ", BotSpec.GetSpecializationChoices(characterClass)) + ".");
+                    return;
+                }
             }
 
-            Spawn(client, characterClass);
+            Spawn(client, characterClass, spec);
         }
 
-        internal static void Spawn(GameClient client, eCharacterClass characterClass)
+        internal static void Spawn(GameClient client, eCharacterClass characterClass, eSpecType spec = eSpecType.None)
         {
             GamePlayer player = client?.Player;
             if (player == null || !TemporaryGroupClassCatalog.ForRealm(player.Realm)
@@ -230,7 +242,8 @@ namespace DOL.GS.Commands
                     (byte)identity.Race,
                     (byte)identity.Gender,
                     temporaryGroupHelper: true,
-                    equipmentLevel: gearLevel);
+                    equipmentLevel: gearLevel,
+                    spec: spec);
             }
             catch (Exception exception)
             {
@@ -286,7 +299,9 @@ namespace DOL.GS.Commands
                 brain.FSM.SetCurrentState(eFSMStateType.FOLLOW);
 
             client.Out.SendMessage(
-                $"{helper.Name}, level {helper.Level} {characterClass}, joined fully equipped: armor/accessories level {Math.Max(1, helper.Level - 10)}–{helper.Level}, weapons/offhand level {Math.Max(1, helper.Level - 2)}–{helper.Level}. " +
+                $"{helper.Name}, level {helper.Level} {characterClass}" +
+                (helper.BotSpec != null && helper.BotSpec.SpecType != eSpecType.None ? $" ({helper.BotSpec.SpecType} spec)" : "") +
+                ", joined fully equipped: armor/accessories level {Math.Max(1, helper.Level - 10)}–{helper.Level}, weapons/offhand level {Math.Max(1, helper.Level - 2)}–{helper.Level}. " +
                 "This helper takes no loot, is never saved, and vanishes when removed from the group.",
                 eChatType.CT_System, eChatLoc.CL_SystemWindow);
         }

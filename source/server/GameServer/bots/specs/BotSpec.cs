@@ -130,6 +130,32 @@ namespace DOL.GS
             _ => [eSpecType.None],
         };
 
+        /// <summary>
+        /// Resolves a player's spec word ("fire", "ice", "two", "shield") against the class's templates: the first
+        /// template whose name starts with it, else the first that contains it (case ignored).
+        /// </summary>
+        public static bool TryResolveSpecialization(eCharacterClass charClass, string word, out eSpecType spec)
+        {
+            spec = eSpecType.None;
+            if (string.IsNullOrWhiteSpace(word))
+                return false;
+            word = word.Trim();
+            IReadOnlyList<eSpecType> choices = GetSpecializationChoices(charClass);
+            foreach (eSpecType choice in choices)
+                if (choice != eSpecType.None && choice.ToString().StartsWith(word, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    spec = choice;
+                    return true;
+                }
+            foreach (eSpecType choice in choices)
+                if (choice != eSpecType.None && choice.ToString().Contains(word, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    spec = choice;
+                    return true;
+                }
+            return false;
+        }
+
         public static eSpecType ChooseRandomSpecialization(eCharacterClass charClass)
         {
             IReadOnlyList<eSpecType> choices = GetSpecializationChoices(charClass);

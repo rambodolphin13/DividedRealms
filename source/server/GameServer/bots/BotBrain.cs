@@ -822,6 +822,9 @@ namespace DOL.AI.Brain
         // summoners. Melee hybrids and archers retain their own combat policy.
         public static bool PrefersSpellRange(ICharacterClass characterClass, bool grouped = false, bool autonomous = false) =>
             characterClass?.ID == (int)eCharacterClass.Minstrel && !grouped && !autonomous ||
+            // A hybrid on paper, but a Druid fights with roots, nukes and its pet, not its staff
+            // (tester 2026-10-26: Druids rooted a mob and then ran in to melee it).
+            characterClass?.ID == (int)eCharacterClass.Druid ||
             characterClass?.ClassType == eClassType.ListCaster &&
             characterClass.ID != (int)eCharacterClass.Valewalker &&
             characterClass.ID != (int)eCharacterClass.Vampiir &&
@@ -3325,9 +3328,7 @@ namespace DOL.AI.Brain
                 // A melee bot already chasing its own target at stick range keeps
                 // that order. Clearing it every think made NpcStartAttack stop the
                 // running bot and re-follow, which clients saw as rubberbanding.
-                // A caster meleeing because it is out of power chases like a melee bot.
-                bool outOfPowerMelee = rangedCaster && OutOfPowerForOffense();
-                if (rangedCaster && !outOfPowerMelee || !IsMeleeChasing(Body.TargetObject))
+                if (rangedCaster || !IsMeleeChasing(Body.TargetObject))
                     Body.StopFollowing();
                 if (!rangedCaster && Body.TargetObject is GameLiving meleeTarget && TryEngageUnderMeleePressure(meleeTarget))
                     return;
@@ -3335,9 +3336,7 @@ namespace DOL.AI.Brain
                 // End our own staff swings/chase before considering a spell.
                 // Otherwise each new swing refreshes SelfInterruptTime forever.
                 // Actual incoming interruption still goes through native rules.
-                // A caster with no power for any attack spell keeps swinging.
-                if (rangedCaster && !Body.IsBeingInterruptedByOther && Body.attackComponent.AttackState &&
-                    !OutOfPowerForOffense())
+                if (rangedCaster && !Body.IsBeingInterruptedByOther && Body.attackComponent.AttackState)
                     Body.StopAttack();
 
                 if (!UsesDefensiveOnlyPet)
@@ -3399,13 +3398,12 @@ namespace DOL.AI.Brain
                     if (rangedCaster && Body.TargetObject is GameLiving spellTarget)
                     {
                         // Try casts (including instant spells) first.
-                        // A close incoming attack permits melee, and so does
-                        // having no power for any attack spell: the caster walks
-                        // in with its staff until it can cast again. Cooldowns,
-                        // an already-active debuff or a rejected cast never
-                        // order a staff charge.
+                        // Only a close incoming attack permits melee. Out of
+                        // power, the caster holds back and lets its pet fight
+                        // until it can cast again (tester 2026-10-26: casters
+                        // walking in with their staff looked wrong).
                         if (TryEngageUnderMeleePressure(spellTarget)) return;
-                        if (TryOutOfPowerMelee(spellTarget)) return;
+                        if (TryHoldOutOfPower(spellTarget)) return;
                         ApproachForOffensiveSpell(spellTarget);
                         return;
                     }
@@ -3694,31 +3692,19 @@ namespace DOL.AI.Brain
             Body?.Spells != null && IsOutclassedDamageSpell(spell, Body.Spells, Body.Level);
 
         /// <summary>
-        /// A caster (pet classes included) with no power for any attack spell walks
-        /// in and fights with its staff alongside its pet, then casts again as soon
-        /// as it can pay for a spell. A Necromancer's shade has no melee.
+        /// A caster (pet classes included) with no power for any attack spell stays
+        /// where it is, out of melee, while its pet keeps fighting; it casts again as
+        /// soon as it can pay for a spell. It never walks in with its staff.
         /// </summary>
-        private bool TryOutOfPowerMelee(GameLiving target)
+        private bool TryHoldOutOfPower(GameLiving target)
         {
-            if (target?.IsAlive != true || Body.IsCasting ||
-                BotBody?.CharacterClass?.ID == (int)eCharacterClass.Necromancer ||
-                !GameServer.ServerRules.IsAllowedToAttack(Body, target, true) ||
-                !OutOfPowerForOffense())
+            if (target?.IsAlive != true || Body.IsCasting || !OutOfPowerForOffense())
                 return false;
 
-            StopTwistedSong();
-            SwitchToUsableMeleeWeapon();
-            CheckOffensiveAbilities();
+            if (Body.attackComponent.AttackState)
+                Body.StopAttack();
+            Body.StopFollowing();
             CommandPetAttack(target);
-            QueueUsableMeleeStyle();
-            // Re-issue the attack (which restarts the melee chase) when the target ran
-            // off, e.g. after aggroing a distant party member.
-            if (!Body.attackComponent.AttackState || Body.TargetObject != target ||
-                !IsMeleeChasing(target) && !Body.IsWithinRadius(target, Body.MeleeAttackRange))
-            {
-                Body.TargetObject = target;
-                Body.StartAttack(target);
-            }
             return true;
         }
 

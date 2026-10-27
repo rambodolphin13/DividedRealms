@@ -172,9 +172,23 @@ namespace DOL.GS.Spells
 
         public override void ApplyEffectOnTarget(GameLiving target)
         {
-            if (target != null && target.IsAlive)
+            if (target == null || !target.IsAlive)
+                return;
+            try
+            {
                 Ability?.Run?.Invoke(this, target);
+            }
+            catch (Exception e)
+            {
+                // An exception here reaches the casting service, which kicks a player to the character screen
+                // (tester 2026-10-26: Tuatha "Step Between Worlds" logged the player off). Log it and keep them in game.
+                if (_log.IsErrorEnabled)
+                    _log.Error($"{Spell.Name} ({Spell.ID}) failed for {Caster} on {target}", e);
+                MessageToCaster($"{Spell.Name} failed.", eChatType.CT_SpellResisted);
+            }
         }
+
+        private static readonly DOL.Logging.Logger _log = DOL.Logging.LoggerManager.Create(typeof(MasterLevelAbilityHandler));
 
         // ---- toolkit used by the ability table ----
 
