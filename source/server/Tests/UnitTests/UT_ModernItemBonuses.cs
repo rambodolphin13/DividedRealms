@@ -282,4 +282,33 @@ public class UT_ModernItemBonuses
         Assert.That(ModernItemBonusRules.BowSpeedAlias(player), Is.EqualTo(4), "6 casting + 8 archery share one 10% cap");
         Assert.That(ModernItemBonusRules.BowDamageAlias(player), Is.EqualTo(7), "3 archery + 10 spell damage share one 10% cap");
     }
+
+    [Test]
+    public void MythirianDropChanceUsesTheNamedMultiplier()
+    {
+        double baseChance = Properties.LOOTGENERATOR_MYTHIRIAN_BASE_CHANCE;
+        double multiplier = Properties.LOOTGENERATOR_MYTHIRIAN_NAMED_MULTIPLIER;
+        try
+        {
+            Properties.LOOTGENERATOR_MYTHIRIAN_BASE_CHANCE = 1.0;
+            Properties.LOOTGENERATOR_MYTHIRIAN_NAMED_MULTIPLIER = 5.0;
+            var trash = (GameNPC) RuntimeHelpers.GetUninitializedObject(typeof(GameNPC));
+            var named = (GameNPC) RuntimeHelpers.GetUninitializedObject(typeof(GameNPC));
+            typeof(GameNPC).GetField("m_brains", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(trash, new ArrayList(1));
+            typeof(GameNPC).GetField("m_brains", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(named, new ArrayList(1));
+            trash.Name = "sobekite hulk";
+            named.Name = "Cetus";
+
+            Assert.That(LootGeneratorMythirian.DropChance(trash), Is.EqualTo(1.0));
+            Assert.That(LootGeneratorMythirian.DropChance(named), Is.EqualTo(5.0));
+
+            Properties.LOOTGENERATOR_MYTHIRIAN_BASE_CHANCE = 50.0;
+            Assert.That(LootGeneratorMythirian.DropChance(named), Is.EqualTo(100.0));
+        }
+        finally
+        {
+            Properties.LOOTGENERATOR_MYTHIRIAN_BASE_CHANCE = baseChance;
+            Properties.LOOTGENERATOR_MYTHIRIAN_NAMED_MULTIPLIER = multiplier;
+        }
+    }
 }

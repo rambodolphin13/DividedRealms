@@ -2018,6 +2018,15 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("pve", "lootgenerator_atlanteanglass_base_chance", "Base chance for dropping Atlantean Glass using Loot Generator.", 20)]
 		public static int LOOTGENERATOR_ATLANTEANGLASS_BASE_CHANCE;
+
+		[ServerProperty("pve", "lootgenerator_mythirian_base_chance", "Percent chance that a kill drops a random mythirian from the Mythirians merchant list. Only worlds with a DOL.GS.LootGeneratorMythirian LootGenerator row use it.", 1.0)]
+		public static double LOOTGENERATOR_MYTHIRIAN_BASE_CHANCE;
+
+		[ServerProperty("pve", "lootgenerator_mythirian_named_multiplier", "Multiplier on the mythirian drop chance for named and epic mobs.", 5.0)]
+		public static double LOOTGENERATOR_MYTHIRIAN_NAMED_MULTIPLIER;
+
+		[ServerProperty("pve", "lootgenerator_mythirian_min_level", "Lowest mob level that can drop a mythirian.", 45)]
+		public static int LOOTGENERATOR_MYTHIRIAN_MIN_LEVEL;
 		
 		/// <summary>
 		/// Atlantean Glass Loot Generator Named Boost Count
