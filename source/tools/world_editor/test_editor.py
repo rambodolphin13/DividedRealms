@@ -447,7 +447,7 @@ class EditorTests(unittest.TestCase):
             self.assertEqual(con.execute('SELECT Value FROM PlayerProgress').fetchone()[0],10)
         with self.assertRaises(SystemExit):           # the same patch again conflicts
             cli.main(base+['apply',str(out)])
-        backup=next(b.name for b in (self.root/'state/backups').iterdir())
+        backup=next(b.name for b in (self.root/'state/backups').iterdir() if (b/'applied.txt').is_file())
         cli.main(base+['undo',backup])
         with closing(sqlite3.connect(self.db)) as con:
             self.assertEqual(con.execute('SELECT count(*) FROM Mob').fetchone()[0],1)

@@ -51,6 +51,9 @@ The newest version is first. For the full detail of every earlier update, see
   chris4aker/OfflineDAoC-SocialExpansion fork.)
 
 **World**
+- Abermenai, the 15-19 battleground, loads in the original game client. The client shipped it without terrain, so
+  arriving there showed a red screen and dropped you to character select. It now has Thidranki's terrain, which
+  matches: the two battlegrounds share the same map.
 - The Huntsmen and Woodsmen of Campacorentin Forest patrol the roads in pairs again instead of standing still. Period
   sightings show a Huntsman and a Woodsman together all along the forest's main roads; each Huntsman now walks one
   stretch of road up and down with a Woodsman at his side, along the same road the horse routes take.

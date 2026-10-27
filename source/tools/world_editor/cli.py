@@ -10,6 +10,7 @@ the same table/column checks, a refusal while the game or server runs, a full da
     python source/tools/world_editor/cli.py --profile classic items --issue nowhere --limit 20
     python source/tools/world_editor/cli.py --profile classic plan edits.json --out fix.patch.json
     python source/tools/world_editor/cli.py --profile classic apply fix.patch.json
+    python source/tools/world_editor/cli.py --profile modern audit --region 100 --out audit.json
     python source/tools/world_editor/cli.py --profile classic history
     python source/tools/world_editor/cli.py --profile classic undo 20261027-101500-ab12cd34
 
@@ -36,10 +37,12 @@ from pathlib import Path
 if __package__:
     from .editor import Editor, connect, WORKSPACE, REPO
     from .app import runtime_of
+    from . import audit
 else:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from world_editor.editor import Editor, connect, WORKSPACE, REPO
     from world_editor.app import runtime_of
+    from world_editor import audit
 
 PROFILES = {
     'classic': WORKSPACE / 'Classic',
@@ -194,7 +197,20 @@ def build_changes(ed, edits):
                     if changed:
                         changes.append({'table': table, 'key': row[key], 'op': 'update',
                                         'before': {c: row[c] for c in changed}, 'after': changed})
-    return changes
+    # Several edits of one row become one change; the same column set to two values is a mistake in the edits.
+    merged = {}
+    for c in changes:
+        ident = (c['table'], str(c['key']))
+        if ident not in merged:
+            merged[ident] = c
+            continue
+        first = merged[ident]
+        if c['op'] != 'update' or first['op'] != 'update' or \
+                any(first['after'].get(k, v) != v for k, v in c['after'].items()):
+            raise ValueError(f'{c["table"]} {c["key"]} is edited twice with different values')
+        first['before'].update(c['before'])
+        first['after'].update(c['after'])
+    return list(merged.values())
 
 
 def describe(changes):
@@ -240,6 +256,23 @@ def cmd_history(ed, args):
     out(rows)
 
 
+def cmd_audit(ed, args):
+    report = audit.run(ed.db, args.navmesh or ed.runtime / 'server' / 'navmesh',
+                       regions={int(r) for r in args.region} if args.region else None,
+                       zones={int(z) for z in args.zone} if args.zone else None,
+                       routes=not args.no_routes, progress=lambda m: print(m, file=sys.stderr, flush=True))
+    if args.out:
+        Path(args.out).write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding='utf-8')
+    by_zone = {}
+    for f in report['findings']:
+        if not f['status'].startswith('ignored'):
+            key = (f['zone'], f['kind'], f['status'])
+            by_zone[key] = by_zone.get(key, 0) + 1
+    out({'summary': report['summary'], 'zones without navmesh': report['zones without navmesh'],
+         'problems by zone': [f'zone {z}: {n} {k} {s}' for (z, k, s), n in sorted(by_zone.items(), key=lambda i: -i[1])][:60],
+         'details': args.out or 'pass --out FILE for every finding'})
+
+
 def cmd_undo(ed, args):
     result = ed.rollback(args.backup)
     print(f'{result["message"]}\nThat undo is itself undoable: undo {result["id"]}')
@@ -280,6 +313,12 @@ def main(argv=None):
     p.add_argument('--out')
     p = sub.add_parser('apply', help='apply a patch with a backup (game and server must be closed)')
     p.add_argument('patch')
+    p = sub.add_parser('audit', help='check NPCs, routes and arrival points against the navmeshes (read-only)')
+    p.add_argument('--region', action='append')
+    p.add_argument('--zone', action='append')
+    p.add_argument('--navmesh', type=Path, help='navmesh folder (default <runtime>/server/navmesh)')
+    p.add_argument('--no-routes', action='store_true')
+    p.add_argument('--out', help='write every finding to this JSON file')
     p = sub.add_parser('history', help='applied patches, newest first')
     p.add_argument('--limit', type=int, default=20)
     p = sub.add_parser('undo', help='reverse an applied patch row by row')
@@ -288,7 +327,7 @@ def main(argv=None):
     try:
         ed = open_editor(args)
         globals()['cmd_' + args.command](ed, args)
-    except (ValueError, sqlite3.Error) as exc:
+    except (ValueError, OSError, sqlite3.Error) as exc:
         raise SystemExit(f'error: {exc}')
 
 
