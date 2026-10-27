@@ -8025,6 +8025,12 @@ namespace DOL.GS
                 // destination.  Record it now; the helper event/failsafe will
                 // consume the marker only once this player is active there.
                 TemporaryGroupStableTravel.MarkAcceptedPlayerTransfer(this);
+                // The 1.1xx client checks on a region change that it holds no other realm's lock unless the server
+                // type (set by the region color scheme) is 1 or 3. After a realm switch at character select it still
+                // holds the first realm's, and quit with "You cannot connect to two realms on the same server"
+                // (owner's report 2026-10-27). Send type 1 for the jump; PlayerInit sends the real scheme on arrival.
+                if (GameServer.ServerRules.IsAllowedCharsInAllRealms(Client))
+                    Out.SendRegionColorScheme(1);
                 Out.SendRegionChanged();
                 return true;
             }

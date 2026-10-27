@@ -1360,11 +1360,13 @@ namespace DOL.GS.PacketHandler
 				log.Error("SendRiding error, slot is -1 with rider " + rider.Name + " steed " + steed.Name);
 			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.Riding)))
 			{
+				// GM /taxitest may try other mount-flag and trailing values on stable horses.
+				bool taxi = steed is GameTaxi && !dismount;
 				pak.WriteShort(rider.ObjectID);
 				pak.WriteShort(steed.ObjectID);
-				pak.WriteByte((byte) (dismount ? 0x00 : 0x01));
+				pak.WriteByte((byte) (dismount ? 0x00 : taxi && GameTaxi.MountFlagOverride.HasValue ? GameTaxi.MountFlagOverride.Value : 0x01));
 				pak.WriteByte((byte) slot);
-				pak.WriteShort(0x00);
+				pak.WriteShort((ushort) (taxi ? GameTaxi.TrailingOverride ?? 0 : 0));
 				SendTCP(pak);
 			}
 		}
