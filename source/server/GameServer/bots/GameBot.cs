@@ -1864,6 +1864,7 @@ namespace DOL.GS
                 necromancerPetDied = CharacterClass?.ID == (int)eCharacterClass.Necromancer &&
                                       petBody != null && !petBody.IsAlive;
                 bool syntheticCharm = petBody?.TempProperties.GetProperty<bool>(AutonomousPetSupport.SyntheticCharmPetProperty) == true;
+                GameNPC[] subPets = petBody?.ControlledNpcList?.Where(sub => sub?.Body != null).Select(sub => sub.Body).ToArray() ?? [];
                 // Let the summon effect perform its normal release cleanup.
                 // This removes caster/pet effects and, for a Bonedancer
                 // commander, releases every sub-pet before deleting the body.
@@ -1875,6 +1876,16 @@ namespace DOL.GS
                     RemoveControlledBrain(brain);
                 if (syntheticCharm && petBody?.ObjectState is eObjectState.Active)
                     petBody.Delete();
+                // Tester 2026-10-27: disbanded /spawn helpers vanished but their pets stayed. OnRelease only deletes a
+                // pet whose summon effect it finds; on world removal never leave an ownerless body behind.
+                if (reason == PetReleaseReason.WorldRemoval)
+                {
+                    foreach (GameNPC sub in subPets)
+                        if (sub.ObjectState is eObjectState.Active && sub.CurrentRegion != null)
+                            sub.Delete();
+                    if (petBody != null && petBody != this && petBody.ObjectState is eObjectState.Active && petBody.CurrentRegion != null)
+                        petBody.Delete();
+                }
             }
             if (CharacterClass?.ID == (int)eCharacterClass.Necromancer && IsShade)
             {
@@ -2920,6 +2931,9 @@ namespace DOL.GS
             _deathRecoveryTimer = null;
             AutonomousPetSupport.CancelPendingCharm(this);
             AutonomousPetSupport.ReleaseFieldTurrets(this);
+            // Release the class pet while the bot is still in the world; RemoveFromWorld repeats this as a backstop.
+            if (ControlledBrain != null && _keepPetThroughMove == 0)
+                ReleaseControlledPet(PetReleaseReason.WorldRemoval);
             CompleteStableMasterRoute();
             if (IsAutonomousWorldBot && !IsIntentionalWorldMove)
                 SaveAutonomousState(true);
