@@ -36,6 +36,9 @@ namespace DOL.GS
 		public override void LoadFromDatabase(DataObject obj)
 		{
 			base.LoadFromDatabase(obj);
+			// The saved row sets the lair height for this world (classic or retail 1.130 mounds).
+			if (obj is DbMob row)
+				DragonLairPlacement.Adopt(eRealm.Hibernia, row.X, row.Y, row.Z);
 			DragonLairPlacement.Restore(this, eRealm.Hibernia);
 			String[] dragonName = Name.Split(new char[] { ' ' });
 			WorldMgr.GetRegion(CurrentRegionID).AddArea(new Area.Circle(String.Format("{0}'s Lair",
@@ -210,7 +213,7 @@ namespace DOL.GS
 			else
 				base.StartAttack(target);
 		}
-		private static readonly Point3D spawnPoint = DragonLairPlacement.Home(eRealm.Hibernia);
+		private static Point3D spawnPoint => DragonLairPlacement.Home(eRealm.Hibernia);
 		public override ushort SpawnHeading { get => base.SpawnHeading; set => base.SpawnHeading = 1764; }
 		public override Point3D SpawnPoint { get => spawnPoint; set => base.SpawnPoint = spawnPoint; }
 		public override bool AddToWorld()

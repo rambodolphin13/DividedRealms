@@ -20,6 +20,28 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void SavedRowOnTheLairSetsTheHeightForThisWorld()
+        {
+            try
+            {
+                // The retail 1.130 mound stands 164 units below the classic one.
+                Assert.That(DragonLairPlacement.Adopt(eRealm.Albion, 391326, 755351, 227), Is.True);
+                var home = DragonLairPlacement.Home(eRealm.Albion);
+                Assert.That((home.X, home.Y, home.Z), Is.EqualTo((391326, 755351, 227)));
+                // A row away from the lair (a flight point, a moved row) never moves the home.
+                Assert.That(DragonLairPlacement.Adopt(eRealm.Albion, 385865, 756961, 3504), Is.False);
+                Assert.That(DragonLairPlacement.Adopt(eRealm.Albion, 391326, 755351, 3504), Is.False);
+                Assert.That(DragonLairPlacement.Home(eRealm.Albion).Z, Is.EqualTo(227));
+                Assert.That(DragonLairPlacement.Home(eRealm.Midgard).Z, Is.EqualTo(3014));
+            }
+            finally
+            {
+                DragonLairPlacement.Forget(eRealm.Albion);
+            }
+            Assert.That(DragonLairPlacement.Home(eRealm.Albion).Z, Is.EqualTo(391));
+        }
+
+        [Test]
         public void LivingDamageSourcesIncludeNpcBasedCompanionsAndPets()
         {
             Assert.That(DragonLairPlacement.CanReceiveDamageType(typeof(GamePlayer)), Is.True);
