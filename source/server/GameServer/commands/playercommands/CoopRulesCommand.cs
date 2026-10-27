@@ -16,10 +16,10 @@ namespace DOL.GS.Commands
                 return;
             }
             string location = HybridCoopRules.IsWarLocation(player)
-                ? "Guild warfare area: unrelated players/guilds may fight. Safe areas and portal keeps remain protected."
-                : "Co-op area: players and their pets cannot attack one another.";
+                ? "Realm war area: other realms are enemies, as normal. Your group stays friendly. Safe areas and portal keeps remain protected."
+                : "Co-op area: every realm is friendly, and players and their pets cannot attack one another.";
             player.Out.SendMessage(location, eChatType.CT_System, eChatLoc.CL_SystemWindow);
-            player.Out.SendMessage("Groupmates, guildmates and allied guilds are friendly. Cross-realm groups, guilds and trade are allowed. Darkness Falls is open to every realm.",
+            player.Out.SendMessage("Outside the frontiers, Darkness Falls and the battlegrounds you can group, guild, trade and talk with any realm, and the capital teleporters reach every capital. Darkness Falls is open to every realm.",
                 eChatType.CT_System, eChatLoc.CL_SystemWindow);
         }
     }

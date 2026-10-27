@@ -25,7 +25,7 @@ def enable(db):
         raise ValueError("Unknown battleground region; review its PvP boundary first")
     now = datetime.datetime.now(datetime.timezone.utc).isoformat()
     for key, value, category, description in (
-        ("hybrid_coop_pvp", "True", "server", "Co-op world with guild warfare in DF, battlegrounds and frontier zones; requires restart."),
+        ("hybrid_coop_pvp", "True", "server", "Co-op world with realm vs realm in DF, battlegrounds and frontier zones; requires restart."),
         ("allow_bg_claim", "True", "atlas", "Allow guild claims in battlegrounds."),
         ("claim_num", "1", "keeps", "One nearby player may claim for a solo/co-op guild."),
     ):
@@ -34,7 +34,7 @@ def enable(db):
         else:
             db.execute("INSERT INTO ServerProperty (Category,Key,Description,DefaultValue,Value,LastTimeRowUpdated,ServerProperty_ID) VALUES (?,?,?,?,?,?,?)",
                        (category, key, description, "False" if key == "hybrid_coop_pvp" else value, value, now, str(uuid.uuid4())))
-    return {"rules": "Hybrid co-op / guild warfare", "hybrid_coop_pvp": True,
+    return {"rules": "Hybrid co-op / realm war in the frontiers", "hybrid_coop_pvp": True,
             "single_player_guild_claims": True, "battleground_guild_claims": True}
 
 

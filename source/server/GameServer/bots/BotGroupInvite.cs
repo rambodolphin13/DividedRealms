@@ -57,10 +57,12 @@ public static class BotGroupInvite
 
     public static bool TryInvite(GamePlayer player, GameBot bot)
     {
-        if (player == null || bot == null || player.Realm != bot.Realm)
+        if (!ServerRules.HybridCoopRules.CanGroup(player, bot))
         {
             if (player != null)
-                ChatUtil.SendSystemMessage(player, "Only a bot of your realm will accept the invitation.");
+                ChatUtil.SendSystemMessage(player, ServerRules.HybridCoopRules.Enabled
+                    ? "You can't group with another realm in the frontier."
+                    : "Only a bot of your realm will accept the invitation.");
             return false;
         }
 
