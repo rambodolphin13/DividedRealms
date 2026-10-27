@@ -112,11 +112,31 @@ namespace DOL.GS
                         StormforgedChantEffect current = _children.Find(child => child.Owner == member && !child.IsEnding);
                         if (current != null)
                             current.ExpireTick = GameLoop.GameLoopTime + SpellHandler.Spell.Frequency * 2;
-                        else
+                        else if (!HeldByAnotherSinger(member))
                             _children.Add(ECSGameEffectFactory.Create(new(member, SpellHandler.Spell.Frequency * 2, 1, SpellHandler), static (in i) => new StormforgedChantEffect(i)));
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Two Sovereigns in one group replaced each other's chant on every member each pulse (same spell, so the newer one wins),
+        /// and could end a fellow Sovereign's own song. Every swap restarted the buff and recast its damage add. A singer keeps
+        /// their own song, and an equal or stronger chant already held is left alone; a strictly stronger one still takes over.
+        /// </summary>
+        public static bool YieldsTo(bool otherIsOwnSong, double otherDamage, double ourDamage) =>
+            otherIsOwnSong || otherDamage >= ourDamage;
+
+        private bool HeldByAnotherSinger(GameLiving member)
+        {
+            foreach (ECSGameSpellEffect effect in member.effectListComponent.GetSpellEffects(eEffect.StormforgedChant))
+            {
+                if (effect.IsEnding || effect.IsEnded || effect.SpellHandler.Caster == SpellHandler.Caster)
+                    continue;
+                if (YieldsTo(effect.Owner == effect.SpellHandler.Caster, effect.SpellHandler.Spell.Damage, SpellHandler.Spell.Damage))
+                    return true;
+            }
+            return false;
         }
     }
 

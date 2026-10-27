@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 
@@ -46,6 +47,18 @@ namespace DOL.GS.Spells
         public override bool UnstealthCasterOnStart => false;
         public override bool UnstealthCasterOnFinish => false;
         public override void CastSubSpells(GameLiving target) { }
+
+        // A self spell with a radius (the chant's 1,500, the Avatar's 350) went through the stock PBAE branch, which puts the
+        // effect on every non-hostile player and NPC in range: town NPCs, guards and strangers' bots got the chant's speed,
+        // resists and damage add, or the Avatar form. The effects fan out on their own (the chant to its group and their pets).
+        public override List<GameLiving> SelectTargets(GameObject castTarget)
+        {
+            if (Spell.Target is not eSpellTarget.SELF)
+                return base.SelectTargets(castTarget);
+            List<GameLiving> list = GameLoop.GetListForTick<GameLiving>();
+            list.Add(Caster);
+            return list;
+        }
 
         public override void FinishSpellCast(GameLiving target)
         {

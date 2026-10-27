@@ -2975,10 +2975,14 @@ namespace DOL.GS
 		public static string ObjectTypeToSpec(eObjectType objectType)
 		{
 			if (!m_objectTypeToSpec.TryGetValue(objectType, out string res))
-				if (log.IsWarnEnabled)
-					log.Warn("Not found spec for object type " + objectType);
+				if (log.IsWarnEnabled && m_warnedObjectTypes.TryAdd(objectType, 0))
+					log.Warn("Not found spec for object type " + objectType + " (logged once)");
 			return res;
 		}
+
+		// Bot gear checks ask about instruments thousands of times a night (6,064 warnings on 2026-10-27).
+		private static readonly ConcurrentDictionary<eObjectType, byte> m_warnedObjectTypes = new();
+		private static readonly ConcurrentDictionary<string, byte> m_warnedAbilityFallbacks = new();
 
 		/// <summary>
 		/// Convert spec to skill property
@@ -3100,8 +3104,8 @@ namespace DOL.GS
 			}
 			else
 			{
-				if (log.IsWarnEnabled)
-					log.Warn($"Could not instantiate Ability '{dba.KeyName}' from '{dba.Implementation}'. Fallback to default Ability.");
+				if (log.IsWarnEnabled && m_warnedAbilityFallbacks.TryAdd(dba.KeyName ?? string.Empty, 0))
+					log.Warn($"Could not instantiate Ability '{dba.KeyName}' from '{dba.Implementation}'. Fallback to default Ability. (logged once)");
 			}
 
 			return new(dba, 0);

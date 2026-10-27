@@ -517,7 +517,11 @@ namespace DOL.GS
                             if (start)
                                 effect.OnStartEffect();
 
-                            ServiceObjectStore.Add(effect);
+                            // An effect ended before this callback ran was already taken out of the store, and its stop callback is
+                            // queued behind this one. Adding it here left it ticking forever: 30 million such effects (mostly
+                            // Sovereign chant children replaced in the same tick) on the 2026-10-27 3,000-bot overnight run.
+                            if (!effect.IsEnded && !effect.IsEnding)
+                                ServiceObjectStore.Add(effect);
                             effect.Owner.effectListComponent.RequestPlayerUpdate(EffectHelper.GetPlayerUpdateFromEffect(effect.EffectType));
 
                             // Animations must be sent after calling `OnStartEffect` to prevent interrupts from interfering with them.
