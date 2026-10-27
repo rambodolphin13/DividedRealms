@@ -37,13 +37,12 @@ namespace DOL.GS.Tests
         }
 
         [Test]
-        public void ThirdQuickReturnToTheSameBindReleasesAtTheCapital()
+        public void SecondQuickReturnToTheSameBindReleasesAtTheCapital()
         {
             long soon = BotReleaseBindPoints.QuickReturnMilliseconds - 1;
+            Assert.That(BotReleaseBindPoints.SendsToCapital(0), Is.False, "the first release there");
             int returns = BotReleaseBindPoints.NextQuickReturns(0, true, soon);
-            Assert.That(BotReleaseBindPoints.SendsToCapital(returns), Is.False, "the second death there");
-            returns = BotReleaseBindPoints.NextQuickReturns(returns, true, soon);
-            Assert.That(BotReleaseBindPoints.SendsToCapital(returns), Is.True, "the third death there");
+            Assert.That(BotReleaseBindPoints.SendsToCapital(returns), Is.True, "the second release there this soon");
             Assert.That(BotReleaseBindPoints.NextQuickReturns(1, false, soon), Is.Zero, "another bind starts over");
             Assert.That(BotReleaseBindPoints.NextQuickReturns(1, true, BotReleaseBindPoints.QuickReturnMilliseconds), Is.Zero,
                 "a death long after the release starts over");

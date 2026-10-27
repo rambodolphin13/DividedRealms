@@ -45,9 +45,9 @@ namespace DOL.GS
 
         // Owner 2026-10-27: Ciaronan (level 23) released 202 times in a day at a Sheeroe Hills bind ringed by level 40-52
         // glimmers: every route out passed them, it died within a minute and released at the same bind again. A gamebot
-        // back at the same bind this soon for the third time in a row releases at its realm's safe capital instead.
+        // back at the same bind this soon for the second time in a row releases at its realm's safe capital instead.
         public const long QuickReturnMilliseconds = 6 * 60_000;
-        public const int QuickReturnsBeforeCapital = 2;
+        public const int QuickReturnsBeforeCapital = 1;
 
         public static int NextQuickReturns(int quickReturns, bool sameBind, long sinceLastRelease) =>
             sameBind && sinceLastRelease < QuickReturnMilliseconds ? quickReturns + 1 : 0;
