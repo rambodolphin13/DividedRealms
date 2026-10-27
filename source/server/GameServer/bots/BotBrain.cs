@@ -4132,7 +4132,10 @@ namespace DOL.AI.Brain
                         bool meleePressure = Body.IsBeingInterruptedByOther &&
                             Body.IsWithinRadius(Body.TargetObject, Body.MeleeAttackRange + 35);
                         if (!BotCasterPriority.AllowInstant(spell, PrefersCurrentSpellRange(), meleePressure))
+                        {
+                            BotTesterLog.Skipped(Body, spell, "instant: ranged caster holds non-damage instants");
                             continue;
+                        }
                         if (CheckInstantOffensiveSpells(spell))
                             return true;
                     }
@@ -4163,7 +4166,11 @@ namespace DOL.AI.Brain
                 // Melee hybrids prefer melee when in range (the Shaman and Vampiir cast between swings instead)
                 if (!PrefersCurrentSpellRange() && !ShamanBotCombatPolicy.CastsBetweenSwings((eCharacterClass)BotBody.CharacterClass.ID) &&
                     (BotBody.CanUsePositionalStyles || BotBody.CanUseAnytimeStyles) && (Body.IsWithinRadius(Body.TargetObject, 550) || Body.ManaPercent <= 10))
+                {
+                    foreach (Spell held in Body.HarmfulSpells ?? [])
+                        BotTesterLog.Skipped(Body, held, "cast: melee hybrid prefers melee in reach");
                     return false;
+                }
 
                 if (BotBody.CanCastCrowdControlSpells)
                 {
@@ -4250,6 +4257,9 @@ namespace DOL.AI.Brain
                         Body.StopAttack();
                         return true;
                     }
+                    else
+                        BotTesterLog.Skipped(Body, spellToCast, Body.IsBeingInterruptedByOther
+                            ? "cast: chosen, but the bot is being hit" : "cast: chosen, waiting for its own swing");
                     // Bots never use Quickcast. Instants remain available above;
                     // an interrupted ordinary cast waits for its legal window.
                 }
@@ -4374,23 +4384,58 @@ namespace DOL.AI.Brain
             return m_mobSpellLine;
         }
 
+        /// <summary>Instant attack spells the bot AI fires at its target (Bonedancer commands are checked separately).</summary>
+        public static bool IsInstantAttackType(eSpellType type) => type is
+            eSpellType.DirectDamage or eSpellType.NightshadeNuke or eSpellType.Lifedrain or
+            eSpellType.DexterityDebuff or eSpellType.DexterityQuicknessDebuff or eSpellType.StrengthDebuff or
+            eSpellType.StrengthConstitutionDebuff or eSpellType.CombatSpeedDebuff or eSpellType.DamageOverTime or
+            eSpellType.MeleeDamageDebuff or eSpellType.AllStatsPercentDebuff or eSpellType.CrushSlashThrustDebuff or
+            eSpellType.EffectivenessDebuff or eSpellType.Disease or eSpellType.Stun or eSpellType.Mez or
+            eSpellType.Mesmerize or
+            // Sovereign strikes, storms and Hammerfall: harmful royal abilities, reuse-gated.
+            eSpellType.StormSovereignAbility;
+
+        /// <summary>The first check that stops an instant attack spell, or null when it may be considered.</summary>
+        private string InstantOffenseBlock(Spell spell)
+        {
+            if (IsOutclassedDamageSpell(spell))
+                return "instant: outclassed by a higher damage spell";
+            if (Body.Mana < BotBody.PowerCost(spell))
+                return "instant: not enough power";
+            if (!BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType))
+                return "instant: Bard keeps mezzes for adds";
+            if (spell.HasRecastDelay && Body.GetSkillDisabledDuration(spell) > 0)
+                return "instant: on cooldown";
+            return null;
+        }
+
         protected bool CanCastOffensiveSpell(Spell spell)
         {
-            if (spell == null || spell.Level > Body.Level || IsOutclassedDamageSpell(spell) ||
-                Body.TargetObject is not GameLiving target || !target.IsAlive ||
-                !BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType) ||
-                !ShamanBotCombatPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell) ||
-                BotSpellPower.BlocksAttackerRotation(BotBody, spell) ||
-                !NeedsOffensiveSpellApplication(target, spell) ||
-                Body.GetSkillDisabledDuration(spell) > 0 || Body.Mana < BotBody.PowerCost(spell))
-                return false;
+            string blocked = OffensiveSpellBlock(spell);
+            if (blocked != null)
+                BotTesterLog.Skipped(Body, spell, blocked);
+            return blocked == null;
+        }
 
+        /// <summary>The first check that stops a cast-time attack spell, or null when it may be cast.</summary>
+        private string OffensiveSpellBlock(Spell spell)
+        {
+            if (spell == null) return "no spell";
+            if (spell.Level > Body.Level) return "cast: above the bot's level";
+            if (IsOutclassedDamageSpell(spell)) return "cast: outclassed by a higher damage spell";
+            if (Body.TargetObject is not GameLiving target || !target.IsAlive) return "cast: no living target";
+            if (!BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType))
+                return "cast: Bard keeps mezzes for adds";
+            if (!ShamanBotCombatPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell))
+                return "cast: healers keep roots for adds";
+            if (BotSpellPower.BlocksAttackerRotation(BotBody, spell)) return "cast: focus root blocks the caster rotation";
+            if (!NeedsOffensiveSpellApplication(target, spell)) return "cast: target already has it";
+            if (Body.GetSkillDisabledDuration(spell) > 0) return "cast: on cooldown";
+            if (Body.Mana < BotBody.PowerCost(spell)) return "cast: not enough power";
             if (spell.CastTime > 0 && spell.Target is eSpellTarget.ENEMY or eSpellTarget.AREA or eSpellTarget.CONE)
-            {
-                return Body.IsWithinRadius(target, OffensiveReach(spell.Range, spell.Radius, spell.CalculateEffectiveRange(Body)));
-            }
-
-            return false;
+                return Body.IsWithinRadius(target, OffensiveReach(spell.Range, spell.Radius, spell.CalculateEffectiveRange(Body)))
+                    ? null : "cast: target out of range";
+            return "cast: not a cast-time attack spell";
         }
 
         /// <summary>
@@ -4509,54 +4554,49 @@ namespace DOL.AI.Brain
 
         protected virtual bool CheckInstantOffensiveSpells(Spell spell)
         {
-            if (spell == null || IsOutclassedDamageSpell(spell) || Body.Mana < BotBody.PowerCost(spell) ||
-                !BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType) ||
-                spell.HasRecastDelay && Body.GetSkillDisabledDuration(spell) > 0)
+            if (spell == null)
                 return false;
+            if (InstantOffenseBlock(spell) is string blocked)
+            {
+                BotTesterLog.Skipped(Body, spell, blocked);
+                return false;
+            }
 
             bool castSpell = false;
 
-            switch (spell.SpellType)
+            // Bonedancer commands have their own test. It once sat inside the shared case list, so every type
+            // above it fell through to the commander check and no other bot cast an instant (see the tests).
+            if (spell.SpellType == eSpellType.CommanderCommand)
             {
-                case eSpellType.DirectDamage:
-                case eSpellType.NightshadeNuke:
-                case eSpellType.Lifedrain:
-                case eSpellType.DexterityDebuff:
-                case eSpellType.DexterityQuicknessDebuff:
-                case eSpellType.StrengthDebuff:
-                case eSpellType.StrengthConstitutionDebuff:
-                case eSpellType.CombatSpeedDebuff:
-                case eSpellType.DamageOverTime:
-                case eSpellType.MeleeDamageDebuff:
-                case eSpellType.AllStatsPercentDebuff:
-                case eSpellType.CrushSlashThrustDebuff:
-                case eSpellType.EffectivenessDebuff:
-                case eSpellType.Disease:
-                case eSpellType.Stun:
-                case eSpellType.CommanderCommand:
-                    castSpell = BotClassKitPolicy.CommanderCanAct(BotBody, spell, Body.TargetObject as GameLiving);
-                    break;
-
-                case eSpellType.Mez:
-                case eSpellType.Mesmerize:
-                // Sovereign strikes, storms and Hammerfall: harmful royal abilities, reuse-gated.
-                case eSpellType.StormSovereignAbility:
-                    if (spell.IsPBAoE && !Body.IsWithinRadius(Body.TargetObject, spell.Radius))
-                        break;
-
-                    if (!LivingHasEffect((GameLiving)Body.TargetObject, spell) && Body.IsWithinRadius(Body.TargetObject, spell.Range))
-                        castSpell = true;
-                    break;
+                castSpell = BotClassKitPolicy.CommanderCanAct(BotBody, spell, Body.TargetObject as GameLiving);
+                if (!castSpell)
+                    BotTesterLog.Skipped(Body, spell, "instant: commander missing or out of range");
             }
+            else if (!IsInstantAttackType(spell.SpellType))
+                BotTesterLog.Skipped(Body, spell, "instant: spell type not used by the bot attack AI");
+            else if (spell.IsPBAoE && !Body.IsWithinRadius(Body.TargetObject, spell.Radius))
+                BotTesterLog.Skipped(Body, spell, "instant: point-blank, target outside radius");
+            else if (LivingHasEffect((GameLiving)Body.TargetObject, spell))
+                BotTesterLog.Skipped(Body, spell, "instant: target already has it");
+            else if (!Body.IsWithinRadius(Body.TargetObject, spell.Range))
+                BotTesterLog.Skipped(Body, spell, "instant: target out of range");
+            else
+                castSpell = true;
 
             ECSGameEffect pulseEffect = EffectListService.GetPulseEffectOnTarget(Body, spell);
 
             if (pulseEffect != null)
+            {
+                BotTesterLog.Skipped(Body, spell, "instant: already pulsing on the target");
                 return false;
+            }
 
             if (castSpell)
             {
-                return Body.CastSpell(spell, m_mobSpellLine);
+                bool cast = Body.CastSpell(spell, m_mobSpellLine);
+                if (!cast)
+                    BotTesterLog.Skipped(Body, spell, "instant: cast request not accepted");
+                return cast;
             }
 
             return false;

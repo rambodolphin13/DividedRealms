@@ -134,6 +134,7 @@ internal sealed partial class MainForm : Form
     private readonly Button _startButton;
     private readonly Button _stopButton;
     private readonly Button _playButton;
+    private readonly Button _editorButton;
     private Process? _serverProcess;
     private RollingServerLog? _serverLog;
     private bool _stoppingServer;
@@ -209,9 +210,11 @@ internal sealed partial class MainForm : Form
         _startButton = ActionButton("START SERVER", Color.FromArgb(110, 128, 70));
         _stopButton = ActionButton("STOP SERVER", Color.FromArgb(151, 67, 57));
         _playButton = ActionButton("ENTER REALM", Color.FromArgb(65, 94, 145));
+        _editorButton = ActionButton("WORLD EDITOR", Color.FromArgb(92, 84, 128));
         _startButton.Click += (_, _) => StartServer();
         _stopButton.Click += async (_, _) => await StopServerAsync();
         _playButton.Click += (_, _) => LaunchClient();
+        _editorButton.Click += (_, _) => OpenWorldEditor();
 
         rootLayout.Controls.Add(BuildHeader(), 0, 0);
         rootLayout.Controls.Add(BuildCards(), 0, 1);
@@ -387,18 +390,40 @@ internal sealed partial class MainForm : Form
         header.Controls.Add(titlePanel, 0, 0);
 
         var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, Padding = new Padding(3, 5, 0, 0), BackColor = Color.Transparent };
-        foreach (var button in new[] { _startButton, _stopButton, _playButton })
+        foreach (var button in new[] { _startButton, _stopButton, _playButton, _editorButton })
         {
             button.Width = 132;
-            button.Height = 26;
-            button.Margin = new Padding(2, 2, 2, 2);
+            button.Height = 24;
+            button.Margin = new Padding(2, 1, 2, 1);
         }
         actions.Controls.Add(_startButton);
         actions.Controls.Add(_stopButton);
         actions.Controls.Add(_playButton);
+        actions.Controls.Add(_editorButton);
+        SetToolTip(_editorButton, "World Workshop: edit the world, NPCs, items, merchants and server settings of this game in your browser. "
+            + "Close the game and stop the server before saving changes.");
         header.Controls.Add(actions, 1, 0);
         banner.Controls.Add(header);
         return banner;
+    }
+
+    // World Workshop (the world / item / data editor) installed beside the server: runtime\world-workshop.
+    private string WorldEditorExecutable => Path.Combine(_root, "world-workshop", "WorldWorkshop.exe");
+
+    private void OpenWorldEditor()
+    {
+        if (!File.Exists(WorldEditorExecutable))
+        {
+            MessageBox.Show(this, "World Workshop is not installed in this game.\n\nExpected: " + WorldEditorExecutable,
+                "World editor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        Process.Start(new ProcessStartInfo(WorldEditorExecutable)
+        {
+            Arguments = $"--game \"{_root}\"",
+            WorkingDirectory = Path.GetDirectoryName(WorldEditorExecutable)!,
+            UseShellExecute = false,
+        });
     }
 
     private Control BuildCards()

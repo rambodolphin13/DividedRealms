@@ -26,6 +26,9 @@ The project's AI-developed additions do not remove upstream attribution.
   project.
 - Additional launcher/portal snapshots and bundled SDK/native/Python packages:
   retain their own licenses and notices; inclusion is not a blanket relicense.
+- World Workshop editor: Three.js r170, OrbitControls, GLTFLoader, BufferGeometryUtils,
+  and SkeletonUtils (MIT, Three.js Authors).
+  The renderer and its license are in source/tools/world_editor/static/vendor/.
 
 The original DAoC client, art, sound, maps and other third-party assets are not
 represented as authored by this project, and no original game-client source tree

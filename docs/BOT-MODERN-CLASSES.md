@@ -102,6 +102,58 @@ utility work for bots the way they do for players.
 - Cabalist, Enchanter and Spiritmaster damage shields stay off for bots on purpose.
 - Warlock Fear Slave only affects enemy pets.
 
+## Fixes from the third bot tester run (October 25)
+
+- **Hybrid attack spells:** Reavers, Valkyries, Champions, Valewalkers and Maulers now open with their attack
+  spells and cast them between swings, like Shamans and Vampiirs (`ShamanBotCombatPolicy.CastsBetweenSwings`).
+  Before, "melee hybrids prefer melee within 550 units" meant they only swung once in reach. That included the
+  Mauler endurance tap and power drain, which have a 3-second cast.
+- **Two-handed starter weapons:** a spear build (Valkyrie, Storm Sovereign) or a Mauler Staff build now starts with
+  its two-hander (`BotWeaponStats.PrimaryType`). Before, it got its one-handed fallback and never used its
+  two-handed styles (Wild Swing, Thrusting Spear).
+
+## Regression fixed October 25: instant attack spells
+
+The 8:32 PM build (also in the 0.38-dev2 release) added the Bonedancer command case inside the shared list of instant
+attack types in `BotBrain.CheckInstantOffensiveSpells`. Every type above it then fell through to the commander check,
+so no other bot cast an instant attack:
+- direct damage, damage over time and lifedrain
+- stat debuffs, diseases and stuns
+
+Reaver Soul Wench, Valkyrie Odin's Heel and Valewalker Nature's Nausea were all at 0 tries. The commander case is now
+separate. The type list is `BotBrain.IsInstantAttackType`, covered by a test.
+
+## Fixes from the fourth bot tester run (October 26)
+
+- **Heretic focus damage (players too):** every `RampingDamageFocus` spell (Arawn's Singe, Blazing and Lava
+  lines) dealt damage only once per cast. ECS pulses run `StartSpell`, which only rolled a resist and put a blank
+  effect on the target. The ramping damage lived in the legacy `OnSpellPulse`, which never runs. Now each pulse
+  deals its ramped damage behind one resist roll.
+  - Overnight that showed up as 2,183 casts, 1,953 hits and 10,871 resisted pulses.
+  - The resist chance itself was normal: 12.5% at matched levels.
+- **Heretics in melee reach:** they now cast and channel their focus between swings
+  (`ShamanBotCombatPolicy.CastsBetweenSwings`), with the focus first in the rotation. Before, "prefers melee in
+  reach" held it 114,051 times.
+- **"Always resisted" crowd control was a logging gap:** the tester counted success only from damage. Death Knight
+  Wasting Disease, Cabalist pet stun, Bonedancer pet disarms and the style stun showed only their negations. The
+  log now counts landings too (`landed`).
+  - The resist chance for these is normal: 12.5% for the disease, 0% for the pet stun.
+  - The style stun's "Immune" results come from the NPC stun immunity check. The next run's landing count will show
+    whether that is normal.
+
+## Fix from the fifth bot tester run (October 26, daytime)
+
+- **Bots kept their level 1 spells (all classes, an old bug):** a bot's usable-skill lists are cached when first
+  built, and the level-up and trainer paths reused the cache. Only the Bonedancer path rebuilt it. So a bot that
+  leveled during a session never learned another spell until the server restarted and reloaded it.
+  - In this run every class except the Bonedancer knew only level 1 spells, at levels 8 to 20.
+  - Death Knights cast only Billowing Death and leveled slowest.
+  - `SetBotSpells` now rebuilds both lists every time (`UT_BotSpellRefresh`).
+- **Results from the same run:**
+  - Arawn's Singe: 21,041 casts landed 210,428 pulses, about 10 per cast, with a 6% resist rate.
+  - Heretic kills per bot went from 77 to 654 (median for all classes: 453).
+  - Death Knight Wasting Disease lands 90% of the time.
+
 ## Not yet built for bots
 
 - The Death Knight's servant commands. Its `PetSpell` wrappers are not issued the way the classic

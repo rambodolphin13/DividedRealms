@@ -36,6 +36,8 @@ The files are in the server folder under `logs/bot-tester/`. In the modern test 
 - **Spells:**
   - Tries, casts, refusals and interrupts.
   - Resists, immunities and other negations.
+  - Landings: every target the spell got past its resist checks on. This counts stuns, disarms,
+    debuffs and procs, which never deal damage, so they don't look always resisted.
   - Hits, damage and zero-damage hits.
   - A refused cast keeps the message the game sent, for example "You must wait 5 seconds to cast again"
     or "Your target is not in view".
@@ -51,6 +53,16 @@ The files are in the server folder under `logs/bot-tester/`. In the modern test 
   - Its power and endurance, its group size, its activity and pet.
   - Its last 8 actions.
 - **Coverage:** the spells and styles each class knows, to find the ones its bots never use.
+
+## Why a spell was skipped
+
+When the bot AI passes over a known attack spell, the check that stopped it is counted, for example:
+- "instant: on cooldown", "instant: target out of range" or "instant: spell type not used by the bot attack AI"
+- "cast: melee hybrid prefers melee in reach" or "cast: chosen, but the bot is being hit"
+
+These counts are kept only in memory, with no event per skip. The report adds the top three reasons to each "never
+tried" finding. "Never considered" means the AI never looked at the spell at all. `summary-latest.json` has
+`skipped` and `skipReasons` for every spell.
 
 ## Findings
 

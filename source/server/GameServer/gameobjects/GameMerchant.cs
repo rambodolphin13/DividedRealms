@@ -864,4 +864,44 @@ namespace DOL.GS
 	{
 		public override string MoneyKey { get { return "dragonscales"; } }
 	}
+
+	/// <summary>
+	/// An item-currency merchant whose currency is data, not code: offline_currency_lists maps the
+	/// merchant's item list (ItemsListTemplateID) to the ItemTemplate it accepts. Prices on the list
+	/// are counts of that item. Set ClassType to DOL.GS.GameCustomCurrencyMerchant to use it.
+	/// </summary>
+	public class GameCustomCurrencyMerchant : GameItemCurrencyMerchant
+	{
+		private string _moneyKey;
+
+		public override string MoneyKey => _moneyKey;
+
+		public static string CurrencyKeyFor(DbOfflineCurrencyList row)
+		{
+			string key = row?.CurrencyItem?.Trim();
+			return string.IsNullOrEmpty(key) ? null : key;
+		}
+
+		public override void LoadTemplate(INpcTemplate template)
+		{
+			base.LoadTemplate(template);
+			RefreshCurrency();
+		}
+
+		public override void LoadFromDatabase(DataObject merchantobject)
+		{
+			base.LoadFromDatabase(merchantobject);
+			RefreshCurrency();
+		}
+
+		/// <summary>Reads the currency item for the current item list.</summary>
+		public void RefreshCurrency()
+		{
+			string listId = TradeItems?.ItemsListID;
+			DbOfflineCurrencyList row = string.IsNullOrEmpty(listId) ? null : GameServer.Database.FindObjectByKey<DbOfflineCurrencyList>(listId);
+			_moneyKey = CurrencyKeyFor(row);
+			m_itemTemplate = _moneyKey == null ? null : GameServer.Database.FindObjectByKey<DbItemTemplate>(_moneyKey);
+			m_moneyItem = m_itemTemplate == null ? null : WorldInventoryItem.CreateFromTemplate(m_itemTemplate);
+		}
+	}
 }

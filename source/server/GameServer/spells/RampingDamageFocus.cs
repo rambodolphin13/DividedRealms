@@ -22,8 +22,29 @@ namespace DOL.GS.Spells
 		{
 			Target = target;
 			Caster.Mana -= (PowerCost(target) + Spell.PulsePower);
+			pulseCount = 0;
+			// The base cast starts the pulse effect and lands the first hit through StartSpell.
 			base.FinishSpellCast(target);
-			OnDirectEffect(target);
+		}
+
+		/// <summary>
+		/// The first hit and every pulse land through here: the base rolls the resist once per target,
+		/// then ApplyEffectOnTarget deals that pulse's ramped damage.
+		/// </summary>
+		public override bool StartSpell(GameLiving target)
+		{
+			bool started = base.StartSpell(target);
+			if (started)
+				pulseCount++;
+			return started;
+		}
+
+		public override void ApplyEffectOnTarget(GameLiving target)
+		{
+			DealDamage(target);
+
+			if (Spell.Value > 0)
+				snareSubSpell.StartSpell(target);
 		}
 
 		public override void OnSpellPulse(PulsingSpellEffect effect)
@@ -39,8 +60,7 @@ namespace DOL.GS.Spells
 			{
 				Caster.Mana -= Spell.PulsePower;
 				SendEffectAnimation(Caster, 0, true, 1); // pulsing auras or songs
-				pulseCount += 1;
-				OnDirectEffect(Target);
+				StartSpell(Target);
 			}
 			else
 			{
@@ -75,36 +95,13 @@ namespace DOL.GS.Spells
 			return false;
 		}
 
-		public override void OnDirectEffect(GameLiving target)
-		{
-			if (target == null) return;
-
-			var targets = SelectTargets(target);
-
-			foreach (GameLiving t in targets)
-			{
-				// The resist chance is a percentage; Util.Chance(double) takes a 0-1 fraction.
-				if (Util.Chance(CalculateSpellResistChance(t) / 100.0))
-				{
-					OnSpellNegated(target, SpellNegatedReason.Resisted);
-					continue;
-				}
-				
-				DealDamage(t);
-
-				if (Spell.Value > 0)
-				{
-					snareSubSpell.StartSpell(t);
-				}
-			}
-		}
-
 		protected virtual void DealDamage(GameLiving target)
 		{
 			if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
 
 			double growthPercent = Spell.LifeDrainReturn * 0.01;
 			double growthCapPercent = Spell.AmnesiaChance * 0.01;
+			// pulseCount is 0 for the first hit and counts the pulses before this one.
 			double damageIncreaseInPercent = Math.Min(pulseCount * growthPercent, growthCapPercent);
 
 			AttackData ad = CalculateDamageToTarget(target);

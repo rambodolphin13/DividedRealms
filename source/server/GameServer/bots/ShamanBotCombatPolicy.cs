@@ -14,11 +14,15 @@ namespace DOL.GS
         public static bool IsHybrid(eCharacterClass characterClass) => characterClass == eCharacterClass.Shaman;
 
         /// <summary>
-        /// Melee classes whose spells are cast between swings: the Shaman, and the Vampiir, a list caster that
-        /// fights with a weapon. Their ready spells wait out the bot's own swing instead of never being cast.
+        /// Melee classes whose attack spells are part of their fighting: they open with them and cast them
+        /// between swings (a ready spell waits out the bot's own swing), instead of only meleeing once in reach.
+        /// The bot tester found Reavers, Valkyries, Champions, Valewalkers and Maulers never cast theirs, and Heretics
+        /// never channeled their focus damage once in melee reach.
         /// </summary>
         public static bool CastsBetweenSwings(eCharacterClass characterClass) =>
-            characterClass is eCharacterClass.Shaman or eCharacterClass.Vampiir;
+            characterClass is eCharacterClass.Shaman or eCharacterClass.Vampiir or
+                eCharacterClass.Reaver or eCharacterClass.Valkyrie or eCharacterClass.Champion or eCharacterClass.Valewalker or
+                eCharacterClass.MaulerAlb or eCharacterClass.MaulerMid or eCharacterClass.MaulerHib or eCharacterClass.Heretic;
 
         public static bool IsRoot(Spell spell) =>
             spell != null && spell.SpellType == eSpellType.SpeedDecrease && spell.Value >= 99;
@@ -38,7 +42,8 @@ namespace DOL.GS
         /// <summary>Nukes and bolts first, then the damage over time, then the disease.</summary>
         public static int RotationPriority(Spell spell) => spell?.SpellType switch
         {
-            eSpellType.Bolt or eSpellType.DirectDamage => 0,
+            // A Heretic's ramping focus is its main damage: channeled through hits, it outdamages its flail.
+            eSpellType.Bolt or eSpellType.DirectDamage or eSpellType.RampingDamageFocus => 0,
             eSpellType.DamageOverTime => 1,
             _ => 2,
         };

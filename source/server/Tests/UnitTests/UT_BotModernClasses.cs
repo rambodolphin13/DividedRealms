@@ -232,8 +232,41 @@ public sealed class UT_BotModernClasses
     {
         Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Vampiir), Is.True);
         Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Shaman), Is.True);
-        Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Champion), Is.False);
+        Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Champion), Is.True);
+        Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Reaver), Is.True);
+        Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Valkyrie), Is.True);
+        Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.MaulerMid), Is.True);
+        Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Heretic), Is.True, "channels Arawn's Singe in melee reach");
+        Assert.That(ShamanBotCombatPolicy.RotationPriority(new Spell(new DbSpell { Type = "RampingDamageFocus", Target = "Enemy" }, 1)), Is.EqualTo(0),
+            "the Heretic's focus damage comes first");
+        Assert.That(ShamanBotCombatPolicy.CastsBetweenSwings(eCharacterClass.Warrior), Is.False, "pure melee has no attack spells");
         Assert.That(ShamanBotCombatPolicy.IsHybrid(eCharacterClass.Vampiir), Is.False, "root rules stay the Shaman's");
+    }
+
+    [TestCase(eSpellType.DirectDamage)]
+    [TestCase(eSpellType.DamageOverTime)]
+    [TestCase(eSpellType.Lifedrain)]
+    [TestCase(eSpellType.Stun)]
+    [TestCase(eSpellType.Disease)]
+    [TestCase(eSpellType.StormSovereignAbility)]
+    public void InstantAttacksAreFiredForEveryClass(eSpellType type) =>
+        // Regression: Reaver Soul Wench, Valkyrie Odin's Heel and other instants were never cast after the
+        // Bonedancer command case landed inside this list and made every type use the commander check.
+        Assert.That(BotBrain.IsInstantAttackType(type), Is.True);
+
+    [Test]
+    public void BonedancerCommandsAreNotInTheSharedInstantList() =>
+        Assert.That(BotBrain.IsInstantAttackType(eSpellType.CommanderCommand), Is.False, "they have their own commander test");
+
+    [Test]
+    public void StaffAndSpearBuildsStartWithTheirTwoHander()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(BotWeaponStats.PrimaryType(eObjectType.FistWraps, eObjectType.MaulerStaff, true), Is.EqualTo(eObjectType.MaulerStaff));
+            Assert.That(BotWeaponStats.PrimaryType(eObjectType.Sword, eObjectType.Spear, true), Is.EqualTo(eObjectType.Spear));
+            Assert.That(BotWeaponStats.PrimaryType(eObjectType.Sword, eObjectType.Spear, false), Is.EqualTo(eObjectType.Sword));
+        });
     }
 
     [Test]

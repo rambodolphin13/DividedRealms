@@ -68,6 +68,19 @@ public sealed class UT_BotTesterLog
         BotTesterLog.Finding finding = Findings(skill).Single();
         Assert.That(finding.Severity, Is.EqualTo("info"));
         Assert.That(finding.Problem, Does.Contain("known by 2"));
+        Assert.That(finding.Detail, Does.Contain("never considered"), "no skip recorded means the AI never looked at it");
+    }
+
+    [Test]
+    public void NeverTriedSpellShowsWhyTheAiSkippedIt()
+    {
+        var skill = Skill();
+        skill.KnownBy.TryAdd("bot-a", 0);
+        skill.Skip("instant: spell type not used by the bot attack AI");
+        skill.Skip("instant: spell type not used by the bot attack AI");
+        skill.Skip("instant: on cooldown");
+        BotTesterLog.Finding finding = Findings(skill).Single();
+        Assert.That(finding.Detail, Does.StartWith("skipped: instant: spell type not used by the bot attack AI x2"));
     }
 
     [Test]
@@ -89,6 +102,20 @@ public sealed class UT_BotTesterLog
         BotTesterLog.Finding finding = Findings(skill).Single(f => f.Problem.Contains("resisted"));
         Assert.That(finding.Severity, Is.EqualTo("high"));
         Assert.That(finding.Problem, Does.Contain("348 of 348"));
+    }
+
+    [Test]
+    public void CrowdControlThatLandsIsNotReportedAsAlwaysResisted()
+    {
+        // Wasting Disease, pet stuns and disarms never deal damage: before landings were counted,
+        // the 12.5% of procs that were resisted were the only thing recorded, so they looked 100% resisted.
+        var skill = Skill();
+        skill.Type = "Disease";
+        skill.Negated = 312;
+        skill.Landed = 2200;
+        Assert.That(Findings(skill).Where(f => f.Problem.Contains("resisted")), Is.Empty);
+        skill.Landed = 0;
+        Assert.That(Findings(skill).Single(f => f.Problem.Contains("resisted")).Problem, Does.Contain("312 of 312 attempts to land (0 landed"));
     }
 
     [Test]

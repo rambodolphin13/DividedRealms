@@ -13,6 +13,11 @@ The install (the developer's modern test, only read) gives the server folder and
   * tools/connect-local1130.exe (upstream's connect.exe with its 1.130 edit), tools/dotnet (the .NET runtime), the
     START cmd, READ ME FIRST, the licences and docs.
 No retail client file ships (checked), and nothing is started.
+
+Build the server and launcher first without the developer's paths in the binaries (the package check refuses them):
+    dotnet build "source/server/Dawn of Light.sln" -c Release --no-incremental -p:PathMap=<repo>=X:\\OfflineDAoC
+        -p:Deterministic=true -p:EnableSourceLink=false -p:EnableSourceControlManagerQueries=false
+    (and the same for source/tools/OfflineDaoc.Launcher), then python source/tools/world_editor/build_package.py.
 """
 from __future__ import annotations
 
@@ -36,7 +41,10 @@ PORT = 10330
 CONNECTOR_SHA256 = '18ab2f8a95be682e0f6acbbb6c7332e9ef05f1586872626f63a3122782f6ba70'
 CONNECTOR = 'connect-local1130.exe'
 # Runtime files of the developer's install that the package writes itself or never ships.
-RUNTIME_SKIP_DIRS = {'client-modern'}
+# world-workshop-data holds the developer's editor backups (database snapshots): never shipped. The editor itself
+# (world-workshop) is installed from the repository's clean package build instead of the install's copy.
+RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data'}
+WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
 RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json'}
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}
@@ -105,6 +113,13 @@ def server_config(config: Path):
     assert f'<Port>{PORT}</Port>' in text and '<IP>127.0.0.1</IP>' in text, 'the modern server must listen on loopback 10330'
 
 
+def PATH_NEEDLES(user):
+    """The user name as a path folder (backslash or slash on both sides), in UTF-8 and UTF-16: not the bare word, which also turns
+    up inside unrelated data (a compression dictionary holds "buenatexto")."""
+    forms = [f'{sep}{user}{sep}' for sep in ('\\', '/')]
+    return [f.encode(enc) for f in forms for enc in ('utf-8', 'utf-16-le')]
+
+
 def check_package(out: Path, pristine: Path):
     """Nothing personal, diagnostic or retail ships."""
     runtime = out / 'runtime'
@@ -125,6 +140,13 @@ def check_package(out: Path, pristine: Path):
              and p.stat().st_size < 8 << 20 and not p.relative_to(out).as_posix().startswith('tools/dotnet/')
              and personal.search(p.read_text(encoding='utf-8', errors='ignore'))]
     assert not leaks, f'files naming the developer\'s machine: {leaks[:20]}'
+    # Binaries too (a developer build embeds its PDB and source paths): the user name must not appear in them.
+    user = Path.home().name
+    binary = [p.relative_to(out).as_posix() for p in out.rglob('*') if p.is_file() and p.stat().st_size < 64 << 20
+              and p.suffix.lower() in ('.dll', '.exe', '.pdb', '.json', '.db')
+              and not p.relative_to(out).as_posix().startswith('tools/dotnet/')
+              and any(n in p.read_bytes() for n in PATH_NEEDLES(user))]
+    assert not binary, f'binaries naming the developer: {binary[:20]}'
 
 
 def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> dict:
@@ -138,6 +160,8 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
     for path in [server_build / 'GameServer.dll'] + [launcher_build / n for n in LAUNCHER_FILES]:
         if not path.is_file():
             raise SystemExit(f'Build the Release server and launcher first: {path} is missing')
+    if not (repo / WORLD_WORKSHOP / 'WorldWorkshop.exe').is_file():
+        raise SystemExit('Build World Workshop first: python source/tools/world_editor/build_package.py')
     connector = install / 'tools' / CONNECTOR
     if sha(connector) != CONNECTOR_SHA256:
         raise SystemExit('The install\'s 1.130 connector is not the expected one')
@@ -174,15 +198,22 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
 
     print('Installing the Release server and launcher builds...', flush=True)
     replaced = {}
+    # Every server assembly this repository builds, not only GameServer: the install's older Core* copies were built
+    # with the developer's paths (0.38-dev2 shipped them). Build with PathMap and SourceLink off (see the docstring).
     for folder in ('server', 'server/lib', 'server/win-x64'):
-        for name in ('GameServer.dll', 'GameServer.pdb'):
+        for name in [f'{a}.{e}' for a in ('CoreBase', 'CoreDatabase', 'CoreServer', 'GameServer') for e in ('dll', 'pdb')]:
             target = runtime / folder / name
-            if target.exists():
-                shutil.copy2(server_build / name, target)
+            source = server_build / name if (server_build / name).is_file() else server_build.parent / name
+            if target.exists() and source.is_file():
+                shutil.copy2(source, target)
                 replaced[f'{folder}/{name}'] = sha(target)
     for name in LAUNCHER_FILES:
         shutil.copy2(launcher_build / name, runtime / name)
         replaced[name] = sha(runtime / name)
+
+    # World Workshop for the launcher's WORLD EDITOR button (runtime/world-workshop; it keeps its state beside it).
+    shutil.copytree(repo / WORLD_WORKSHOP, runtime / 'world-workshop')
+    replaced['world-workshop/WorldWorkshop.exe'] = sha(runtime / 'world-workshop/WorldWorkshop.exe')
 
     (runtime / 'client-patch.json').write_text(json.dumps(patch, indent=1), encoding='utf-8')
     profile = dict(ClientDirectory='client-modern/app', ConnectorPath='..\\tools\\' + CONNECTOR,

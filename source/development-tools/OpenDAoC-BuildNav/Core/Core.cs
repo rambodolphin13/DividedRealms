@@ -38,7 +38,13 @@ namespace CEM.Core {
     /// </summary>
     public static void Init() {
       // Set working dir
-      Environment.CurrentDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), ROOT_DIR);
+      // Tools can isolate generated geometry without sharing the executable's base/zones cache.
+      string configuredBase = Environment.GetEnvironmentVariable("DAOC_BUILDNAV_BASE");
+      string outputBase = string.IsNullOrWhiteSpace(configuredBase)
+        ? Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), ROOT_DIR)
+        : Path.GetFullPath(configuredBase);
+      Directory.CreateDirectory(outputBase);
+      Environment.CurrentDirectory = outputBase;
       //Win32.SetDllDirectory(IntPtr.Size == 8 ? "x64" : "x86");
       AppDomain.CurrentDomain.AssemblyResolve += (o, rargs) => {
         Assembly loaded = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.FullName == rargs.Name);

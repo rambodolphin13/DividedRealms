@@ -3690,6 +3690,11 @@ namespace DOL.GS
             if (CharacterClass == null)
                 return;
 
+            // Both skill lists are cached when first built. Rebuild them so a level-up or a trainer visit adds the
+            // spells it unlocked: the bot tester found every leveling bot except the Bonedancer stuck on its level 1 spells.
+            GetAllUsableSkills(true);
+            GetAllUsableListSpells(true);
+
             // Casters use list spells (highest level per type), hybrids use all usable skills
             if (CharacterClass.ClassType == eClassType.ListCaster)
                 SetCasterSpells();

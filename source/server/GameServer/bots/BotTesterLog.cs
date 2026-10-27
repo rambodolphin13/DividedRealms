@@ -46,7 +46,8 @@ namespace DOL.GS
         private static readonly JsonSerializerOptions PrettyJson = new() { WriteIndented = true };
 
         private static readonly ConcurrentQueue<string> Pending = new();
-        private static readonly ConcurrentDictionary<string, SkillStats> Skills = new();
+        // Keyed by (kind, class, id) value tuples: the skip hooks run on every bot think and must not allocate keys.
+        private static readonly ConcurrentDictionary<(string Kind, int ClassId, int Id), SkillStats> Skills = new();
         private static readonly ConcurrentDictionary<int, ClassStats> Classes = new();
         private static readonly ConcurrentDictionary<string, ProblemStats> Exceptions = new();
         private static readonly ConcurrentDictionary<string, long> Throttle = new();
@@ -76,10 +77,13 @@ namespace DOL.GS
             public bool Harmful;
             public double ListedDamage;
             public readonly ConcurrentDictionary<string, byte> KnownBy = new();
-            public long Attempts, Casts, Refused, Interrupted, Negated, Hits, ZeroDamageHits, Damage, Failed;
+            public long Attempts, Casts, Refused, Interrupted, Negated, Landed, Hits, ZeroDamageHits, Damage, Failed, Skipped;
             public readonly ConcurrentDictionary<string, long> Reasons = new();
+            /// <summary>Why the bot AI passed over this spell before trying it (no cast was requested).</summary>
+            public readonly ConcurrentDictionary<string, long> SkipReasons = new();
 
             public void Reason(string reason) => Reasons.AddOrUpdate(Trim(reason, 160), 1, (_, n) => n + 1);
+            public void Skip(string reason) => SkipReasons.AddOrUpdate(reason, 1, (_, n) => n + 1);
         }
 
         internal sealed class ClassStats
@@ -120,7 +124,7 @@ namespace DOL.GS
         {
             int classId = bot.CharacterClass?.ID ?? 0;
             string kind = pet ? "pet-spell" : "spell";
-            return Skills.GetOrAdd($"{kind}:{classId}:{spell.ID}", _ => new SkillStats
+            return Skills.GetOrAdd((kind, classId, spell.ID), _ => new SkillStats
             {
                 Kind = kind, ClassId = classId, Id = spell.ID, Name = spell.Name, Type = spell.SpellType.ToString(),
                 Level = spell.Level, Harmful = spell.IsHarmful, ListedDamage = spell.Damage
@@ -130,7 +134,7 @@ namespace DOL.GS
         private static SkillStats StyleStats(GameBot bot, Style style)
         {
             int classId = bot.CharacterClass?.ID ?? 0;
-            return Skills.GetOrAdd($"style:{classId}:{style.ID}", _ => new SkillStats
+            return Skills.GetOrAdd(("style", classId, style.ID), _ => new SkillStats
             {
                 Kind = "style", ClassId = classId, Id = style.ID, Name = style.Name, Type = style.Spec, Level = style.Level, Harmful = true
             });
@@ -166,6 +170,22 @@ namespace DOL.GS
                     if (spell != null) SpellStats(bot, spell, false).KnownBy.TryAdd(id, 0);
                 foreach (Style style in bot.Styles?.ToArray() ?? [])
                     if (style != null) StyleStats(bot, style).KnownBy.TryAdd(id, 0);
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// The bot AI considered a known attack spell and passed over it, with the deciding check. Counted only
+        /// (no event per call): these run on every think. Reasons should be short constant strings.
+        /// </summary>
+        public static void Skipped(GameLiving caster, Spell spell, string reason)
+        {
+            if (!Enabled || spell == null || caster is not GameBot bot) return;
+            try
+            {
+                SkillStats stats = SpellStats(bot, spell, false);
+                Interlocked.Increment(ref stats.Skipped);
+                stats.Skip(reason);
             }
             catch { }
         }
@@ -244,6 +264,19 @@ namespace DOL.GS
                 stats.Reason(reason);
                 if (Verbose)
                     Write("spell-negated", bot, new { pet, spell = SpellInfo(handler.Spell), target = TargetInfo(target), reason });
+            }
+            catch { }
+        }
+
+        /// <summary>The spell passed its resist and immunity checks on a target (counts crowd control, debuffs and procs, not only damage).</summary>
+        public static void SpellLanded(SpellHandler handler, GameLiving target)
+        {
+            if (!Enabled || handler?.Spell == null) return;
+            try
+            {
+                GameBot bot = Resolve(handler.Caster, out bool pet);
+                if (bot == null) return;
+                Interlocked.Increment(ref SpellStats(bot, handler.Spell, pet).Landed);
             }
             catch { }
         }
@@ -530,8 +563,9 @@ namespace DOL.GS
             .OrderBy(s => s.Level).ThenBy(s => s.Id)
             .Select(s => new
             {
-                s.Id, s.Name, s.Type, s.Level, knownBy = s.KnownBy.Count, s.Attempts, used = s.Casts, s.Refused, s.Interrupted,
-                negated = s.Negated, failed = s.Failed, s.Hits, zeroDamageHits = s.ZeroDamageHits, s.Damage,
+                s.Id, s.Name, s.Type, s.Level, knownBy = s.KnownBy.Count, s.Attempts, used = s.Casts, s.Refused, s.Interrupted, s.Skipped,
+                skipReasons = s.SkipReasons.OrderByDescending(r => r.Value).Take(5).Select(r => $"{r.Key} x{r.Value}").ToArray(),
+                negated = s.Negated, s.Landed, failed = s.Failed, s.Hits, zeroDamageHits = s.ZeroDamageHits, s.Damage,
                 averageDamage = s.Hits > 0 ? s.Damage / s.Hits : s.Kind == "style" && s.Casts > 0 ? s.Damage / s.Casts : 0,
                 reasons = s.Reasons.OrderByDescending(r => r.Value).Take(5).Select(r => $"{r.Key} x{r.Value}").ToArray()
             }).ToArray<object>();
@@ -555,14 +589,19 @@ namespace DOL.GS
                 if (s.Kind != "style" && s.ListedDamage > 0 && s.Hits >= 5 && s.Damage == 0)
                     yield return new Finding("high", cls, skill, $"damage spell hit {s.Hits} times for 0 damage", reasons);
                 // A pulsing or area spell can be negated several times per cast, so compare against every landing attempt.
-                long landings = Math.Max(s.Casts, s.Hits + s.Negated);
+                long landed = Math.Max(s.Hits, s.Landed);
+                long landings = Math.Max(s.Casts, landed + s.Negated);
                 if (s.Kind != "style" && s.Negated >= 10 && s.Negated * 10 >= landings * 9)
-                    yield return new Finding(s.Hits == 0 && s.ListedDamage > 0 ? "high" : "medium", cls, skill,
-                        $"resisted or negated {s.Negated} of {landings} attempts to land ({s.Hits} hits)", reasons);
+                    yield return new Finding(landed == 0 && s.ListedDamage > 0 ? "high" : "medium", cls, skill,
+                        $"resisted or negated {s.Negated} of {landings} attempts to land ({landed} landed, {s.Hits} hits)", reasons);
                 if (s.Interrupted >= 20 && s.Interrupted > s.Casts)
                     yield return new Finding("low", cls, skill, $"interrupted more often than cast ({s.Interrupted} vs {s.Casts})", reasons);
                 if (s.KnownBy.Count > 0 && tries == 0 && s.Attempts == 0)
-                    yield return new Finding("info", cls, skill, $"known by {s.KnownBy.Count} bot(s) but never tried", "the bot AI may not know how to use it");
+                {
+                    string skips = string.Join("; ", s.SkipReasons.OrderByDescending(r => r.Value).Take(3).Select(r => $"{r.Key} x{r.Value}"));
+                    yield return new Finding("info", cls, skill, $"known by {s.KnownBy.Count} bot(s) but never tried",
+                        skips.Length > 0 ? "skipped: " + skips : "never considered by the bot AI (no skip recorded)");
+                }
             }
         }
 

@@ -90,9 +90,12 @@ namespace DOL.GS
                    bot.GetModifiedSpecLevel(Specs.Flexible) > 0;
         }
 
+        // Midgard spears and Mauler staves are two-handed too: spear Valkyries and Storm Sovereigns and staff
+        // Maulers otherwise got their one-handed fallback as the starter and never used their two-handed styles.
         public static eObjectType PrimaryType(eObjectType first, eObjectType second, bool twoHanded) =>
             twoHanded && second is eObjectType.TwoHandedWeapon or eObjectType.PolearmWeapon or
-                eObjectType.LargeWeapons or eObjectType.CelticSpear or eObjectType.Scythe ? second :
+                eObjectType.LargeWeapons or eObjectType.CelticSpear or eObjectType.Scythe or
+                eObjectType.Spear or eObjectType.MaulerStaff ? second :
                 first != 0 ? first : second;
 
         public static bool FitsConfiguredSlot(GameBot bot, DbInventoryItem item, eInventorySlot slot)

@@ -2216,6 +2216,8 @@ namespace DOL.GS.Spells
 				if (CheckSpellResist(targetInList))
 					continue;
 
+				BotTesterLog.SpellLanded(this, targetInList);
+
 				if (Spell.Radius == 0 || HasPositiveEffect)
 					ApplyEffectOnTarget(targetInList);
 				else
