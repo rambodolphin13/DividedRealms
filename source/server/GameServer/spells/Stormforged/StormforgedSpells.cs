@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
@@ -67,6 +68,15 @@ namespace DOL.GS.Spells
     public class StormforgedChant : StormforgedMaintainedSpell
     {
         public StormforgedChant(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+        // The singer's effect reaches the group itself (StormforgedChantEffect); the stock self-with-radius selection
+        // would also play the cast on every friendly NPC in range.
+        public override List<GameLiving> SelectTargets(GameObject castTarget)
+        {
+            List<GameLiving> list = GameLoop.GetListForTick<GameLiving>();
+            list.Add(Caster);
+            return list;
+        }
         public override string ShortDescription => $"Until cancelled: restores {Spell.Damage} health, power and endurance every {Spell.Frequency / 1000.0:0.#} seconds to your group within {Spell.Radius} units. Movement speed: {Spell.Value}% of normal, including combat and stealth. Weapon damage add: {SkillBase.GetSpellByID(Spell.SubSpellID)?.Damage ?? 0:0.#}. Roots and mezzes still apply.";
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams) =>
             ECSGameEffectFactory.Create(initParams, static (in i) => new StormforgedChantEffect(i));

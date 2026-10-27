@@ -32,13 +32,15 @@ namespace DOL.GS
         {
             if(!base.AddToWorld()) return false;
             _normalModel=Model;
-            if(Owner!=null) GameEventMgr.AddHandler(Owner,GamePlayerEvent.StealthStateChanged,OwnerStealthChanged);
+            // Player-only event: a /spawn or gamebot owner threw here and the casting service removed the bot.
+            // Bot owners are kept in sync by StormWolfBrain.Think instead.
+            if(Owner is GamePlayer) GameEventMgr.AddHandler(Owner,GamePlayerEvent.StealthStateChanged,OwnerStealthChanged);
             SyncOwner();
             return true;
         }
         public override bool RemoveFromWorld()
         {
-            if(Owner!=null) GameEventMgr.RemoveHandler(Owner,GamePlayerEvent.StealthStateChanged,OwnerStealthChanged);
+            if(Owner is GamePlayer) GameEventMgr.RemoveHandler(Owner,GamePlayerEvent.StealthStateChanged,OwnerStealthChanged);
             return base.RemoveFromWorld();
         }
         private void OwnerStealthChanged(DOLEvent e,object sender,EventArgs args)=>SyncOwner();
