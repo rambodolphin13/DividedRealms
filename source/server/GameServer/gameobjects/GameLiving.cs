@@ -1417,6 +1417,8 @@ namespace DOL.GS
 				source = livingOwner;
 			}
 
+			RunTelemetry.Damage(this, source, damageDealt);
+
 			if (source is GameLiving livingSource && source != this)
 			{
 				if (source is GamePlayer attackerPlayer)

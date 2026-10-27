@@ -196,6 +196,7 @@ namespace DOL.AI.Brain
 
         public override void Enter()
         {
+            RunTelemetry.MobReset(_brain.Body);
             _brain.ClearAggroList();
             base.Enter();
         }
