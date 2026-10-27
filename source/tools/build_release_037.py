@@ -67,7 +67,9 @@ EXCLUDED_SUFFIXES = (".log", ".dmp", ".gcdump", ".bak", ".sqlite3.db", ".sqlite3
 FORBIDDEN_SUFFIXES = (".on", ".off", ".dmp", ".gcdump", ".log")
 FORBIDDEN_NAMES = {"d3d9.dll", "dxvk.conf", "account.txt", "claude_test_account.txt", "dev_mode.txt"}
 REQUIRED_FILES = ("server/navmesh/roads.json", "server/navmesh/seams.json", "server/navmesh/pockets.json",
-                  "server/GameServer.dll", "server/CoreServer.exe", "client-opendaoc/app/game.dll", "OfflineDAoC.exe")
+                  "server/GameServer.dll", "server/CoreServer.exe", "client-opendaoc/app/game.dll", "OfflineDAoC.exe",
+                  # Abermenai's terrain, missing from the stock client (add_abermenai_terrain.py)
+                  "client-opendaoc/app/zones/zone253/ter253.mpk", "client-opendaoc/app/zones/zone253/lod253.mpk")
 
 
 def sha(path: Path) -> str:

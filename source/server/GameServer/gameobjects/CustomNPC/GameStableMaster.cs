@@ -237,7 +237,7 @@ namespace DOL.GS
 						mount.MaxSpeedBase = 1500;
 						mount.AddToWorld();
 						mount.CurrentPathPoint = path;
-						new MountHorseAction(player, mount).Start(400);
+						new MountHorseAction(player, mount).Start(GameTaxi.MountDelay);
 						new HorseRideAction(mount).Start(4000);
 						// The real player's ticket was just consumed by the native stable
 						// master.  Only that player's in-range /spawn companions may mirror
