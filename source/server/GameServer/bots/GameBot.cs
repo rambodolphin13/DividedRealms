@@ -126,19 +126,21 @@ namespace DOL.GS
 
         /// <summary>
         /// Clicking a bot of your own realm reads like clicking a player, with its class, as on live. Enemy
-        /// gamebots keep their faction message (their names are masked too).
+        /// gamebots keep their faction message (their names are masked too). In the co-op world another realm's
+        /// bot reads as your own wherever the rules make it friendly.
         /// </summary>
         public override IList GetExamineMessages(GamePlayer player)
         {
-            if (IsAutonomousWorldBot && player != null && Realm != eRealm.None && player.Realm != eRealm.None &&
-                Realm != player.Realm)
+            bool ally = player != null && (player.Realm == Realm ||
+                ServerRules.HybridCoopRules.Enabled && GameServer.ServerRules.IsSameRealm(player, this, true));
+            if (IsAutonomousWorldBot && player != null && Realm != eRealm.None && player.Realm != eRealm.None && !ally)
             {
                 return new ArrayList(1)
                 {
                     $"You examine {GetName(0, false)}. {GetPronoun(0, true)} is a member of an enemy faction."
                 };
             }
-            if (player == null || CharacterClass == null || Realm == eRealm.None || player.Realm != Realm)
+            if (player == null || CharacterClass == null || Realm == eRealm.None || !ally)
                 return base.GetExamineMessages(player);
             return new ArrayList(1)
             {

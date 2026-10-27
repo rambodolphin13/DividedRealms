@@ -10852,7 +10852,9 @@ namespace DOL.GS
             {//FIXME: Better extract this to a new function in ServerRules !!! (VaNaTiC)
                 case EGameServerType.GST_Normal:
                 {
-                    if (Realm == player.Realm || Client.Account.PrivLevel > 1 || player.Client.Account.PrivLevel > 1)
+                    // The co-op world counts another realm as friendly wherever its rules say so.
+                    if (Realm == player.Realm || Client.Account.PrivLevel > 1 || player.Client.Account.PrivLevel > 1 ||
+                        ServerRules.HybridCoopRules.Enabled && GameServer.ServerRules.IsSameRealm(player, this, true))
                         message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.GetExamineMessages.RealmMember", player.GetName(this), GetPronoun(Client, 0, true), CharacterClass.Name);
                     else
                         message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.GetExamineMessages.EnemyRealmMember", player.GetName(this), GetPronoun(Client, 0, true));
