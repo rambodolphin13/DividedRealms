@@ -717,6 +717,11 @@ not yet seen in game.
 13.8 Effects on armor
 - Server ItemTemplate.Effect is a speffects.csv ID, sent with the equipment of EVERY
   visible slot (PacketLib1124), armor included. [FOUND]
+  Correction (2026-10-26, world editor item viewer): the item effect numbers match
+  spweapons.csv rows, not speffects.csv: 794 = VFX_fire_eyes01 on the "Otherworldly
+  Mighty Eyes" helm, 94 = quarterstaff red glow on staves, 30 = the abomination's
+  two-hander glow (new-client build_weapon_effects.py). spweapons -> spnifs -> effects\.
+  [FOUND; not re-checked in game]
 - We tried shoulder smoke this way (new speffects rows on the clavicle bones, sent
   as the hauberk's and vambraces' Effect and in objects.csv Object Effect, col 55).
   Nothing ever showed on body armor, so the set ships without it. [CONFIRMED]
