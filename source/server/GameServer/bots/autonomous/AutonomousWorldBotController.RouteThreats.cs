@@ -270,6 +270,9 @@ namespace DOL.GS
             var spots = AutonomousPveBossDanger.SpotsNear(bot.CurrentRegionID, bot.X, bot.Y, bot.Level, utc, spotScan);
             foreach (var (x, y) in AutonomousRepeatDeathSpots.SpotsNear(bot.DatabaseID, bot.CurrentRegionID, bot.X, bot.Y, utc, spotScan))
                 spots.Add((x, y, bot.Level));
+            // Where several other bots of this level or lower died recently (word of mouth).
+            foreach (var (x, y) in AutonomousSharedDeathSpots.SpotsNear(bot.CurrentRegionID, bot.Level, bot.X, bot.Y, utc, spotScan))
+                spots.Add((x, y, bot.Level));
             List<AutonomousPveDangerBypass.Danger> dangers = AutonomousPveDangerBypass.BuildDangers(bot.Level, mobs, spots);
             if (dangers.Count == 0)
                 return false;

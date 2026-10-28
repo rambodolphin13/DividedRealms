@@ -188,16 +188,68 @@ def mob_ai_section(fights, path_failures, out):
         out.append("  Most resets (monster gave up and walked home; mob hp is its health % when it left):")
         table(["resets", "mob hp", "monster (lvl)", "zone"],
               [[c, f"{median(reset_hp[k]):.0f}%", f"{k[0]} ({k[1]})", k[2]] for k, c in resets.most_common(15)], out)
+        why = [d for d in fights if d.get("outcome") == "reset" and "mobSwings" in d]
+        if why:
+            # A monster leaves when its hate list empties or nothing has hit either way for 25 s.
+            never = sum(1 for d in why if d.get("mobSwings", 0) == 0)
+            idle = sum(1 for d in why if d.get("mobLastSwingAgoMs", -1) >= 20000 and d.get("mobLastHitAgoMs", -1) >= 20000)
+            far = [w.get("distance", -1) for d in why for w in d.get("who", []) if w.get("distance", -1) >= 0]
+            out.append(f"  Why they reset ({len(why)} with reasons): monster never swung {pct(never, len(why)):.0f}%, "
+                       f"20+ s without a swing or a hit {pct(idle, len(why)):.0f}%, median chase from spawn "
+                       f"{median([d.get('fromSpawn', 0) for d in why]):.0f}, median distance to the bot {median(far):.0f}\n")
     paths = collections.Counter()
     for d in path_failures:
         for c in d.get("counts", []):
-            paths[(c.get("mob"), c.get("region"), c.get("status"), c.get("jumped"))] += c.get("count", 0)
+            paths[(c.get("mob"), c.get("region"), c.get("status"), c.get("jumped"), c.get("spawnX", ""), c.get("spawnY", ""))] += c.get("count", 0)
     if paths:
-        out.append("  Path failures while chasing (jumped = teleported to the nearest reachable node):")
-        table(["count", "status", "jumped", "region", "monster"],
-              [[c, k[2], k[3], k[1], k[0]] for k, c in paths.most_common(20)], out)
+        out.append("  Path failures while chasing (jumped = teleported to the nearest reachable node; spawn to 100 units):")
+        table(["count", "status", "jumped", "region", "spawn x,y", "monster"],
+              [[c, k[2], k[3], k[1], f"{k[4]},{k[5]}" if k[4] != "" else "-", k[0]] for k, c in paths.most_common(20)], out)
     if not resets and not paths:
         out.append("  no monster AI records\n")
+
+
+def swing_section(fights, swings, out):
+    out.append("== SWINGS ==")
+    if not swings:
+        out.append("  no swing records\n")
+        return
+    side = collections.defaultdict(lambda: collections.Counter())
+    for d in swings:
+        for c in d.get("counts", []):
+            key = (c.get("side"), c.get("who") if c.get("side") == "bot" else "", f"{c.get('band', 0)}-{c.get('band', 0) + 9}")
+            n = c.get("count", 0)
+            s = side[key]
+            s["swings"] += n
+            s["damage"] += c.get("damage", 0)
+            s["off"] += n if c.get("offHand") else 0
+            s["styled"] += n if c.get("styled") else 0
+            for chance in ("miss", "evade", "parry", "block"):
+                s[chance + "Chance"] += c.get(chance, 0) * n
+            r = c.get("result", "")
+            s["hit" if r in ("HitUnstyled", "HitStyle") else r] += n
+    def rows(which):
+        result = []
+        for k in sorted(k for k in side if k[0] == which):
+            s = side[k]
+            n = s["swings"]
+            if n < 50:
+                continue
+            result.append([k[1] or "monsters", k[2], n, f"{pct(s['hit'], n):.0f}%", f"{pct(s['Missed'], n):.0f}%",
+                           f"{pct(s['Evaded'], n):.0f}%", f"{pct(s['Parried'], n):.0f}%", f"{pct(s['Blocked'], n):.0f}%",
+                           f"{pct(s['OutOfRange'] + s['NotAllowed_ServerRules'] + s['TargetNotVisible'], n):.0f}%",
+                           f"{s['damage'] / s['hit'] if s['hit'] else 0:.0f}", f"{pct(s['styled'], n):.0f}%", f"{pct(s['off'], n):.0f}%"])
+        return result
+    headers = ["who", "lvl", "swings", "hit", "miss", "evaded", "parried", "blocked", "no swing", "dmg/hit", "styled", "off-hand"]
+    out.append("  Monster swings at players and bots, by monster level (no swing = out of range, not allowed or unseen):")
+    table(headers, rows("mob"), out)
+    out.append("  Bot swings at monsters, by class and bot level:")
+    table(headers, rows("bot"), out)
+    counted = [d for d in fights if "mobSwings" in d and d.get("outcome") == "win"]
+    if counted:
+        zero = [d for d in counted if all(w.get("taken", 0) == 0 for w in d.get("who", []))]
+        out.append(f"  Won fights with no damage taken: {len(zero)} of {len(counted)}; in those the monster swung a median "
+                   f"{median([d.get('mobSwings', 0) for d in zero]):.0f} times and landed {median([d.get('mobHits', 0) for d in zero]):.0f}\n")
 
 
 def progress_section(snapshots, out):
@@ -341,6 +393,7 @@ def main():
     loot_section(events.get("loot", []), out)
     fight_section(events.get("fight", []), out)
     mob_ai_section(events.get("fight", []), events.get("mob-path-failures", []), out)
+    swing_section(events.get("fight", []), events.get("swings", []), out)
     progress_section(events.get("snapshot", []), out)
     economy_section(events.get("trade", []), out)
     pull_section(events.get("pull-target", []), out)

@@ -212,6 +212,21 @@ public static class AutonomousBotDecisionEngine
         return random.Next(1_000) < effectivePreference ? PveEnvironment.Dungeon : PveEnvironment.Outdoor;
     }
 
+    /// <summary>
+    /// A levelling solo bot's camp-con taste by role, in percent. The 2026-10-27 run (levels 1-10, solo): damage casters
+    /// lost 2-5% of fights and levelled 4-5 levels an hour, mostly on green monsters (67% of pulls were green); melee
+    /// lost 10-14% and levelled about 2.7. Casters lean to blue and yellow for the experience, melee to green and blue.
+    /// Healers, sovereigns and level 50 keep the plain draw.
+    /// </summary>
+    public static int RoleConWeightPercent(bool damageCaster, bool melee, ConColor typicalCon)
+    {
+        if (damageCaster)
+            return typicalCon switch { ConColor.GREEN => 70, ConColor.BLUE => 120, ConColor.YELLOW => 150, _ => 100 };
+        if (melee)
+            return typicalCon switch { ConColor.GREEN => 130, ConColor.YELLOW => 60, _ => 100 };
+        return 100;
+    }
+
     public static Camp SelectWithinEnvironment(IEnumerable<Camp> camps, PveEnvironment environment,
         Random random = null, Func<Camp, int> personalWeightPercent = null)
     {

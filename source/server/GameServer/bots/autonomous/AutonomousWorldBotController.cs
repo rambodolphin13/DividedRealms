@@ -3617,6 +3617,18 @@ namespace DOL.GS
             // (capped) with no distance or name preference.
             // Solo bots add their personality's taste to the live-spawn weight; groups keep the shared draw.
             Func<AutonomousBotDecisionEngine.Camp, int> taste = sharedGroup ? null : AutonomousBotPersonality.CampWeigher(bot);
+            if (!sharedGroup && bot.Level < 50)
+            {
+                // Damage casters lean to blue and yellow camps, melee to green and blue (RoleConWeightPercent).
+                eCharacterClass cls = (eCharacterClass)(bot.CharacterClass?.ID ?? 0);
+                bool damageCaster = BotSpellPower.IsOffensiveCaster(bot) &&
+                    cls is not (eCharacterClass.Cleric or eCharacterClass.Druid or eCharacterClass.Healer);
+                bool melee = bot.CharacterClass?.ClassType != eClassType.ListCaster &&
+                    cls is not (eCharacterClass.Stormforged or eCharacterClass.PendragonSovereign or eCharacterClass.TuathaSovereign);
+                Func<AutonomousBotDecisionEngine.Camp, int> personal = taste;
+                taste = camp => Math.Max(1, (personal?.Invoke(camp) ?? 100) *
+                    AutonomousBotDecisionEngine.RoleConWeightPercent(damageCaster, melee, camp.TypicalCon) / 100);
+            }
             Func<AutonomousBotDecisionEngine.Camp, int> weigher = !weighTravel ? taste
                 : camp => Math.Max(1, (taste?.Invoke(camp) ?? 100) * AutonomousBotDecisionEngine.TravelWeightPercent(camp.TravelMinutes) / 100);
             AutonomousBotDecisionEngine.Camp chosen = AutonomousBotDecisionEngine.SelectWithinEnvironment(

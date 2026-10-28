@@ -47,7 +47,7 @@ namespace DOL.GS
     public static class RunTelemetry
     {
         private static readonly Logger Log = LoggerManager.Create(typeof(RunTelemetry));
-        private const long FileLimitBytes = 512L * 1024 * 1024;
+        private const long FileLimitBytes = 2048L * 1024 * 1024;
         // A monster left idle this long without dying or resetting starts a fresh fight on its next hit.
         private const long StaleFightMilliseconds = 60_000;
         private static readonly JsonSerializerOptions Json = new() { WriteIndented = false };
@@ -55,11 +55,13 @@ namespace DOL.GS
         private static readonly ConditionalWeakTable<GameNPC, Fight> Fights = new();
         private static readonly ConcurrentDictionary<long, BotProgress> Progress = new();
         private static readonly ConcurrentDictionary<long, ushort> LastPullTarget = new();
-        private static readonly ConcurrentDictionary<(string Mob, ushort Region, string Status, bool Jumped), long> PathFailures = new();
+        private static readonly ConcurrentDictionary<(string Mob, ushort Region, int SpawnX, int SpawnY, string Status, bool Jumped), long> PathFailures = new();
+        private static readonly ConcurrentDictionary<(string Side, string Who, int Band, string Weapon, bool OffHand, bool Styled, string Result), SwingTally> Swings = new();
         private static long _nextPathFailureFlushTick;
         private static Timer _flushTimer;
         private static int _writing;
-        private static bool _fileFull;
+        // The UTC day whose file passed the size limit; records resume with the next day's file.
+        private static string _fullDay;
 
         private static bool On => RunTelemetryProperties.ENABLED;
 
@@ -69,6 +71,8 @@ namespace DOL.GS
         private sealed class Fight
         {
             public long FirstTick, LastTick;
+            // The monster's own melee and ranged swings at players and bots, and how many landed.
+            public int MobSwings, MobHits;
             public readonly Dictionary<GameLiving, Side> Sides = new();
         }
 
@@ -83,6 +87,12 @@ namespace DOL.GS
             public long NextTick, Experience, Money, Kills, Deaths, Fights, Resets;
             public int Level;
             public DateTime AtUtc;
+        }
+
+        private sealed class SwingTally
+        {
+            public long Count, Damage;
+            public double Miss, Evade, Parry, Block;
         }
 
         #region Hooks
@@ -213,7 +223,52 @@ namespace DOL.GS
                 return;
             try
             {
-                PathFailures.AddOrUpdate((mob.Name, mob.CurrentRegionID, status, jumped), 1, (_, n) => n + 1);
+                // The spawn point (to 100 units) finds the exact spawn to fix; a respawn reuses the same one.
+                int spawnX = (mob.SpawnPoint?.X ?? mob.X) / 100 * 100, spawnY = (mob.SpawnPoint?.Y ?? mob.Y) / 100 * 100;
+                PathFailures.AddOrUpdate((mob.Name, mob.CurrentRegionID, spawnX, spawnY, status, jumped), 1, (_, n) => n + 1);
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// AttackComponent.MakeAttack (NPC and bot attackers): one melee or ranged swing. Monster swings at players and
+        /// bots, and bot swings at monsters, are counted by level band, weapon and result, with the defence chances rolled.
+        /// </summary>
+        public static void Swing(AttackData ad)
+        {
+            if (!On || !RunTelemetryProperties.MOB_AI || ad?.Attacker == null || ad.Target == null)
+                return;
+            try
+            {
+                string side, who;
+                if (IsMonster(ad.Attacker) && IsParticipant(ad.Target))
+                {
+                    (side, who) = ("mob", ClassName(ad.Target));
+                    if (Fights.TryGetValue((GameNPC)ad.Attacker, out Fight fight))
+                        lock (fight)
+                        {
+                            fight.MobSwings++;
+                            if (ad.AttackResult is eAttackResult.HitUnstyled or eAttackResult.HitStyle)
+                                fight.MobHits++;
+                        }
+                }
+                else if (ad.Attacker is GameBot bot && IsMonster(ad.Target))
+                    (side, who) = ("bot", bot.ClassName);
+                else
+                    return;
+                int band = ad.Attacker.Level / 10 * 10;
+                string weapon = ad.Weapon == null ? "none" : ((eObjectType)ad.Weapon.Object_Type).ToString();
+                SwingTally tally = Swings.GetOrAdd((side, who ?? "?", band, weapon, ad.IsOffHand, ad.Style != null, ad.AttackResult.ToString()),
+                    _ => new SwingTally());
+                lock (tally)
+                {
+                    tally.Count++;
+                    tally.Damage += Math.Max(0, ad.Damage + ad.CriticalDamage);
+                    tally.Miss += ad.MissChance;
+                    tally.Evade += ad.EvadeChance;
+                    tally.Parry += ad.ParryChance;
+                    tally.Block += ad.BlockChance;
+                }
             }
             catch { }
         }
@@ -231,7 +286,10 @@ namespace DOL.GS
                 {
                     long next = now + minutes * 60_000L;
                     if (Interlocked.Exchange(ref _nextPathFailureFlushTick, next) <= now)
+                    {
                         FlushPathFailures();
+                        FlushSwings();
+                    }
                 }
 
                 // Snapshots are staggered by bot id so a full roster does not all write in one tick.
@@ -365,7 +423,9 @@ namespace DOL.GS
                     level = pair.Key.Level, con = ConLevels.GetConColor(pair.Key.GetConLevel(mob)).ToString(),
                     dealt = (long)pair.Value.Dealt, taken = (long)pair.Value.Taken,
                     joinedAfterMs = pair.Value.FirstTick - fight.FirstTick, group = pair.Key.Group?.MemberCount ?? 1,
-                    hp = pair.Key.HealthPercent, mana = pair.Key.ManaPercent, alive = pair.Key.IsAlive
+                    hp = pair.Key.HealthPercent, mana = pair.Key.ManaPercent, alive = pair.Key.IsAlive,
+                    distance = pair.Key.ObjectState == GameObject.eObjectState.Active && pair.Key.CurrentRegionID == mob.CurrentRegionID
+                        ? mob.GetDistanceTo(pair.Key) : -1
                 })
                 .ToArray();
             if (who.Length == 0)
@@ -374,7 +434,12 @@ namespace DOL.GS
             {
                 outcome, mob = mob.Name, mobLevel = mob.Level, mobId = mob.InternalID, mobMaxHealth = mob.MaxHealth,
                 mobHp = mob.HealthPercent, durationMs = now - fight.FirstTick, participants = fight.Sides.Count, baf,
-                killer = killer?.Name, region = mob.CurrentRegionID, zone = mob.CurrentZone?.Description, who
+                killer = killer?.Name, region = mob.CurrentRegionID, zone = mob.CurrentZone?.Description,
+                mobSwings = fight.MobSwings, mobHits = fight.MobHits,
+                // Why a reset happened: the monster's own last swing and last hit taken, and how far it had chased.
+                mobLastSwingAgoMs = mob.LastAttackTickPvE > 0 ? now - mob.LastAttackTickPvE : -1,
+                mobLastHitAgoMs = mob.LastAttackedByEnemyTickPvE > 0 ? now - mob.LastAttackedByEnemyTickPvE : -1,
+                fromSpawn = mob.SpawnPoint != null ? mob.GetDistanceTo(mob.SpawnPoint) : -1, who
             });
         }
 
@@ -385,8 +450,25 @@ namespace DOL.GS
             var counts = new List<object>();
             foreach (var key in PathFailures.Keys.ToArray())
                 if (PathFailures.TryRemove(key, out long count))
-                    counts.Add(new { mob = key.Mob, region = key.Region, status = key.Status, jumped = key.Jumped, count });
+                    counts.Add(new { mob = key.Mob, region = key.Region, spawnX = key.SpawnX, spawnY = key.SpawnY, status = key.Status, jumped = key.Jumped, count });
             Write("mob-path-failures", new { counts });
+        }
+
+        private static void FlushSwings()
+        {
+            if (Swings.IsEmpty)
+                return;
+            var counts = new List<object>();
+            foreach (var key in Swings.Keys.ToArray())
+                if (Swings.TryRemove(key, out SwingTally t))
+                    lock (t)
+                        counts.Add(new
+                        {
+                            side = key.Side, who = key.Who, band = key.Band, weapon = key.Weapon, offHand = key.OffHand,
+                            styled = key.Styled, result = key.Result, count = t.Count, damage = t.Damage,
+                            miss = t.Miss / t.Count, evade = t.Evade / t.Count, parry = t.Parry / t.Count, block = t.Block / t.Count
+                        });
+            Write("swings", new { counts });
         }
 
         #endregion
@@ -419,7 +501,7 @@ namespace DOL.GS
 
         private static void Write(string ev, object detail)
         {
-            if (_fileFull)
+            if (_fullDay == DateTime.UtcNow.ToString("yyyyMMdd"))
                 return;
             Pending.Enqueue(JsonSerializer.Serialize(new { t = DateTime.UtcNow, ev, detail }, Json));
         }
@@ -441,7 +523,10 @@ namespace DOL.GS
             _flushTimer?.Dispose();
             _flushTimer = null;
             if (On && RunTelemetryProperties.MOB_AI)
+            {
                 FlushPathFailures();
+                FlushSwings();
+            }
             Flush();
         }
 
@@ -452,12 +537,13 @@ namespace DOL.GS
             try
             {
                 Directory.CreateDirectory(Folder);
-                string path = Path.Combine(Folder, $"run-{DateTime.UtcNow:yyyyMMdd}.jsonl");
+                string day = DateTime.UtcNow.ToString("yyyyMMdd");
+                string path = Path.Combine(Folder, $"run-{day}.jsonl");
                 if (File.Exists(path) && new FileInfo(path).Length > FileLimitBytes)
                 {
-                    _fileFull = true;
+                    _fullDay = day;
                     Pending.Clear();
-                    Log.Warn($"RUN_TELEMETRY {path} passed {FileLimitBytes / 1024 / 1024} MB; records stop for this server run.");
+                    Log.Warn($"RUN_TELEMETRY {path} passed {FileLimitBytes / 1024 / 1024} MB; records stop until the next UTC day.");
                     return;
                 }
                 var builder = new StringBuilder();

@@ -782,6 +782,7 @@ namespace DOL.GS;
         }
         MarketCache.AddItem(item);
         MarkInventoryChanged(bot);
+        RunTelemetry.Trade(bot, "exchange-list", null, item, priceCopper, Math.Max(1, item.Count));
         return true;
         }
     }
@@ -860,6 +861,7 @@ namespace DOL.GS;
                 return false;
             }
             MarkInventoryChanged(bot);
+            RunTelemetry.Trade(bot, "exchange-buy", null, item, price, Math.Max(1, item.Count));
             return true;
         }
     }

@@ -1040,7 +1040,9 @@ namespace DOL.GS
                 else
                     effectiveness = 1;
 
-                return LivingMakeAttack(action, target, weapon, style, effectiveness, interval, dualWield);
+                AttackData npcAttack = LivingMakeAttack(action, target, weapon, style, effectiveness, interval, dualWield);
+                RunTelemetry.Swing(npcAttack);
+                return npcAttack;
             }
         }
 
