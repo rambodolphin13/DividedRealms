@@ -353,9 +353,9 @@ namespace DOL.GS
                 // The same multipliers a player character gets for the same kill.
                 long baseExperience = arguments.ExpBase;
                 gained -= baseExperience;
-                double rate = CurrentRegion?.IsRvR == true || CurrentZone?.IsRvR == true
-                    ? ServerProperties.Properties.RvR_XP_RATE
-                    : ServerProperties.Properties.XP_RATE;
+                double rate = ServerProperties.Properties.XP_RATE;
+                if (CurrentRegion?.IsRvR == true || CurrentZone?.IsRvR == true)
+                    rate *= ServerProperties.Properties.RvR_XP_RATE;
                 baseExperience = (long)(baseExperience * rate);
                 long itemBonus = GetModified(eProperty.XpPoints);
                 if (itemBonus != 0)
