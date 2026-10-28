@@ -45,8 +45,9 @@ public static class AutonomousObjectiveAssignments
     public readonly record struct Allocation(int SoloPve, int GroupPve, int RvR, int Battlegrounds = 0);
     public readonly record struct BetweenTaskPlan(bool Train, bool Unload);
 
-    public static BetweenTaskPlan RollBetweenTaskPlan(bool canSpendPoints, bool backpackFull, double trainRoll, double unloadRoll) =>
-        new(canSpendPoints && trainRoll >= 0 && trainRoll < 0.90,
+    public static BetweenTaskPlan RollBetweenTaskPlan(bool canSpendPoints, bool backpackFull, double trainRoll, double unloadRoll,
+        bool trainingOverdue = false) =>
+        new(canSpendPoints && (trainingOverdue || trainRoll >= 0 && trainRoll < 0.90),
             backpackFull && unloadRoll >= 0 && unloadRoll < 0.95);
 
     public static eAutonomousObjectiveKind KindFor(GameBot bot) =>
@@ -671,7 +672,8 @@ public static class AutonomousObjectiveAssignments
         // Unload at this task boundary when the bag is nearly full, not only
         // when completely full: otherwise the next task leaves loot on the ground.
         BetweenTaskPlan plan = RollBetweenTaskPlan(bot.HasSpendableAutonomousTrainingPoints,
-            AutonomousBotEconomy.IsBackpackNearlyFull(bot), Random.Shared.NextDouble(), Random.Shared.NextDouble());
+            AutonomousBotEconomy.IsBackpackNearlyFull(bot), Random.Shared.NextDouble(), Random.Shared.NextDouble(),
+            bot.IsAutonomousTrainingOverdue);
         bool downtime = AutonomousBotPersonality.RollTownBreak(bot, Random.Shared.NextDouble());
         if (!plan.Train && !plan.Unload && !downtime) return false;
         OfflineWorldBotRecord record = bot.PersistentRecord;

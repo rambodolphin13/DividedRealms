@@ -64,6 +64,9 @@ namespace DOL.GS
         internal AutonomousGoalAttempt GoalDiagnosticAttempt;
         private byte _lastAutonomousTrainedLevel = 1;
         public bool HasPendingAutonomousTraining => IsAutonomousWorldBot && _lastAutonomousTrainedLevel < Level;
+        /// <summary>Levels behind on training at which a bot goes to its trainer whatever its task.</summary>
+        public const int OverdueTrainingLevels = 5;
+        public bool IsAutonomousTrainingOverdue => HasPendingAutonomousTraining && Level - _lastAutonomousTrainedLevel >= OverdueTrainingLevels;
         /// <summary>
         /// Spec points to spend, or enough realm ability points to be worth the trip (both at the class
         /// trainer; a few realm points are spent at the next level-up visit instead).
@@ -2510,6 +2513,15 @@ namespace DOL.GS
             }
             m_leftOverSpecPoints = Math.Max(0, record.UnspentSpecPoints);
             _lastAutonomousTrainedLevel = IsEpicSpecialForce ? Level : ParseLastTrainedLevel(record.SerializedAbilities, Level, record.SerializedSpecs);
+            if (!IsEpicSpecialForce && NeedsTrainingOnArrival(record.SerializedAbilities, record.SerializedSpecs, Level))
+            {
+                // Created above level 1 (the launcher's level-50 roster): spend every point now, like the
+                // Special Forces. Later level-ups still go to a trainer.
+                m_leftOverSpecPoints = 0;
+                SpendSpecPoints(Level, 0);
+                _lastAutonomousTrainedLevel = Level;
+                MarkAutonomousStateDirty();
+            }
             RefreshSpecDependantSkills(false);
             SetBotSpells();
             SortStyles();
@@ -3209,6 +3221,27 @@ namespace DOL.GS
                 if (parts.Length == 2 && int.TryParse(parts[1], out int level) && GetSpecializationByName(parts[0]) is Specialization spec)
                     spec.Level = Math.Clamp(level, 1, Level);
             }
+        }
+
+        /// <summary>
+        /// A bot that never trained: a new row above level 1 with no saved specs, or a saved row still at
+        /// trained-level 1 with every line at 1 and at least <see cref="OverdueTrainingLevels"/> levels earned.
+        /// </summary>
+        public static bool NeedsTrainingOnArrival(string serializedAbilities, string serializedSpecs, byte level)
+        {
+            if (level < 2)
+                return false;
+            if (string.IsNullOrWhiteSpace(serializedSpecs))
+                return string.IsNullOrWhiteSpace(serializedAbilities) || ParseLastTrainedLevel(serializedAbilities, level, "x") <= 1;
+            if (ParseLastTrainedLevel(serializedAbilities, level, serializedSpecs) > 1 || level - 1 < OverdueTrainingLevels)
+                return false;
+            foreach (string entry in serializedSpecs.Split(';', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] parts = entry.Split('|');
+                if (parts.Length < 2 || !int.TryParse(parts[1], out int specLevel) || specLevel > 1)
+                    return false;
+            }
+            return true;
         }
 
         private static byte ParseLastTrainedLevel(string serialized, byte currentLevel, string serializedSpecs)

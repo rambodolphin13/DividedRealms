@@ -534,6 +534,11 @@ namespace DOL.GS
                 if (GameRelic.IsPlayerCarryingRelic(bot))
                     return ExecuteRvr(brain, bot);
 
+                // Five or more levels behind on training: go to the trainer whatever the task. A party
+                // member goes when it leaves the party (the task-break roll is then certain).
+                if (bot.Group == null && bot.IsAutonomousTrainingOverdue && !bot.InCombat && HandlePendingTraining(bot))
+                    return true;
+
                 if (_groupDirective?.IsDynamic == true && _groupDirective.Camp == null &&
                     _groupDirective.Phase == "Choosing group target" && _camp != null)
                 {
@@ -1249,7 +1254,8 @@ namespace DOL.GS
 
         private bool HandlePendingTraining(GameBot bot)
         {
-            if (!AutonomousObjectiveAssignments.WantsBetweenTaskTraining(bot) || !bot.HasSpendableAutonomousTrainingPoints)
+            if (!AutonomousObjectiveAssignments.WantsBetweenTaskTraining(bot) && !bot.IsAutonomousTrainingOverdue ||
+                !bot.HasSpendableAutonomousTrainingPoints)
             {
                 _trainingTrainer = null;
                 return false;
