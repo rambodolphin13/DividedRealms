@@ -580,6 +580,10 @@ namespace DOL.GS.ServerRules
             if (player.IsInvulnerableToAttack)
                 return false;
 
+            // Flying mounts: no fall damage while flying or coming down after a dismount.
+            if (player.IsMountFlightProtected)
+                return false;
+
             if (player.CurrentRegion.IsHousing)
                 return false; // Workaround: falling from houses should not produce damage
 

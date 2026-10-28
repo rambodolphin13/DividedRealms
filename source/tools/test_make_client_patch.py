@@ -58,7 +58,7 @@ class ClientPatchTests(unittest.TestCase):
         patch = m.build(PRISTINE)
         self.assertEqual([f['Path'] for f in patch['Files']], ['game.dll', 'pregame/character_creation.xml', 'pregame/splash.mpk'])
         game = patch['Files'][0]
-        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '9e09af81'))
+        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '39d82bb0'))
         # The stock 1.130 loading screen in, the Divided Realms splash out, in one edit.
         splash = patch['Files'][2]
         self.assertEqual(splash['InputSha256'][:8], '9348c3a6')

@@ -137,7 +137,7 @@ namespace DOL.GS
 
                 if (validViolationCount >= ViolationThreshold)
                 {
-                    if (!_player.IsAllowedToFly && (ePrivLevel) _player.Client.Account.PrivLevel <= ePrivLevel.Player)
+                    if (!_player.CanFlyNow && (ePrivLevel) _player.Client.Account.PrivLevel <= ePrivLevel.Player)
                     {
                         double actualDistance = Math.Sqrt(squaredDistance);
                         double actualSpeed = actualDistance * 1000.0 / timeDiff;

@@ -634,6 +634,10 @@ namespace DOL.GS.PacketHandler
         void SendObjectCreate(GameObject obj);
         void SendDebugMode(bool on);
         void SendObserverFlightMode(bool flying, bool debugEnabled) => SendDebugMode(debugEnabled);
+        /// <summary>
+        /// Switch the patched client's native flight on or off for a flying mount, for any player.
+        /// </summary>
+        void SendNativeFlight(bool flying) { }
         void SendModelChange(GameObject obj, ushort newModel);
         void SendModelAndSizeChange(GameObject obj, ushort newModel, byte newSize);
         void SendModelAndSizeChange(ushort objectId, ushort newModel, byte newSize);

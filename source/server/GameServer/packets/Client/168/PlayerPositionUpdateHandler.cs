@@ -410,7 +410,7 @@ namespace DOL.GS.PacketHandler.Client.v168
                 client.Player.IsSwimming = state == 1;
 
                 // debugFly on, but player not do /debug on (hack)
-                if (state == 3 && !client.Player.TempProperties.GetProperty<bool>(GamePlayer.DEBUG_MODE_PROPERTY) && !client.Player.IsAllowedToFly)
+                if (state == 3 && !client.Player.TempProperties.GetProperty<bool>(GamePlayer.DEBUG_MODE_PROPERTY) && !client.Player.CanFlyNow)
                 {
                     StringBuilder builder = new();
                     builder.Append("HACK_FLY");
@@ -762,7 +762,7 @@ namespace DOL.GS.PacketHandler.Client.v168
                     stateFlags &= ~StateFlags.DEAD;
 
                 // If the client has flying enabled but the debug option wasn't enabled.
-                if ((stateFlags & StateFlags.FLYING) is StateFlags.FLYING && !player.TempProperties.GetProperty<bool>(GamePlayer.DEBUG_MODE_PROPERTY) && !player.IsAllowedToFly)
+                if ((stateFlags & StateFlags.FLYING) is StateFlags.FLYING && !player.TempProperties.GetProperty<bool>(GamePlayer.DEBUG_MODE_PROPERTY) && !player.CanFlyNow)
                 {
                     if (ServerProperties.Properties.BAN_HACKERS)
                     {

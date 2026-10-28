@@ -1005,6 +1005,21 @@ namespace DOL.GS.PacketHandler
                 SendModelAndSizeChange(obj, newModel, 0);
         }
 
+        public virtual void SendNativeFlight(bool flying)
+        {
+            using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.DebugMode)))
+            {
+                // Byte 0 is the GM debug permission: keep whatever the player already has.
+                GamePlayer player = m_gameClient.Player;
+                bool debug = m_gameClient.Account.PrivLevel > 1 && player != null &&
+                    player.TempProperties.GetProperty<bool>(GamePlayer.DEBUG_MODE_PROPERTY);
+                pak.WriteByte((byte)(debug ? 1 : 0));
+                // Offline client extension: 1 enters native flight, 2 leaves it (patch_class_slots.py FLIGHT_HOOK).
+                pak.WriteByte((byte)(flying ? 1 : 2));
+                SendTCP(pak);
+            }
+        }
+
         public virtual void SendObserverFlightMode(bool flying, bool debugEnabled)
 		{
             using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.DebugMode)))

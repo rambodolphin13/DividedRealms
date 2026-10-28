@@ -37,7 +37,9 @@ class ClassSlotPatchTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(again).digest(), hashlib.sha256(self.patched).digest())
 
     def test_only_hooks_and_headers_change(self):
-        hooks = {slots.NAME_HOOK: 6, slots.STAT_HOOK: 10, slots.RESIST_HOOK: 6, slots.ADAPTER_HOOK: 5}
+        hooks = {slots.NAME_HOOK: 6, slots.STAT_HOOK: 10, slots.RESIST_HOOK: 6, slots.ADAPTER_HOOK: 5,
+                 slots.FLIGHT_HOOK: 5}
+        hooks.update({site: len(bytes.fromhex(original)) for site, original, _, _ in slots.FLIGHT_ANIM_HOOKS})
         if slots.TUATHA_HOVER:
             hooks.update({slots.HOVER_SELECT[0]: 7, slots.HOVER_WORLD[0]: 7})
             hooks.update({site: len(bytes.fromhex(original)) for site, original, _, _ in slots.VAMPIIR_ONLY})
@@ -48,7 +50,7 @@ class ClassSlotPatchTests(unittest.TestCase):
             allowed.update(range(pos, pos+size))
         allowed.add(self.offset(self.original, slots.CLASS_ARRAY_SIZE[0])+4)  # the array-size immediate
         allowed.add(self.offset(self.original, slots.RIDE_ANIM_EDIT[0]))  # jne -> jmp opcode
-        for va, before, after in slots.SCREEN_EDITS:
+        for va, before, after in slots.SCREEN_EDITS + slots.CAMERA_MAX_EDITS + slots.FLIGHT_SPEED_EDITS:
             pos = self.offset(self.original, va)
             allowed.update(pos+k for k in range(len(bytes.fromhex(before))))
         header_end = 0x400
@@ -71,6 +73,48 @@ class ClassSlotPatchTests(unittest.TestCase):
         self.assertEqual([s.class_id for s in slots.SLOTS], [63, 64, 65, 66, 67])
         self.assertEqual([s.class_id for s in slots.REALMS['Albion']['slots']], [65, 66], 'Death Knight after Pendragon')
         self.assertEqual([s.class_id for s in slots.REALMS['Hibernia']['slots']], [67], 'Tuatha takes the Sluaghbinder entry')
+
+    def test_flight_stub_sets_and_clears_only_the_flight_flag(self):
+        stub = self.layout['stubs']['flight']
+        pos = self.offset(self.patched, stub)
+        flag = struct.pack('<I', slots.FLIGHT_FLAG)
+        code = self.patched[pos:pos+44]
+        self.assertEqual(code[:5], bytes.fromhex('9c807b0101'))                   # pushfd; cmp byte [ebx+1],1
+        self.assertEqual(code[7:17], bytes.fromhex('c705') + flag + (1).to_bytes(4, 'little'))
+        self.assertEqual(code[17:21], bytes.fromhex('807b0102'))
+        self.assertEqual(code[23:33], bytes.fromhex('c705') + flag + bytes(4))
+        self.assertEqual(code[33:39], bytes.fromhex('9db89a000000'))             # popfd; replayed mov eax,0x9a
+        back = stub + 39 + 5 + struct.unpack_from('<i', code, 40)[0]
+        self.assertEqual((code[39], back), (0xE9, slots.FLIGHT_BACK))
+        hook = self.offset(self.patched, slots.FLIGHT_HOOK)
+        self.assertEqual(slots.FLIGHT_HOOK + 5 + struct.unpack_from('<i', self.patched, hook+1)[0], stub)
+
+    def test_flight_anim_hooks_return_and_branch_on_the_flight_flag(self):
+        flag = struct.pack('<I', slots.FLIGHT_FLAG)
+        zero = self.layout['section_va'] + slots.FLIGHT_ZERO
+        for site, original, back, kind in slots.FLIGHT_ANIM_HOOKS:
+            stub = self.layout['stubs'][f'flight_anim_{site:x}']
+            hook = self.offset(self.patched, site)
+            self.assertEqual(site + 5 + struct.unpack_from('<i', self.patched, hook+1)[0], stub, hex(site))
+            pos = self.offset(self.patched, stub)
+            code = self.patched[pos:pos+64]
+            self.assertIn(bytes.fromhex('833d') + flag + bytes(1), code, hex(site))
+            if kind in ('mode', 'mount'):
+                self.assertIn(struct.pack('<I', zero), code, hex(site))
+            jumps = [stub + i + 5 + struct.unpack_from('<i', code, i+1)[0] for i in range(len(code)-5) if code[i] == 0xE9]
+            self.assertIn(back, jumps, hex(site))
+        pos = self.offset(self.patched, zero)
+        self.assertEqual(self.patched[pos:pos+0x40], bytes(0x40))
+
+    def test_flight_speeds_are_lowered(self):
+        values = [struct.unpack_from('<I', self.patched, self.offset(self.patched, va) + len(bytes.fromhex(after)) - 4)[0]
+                  for va, before, after in slots.FLIGHT_SPEED_EDITS]
+        self.assertEqual(values, [slots.FLIGHT_SPEED, slots.FLIGHT_SPEED * 11 // 20])
+
+    def test_camera_zoom_maximums_are_raised(self):
+        for va, before, after in slots.CAMERA_MAX_EDITS:
+            pos = self.offset(self.patched, va)
+            self.assertEqual(struct.unpack_from('<f', self.patched, pos+3)[0], slots.CAMERA_MAX, hex(va))
 
     def test_ride_anim_takes_the_1127_path(self):
         pos = self.offset(self.patched, slots.RIDE_ANIM_EDIT[0])

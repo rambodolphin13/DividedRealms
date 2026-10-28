@@ -990,6 +990,24 @@ namespace DOL.GS.ServerProperties
 		public static short MOUNT_OVER_LEVEL_35_SPEED;
 
 		/// <summary>
+		/// Every personal mount rides at the over-35 speed and can be called in RvR, whatever its level
+		/// </summary>
+		[ServerProperty("rates", "mount_any_level_full_speed", "Do personal mounts of any level ride at the over level 35 speed and work in RvR zones?", false)]
+		public static bool MOUNT_ANY_LEVEL_FULL_SPEED;
+
+		/// <summary>
+		/// Mount IDs (client horsemap.csv) whose riders fly; needs the modern client's flight patch
+		/// </summary>
+		[ServerProperty("world", "flying_mount_ids", "Mount IDs (client horsemap.csv, separated by ;) whose riders can fly. Needs the patched modern client.", "")]
+		public static string FLYING_MOUNT_IDS;
+
+		/// <summary>
+		/// Can flying mounts fly in RvR regions (over keep walls)?
+		/// </summary>
+		[ServerProperty("world", "flying_mounts_in_rvr", "Can flying mounts fly in RvR regions? Off: they ride on the ground there.", false)]
+		public static bool FLYING_MOUNTS_IN_RVR;
+
+		/// <summary>
 		/// Relic Bonus Modifier
 		/// </summary>
 		[ServerProperty("rates", "relic_owning_bonus", "Relic Owning Bonus in percent per relic (default 10%) in effect when owning enemy relic", (short)10)]

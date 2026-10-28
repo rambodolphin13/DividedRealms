@@ -7011,51 +7011,15 @@ namespace DOL.GS
         /// <param name="useItem"></param>
         protected virtual void UseSaddleBag(DbInventoryItem useItem)
         {
-            eHorseSaddleBag bag = eHorseSaddleBag.None;
-
-            switch ((eInventorySlot)useItem.Item_Type)
+            // No Champion Level requirement: any player can open any saddlebag.
+            eHorseSaddleBag bag = (eInventorySlot)useItem.Item_Type switch
             {
-                case eInventorySlot.LeftFrontSaddleBag:
-                    if (ChampionLevel >= 2)
-                    {
-                        bag = eHorseSaddleBag.LeftFront;
-                    }
-                    else
-                    {
-                        Out.SendMessage("This saddlebag requires Champion Level 2!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-                    }
-                    break;
-                case eInventorySlot.RightFrontSaddleBag:
-                    if (ChampionLevel >= 3)
-                    {
-                        bag = eHorseSaddleBag.RightFront;
-                    }
-                    else
-                    {
-                        Out.SendMessage("This saddlebag requires Champion Level 3!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-                    }
-                    break;
-                case eInventorySlot.LeftRearSaddleBag:
-                    if (ChampionLevel >= 4)
-                    {
-                        bag = eHorseSaddleBag.LeftRear;
-                    }
-                    else
-                    {
-                        Out.SendMessage("This saddlebag requires Champion Level 4!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-                    }
-                    break;
-                case eInventorySlot.RightRearSaddleBag:
-                    if (ChampionLevel >= 5)
-                    {
-                        bag = eHorseSaddleBag.RightRear;
-                    }
-                    else
-                    {
-                        Out.SendMessage("This saddlebag requires Champion Level 5!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-                    }
-                    break;
-            }
+                eInventorySlot.LeftFrontSaddleBag => eHorseSaddleBag.LeftFront,
+                eInventorySlot.RightFrontSaddleBag => eHorseSaddleBag.RightFront,
+                eInventorySlot.LeftRearSaddleBag => eHorseSaddleBag.LeftRear,
+                eInventorySlot.RightRearSaddleBag => eHorseSaddleBag.RightRear,
+                _ => eHorseSaddleBag.None
+            };
 
             if (bag != eHorseSaddleBag.None)
             {
@@ -7084,6 +7048,18 @@ namespace DOL.GS
         private const int NUM_SLOTS_PER_SADDLEBAG = 4;
 
         /// <summary>
+        /// The saddlebag that opens a horse inventory slot: 80-83 left front, 84-87 right front,
+        /// 88-91 left rear, 92-95 right rear.
+        /// </summary>
+        public static byte SaddleBagForHorseSlot(int slot)
+        {
+            if (slot < (int)eInventorySlot.FirstBagHorse || slot > (int)eInventorySlot.LastBagHorse)
+                return (byte)eHorseSaddleBag.None;
+
+            return (byte)(1 << ((slot - (int)eInventorySlot.FirstBagHorse) / NUM_SLOTS_PER_SADDLEBAG));
+        }
+
+        /// <summary>
         /// Can player use this horse inventory slot
         /// </summary>
         /// <param name="slot"></param>
@@ -7102,42 +7078,15 @@ namespace DOL.GS
                 return false;
             }
 
-            if (ChampionLevel == 0)
-            {
-                Out.SendMessage("You must be a champion to use this inventory.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-
-            if (slot < (int)eInventorySlot.FirstBagHorse || slot > (int)eInventorySlot.LastBagHorse || (ChampionLevel >= 5 && ActiveSaddleBags == (byte)eHorseSaddleBag.All))
+            if (slot < (int)eInventorySlot.FirstBagHorse || slot > (int)eInventorySlot.LastBagHorse)
             {
                 return true;
             }
 
-            try
+            // Each opened saddlebag unlocks its four slots, with no Champion Level requirement.
+            if ((ActiveSaddleBags & SaddleBagForHorseSlot(slot)) != 0)
             {
-                eHorseSaddleBag saddleBagRequired = (eHorseSaddleBag)Enum.GetValues(typeof(eHorseSaddleBag)).GetValue(((slot / NUM_SLOTS_PER_SADDLEBAG) - 19)); // 1, 2, 3, or 4
-
-                // ChatUtil.SendDebugMessage(this, string.Format("Check slot {0} if between {1} and {2}.  CL is {3}, ActiveSaddleBags is {4}, Required Bag is {5}", slot, (int)eInventorySlot.FirstBagHorse, (int)eInventorySlot.LastBagHorse, ChampionLevel, ActiveSaddleBags, saddleBagRequired));
-
-                if ((ActiveSaddleBags & (byte)saddleBagRequired) > 0)
-                {
-                    if (ChampionLevel >= 2 && slot < (int)eInventorySlot.FirstBagHorse + NUM_SLOTS_PER_SADDLEBAG)
-                    {
-                        return true;
-                    }
-                    else if (ChampionLevel >= 3 && slot < (int)eInventorySlot.FirstBagHorse + NUM_SLOTS_PER_SADDLEBAG * 2)
-                    {
-                        return true;
-                    }
-                    else if (ChampionLevel >= 4 && slot < (int)eInventorySlot.FirstBagHorse + NUM_SLOTS_PER_SADDLEBAG * 3)
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ChatUtil.SendDebugMessage(this, "CanSeeInventory: " + ex.Message);
+                return true;
             }
 
             Out.SendMessage("You can't use this inventory.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -12726,6 +12675,94 @@ namespace DOL.GS
                 else
                     Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.IsOnHorse.DismountSteed"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 Out.SendUpdateMaxSpeed();
+                UpdateMountFlight();
+            }
+        }
+
+        public const string MountFlightKey = "Offline.MountFlight";
+        public const string MountLandingUntilKey = "Offline.MountFlight.LandingUntil";
+        /// <summary>
+        /// How long after a flying mount lands (or its rider is knocked off) the fall is forgiven.
+        /// </summary>
+        public const long MountLandingGraceMs = 20000;
+
+        /// <summary>
+        /// Is this player riding a flying mount with the client's flight switched on?
+        /// </summary>
+        public bool IsMountFlying => TempProperties.GetProperty<bool>(MountFlightKey);
+
+        /// <summary>
+        /// Flying, or still coming down from a flying mount: no fall damage, and the client may still
+        /// report flight for a moment after it was switched off.
+        /// </summary>
+        public bool IsMountFlightProtected =>
+            IsMountFlying || GameLoop.GameLoopTime < TempProperties.GetProperty<long>(MountLandingUntilKey);
+
+        /// <summary>
+        /// May the client report flying movement? GM flight/debug, or a flying mount.
+        /// </summary>
+        public bool CanFlyNow => IsAllowedToFly || IsMountFlightProtected;
+
+        public const string MountFlightWantedKey = "Offline.MountFlight.Wanted";
+
+        /// <summary>
+        /// Can this player's current mount fly here? (flying mount, mounted, and not barred by RvR)
+        /// </summary>
+        public string ReasonMountCannotFly()
+        {
+            if (!m_isOnHorse || ActiveHorse == null)
+                return "You must be riding a flying mount.";
+            if (!ActiveHorse.IsFlyingMount)
+                return "This mount cannot fly.";
+            if (!Properties.FLYING_MOUNTS_IN_RVR && CurrentRegion != null && CurrentRegion.IsRvR)
+                return "Your mount cannot fly here.";
+            return null;
+        }
+
+        /// <summary>
+        /// /flight: switch a flying mount between running and flying. Mounting starts on the ground.
+        /// </summary>
+        public bool ToggleMountFlight()
+        {
+            string reason = ReasonMountCannotFly();
+            if (reason != null)
+            {
+                Out.SendMessage(reason, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                return false;
+            }
+
+            TempProperties.SetProperty(MountFlightWantedKey, !TempProperties.GetProperty<bool>(MountFlightWantedKey));
+            UpdateMountFlight();
+            return true;
+        }
+
+        /// <summary>
+        /// A flying mount (server setting world / flying_mount_ids) flies only while its rider asked
+        /// for it with /flight; dismounting, for any reason, lands it and the next ride starts on the ground.
+        /// </summary>
+        protected virtual void UpdateMountFlight()
+        {
+            if (!m_isOnHorse)
+                TempProperties.RemoveProperty(MountFlightWantedKey);
+
+            bool fly = TempProperties.GetProperty<bool>(MountFlightWantedKey) && ReasonMountCannotFly() == null;
+
+            if (fly == IsMountFlying)
+                return;
+
+            if (fly)
+            {
+                TempProperties.SetProperty(MountFlightKey, true);
+                Out.SendNativeFlight(true);
+                Out.SendMessage("Your mount takes to the air.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            }
+            else
+            {
+                TempProperties.RemoveProperty(MountFlightKey);
+                TempProperties.SetProperty(MountLandingUntilKey, GameLoop.GameLoopTime + MountLandingGraceMs);
+                Out.SendNativeFlight(false);
+                if (m_isOnHorse)
+                    Out.SendMessage("Your mount comes down to run on the ground.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
             }
         }
 
@@ -12833,7 +12870,7 @@ namespace DOL.GS
                     DbInventoryItem armor = m_player.Inventory.GetItem(eInventorySlot.HorseArmor);
                     if (armor != null)
                         return (byte)armor.DPS_AF;
-                    return m_saddleId;
+                    return m_saddleId != 0 ? m_saddleId : RealmBasicSaddle(m_player.Realm);
                 }
                 set
                 {
@@ -12881,11 +12918,22 @@ namespace DOL.GS
                 }
             }
 
+            /// <summary>
+            /// The realm's own basic saddle (horsearmorthememap.csv), shown when no saddle is equipped.
+            /// Theme 0 is the Albion one, which every realm used to get.
+            /// </summary>
+            public static byte RealmBasicSaddle(eRealm realm) => realm switch
+            {
+                eRealm.Hibernia => 17,
+                eRealm.Midgard => 34,
+                _ => 0
+            };
+
             public short Speed
             {
                 get
                 {
-                    if (m_level <= 35)
+                    if (m_level <= 35 && !ServerProperties.Properties.MOUNT_ANY_LEVEL_FULL_SPEED)
                         return ServerProperties.Properties.MOUNT_UNDER_LEVEL_35_SPEED;
                     else
                         return ServerProperties.Properties.MOUNT_OVER_LEVEL_35_SPEED;
@@ -12896,11 +12944,30 @@ namespace DOL.GS
             {
                 get
                 {
-                    if (m_level <= 35)
+                    if (m_level <= 35 && !ServerProperties.Properties.MOUNT_ANY_LEVEL_FULL_SPEED)
                         return false;
                     else
                         return true;
                 }
+            }
+
+            /// <summary>
+            /// Mount IDs (horsemap.csv) listed in the server setting world / flying_mount_ids fly.
+            /// </summary>
+            public bool IsFlyingMount => IsFlyingMountId(m_id);
+
+            public static bool IsFlyingMountId(byte id)
+            {
+                if (id == 0 || string.IsNullOrWhiteSpace(ServerProperties.Properties.FLYING_MOUNT_IDS))
+                    return false;
+
+                foreach (string part in ServerProperties.Properties.FLYING_MOUNT_IDS.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (byte.TryParse(part, out byte listed) && listed == id)
+                        return true;
+                }
+
+                return false;
             }
 
             public bool IsCombatHorse

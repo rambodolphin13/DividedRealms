@@ -13,6 +13,10 @@ Starts from the pristine 1.130 game.dll (the input of patch_modern_client.py) an
   * the creation primary/secondary/tertiary stat highlight for 63-66 (switch at 0x5B400A);
   * Codex's Storm Sovereign resist-display fix (0x41A639), which is class-independent;
   * the stable-horse rider fix (0x42BE14, see RIDE_ANIM_EDIT): riders on NPC steeds sit instead of standing;
+  * server-driven native flight (FLIGHT_HOOK) for flying mounts: DebugMode packet byte 1 = 1/2 sets/clears
+    the client's own flight flag, for any player (the classic client's patch_observer_flight.py was GM-only);
+  * flying mounts keep their idle animation (FLIGHT_ANIM_HOOKS) and fly at FLIGHT_SPEED (FLIGHT_SPEED_EDITS);
+  * a longer camera zoom (CAMERA_MAX_EDITS): the distance clamp's 500 / 1500 maximums become CAMERA_MAX;
   * the creation screen's class-indexed entry array (container +0x34) sized for 68 classes instead of 63.
     Without this, registering class 63 writes one slot past the 0xFC-byte array and corrupts the heap
     (first test install crashed opening character creation);
@@ -38,6 +42,10 @@ KNOWN_NATIVE_CLIENTS = {
     '26392ed8c8948ff5f5604b24e54c5ada5657bf50719b3502bc0c8fd1820452dd',
     '3954474f9a3b120b36fc350aea8978c7d2c211c227459364937f548bb2b5bc8f',
     'e70fc1e07b74a610d42abeb137ebf741c22d66eb4787cb9093fa7c59256a4f93',
+    '9e09af8127252b5995f4e508e7cecd69465a4b74d5d34d6294b34701b6dec174',  # + stable-horse rider fix
+    '1806cc4c3df0e8abdb8365ee32987ebf200f90df4eaa53eec3ed1df24f6e009f',  # + native flight, camera zoom
+    'ec754fbbed644f1b509cf507ff0051930755f180b28f75e80e582fc723bf8785',  # + flight idle anims, speed 350
+    '40f29d2ad5693e6ef9d1c9a4d0558f0834565f10fe01519fd4463f323e8bf775',  # flight speed 450
 }
 BASE = 0x400000
 NAME_TABLE = 0xD92578
@@ -96,6 +104,41 @@ CLASS_ARRAY_SIZE = 0x5AFA55, '8d7e346a3f', '8d7e346a44'
 # speed (0x42BE10..0x42BE72), overwriting "Ride Horse" (slot 0x47): taxi riders stand. 1.127 has no such
 # branch. jne -> jmp always takes the 1.127 path at 0x42BE75; personal mounts take the earlier branch.
 RIDE_ANIM_EDIT = 0x42BE14, '755f', 'eb5f'
+# Native flight. The DebugMode (0x21) handler stores byte 0 as the GM permission at 0x410EC0
+# (movsx eax,[ebx]; mov [0xCDDC20],eax) and continues with mov eax,0x9a. The client's own flight flag is the
+# dword the GM fly key toggles at 0x437475; its other readers (movement, gravity, 0x4B1FC4) test it alone.
+# The server sends byte 1 = 1 to fly and 2 to land; 0 (every ordinary DebugMode packet) changes nothing.
+FLIGHT_HOOK, FLIGHT_ORIGINAL, FLIGHT_BACK = 0x410EC8, 'b89a000000', 0x410ECD
+FLIGHT_FLAG = 0xD90510
+# Flight animation. Native flight sets the controller mode ([0xD91490]+0x30) to 3. The movement animation
+# selector 0x42CAE6 handles idle/walk/run only for modes 0 and 6; other modes are looked up in a table that has
+# no entry for 3, so nothing is chosen and rider and mount freeze. While the flight flag is set, the three
+# local-player animation reads below see mode 0, a zeroed movement struct (speed 0) and no turn keys: rider and
+# mount play their standing idle in the air. Each: (site, original bytes, return address, kind).
+FLIGHT_ZERO = 0xC40          # section offset of a zeroed movement-struct stand-in (0x40 bytes)
+FLIGHT_ANIM_HOOKS = [
+    # anim player 0x42BC86, local rider: speed [mv+0x38] -> [ebp+8], keys [0xD90514]&0xF -> eax, jmp 0x42BCC6
+    (0x42BC9E, 'a19c14d9008b4038894508a11405d90083e00feb13', 0x42BCC6, 'player'),
+    (0x42D02E, '8b40308b359c14d900', 0x42D037, 'mode'),      # anim update 0x42CE87: mode, esi = movement struct
+    (0x42D04D, '8b1d1405d900', 0x42D053, 'keys'),            # same, ebx = movement keys
+    (0x42D1CD, '8b1d9c14d900', 0x42D1D3, 'mount'),           # the mount of the local rider: ebx = movement struct
+    (0x42D1E6, '8b1d1405d900', 0x42D1EC, 'keys'),            # same, ebx = movement keys
+]
+# Flight speeds (0x438488 sets them while the flag is on): forward/vertical 2000 and the 1100 limit at 0x438D7F
+# become FLIGHT_SPEED and the same 0.55 ratio. A level 35+ mount runs at 276 (191 * 145%).
+FLIGHT_SPEED = 2 * 276   # twice a level 35+ mount's ground run (191 * 145%)
+FLIGHT_SPEED_EDITS = [
+    (0x4384A8, 'c74708d0070000', 'c74708' + struct.pack('<I', FLIGHT_SPEED).hex()),          # mov [edi+8],2000
+    (0x438D7F, 'bf4c040000', 'bf' + struct.pack('<I', FLIGHT_SPEED * 11 // 20).hex()),       # mov edi,1100
+]
+# Camera distance setter (0x4AC33E; every zoom path calls it): the maximum is 500.0, or 1500.0 when two
+# client checks pass, then clamp(value, 50.0, maximum). Both maximums become CAMERA_MAX. The /setcamera
+# reset distance (0x99814C) is separate and unchanged.
+CAMERA_MAX = 4000.0
+CAMERA_MAX_EDITS = [
+    (0x4AC354, 'c745fc0000fa43', 'c745fc' + struct.pack('<f', CAMERA_MAX).hex()),   # mov [ebp-4],500.0
+    (0x4AC36D, 'c745fc0080bb44', 'c745fc' + struct.pack('<f', CAMERA_MAX).hex()),   # mov [ebp-4],1500.0
+]
 # Vampiir hover without the rest of the Vampiir look. The character record's "is Vampiir" byte (+0x15D,
 # set from class == 58 at 0x402A66 and 0x417F9B) becomes the world object's flag +0x19C4 (0x433814).
 # Animation and ground-contact code tests that flag for nonzero (the hover); the skin and model code
@@ -301,6 +344,34 @@ def vampiir_only_stub(asm, original, back, kind):
     asm.jmp(back)
 
 
+def flight_stub(asm):
+    flag = struct.pack('<I', FLIGHT_FLAG).hex()
+    asm.raw('9c')                                                     # keep flags
+    asm.raw('807b0101 750a c705' + flag + '01000000')                 # byte 1 == 1: fly
+    asm.raw('807b0102 750a c705' + flag + '00000000')                 # byte 1 == 2: land
+    asm.raw('9d')
+    asm.raw(FLIGHT_ORIGINAL)
+    asm.jmp(FLIGHT_BACK)
+
+
+def flight_anim_stub(asm, original, back, kind, zero_va):
+    flag = struct.pack('<I', FLIGHT_FLAG).hex()
+    zero = struct.pack('<I', zero_va).hex()
+    test = '833d' + flag + '00'                                       # cmp dword [flag],0
+    if kind == 'player':
+        asm.raw(test + ' 7518')                                       # jne fly (past the 24-byte normal path)
+        asm.raw(original[:-4])                                        # the original reads, without its jmp
+        asm.jmp(back)
+        asm.raw('c74508 00000000 31c0')                               # fly: speed 0, keys 0
+    elif kind == 'mode':
+        asm.raw(original + test + ' 7407 31c0 be' + zero)             # flying: mode 0, esi = zeroed struct
+    elif kind == 'keys':
+        asm.raw(original + test + ' 7402 31db')                       # flying: no turn keys
+    elif kind == 'mount':
+        asm.raw(original + test + ' 7405 bb' + zero)                  # flying: ebx = zeroed struct
+    asm.jmp(back)
+
+
 def resist_stub(asm):
     # Codex's Storm Sovereign fix (patch_modern_client.py): the resist label includes secondary RA
     # resistance with ResistCalculator's ordering, capped at 70.
@@ -377,14 +448,22 @@ def patch(original):
     for realm_name, realm in REALMS.items():
         stubs[realm_name] = asm.here
         creation_stub(asm, realm, text)
+    stubs['flight'] = asm.here         # last, so the earlier stubs keep their addresses
+    flight_stub(asm)
+    for site, original, back, kind in FLIGHT_ANIM_HOOKS:
+        stubs[f'flight_anim_{site:x}'] = asm.here
+        flight_anim_stub(asm, original, back, kind, va + FLIGHT_ZERO)
     if len(asm.code) > 0x800:
         raise ValueError('Stubs exceed the reserved code area')
     payload = bytes(asm.code).ljust(0x800, b'\xcc') + bytes(strings)
     if len(payload) > SLOT_STORAGE:
         raise ValueError('Strings overlap the adapter slot storage')
     payload = payload.ljust(SLOT_STORAGE, b'\0') + b'\0' * (4 * (BUTTONS - 16))
+    if len(payload) > FLIGHT_ZERO:
+        raise ValueError('Adapter slots overlap the flight zero block')
+    payload = payload.ljust(FLIGHT_ZERO + 0x40, b'\0')
 
-    for at, before, after in [CLASS_ARRAY_SIZE, RIDE_ANIM_EDIT]+SCREEN_EDITS:
+    for at, before, after in [CLASS_ARRAY_SIZE, RIDE_ANIM_EDIT]+SCREEN_EDITS+CAMERA_MAX_EDITS+FLIGHT_SPEED_EDITS:
         old, new = bytes.fromhex(before), bytes.fromhex(after)
         pos = offset(at)
         if len(old) != len(new) or data[pos:pos+len(old)] != old:
@@ -393,6 +472,9 @@ def patch(original):
     hook(NAME_HOOK, NAME_ORIGINAL, stubs['name'])
     hook(STAT_HOOK, STAT_ORIGINAL, stubs['stats'])
     hook(RESIST_HOOK, RESIST_ORIGINAL, stubs['resist'])
+    hook(FLIGHT_HOOK, FLIGHT_ORIGINAL, stubs['flight'])
+    for site, original, back, kind in FLIGHT_ANIM_HOOKS:
+        hook(site, original, stubs[f'flight_anim_{site:x}'])
     if TUATHA_HOVER:
         hook(HOVER_SELECT[0], HOVER_SELECT[1], stubs['hover_select'])
         hook(HOVER_WORLD[0], HOVER_WORLD[1], stubs['hover_world'])
