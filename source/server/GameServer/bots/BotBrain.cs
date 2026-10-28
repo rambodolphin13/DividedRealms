@@ -4433,6 +4433,8 @@ namespace DOL.AI.Brain
             if (!ShamanBotCombatPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell))
                 return "cast: healers keep roots for adds";
             if (BotSpellPower.BlocksAttackerRotation(BotBody, spell)) return "cast: focus root blocks the caster rotation";
+            if (spell.SpellType == eSpellType.MaulerGift && !ModernMauler.GiftReady(Body, spell))
+                return "cast: Mauler gift needs an aura and its Mauler Staff";
             if (!NeedsOffensiveSpellApplication(target, spell)) return "cast: target already has it";
             if (Body.GetSkillDisabledDuration(spell) > 0) return "cast: on cooldown";
             if (Body.Mana < BotBody.PowerCost(spell)) return "cast: not enough power";

@@ -29,6 +29,12 @@ namespace DOL.GS.Spells
         public static bool FreeCosts(GameLiving living) => IsPlayer(living) && HasUtility(living, 1);
         public static bool PierceBladeturn(GameLiving living) => IsPlayer(living) && HasUtility(living, 2);
         public static bool MeetsStaffRequirement(int required, int trained, bool equipped) => required < 0 || equipped && trained >= required;
+        // A gift needs an aura and, for most ranks, a trained and equipped Mauler Staff. Bots check this before choosing
+        // it: a fist-wrap Mauler that kept choosing its 1,500-range gift stood out of reach of its target, refused.
+        public static bool GiftReady(GameLiving caster, Spell spell) =>
+            IsPlayer(caster) && Aura(caster) != null &&
+            MeetsStaffRequirement(Param(spell, "MaulerStaffRequired"), caster.GetBaseSpecLevel(Specs.Mauler_Staff),
+                caster.ActiveWeapon?.Object_Type == (int)eObjectType.MaulerStaff);
         // Test coefficient: a lost percentage of maximum health supplies the same percentage of maximum power.
         // Only actual hostile health loss qualifies; absorbed damage and self/environmental damage do not.
         public static int PowerFromDamage(int damage, int maxHealth, int maxPower) => maxHealth <= 0 ? 0 :
@@ -128,14 +134,7 @@ namespace DOL.GS.Spells
             ModernMauler.ChildText(Caster, Spell.SubSpellID, "Aura of the Wildbull"),
             ModernMauler.ChildText(Caster, ModernMauler.Param(Spell, "MaulerFarseerSpell"), "Aura of the Farseer")
         }.Where(x => !string.IsNullOrEmpty(x)));
-        private bool Requirements()
-        {
-            if (!ModernMauler.IsPlayer(Caster)) return false;
-            GameLiving p = Caster;
-            int required = ModernMauler.Param(Spell, "MaulerStaffRequired");
-            bool equipped = p.ActiveWeapon?.Object_Type == (int)eObjectType.MaulerStaff;
-            return ModernMauler.Aura(p) != null && ModernMauler.MeetsStaffRequirement(required, p.GetBaseSpecLevel(Specs.Mauler_Staff), equipped);
-        }
+        private bool Requirements() => ModernMauler.GiftReady(Caster, Spell);
         public override bool CheckBeginCast(GameLiving target, bool quiet)
         {
             if (!Requirements())

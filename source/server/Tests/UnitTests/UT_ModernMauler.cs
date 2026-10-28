@@ -41,6 +41,15 @@ namespace DOL.UnitTests
         public void GiftsRequireTrainedStaffAndEquippedWeaponExceptExplicitExemptions(int required, int trained, bool equipped, bool expected) =>
             Assert.That(ModernMauler.MeetsStaffRequirement(required, trained, equipped), Is.EqualTo(expected));
 
+        // Bots choose a gift only when it can be cast: a fist-wrap Mauler chose its 1,500-range gift on every think, was
+        // refused, and stood out of reach of its target (2026-10-28 run: 535,000 refusals, 7,400 pull timeouts).
+        [Test]
+        public void OnlyAMaulerCanBeReadyForAGift()
+        {
+            var gift = new Spell(new DbSpell { SpellID = 67410, Type = "MaulerGift", Target = "Enemy", Range = 1500 }, 5);
+            Assert.That(ModernMauler.GiftReady(new Actor(), gift), Is.False);
+        }
+
         [TestCase(150, 40, 40)] [TestCase(50, 100, 50)] [TestCase(50, 0, 0)] [TestCase(-1, 100, 0)]
         public void TapsCannotCreatePowerOrEnduranceBeyondTargetsResources(int requested, int available, int expected) => Assert.That(ModernMauler.BoundedTap(requested, available), Is.EqualTo(expected));
 
