@@ -135,6 +135,9 @@ namespace DOL.GS
 			}
 
 			item.Emblem = player.Guild.Emblem;
+			// Saved at once: a character that is reloaded from the database (a teleport, a relog) before the periodic save
+			// would lose the emblem it has just paid for (owner 2026-10-28).
+			GameServer.Database.SaveObject(item);
 			player.Out.SendInventoryItemsUpdate(new DbInventoryItem[] {item});
 			if (item.SlotPosition < (int) eInventorySlot.FirstBackpack)
 				player.UpdateEquipmentAppearance();
