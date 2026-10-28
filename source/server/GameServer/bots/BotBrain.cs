@@ -2329,6 +2329,10 @@ namespace DOL.AI.Brain
                 .ThenByDescending(spell => spell.Value)
                 .ThenByDescending(spell => spell.Level)
                 .ToList();
+            // Owner 2026-10-28: a Minstrel that is out of combat and on the move keeps the speed song alone, without twisting.
+            if (!immediateCombat && traveling && (eCharacterClass)bot.CharacterClass.ID == eCharacterClass.Minstrel &&
+                songs.FirstOrDefault(candidate => candidate.SpellType == eSpellType.SpeedEnhancement) is Spell speedSong)
+                songs = [speedSong];
 
             if (songs.Count == 0)
             {
