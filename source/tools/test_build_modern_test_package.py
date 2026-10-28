@@ -25,6 +25,21 @@ class ModernPackageTests(unittest.TestCase):
             self.assertIn('<AutoAccountCreation>True</AutoAccountCreation>', text)
             self.assertNotIn('someone', text)
 
+    def test_host_for_friends_is_switched_off(self):
+        with tempfile.TemporaryDirectory() as folder:
+            config = Path(folder) / 'serverconfig.xml'
+            config.write_text('<root><Server>\n<Port>10330</Port>\n<IP>0.0.0.0</IP>\n<RegionIP>127.0.0.1</RegionIP>\n'
+                              '<UdpIP>0.0.0.0</UdpIP>\n<EnableUPnP>True</EnableUPnP>\n<PublicIP>auto</PublicIP>\n'
+                              '<AutoAccountCreation>False</AutoAccountCreation>\n<DBConnectionString>Data Source=x.db;Version=3</DBConnectionString>\n</Server></root>',
+                              encoding='utf-8')
+            b.server_config(config)
+            text = config.read_text(encoding='utf-8')
+            for line in ('<IP>127.0.0.1</IP>', '<UdpIP>127.0.0.1</UdpIP>', '<EnableUPnP>False</EnableUPnP>',
+                         '<RegionIP>127.0.0.1</RegionIP>'):
+                self.assertIn(line, text)
+            self.assertNotIn('PublicIP', text)
+        self.assertFalse(b.keep_runtime(Path('server/config/serverconfig.before-host-for-friends.xml')))
+
 
 if __name__ == '__main__':
     unittest.main()

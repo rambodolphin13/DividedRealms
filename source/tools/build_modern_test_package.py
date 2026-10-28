@@ -48,7 +48,7 @@ RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', '
 WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
 # host-for-friends.json and the firewall script are the developer's Host for Friends state (friends' addresses, local paths).
 RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json',
-                      'host-for-friends.json', 'host-for-friends-firewall.cmd'}
+                      'host-for-friends.json', 'host-for-friends-firewall.cmd', 'serverconfig.before-host-for-friends.xml'}
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json',
                   'Join Friend.cmd')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}
@@ -127,10 +127,14 @@ def latest_dotnet(dotnet: Path) -> str:
 
 
 def server_config(config: Path):
-    """The package's world, relative to the server folder (as the classic packages), and automatic account creation."""
+    """The package's world, relative to the server folder (as the classic packages), automatic account creation, and
+    Host for Friends off (loopback, no UPnP, no PublicIP) whatever the developer's install has switched on."""
     text = config.read_text(encoding='utf-8-sig')
     text, count = re.subn(r'Data Source=[^;<]*', 'Data Source=../data/opendaoc.sqlite3.db', text)
     assert count == 1, 'serverconfig.xml has no single Data Source'
+    for tag, value in (('IP', '127.0.0.1'), ('UdpIP', '127.0.0.1'), ('EnableUPnP', 'False')):
+        text = re.sub(rf'<{tag}>[^<]*</{tag}>', f'<{tag}>{value}</{tag}>', text)
+    text = re.sub(r'[ \t]*<PublicIP>[^<]*</PublicIP>\r?\n?', '', text)
     config.write_text(text, encoding='utf-8')
     release.set_auto_account_creation(config)
     assert f'<Port>{PORT}</Port>' in text and '<IP>127.0.0.1</IP>' in text, 'the modern server must listen on loopback 10330'
