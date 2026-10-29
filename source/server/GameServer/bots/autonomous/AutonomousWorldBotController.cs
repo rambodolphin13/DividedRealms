@@ -308,7 +308,8 @@ namespace DOL.GS
                         bot.Group != null,
                         // Capital recovery clears the saved camp before it assigns: that route is stale.
                         _camp != null && string.Equals(bot.PersistentRecord?.CurrentCampId, _camp.Id, StringComparison.OrdinalIgnoreCase),
-                        _camp?.IsDungeon == true))
+                        _camp?.IsDungeon == true,
+                        arrivedAtCamp: bot.GoalDiagnosticAttempt?.ArrivedUtc != null))
                 {
                     _observedObjectiveAssignmentId = assignmentId;
                 }
@@ -3433,6 +3434,9 @@ namespace DOL.GS
                                         (sharedGroup || !_recentFailedSoloCamps.ContainsKey(cell.Id)) &&
                                         !AutonomousCampRouteQuarantine.IsQuarantined(cell.Id) &&
                                         !AutonomousCampRouteQuarantine.IsFamilyQuarantined(cell.RegionId, cell.MonsterName) &&
+                                        !AutonomousZoneSeamBlocks.IsBlocked(bot.Realm, cell.RegionId,
+                                            cell.RegionId == bot.CurrentRegionID ? (ushort)(bot.CurrentZone?.ID ?? 0) : (ushort)0,
+                                            (ushort)(cell.Zone?.ID ?? 0)) &&
                                         (sharedGroup || !AutonomousCampDangerBench.IsBenched(cell.Id)) &&
                                         IsZoneAccessible(bot.Realm, cell.Zone, bot.CurrentRegionID) &&
                                         AutonomousOrdinaryPveRealmPolicy.CanAssignCamp(bot.Realm, cell.RegionId,
@@ -4630,6 +4634,12 @@ namespace DOL.GS
                         // retains ordinary rejection and cooldown behavior.
                         if (TryEscapeTerminalRoutePocket(bot, current))
                             return true;
+                        if (AutonomousZoneSeamBlocks.ReportFailure(bot.Realm, bot.CurrentRegionID, currentZone.ID,
+                                destinationZone.ID, bot.DatabaseID))
+                            Log.Warn($"AUTONOMOUS_ZONE_SEAM_BLOCKED realm={GlobalConstants.RealmToName(bot.Realm)} " +
+                                     $"region={bot.CurrentRegionID} from=\"{currentZone.Description}\" to=\"{destinationZone.Description}\" " +
+                                     $"hours={AutonomousZoneSeamBlocks.BlockDuration.TotalHours:0} destinationBlocked=" +
+                                     $"{AutonomousZoneSeamBlocks.IsDestinationBlocked(bot.Realm, bot.CurrentRegionID, destinationZone.ID)}");
                         RejectPendingBoarding(bot, "No safe connected zone seam on the approach");
                         AbandonCamp(bot, "No safe connected zone seam on the selected route");
                         return false;

@@ -139,7 +139,8 @@ namespace DOL.GS
             bool mayRetarget = _camp != null &&
                                now - _lastRouteThreatRetargetTick >= AutonomousRouteThreatPolicy.RetargetCooldownMilliseconds;
             RouteThreatAction action = AutonomousRouteThreatPolicy.Decide(con, grouped, pack, bossLike,
-                detour.HasValue, detours, mayRetarget, cautious: !grouped && now < _routeCautionUntilTick);
+                detour.HasValue, detours, mayRetarget, cautious: !grouped && now < _routeCautionUntilTick,
+                mayAbandonHopeless: _camp != null);
             if (action == RouteThreatAction.Ignore)
                 return false;
 

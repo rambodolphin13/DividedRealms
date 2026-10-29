@@ -123,9 +123,9 @@ public sealed class UT_GamebotReviewOct18
     [Test]
     public void RealReassignmentsStillDropTheRoute()
     {
-        // A change from one assignment to another is a real reassignment.
+        // A renewal reaching a bot already at its camp is a real reassignment (2026-10-28: still walking keeps it).
         Assert.That(AutonomousObjectiveAssignments.KeepsCampOnFirstAssignment("albion-0-4-SoloPve",
-            eAutonomousObjectiveKind.SoloPve, false, false, true, false), Is.False);
+            eAutonomousObjectiveKind.SoloPve, false, false, true, false, arrivedAtCamp: true), Is.False);
         // Between-task services, party members and bots with no live camp replan as before.
         Assert.That(AutonomousObjectiveAssignments.KeepsCampOnFirstAssignment(string.Empty,
             eAutonomousObjectiveKind.SoloPve, betweenTasks: true, grouped: false, hasCamp: true, campIsDungeon: false), Is.False);

@@ -591,11 +591,26 @@ public static class AutonomousObjectiveAssignments
     /// work still replan, and a bot awaiting group matchmaking never keeps a dungeon camp.
     /// <paramref name="hasCamp"/> means the controller's camp is still the record's saved camp (a capital
     /// recovery clears the saved camp first, so its stale route is always dropped).
+    /// A PvE assignment that follows another ordinary PvE assignment keeps the camp too while the bot is still
+    /// walking there: the allocator renews an expired solo tenure, or moves a solo bot to the party queue, without
+    /// touching its camp, and dropping the walk was the commonest end of a goal (2026-10-28: 4,189 goals ended
+    /// "Objective assignment changed", 2,389 of them solo to solo and 1,036 solo to the party queue; 3,457 had not
+    /// arrived). A bot already grinding at its camp still moves on at a renewal, as before.
+    /// Callers that mean a new route (matchmaking timeouts, capital recovery, the end of a group or frontier task)
+    /// clear the saved camp, so <paramref name="hasCamp"/> is false for them.
     /// </summary>
     public static bool KeepsCampOnFirstAssignment(string previousAssignmentId, eAutonomousObjectiveKind kind,
-        bool betweenTasks, bool grouped, bool hasCamp, bool campIsDungeon) =>
-        string.IsNullOrEmpty(previousAssignmentId) && hasCamp && !grouped && !betweenTasks &&
+        bool betweenTasks, bool grouped, bool hasCamp, bool campIsDungeon, bool arrivedAtCamp = false) =>
+        (string.IsNullOrEmpty(previousAssignmentId) || !arrivedAtCamp && IsOrdinaryPveAssignmentId(previousAssignmentId)) &&
+        hasCamp && !grouped && !betweenTasks &&
         (kind == eAutonomousObjectiveKind.SoloPve || kind == eAutonomousObjectiveKind.GroupPve && !campIsDungeon);
+
+    /// <summary>An allocator-made solo or party-queue id (<c>realm-band-epoch-Kind</c>); never a raid, RvR or between-task id.</summary>
+    public static bool IsOrdinaryPveAssignmentId(string assignmentId) =>
+        !string.IsNullOrEmpty(assignmentId) && !assignmentId.StartsWith(BetweenTasksPrefix, StringComparison.Ordinal) &&
+        !assignmentId.Contains("-raid-", StringComparison.Ordinal) &&
+        (assignmentId.EndsWith("-" + eAutonomousObjectiveKind.SoloPve, StringComparison.Ordinal) ||
+         assignmentId.EndsWith("-" + eAutonomousObjectiveKind.GroupPve, StringComparison.Ordinal));
 
     public static bool IsBetweenPveTasks(OfflineWorldBotRecord record) =>
         record?.ObjectiveAssignmentId?.StartsWith(BetweenTasksPrefix, StringComparison.Ordinal) == true;

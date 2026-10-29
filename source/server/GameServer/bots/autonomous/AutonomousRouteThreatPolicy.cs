@@ -45,9 +45,12 @@ namespace DOL.GS
         /// gives up the camp rather than fight an orange (a single orange is still fought when it
         /// may not give up again yet). A <paramref name="cautious"/> solo bot (one that died in the
         /// last half hour) treats a yellow like an orange.
+        /// A solo bot facing a purple or red (or a boss) it cannot go around gives up the camp even inside the
+        /// ten-minute retarget cooldown when <paramref name="mayAbandonHopeless"/>: it used to walk on into it
+        /// ("Ignore"), and on 2026-10-28 879 solo bots died to a purple or red before reaching their camp.
         /// </summary>
         public static RouteThreatAction Decide(ConColor con, bool grouped, int packSize, bool bossLike,
-            bool detourAvailable, int detoursSoFar, bool mayRetarget, bool cautious = false)
+            bool detourAvailable, int detoursSoFar, bool mayRetarget, bool cautious = false, bool mayAbandonHopeless = false)
         {
             // A grey monster is no threat (and in DAoC rarely aggroes); lower cons are fought in
             // bigger packs. Run 7 (2026-10-06): 14% of give-ups were greys 6+ levels below the
@@ -70,7 +73,8 @@ namespace DOL.GS
                     return RouteThreatAction.Retarget;
                 if (packSize <= fightableSolo)
                     return RouteThreatAction.Pull;
-                return mayRetarget ? RouteThreatAction.Retarget : RouteThreatAction.Ignore;
+                return mayRetarget || felt >= ConColor.RED && mayAbandonHopeless
+                    ? RouteThreatAction.Retarget : RouteThreatAction.Ignore;
             }
             int easyPack = grouped ? con <= ConColor.BLUE ? 5 : 3
                 : con <= ConColor.GREEN ? 3 : con <= ConColor.BLUE ? 2 : 1;
@@ -88,7 +92,8 @@ namespace DOL.GS
                 : con <= ConColor.ORANGE && packSize <= manageablePack);
             if (manageable)
                 return RouteThreatAction.Pull;
-            return mayRetarget ? RouteThreatAction.Retarget : RouteThreatAction.Ignore;
+            return mayRetarget || !grouped && bossLike && mayAbandonHopeless
+                ? RouteThreatAction.Retarget : RouteThreatAction.Ignore;
         }
 
         /// <summary>
