@@ -40,6 +40,21 @@ internal static class Program
             }
             return;
         }
+        if (args.Length == 1 && args[0] == "--prepare-world")
+        {
+            // Headless world preparation (package tests): make the world or apply this release's pending world updates.
+            try
+            {
+                foreach (string line in WorldUpdates.Prepare(MainForm.ServerRootFor(AppContext.BaseDirectory)))
+                    Console.WriteLine(line);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                Environment.ExitCode = 1;
+            }
+            return;
+        }
         if (args.Length == 1 && args[0] == "--prepare-portable-account")
         {
             // the new client's launcher keeps its account with the game it plays (server_root.txt)
