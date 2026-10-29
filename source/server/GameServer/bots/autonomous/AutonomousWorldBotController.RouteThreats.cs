@@ -165,6 +165,7 @@ namespace DOL.GS
                 case RouteThreatAction.Retarget:
                     _lastRouteThreatRetargetTick = now;
                     AbandonCamp(bot, $"Route blocked by {blocker.Name} (level {blocker.Level}, {pack} together) with no way around");
+                    BackAwayFrom(bot, nav, zone, blocker, blockerBrain.AggroRange, margin, threats);
                     return true;
 
                 default: // Pull
@@ -254,6 +255,36 @@ namespace DOL.GS
                             : "Taking on a monster ahead on the route before it can jump from behind",
                         blocker.Name, _camp?.ZoneName ?? string.Empty);
                     return true;
+            }
+        }
+
+        /// <summary>
+        /// After giving up a camp because of a monster, walks out of its reach (and clear of the other monsters around)
+        /// instead of waiting out the replan beside it (AutonomousRouteThreatPolicy.RetreatClearance).
+        /// </summary>
+        private void BackAwayFrom(GameBot bot, IPathfindingMgr nav, Zone zone, GameNPC threat, int aggroRange, int margin,
+            GameNPC[] others)
+        {
+            float radius = AutonomousRouteThreatPolicy.RetreatRadius(aggroRange, margin);
+            Vector2 here = new(bot.X, bot.Y), at = new(threat.X, threat.Y);
+            if (Vector2.Distance(here, at) >= radius)
+                return;
+            Vector3 start = new(bot.X, bot.Y, bot.Z);
+            foreach (Vector2 candidate in AutonomousRouteThreatPolicy.RetreatCandidates(here, at, radius))
+            {
+                if (others.Any(npc => npc != threat && npc.Brain is StandardMobBrain mob &&
+                                      Vector2.Distance(candidate, new(npc.X, npc.Y)) < mob.AggroRange + margin))
+                    continue;
+                if (!AutonomousNavigationSurface.TryFloor(nav, zone, new(candidate.X, candidate.Y, bot.Z), out Vector3 floor) ||
+                    !AutonomousZoneItinerary.HasCompleteCorridor(nav, zone, start, floor))
+                    continue;
+                bot.PathTo(floor, bot.MaxSpeed);
+                // The next plan starts once the bot is clear (the usual replan wait is longer than the walk).
+                long walk = (long)(Vector2.Distance(here, new(floor.X, floor.Y)) * 1000 / Math.Max((short)50, bot.MaxSpeed)) + 1_000;
+                _nextPlanTick = Math.Max(_nextPlanTick, GameLoop.GameLoopTime + walk);
+                SetStatus(bot, $"Backing away from {threat.Name}", "Find a reachable level-appropriate XP camp",
+                    "Getting out of its reach before choosing another camp", threat.Name);
+                return;
             }
         }
 

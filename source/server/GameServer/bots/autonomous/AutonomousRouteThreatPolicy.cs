@@ -97,6 +97,31 @@ namespace DOL.GS
         }
 
         /// <summary>
+        /// How far past a monster's aggro range a bot that gave up its camp because of it backs off. A bot used to stop
+        /// where it gave up and stand there for the 30-second replan wait, often inside the monster's aggro: on 2026-10-29
+        /// 935 of 1,594 solo deaths to a red or purple before reaching camp were to the monster the bot had just given
+        /// up its camp for, most within 45 seconds.
+        /// </summary>
+        public const int RetreatClearance = 250;
+
+        public static float RetreatRadius(int aggroRange, int margin) => aggroRange + margin + RetreatClearance;
+
+        /// <summary>
+        /// Where to back off to from a monster: points at <paramref name="radius"/> from it, straight away from it
+        /// first, then turning up to 90 degrees either side (never past the monster).
+        /// </summary>
+        public static Vector2[] RetreatCandidates(Vector2 bot, Vector2 threat, float radius)
+        {
+            Vector2 away = bot - threat;
+            float angle = away.LengthSquared() > 1f ? MathF.Atan2(away.Y, away.X) : 0f;
+            float[] turns = [0f, MathF.PI / 4, -MathF.PI / 4, MathF.PI / 2, -MathF.PI / 2];
+            var points = new Vector2[turns.Length];
+            for (int i = 0; i < turns.Length; i++)
+                points[i] = threat + new Vector2(MathF.Cos(angle + turns[i]), MathF.Sin(angle + turns[i])) * radius;
+            return points;
+        }
+
+        /// <summary>
         /// The point on the route (within the look-ahead) nearest to a position, and the route's
         /// horizontal direction there.
         /// </summary>

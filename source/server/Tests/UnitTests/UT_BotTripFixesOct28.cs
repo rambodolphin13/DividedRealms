@@ -110,4 +110,26 @@ public sealed class UT_BotTripFixesOct28
         Assert.That(AutonomousRouteThreatPolicy.Decide(ConColor.YELLOW, false, 1, true, false, 0, false,
             mayAbandonHopeless: true), Is.EqualTo(RouteThreatAction.Retarget));
     }
+
+    [Test]
+    public void ABotThatGivesUpBecauseOfAMonsterBacksOutOfItsReach()
+    {
+        // 2026-10-29: a level-10 Savage gave up its camp 200 units from a red vendo bone-collector (aggro 500),
+        // stood still for the replan wait and died 31 seconds later.
+        float radius = AutonomousRouteThreatPolicy.RetreatRadius(500, AutonomousRouteThreatPolicy.MeleeMargin);
+        Assert.That(radius, Is.EqualTo(830f));
+        var threat = new System.Numerics.Vector2(769761, 682262);
+        var bot = threat + new System.Numerics.Vector2(-120, 160);
+        System.Numerics.Vector2[] points = AutonomousRouteThreatPolicy.RetreatCandidates(bot, threat, radius);
+        Assert.That(points, Has.Length.EqualTo(5));
+        foreach (var point in points)
+        {
+            Assert.That(System.Numerics.Vector2.Distance(point, threat), Is.EqualTo(radius).Within(0.5f));
+            // Never across the monster: every point is on the bot's side of it.
+            Assert.That(System.Numerics.Vector2.Dot(point - threat, bot - threat), Is.GreaterThanOrEqualTo(-1f));
+        }
+        // Straight away first.
+        Assert.That(System.Numerics.Vector2.Normalize(points[0] - threat).X,
+            Is.EqualTo(System.Numerics.Vector2.Normalize(bot - threat).X).Within(0.001f));
+    }
 }
