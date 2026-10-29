@@ -248,8 +248,9 @@ internal sealed partial class MainForm : Form
         _serverReadinessPoll.Tick += async (_, _) => await RefreshWhenServerReadyAsync();
         Shown += async (_, _) =>
         {
-            // The modern test package ships without a client: offer to set up the player's own on first start.
-            if (_modernClient != null && !ModernClientSetup.IsSetUp(_modernClient))
+            // The modern test package ships without a client: offer to set up the player's own on first start, and bring
+            // a copy set up by an older release up to this release's client patch.
+            if (_modernClient != null)
                 ModernClientSetupForm.EnsureSetUp(this, _modernClient, _root);
             await RefreshDashboardAsync();
             await RefreshRealmExchangeAsync();

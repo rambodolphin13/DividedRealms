@@ -20,12 +20,17 @@ internal static class Program
         }
         if (args.Length == 2 && args[0] == "--setup-modern-client")
         {
-            // Headless client setup (package tests): copy and patch the given 1.130 client, then verify the profile.
+            // Headless client setup (package tests): copy and patch the given 1.130 client, or bring an existing copy up to
+            // this release's patch from it, then verify the profile.
             try
             {
                 var profile = ModernClientProfile.Load(AppContext.BaseDirectory)
                     ?? throw new InvalidDataException("No modern client profile is installed.");
-                ModernClientSetup.Install(args[1], profile.ClientDirectory, ModernClientSetup.Load(AppContext.BaseDirectory), null, CancellationToken.None);
+                var patch = ModernClientSetup.Load(AppContext.BaseDirectory);
+                if (ModernClientSetup.IsSetUp(profile))
+                    ModernClientSetup.Update(profile.ClientDirectory, patch, args[1]);
+                else
+                    ModernClientSetup.Install(args[1], profile.ClientDirectory, patch, null, CancellationToken.None);
                 _ = profile.CreateStartInfo("verification-only", "not-used");
             }
             catch (Exception ex)

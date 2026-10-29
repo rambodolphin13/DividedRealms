@@ -13,6 +13,8 @@ public static class ModernClientSetup
     public const string PatchFile = "client-patch.json";
     // Written first and removed last: a client folder with it is an interrupted setup, redone on the next try.
     public const string IncompleteMarker = "setup-in-progress.txt";
+    // The player's own client folder, so a later release can patch the copy again without asking.
+    public const string SourceFile = "client-source.txt";
 
     // The same files source/tools/bundle_modern_client.py leaves out of a client copy.
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { "logs", "screenshots", "backups", "cache" };
@@ -35,6 +37,70 @@ public static class ModernClientSetup
 
     public static bool IsSetUp(ModernClientProfile profile) => File.Exists(Path.Combine(profile.ClientDirectory, "game.dll")) &&
         !File.Exists(Path.Combine(profile.ClientDirectory, IncompleteMarker));
+
+    /// <summary>
+    /// The patched files whose copy isn't this patch's output: a newer release copied over an older one leaves the client
+    /// copy patched by the older release, since setup only runs once.
+    /// </summary>
+    public static PatchedFile[] Stale(string client, Patch patch) => patch.Files.Where(f =>
+    {
+        string path = Path.Combine(client, f.Path);
+        return !File.Exists(path) || !Hash(path).Equals(f.OutputSha256, StringComparison.OrdinalIgnoreCase);
+    }).ToArray();
+
+    /// <summary>The stale files that can't be patched from the copy itself (it holds an older patch, not the pristine file).</summary>
+    public static PatchedFile[] NeedSource(string client, Patch patch) => Stale(client, patch).Where(f =>
+    {
+        string path = Path.Combine(client, f.Path);
+        return !File.Exists(path) || !Hash(path).Equals(f.InputSha256, StringComparison.OrdinalIgnoreCase);
+    }).ToArray();
+
+    /// <summary>The player's own client folder the copy was made from, when it is still there.</summary>
+    public static string? RememberedSource(string client)
+    {
+        string file = Path.Combine(client, SourceFile);
+        if (!File.Exists(file)) return null;
+        string source = File.ReadAllText(file).Trim();
+        return source.Length > 0 && Directory.Exists(source) ? source : null;
+    }
+
+    /// <summary>
+    /// Brings an existing client copy to this patch: each stale file is patched again from the pristine file, taken from the
+    /// copy when it still is pristine, otherwise from <paramref name="source"/> (the player's own client, never written to).
+    /// Every new file is built and verified before any is replaced; the replaced ones are kept as .bak.
+    /// </summary>
+    public static void Update(string client, Patch patch, string? source)
+    {
+        client = Path.GetFullPath(client);
+        var outputs = new List<(string Target, byte[] Data)>();
+        foreach (var file in Stale(client, patch))
+        {
+            string target = Path.Combine(client, file.Path);
+            string from = File.Exists(target) && Hash(target).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase)
+                ? target
+                : source != null ? Path.Combine(source, file.Path)
+                : throw new InvalidDataException($"Your client copy's {file.Path} is from an older version. Choose your Dark Age of Camelot " +
+                                                 $"{patch.ClientVersion} folder so it can be patched again.");
+            if (!File.Exists(from) || !Hash(from).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException($"That client's {file.Path} isn't the {patch.ClientVersion} build this game is made for, so it " +
+                                               "can't be patched. It may be a newer or modified client. Nothing was changed.");
+            outputs.Add((target, Apply(File.ReadAllBytes(from), file)));
+        }
+        foreach (var (target, data) in outputs)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            string temporary = target + ".update";
+            File.WriteAllBytes(temporary, data);
+            if (File.Exists(target))
+                File.Replace(temporary, target, target + ".bak");
+            else
+                File.Move(temporary, target);
+        }
+        if (Stale(client, patch).FirstOrDefault() is { } wrong)
+            throw new InvalidDataException($"The patched {wrong.Path} doesn't verify.");
+        if (source != null)
+            File.WriteAllText(Path.Combine(client, SourceFile), Path.GetFullPath(source));
+    }
 
     /// <summary>Null when <paramref name="source"/> is a pristine client this patch accepts, otherwise why it isn't.</summary>
     public static string? CheckSource(string source, Patch patch)
@@ -117,6 +183,7 @@ public static class ModernClientSetup
         foreach (var file in patch.Files)
             if (!Hash(Path.Combine(destination, file.Path)).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException($"The patched {file.Path} doesn't verify.");
+        File.WriteAllText(Path.Combine(destination, SourceFile), source);
         File.Delete(Path.Combine(destination, IncompleteMarker));
         progress?.Report((total, total, ""));
     }
@@ -143,11 +210,15 @@ public static class ModernClientSetup
     }
 }
 
-/// <summary>The first-run window: choose your 1.130 client, then copy and patch it with a progress bar.</summary>
+/// <summary>
+/// The first-run window: choose your 1.130 client, then copy and patch it with a progress bar. In update mode (the copy
+/// holds an older release's patch) it only patches the changed files again from the chosen client.
+/// </summary>
 public sealed class ModernClientSetupForm : Form
 {
     private readonly ModernClientProfile _profile;
     private readonly ModernClientSetup.Patch _patch;
+    private readonly bool _update;
     private readonly TextBox _folder = new() { Dock = DockStyle.Fill, ReadOnly = true };
     private readonly Button _browse = new() { Text = "Browse…", AutoSize = true };
     private readonly Button _start = new() { Text = "Set up client", AutoSize = true, Enabled = false };
@@ -156,11 +227,13 @@ public sealed class ModernClientSetupForm : Form
     private readonly Label _status = new() { Dock = DockStyle.Fill, AutoEllipsis = true };
     private CancellationTokenSource? _running;
 
-    private ModernClientSetupForm(ModernClientProfile profile, ModernClientSetup.Patch patch)
+    private ModernClientSetupForm(ModernClientProfile profile, ModernClientSetup.Patch patch, bool update)
     {
         _profile = profile;
         _patch = patch;
-        Text = "Set up your Dark Age of Camelot client";
+        _update = update;
+        Text = update ? "Update your game's client copy" : "Set up your Dark Age of Camelot client";
+        if (update) _start.Text = "Update client";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = MinimizeBox = false;
         StartPosition = FormStartPosition.CenterParent;
@@ -168,9 +241,13 @@ public sealed class ModernClientSetupForm : Form
         var intro = new Label
         {
             Dock = DockStyle.Fill,
-            Text = $"This game plays with your own Dark Age of Camelot {patch.ClientVersion} client. Choose its folder (the one with " +
-                   "game.dll and camelot.exe). It is copied into this game's folder (about 6 GB) and the copy is patched for the " +
-                   "new classes. Your own client is not changed."
+            Text = update
+                ? "This version of the game patches the client differently from the one your client copy was set up with. Choose your " +
+                  $"own Dark Age of Camelot {patch.ClientVersion} folder (the one with game.dll and camelot.exe) so the changed files can " +
+                  "be patched again. Nothing is copied again and your own client is not changed."
+                : $"This game plays with your own Dark Age of Camelot {patch.ClientVersion} client. Choose its folder (the one with " +
+                  "game.dll and camelot.exe). It is copied into this game's folder (about 6 GB) and the copy is patched for the " +
+                  "new classes. Your own client is not changed."
         };
         var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 5, Padding = new Padding(12) };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -196,21 +273,44 @@ public sealed class ModernClientSetupForm : Form
         FormClosing += (_, e) => { if (_running != null) { _running.Cancel(); e.Cancel = true; } };
     }
 
-    /// <summary>Shows the window when the client isn't set up yet; true once it is.</summary>
+    /// <summary>
+    /// True once the client copy is set up and matches this release's patch. Sets it up on first use; brings an older
+    /// release's copy up to date, without asking when the copy or the remembered client folder has the pristine files.
+    /// </summary>
     public static bool EnsureSetUp(IWin32Window owner, ModernClientProfile profile, string runtime)
     {
-        if (ModernClientSetup.IsSetUp(profile))
-            return true;
+        bool setUp = ModernClientSetup.IsSetUp(profile);
         ModernClientSetup.Patch patch;
         try { patch = ModernClientSetup.Load(runtime); }
         catch (Exception ex)
         {
+            if (setUp) return true;  // nothing to compare against; the start check still verifies game.dll
             MessageBox.Show(owner, ex.Message, "Client patch missing", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
-        using var form = new ModernClientSetupForm(profile, patch);
+        string client = profile.ClientDirectory;
+        if (setUp)
+        {
+            if (ModernClientSetup.Stale(client, patch).Length == 0)
+                return true;
+            string? remembered = ModernClientSetup.RememberedSource(client);
+            if (ModernClientSetup.NeedSource(client, patch).Length == 0 || remembered != null && ModernClientSetup.CheckSource(remembered, patch) == null)
+            {
+                try
+                {
+                    ModernClientSetup.Update(client, patch, remembered);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(owner, ex.Message, "Client update failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+        }
+        using var form = new ModernClientSetupForm(profile, patch, setUp);
         form.ShowDialog(owner);
-        return ModernClientSetup.IsSetUp(profile);
+        return ModernClientSetup.IsSetUp(profile) && ModernClientSetup.Stale(client, patch).Length == 0;
     }
 
     private void Browse()
@@ -236,9 +336,16 @@ public sealed class ModernClientSetupForm : Form
         string source = _folder.Text, destination = _profile.ClientDirectory;
         try
         {
-            await Task.Run(() => ModernClientSetup.Install(source, destination, _patch, progress, _running.Token));
+            if (_update)
+            {
+                _status.Text = "Patching the changed client files…";
+                await Task.Run(() => ModernClientSetup.Update(destination, _patch, source));
+            }
+            else
+                await Task.Run(() => ModernClientSetup.Install(source, destination, _patch, progress, _running.Token));
             _running = null;
-            MessageBox.Show(this, "Your client is set up. Use ENTER REALM to play.", "Client ready", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, _update ? "Your client copy is up to date. Use ENTER REALM to play." : "Your client is set up. Use ENTER REALM to play.",
+                "Client ready", MessageBoxButtons.OK, MessageBoxIcon.Information);
             Close();
         }
         catch (OperationCanceledException)
