@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from './vendor/utils/SkeletonUtils.js';
 
+// Invisible boxes stand in for NPC models when picking: raycasting a skinned mesh skins every vertex on the CPU.
+const HIT_BOX=new THREE.BoxGeometry(1,1,1),HIT_MATERIAL=new THREE.MeshBasicMaterial({visible:false});
+const ANIMATED=30;
+
 // Draw real client assets. Placement/raycast authority stays in the collision layer.
 export class WorldVisuals {
   constructor(scene, camera, labels, getState, local, values) {
@@ -15,7 +19,7 @@ export class WorldVisuals {
     this.serial++;for(const o of this.scenery.children)o.dispose?.();this.scenery.clear();for(const r of this.instances.values())this.disposeProxy(r.group);this.people.clear();this.labels.replaceChildren();
     // Cached model resources own shared geometry/materials; dispose them once, after clones are removed.
     for(const p of this.resources.values())p.then(g=>g.scene.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of (Array.isArray(o.material)?o.material:[o.material])){for(const v of Object.values(m))if(v?.isTexture)v.dispose();m.dispose();}}})).catch(()=>{});
-    this.resources.clear();this.instances.clear();this.tags.clear();this.pickables=[];this.manifest=null;this.labelEntities=[];this.lastUpdate=0;
+    this.resources.clear();this.instances.clear();this.tags.clear();this.pickables=[];this.pickablesDirty=false;this.manifest=null;this.labelEntities=[];this.lastUpdate=0;
   }
   resource(file) {
     const url=this.base+file;
@@ -92,6 +96,8 @@ export class WorldVisuals {
     group.add(model);group.traverse(o=>{if(o.isMesh)o.userData.entity=entity;});
     // Skinned mesh bind-pose bounds can be far above the animated head; use a stable editor label height.
     record.height=Math.max(.9,Math.min(8,1.9*(v.Size||50)/50));
+    const hit=new THREE.Mesh(HIT_BOX,HIT_MATERIAL),w=Math.max(.6,record.height*.45);hit.scale.set(w,record.height,w);hit.position.y=record.height/2;hit.userData.entity=entity;
+    group.add(hit);record.hit=hit;this.pickablesDirty=true;
   }
   tick(time,dt,entities,selected,cutHeight) {
     this.clip.constant=this.cutaway?cutHeight:1e8;
@@ -100,13 +106,15 @@ export class WorldVisuals {
       const nearby=entities.map(e=>({e,id:`${e.table}:${e.key}`,p:this.local(this.values(e))})).map(o=>({...o,d:this.camera.position.distanceTo(o.p)}))
         .filter(o=>selected.has(o.id)||o.d<200).sort((a,b)=>(selected.has(b.id)?1:0)-(selected.has(a.id)?1:0)||a.d-b.d).slice(0,100);
       const keep=new Set(nearby.map(o=>o.id));
-      for(const [id,r] of this.instances){const v=this.values(r.entity);if(!keep.has(id)||r.signature!==`${v.Model}:${v.Size}:${v.Realm}`){this.people.remove(r.group);r.mixer?.stopAllAction();this.disposeProxy(r.group);this.instances.delete(id);}}
+      for(const [id,r] of this.instances){const v=this.values(r.entity);if(!keep.has(id)||r.signature!==`${v.Model}:${v.Size}:${v.Realm}`){this.people.remove(r.group);r.mixer?.stopAllAction();this.disposeProxy(r.group);this.instances.delete(id);this.pickablesDirty=true;}}
+      // Only the nearest models animate; the rest hold their idle pose.
+      nearby.forEach((o,i)=>{const r=this.instances.get(o.id);if(r)r.animate=i<ANIMATED;});
       // Other world layers (bind points, zone points, waypoints…) are drawn as markers only.
       if(this.show)for(const {e} of nearby)if(e.table==='Mob'||e.table==='WorldObject'||e.table==='Door')this.attach(e,this.serial);
       this.labelEntities=nearby;
     }
-    this.pickables=[];
-    for(const [id,r] of this.instances){const v=this.values(r.entity);r.group.position.copy(this.local(v));r.group.rotation.y=-(v.Heading||0)/4096*Math.PI*2;r.mixer?.update(dt);r.group.traverse(o=>{if(o.isMesh)this.pickables.push(o);});}
+    if(this.pickablesDirty){this.pickablesDirty=false;this.pickables=[...this.instances.values()].map(r=>r.hit).filter(Boolean);}
+    for(const r of this.instances.values()){const v=this.values(r.entity);r.group.position.copy(this.local(v));r.group.rotation.y=-(v.Heading||0)/4096*Math.PI*2;if(r.animate)r.mixer?.update(dt);}
     const keep=new Set();let count=0;const occupied=[];
     for(const item of this.labelEntities||[]){
       const chosen=selected.has(item.id);if(!this.names&&!chosen)continue;if(!chosen&&(item.d>110||count>35))continue;
@@ -116,9 +124,11 @@ export class WorldVisuals {
       if(!chosen&&occupied.some(q=>Math.abs(q.x-x)<95&&Math.abs(q.y-y)<28))continue;
       occupied.push({x,y});count++;keep.add(item.id);
       let tag=this.tags.get(item.id);if(!tag){tag=document.createElement('button');tag.className='worldLabel';tag.onclick=e=>{e.stopPropagation();this.onSelect?.(item.e,e.ctrlKey);};this.labels.append(tag);this.tags.set(item.id,tag);}
-      const v=this.values(item.e);tag.replaceChildren(document.createTextNode(v.Name||item.e.table));
-      if(v.Guild){const small=document.createElement('small');small.textContent=v.Guild;tag.append(small);}
-      tag.classList.toggle('selected',chosen);tag.style.transform=`translate(${x}px,${y}px) translate(-50%,-100%)`;
+      const v=this.values(item.e),text=`${v.Name||item.e.table}
+${v.Guild||''}`;
+      if(tag.dataset.text!==text){tag.dataset.text=text;tag.replaceChildren(document.createTextNode(v.Name||item.e.table));
+        if(v.Guild){const small=document.createElement('small');small.textContent=v.Guild;tag.append(small);}}
+      if(tag.classList.contains('selected')!==chosen)tag.classList.toggle('selected',chosen);tag.style.transform=`translate(${x}px,${y}px) translate(-50%,-100%)`;
       tag.title=this.instances.get(item.id)?.preview||'NPC position';
     }
     for(const [id,t] of this.tags)if(!keep.has(id)){t.remove();this.tags.delete(id);}
