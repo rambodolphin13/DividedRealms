@@ -33,6 +33,13 @@ namespace DOL.GS
         public const float CampSkipRadius = 700f;
         public const int MaxDetoursPerThreat = 2;
         public const long RetargetCooldownMilliseconds = 10 * 60_000;
+        // From Nikse77/OfflineDAoC bbe074d3 (2026-10-29): four parties of level 20-36 were wiped in Midgard's island region 151
+        // on their way to low camps by giant cicadas (45-48), vanvettig djur (44-46) and forest skrats (50): the policy pulled a
+        // red pack of two with a party average far below it, and walked on ("Ignore") into purple monsters once the ten-minute
+        // retarget cooldown was running. A party never pulls a monster this many levels above its average, and a monster it must
+        // not pull and cannot go around makes it give up the camp even inside the cooldown (at most once a minute).
+        public const int GroupMaximumLevelsAbove = 8;
+        public const long ForcedRetargetCooldownMilliseconds = 60_000;
 
         /// <summary>
         /// What to do about the first threat on the route. An even fight is pulled; a strong
@@ -50,7 +57,8 @@ namespace DOL.GS
         /// ("Ignore"), and on 2026-10-28 879 solo bots died to a purple or red before reaching their camp.
         /// </summary>
         public static RouteThreatAction Decide(ConColor con, bool grouped, int packSize, bool bossLike,
-            bool detourAvailable, int detoursSoFar, bool mayRetarget, bool cautious = false, bool mayAbandonHopeless = false)
+            bool detourAvailable, int detoursSoFar, bool mayRetarget, bool cautious = false, bool mayAbandonHopeless = false,
+            int levelsAboveReference = 0, bool mayForceRetarget = false)
         {
             // A grey monster is no threat (and in DAoC rarely aggroes); lower cons are fought in
             // bigger packs. Run 7 (2026-10-06): 14% of give-ups were greys 6+ levels below the
@@ -88,13 +96,18 @@ namespace DOL.GS
             if (canDetour)
                 return RouteThreatAction.Detour;
             bool manageable = !bossLike && (grouped
-                ? con <= ConColor.RED && packSize <= manageablePack
+                ? con <= ConColor.RED && packSize <= manageablePack && levelsAboveReference < GroupMaximumLevelsAbove
                 : con <= ConColor.ORANGE && packSize <= manageablePack);
             if (manageable)
                 return RouteThreatAction.Pull;
-            return mayRetarget || !grouped && bossLike && mayAbandonHopeless
+            return mayRetarget || !grouped && bossLike && mayAbandonHopeless ||
+                   grouped && mayForceRetarget && IsHopeless(con, bossLike, levelsAboveReference)
                 ? RouteThreatAction.Retarget : RouteThreatAction.Ignore;
         }
+
+        /// <summary>A monster a party must not walk into: a boss, a purple one, or one far above the party's average.</summary>
+        public static bool IsHopeless(ConColor con, bool bossLike, int levelsAboveReference) =>
+            bossLike || con >= ConColor.PURPLE || levelsAboveReference >= GroupMaximumLevelsAbove;
 
         /// <summary>
         /// How far past a monster's aggro range a bot that gave up its camp because of it backs off. A bot used to stop
