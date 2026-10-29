@@ -184,6 +184,44 @@ Ligen and Druim Cain RvR staging) are 144-190 units above the new floor. Their c
 navmesh within 256 or 600 units, so no code change was needed, and the shared source stays right for the
 Classic and Stormforged editions.
 
+**Border-keep gates baked shut (found and fixed 2026-10-28):**
+- **Symptom:** the server log of 2026-10-28 had 2,623 Albion goals end "No safe connected zone seam", and no Albion
+  goal in Pennine Mountains, Forest Sauvage, Snowdonia or Hadrian's Wall was productive.
+- **Cause:** the 1.130 meshes were built with three border-keep gates closed. Each gate left a 30-unit gap on flat
+  floor, so the courtyard (joined to the homeland) and the ground past the gate were separate areas:
+  - Castle Sauvage north gate
+  - Snowdonia Fortress south-east gate. Its 45°-turned keep ground was also never stitched to the frontier ground
+    around it: they meet at the same height with a 15-25-unit gap and no wall in the geometry.
+  - Druim Cain south gate. Valley of Bri Leith's main ground no longer met Mount Collory, and the RvR staging point
+    there stood on the cut-off strip.
+- **Other keeps:** a door-by-door check of all six border keeps and the frontier gate forts, on both worlds' meshes,
+  found only these three changed. Svasud Faste, Vindsaul Faste and Druim Ligen are joined as in classic.
+- **Second cause:** the modern `seams.json` had no `"main"` section (`add_main_areas.py` was not run). So the
+  itinerary could not reject a crossing onto a ridge that never reaches the destination's main ground. Midgard's
+  trips to Jamtland bounced between Vale of Mularn and Uppland on the mountain corner at (753760, 671744).
+- **Fix:**
+  - 11 two-way walk links (`tools/navmesh_splice/modern-gate-links.json`, applied with `add_offmesh.py`).
+  - `seams.json` and `pockets.json` regenerated with `seamgraph.py`, then `add_main_areas.py`.
+  - `roads.json` regenerated with `roadgraph.py` and `UT_ZoneRoadBuild` (passed).
+  - The regenerated pockets no longer list Snowdonia Fortress's own grounds, where the world migration had moved its
+    NPCs.
+  - Backup: `backups/navmesh-gate-links-20261028-210857`.
+- **Proof:** every homeland bind point was walked crossing by crossing to the centre of each of the realm's four
+  frontier zones (`UT_ZoneStepProbe.ProbeZoneRoutes`), and in the goal zone the corridor check must reach the goal.
+
+  | Realm | Classic meshes | Modern before | Modern after |
+  |---|---|---|---|
+  | Albion | 68 / 112 | 0 / 116 | 66 / 116 |
+  | Midgard | 48 / 52 | 49 / 56 | 56 / 56 |
+  | Hibernia | 71 / 72 | 67 / 72 | 71 / 72 |
+
+  The Albion trips that still fail mostly start from bind points that are off the mesh or cut off in classic too.
+  Six fail in modern but not classic: they bounce at the Black Mtns. South / Camelot Hills corner (548800, 485664) or
+  the Black Mtns. North / Snowdonia ridge (544160, 368704). One Hibernian trip that worked before now fails the way it
+  does in classic (Valley of Bri Leith to Cruachan Gorge, bouncing at Lough Derg / Connacht). No other trip got worse.
+  Not yet seen in game.
+- **Players:** not affected. The navmesh guides bots only, and the gates in the world are unchanged.
+
 **Not migrated:** saved player and gamebot positions. A bot standing in a changed spot is handled by the
 stuck watchdog and the pockets file. Not yet tested in game.
 
