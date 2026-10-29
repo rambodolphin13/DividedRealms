@@ -38,6 +38,9 @@ namespace DOL.GS
 
         public GamePlayer Owner { get; private set; }
         public GamePlayer PlayerGroupLeader { get; private set; }
+
+        /// <summary>Set by the brain only around the pet focus shield's own cast (BotBrain.TryStartPetFocusShield).</summary>
+        internal bool PetFocusShieldApproved { get; set; }
         public bool IsPlayerLedGroup => PlayerGroupLeader != null;
         public string ClassName { get; private set; }
         public new string InternalID { get; set; }
@@ -2373,7 +2376,7 @@ namespace DOL.GS
             bool temporaryGroupHelper = false,
             byte equipmentLevel = 0,
             byte botLevel = 0,
-            eSpecType spec = eSpecType.None)
+            BotSpec chosenSpec = null)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             IsTemporaryGroupHelper = temporaryGroupHelper;
@@ -2398,13 +2401,10 @@ namespace DOL.GS
             // Stat and spec initialization — order matters
             InitializeBotStats();
             eCharacterClass temporaryClass = (eCharacterClass)ClassId;
-            // A spec the caller named (/spawn wizard fire) is kept; otherwise one of the class's templates at random.
-            eSpecType chosenSpec = spec != eSpecType.None && BotSpec.GetSpecializationChoices(temporaryClass).Contains(spec)
-                ? spec
-                : BotSpec.ChooseRandomSpecialization(temporaryClass);
-            BotSpec = temporaryClass == eCharacterClass.Bonedancer
-                ? new BonedancerBotSpec(chosenSpec, 0, false)
-                : BotSpec.GetSpec(temporaryClass, chosenSpec);
+            // /spawn <class> <spec> picks one of the class's existing builds (TemporaryGroupSpecCatalog); otherwise random.
+            BotSpec = chosenSpec ?? (temporaryClass == eCharacterClass.Bonedancer
+                ? new BonedancerBotSpec(BotSpec.ChooseRandomSpecialization(temporaryClass), 0, false)
+                : BotSpec.GetSpec(temporaryClass, BotSpec.ChooseRandomSpecialization(temporaryClass)));
             LoadClassSpecializations(false);
             SpendSpecPoints(Level, 0);
             RefreshSpecDependantSkills(false);
@@ -2697,10 +2697,14 @@ namespace DOL.GS
         public override bool CastSpell(Spell spell, SpellLine line, ISpellCastingAbilityHandler spellCastingAbilityHandler = null, bool checkLos = true)
         {
             if (CompanionFollowPolicy.DeferBuff(this, spell)) return false;
+            // A cast reveals the caster: a companion hidden with its player casts only heals until a fight starts.
+            if (spell?.IsHealing != true && CompanionStealth.SuppressesCasting(this)) return false;
             if (AutonomousGroupFormationFollow.DeferBuff(this, spell)) return false;
             // Final boundary as well as selection filtering: no rank of the
             // disabled shield can keep a Cabalist/Enchanter bot channeling.
-            if (AutonomousPetSupport.IsDisabledBotDamageShield(this, spell) ||
+            // The pet focus shield is cast only by its own decision (BotBrain.TryStartPetFocusShield), never by upkeep.
+            bool approvedPetShield = PetFocusShieldApproved && BotPetFocusShieldPolicy.IsPetFocusShield(spell);
+            if (AutonomousPetSupport.IsDisabledBotDamageShield(this, spell) && !approvedPetShield ||
                 BotSpellPower.BlocksAttackerRotation(this, spell) ||
                 !AnimistSingleTargetPolicy.AllowsAutomatedSpell(this, spell) ||
                 !BotAnimistPolicy.MayPlant(this, spell))
@@ -2711,7 +2715,7 @@ namespace DOL.GS
 
             if (spell == null || !CanAffordConcentration(spell) || Mana < BotSpellPower.Cost(this, spell, line) ||
                 castingComponent.HasPendingSkillRequests ||
-                BotSpellPower.IsOffensiveCaster(this) && castingComponent.IsCasting)
+                BotSpellPower.IsOffensiveCaster(this) && castingComponent.IsCasting && !castingComponent.IsFocusChanneling)
             {
                 CabalistRestDiagnostics.Attempt(this, spell, false);
                 return false;

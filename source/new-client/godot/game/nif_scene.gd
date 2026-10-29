@@ -58,6 +58,21 @@ func load_scene(gltf_path: String, texture_set := "x4plus") -> bool:
 	var specs: Array = extras.get("nif_materials", [])
 	var fix: Dictionary = FIXES.get(gltf_path.get_base_dir().get_file(), {})
 	specs = specs.map(func(s): return _fixed(s, fix))
+	for sp in specs:                                   # textures decoded here (a worker when prefetched / packed)
+		for slot in ((sp as Dictionary).get("slots", {}) as Dictionary).values():
+			materials.texture(String(slot.tex))
+	for spec in extras.get("nif_particles", []):
+		if String((spec as Dictionary).get("texture", "")) != "":
+			materials.texture(String(spec.texture))
+	# the materials' render-server materials made on the main thread (GpuJobs: on a worker - effects are prefetched
+	# and packed on one - they raced the render thread: "Updating buffers is forbidden during creation of a draw list")
+	var gmats := state.get_materials()                 # (the converted ones in the placeholders' places: none made)
+	for i in gmats.size():
+		var gname := gmats[i].resource_name if gmats[i] else ""
+		if gname.begins_with("nifmat:") and int(gname.substr(7)) < specs.size():
+			gmats[i] = materials.material(specs[int(gname.substr(7))])
+	state.set_materials(gmats)
+	GpuJobs.ready_materials(Array(gmats))
 	var root := doc.generate_scene(state)
 	for node in root.find_children("*", "MeshInstance3D", true, false):
 		var mi := node as MeshInstance3D
@@ -71,8 +86,11 @@ func load_scene(gltf_path: String, texture_set := "x4plus") -> bool:
 				mi.mesh.surface_set_material(i, materials.material(specs[int(mat_name.substr(7))]))
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(root)
-	for spec in extras.get("nif_particles", []):
-		add_child(NifParticles.build(spec, Transform3D.IDENTITY, 400.0, materials))
+	var ps: Array = extras.get("nif_particles", [])
+	if not ps.is_empty():
+		GpuJobs.run(func():                            # particles set their own materials: made on the main thread
+			for spec in ps:
+				add_child(NifParticles.build(spec, Transform3D.IDENTITY, 400.0, materials)), "effect particles")
 	set_meta("nif_extras", extras)
 	_bind()
 	return true

@@ -213,6 +213,9 @@ func _client_command(text: String) -> bool:
 			Server.quit_world(false)
 		"train" when rest == "":                            # the trainer window, anywhere (TrainWindowHandler; owner
 			Server.client.call("TrainWindow")              # 2026-10-14: /train didn't open it away from a trainer)
+		"stealth", "hide" when Server.spec_index("Stealth") >= 0:   # hide / come out: the Stealth spec used, as its
+			Server.use("srv:spec:Stealth")                  # Abilities row (the server has no /stealth - owner 2026-10-28,
+			                                                  # GitHub issue #16: "unrecognized command")
 		_:
 			return false
 	return true

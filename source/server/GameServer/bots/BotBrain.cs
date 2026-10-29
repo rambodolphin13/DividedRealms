@@ -1158,6 +1158,13 @@ namespace DOL.AI.Brain
                 _ambientWanderMovement = false;
                 return;
             }
+            if (!ambientWander && CompanionHealerCombatHold.Holds(BotBody, leader))
+            {
+                // Stop a formation walk already under way; other movement is left alone.
+                if (Body.IsMoving && CompanionFollowPolicy.HasFormationOrder(BotBody))
+                    Body.StopMoving();
+                return;
+            }
 
             bool tightInterior = Body.CurrentRegion?.IsDungeon == true;
             bool companionTravel = CompanionFollowPolicy.Applies(BotBody);
@@ -1279,6 +1286,8 @@ namespace DOL.AI.Brain
             AutonomousSummonActivity.RecoverOwner(BotBody);
             BotAnimistPolicy.RestoreEncounterTarget(BotBody);
             ObserveLeaderActivity();
+            CompanionStealth.Maintain(BotBody);
+            WatchPetFocusShield();
             BotBody?.WakeRecoveryRestIfCombatBlocked();
             BotBody?.EnsureAutonomousRecoveryTimers();
 
@@ -3233,6 +3242,13 @@ namespace DOL.AI.Brain
                 return;
             }
 
+            // A pet focus shield channel stands still; heals and add control may take over it.
+            if (WatchPetFocusShield())
+            {
+                ContinuePetFocusShield();
+                return;
+            }
+
             // The native handler owns an accepted cast through completion (and
             // handles real hits, range/LOS loss and death). Do not replace it
             // with a melee/range/pull decision merely because an enemy is near.
@@ -3502,8 +3518,9 @@ namespace DOL.AI.Brain
         private void TryEnterStealthWhileIdle()
         {
             // Idle is not a reason to hide (and slow travel). Stealth belongs to
-            // the approach to a legal enemy player/bot, not random PvE pauses.
-            if (Body.IsStealthed) Body.Stealth(false);
+            // the approach to a legal enemy player/bot, not random PvE pauses,
+            // or to a companion hidden with its hidden player (CompanionStealth).
+            if (Body.IsStealthed && !CompanionStealth.HoldsStealth(BotBody)) Body.Stealth(false);
         }
 
         private bool TryApproachAmbush(GameLiving target)
@@ -3801,7 +3818,9 @@ namespace DOL.AI.Brain
         {
             Body.StopAttack();
             if (!UsesDefensiveOnlyPet) Body.ControlledBrain?.Disengage();
-            if (Body.IsCasting && Body.castingComponent?.SpellHandler?.Spell?.IsHarmful == true)
+            // A mez or stun on an add (TryPveAddControl) is a support action and finishes.
+            if (Body.IsCasting && Body.castingComponent?.SpellHandler?.Spell is { IsHarmful: true } casting &&
+                !IsAddControlSpell(casting))
                 Body.StopCurrentSpellcast();
         }
 
@@ -3810,7 +3829,8 @@ namespace DOL.AI.Brain
             if (CompanionFollowPolicy.SendsDruidPet(BotBody))
                 TryCommandCompanionDruidPet(CalculateNextAttackTarget());
             HoldSupportCombat();
-            if (!CheckHeals() && !TryPvpCrowdControl()) CheckSpells(eCheckSpellType.Defensive);
+            if (!CheckHeals() && !TryPvpCrowdControl() && !TryPveAddControl() && !TryGroupCelerity())
+                CheckSpells(eCheckSpellType.Defensive);
             if (BotBody.IsPlayerLedGroup)
             {
                 if (!Body.IsCasting && Body.castingComponent?.HasPendingSkillRequests != true)
@@ -4116,6 +4136,8 @@ namespace DOL.AI.Brain
             {
                 if (TryPvpCrowdControl()) return true;
                 if (TryBardPveAddMez()) return true;
+                if (TryPveAddControl()) return true;
+                if (TryGroupCelerity()) return true;
                 if (TryShamanPveAddRoot()) return true;
                 if (TryShortCombatShield()) return true;
                 if (TryClassKitCombatSupport()) return true;
@@ -4166,6 +4188,14 @@ namespace DOL.AI.Brain
                 // Nightshade melee focus
                 if (BotBody.CharacterClass.ID == (int)eCharacterClass.Nightshade)
                     return false;
+
+                // A point blank spell with a cast time: cast in place, or walk in while the group holds the monsters.
+                if (TryPointBlankArea())
+                    return true;
+
+                // A pet being hit, power to save: the pet focus shield instead of nukes (BotPetFocusShieldPolicy).
+                if (Body.ManaPercent <= BotPetFocusShieldPolicy.MaxPowerPercent && TryStartPetFocusShield(false))
+                    return true;
 
                 // Melee hybrids prefer melee when in range (the Shaman and Vampiir cast between swings instead)
                 if (!PrefersCurrentSpellRange() && !ShamanBotCombatPolicy.CastsBetweenSwings((eCharacterClass)BotBody.CharacterClass.ID) &&
@@ -4230,6 +4260,10 @@ namespace DOL.AI.Brain
                     }
                 }
 
+                // Nothing else to cast while the pet is being hit: the shield, above 60% power too.
+                if (spellsToCast.Count == 0 && TryStartPetFocusShield(true))
+                    return true;
+
                 if (spellsToCast.Count > 0)
                 {
                     // Do not roll a DoT/debuff already on this mob and mistake
@@ -4243,12 +4277,16 @@ namespace DOL.AI.Brain
                     if (PrefersCurrentSpellRange() && spellsToCast.Exists(BotCasterPriority.IsDamage))
                         spellsToCast.RemoveAll(spell => !BotCasterPriority.IsDamage(spell));
                     bool shamanHybrid = ShamanBotCombatPolicy.CastsBetweenSwings((eCharacterClass)BotBody.CharacterClass.ID);
-                    Spell spellToCast = shamanHybrid
+                    // Two or more monsters in the fight within an area damage spell's reach: that spell, when its total
+                    // beats the best single nuke. Area spells that would wake a mez or pull a monster are dropped here.
+                    Spell areaChoice = ChooseAreaDamage(spellsToCast, Body.TargetObject as GameLiving);
+                    if (spellsToCast.Count == 0) return Body.IsCasting;
+                    Spell spellToCast = areaChoice ?? (shamanHybrid
                         ? spellsToCast.OrderBy(ShamanBotCombatPolicy.RotationPriority)
                             .ThenByDescending(spell => spell.Level).First()
                         : BotBody.IsEndgameCompanion
                         ? TemporaryCompanionBalance.HighestSpell(spellsToCast)
-                        : spellsToCast[Util.Random(spellsToCast.Count - 1)];
+                        : spellsToCast[Util.Random(spellsToCast.Count - 1)]);
 
                     if (spellToCast.Uninterruptible || !Body.IsBeingInterrupted)
                         casted = CheckOffensiveSpells(spellToCast);
@@ -4481,6 +4519,7 @@ namespace DOL.AI.Brain
 
             if (Body.TargetObject is GameLiving living && NeedsOffensiveSpellApplication(living, spell))
             {
+                AimGroundSpell(spell, living);
                 casted = Body.CastSpell(spell, m_mobSpellLine);
             }
 
@@ -4580,8 +4619,16 @@ namespace DOL.AI.Brain
             }
             else if (!IsInstantAttackType(spell.SpellType))
                 BotTesterLog.Skipped(Body, spell, "instant: spell type not used by the bot attack AI");
-            else if (spell.IsPBAoE && !Body.IsWithinRadius(Body.TargetObject, spell.Radius))
-                BotTesterLog.Skipped(Body, spell, "instant: point-blank, target outside radius");
+            else if (spell.IsPBAoE)
+            {
+                // A point blank spell hits around the caster: two or more monsters in the fight around it, nothing
+                // woken or pulled (upstream issue #17, InstantPointBlankWorthwhile).
+                castSpell = InstantPointBlankWorthwhile(spell, Body.TargetObject as GameLiving);
+                if (!castSpell)
+                    BotTesterLog.Skipped(Body, spell, "instant: point-blank, not enough monsters around");
+            }
+            else if (AreaBlastVetoed(spell, Body.TargetObject))
+                BotTesterLog.Skipped(Body, spell, "instant: area spell would wake or pull another monster");
             else if (LivingHasEffect((GameLiving)Body.TargetObject, spell))
                 BotTesterLog.Skipped(Body, spell, "instant: target already has it");
             else if (!Body.IsWithinRadius(Body.TargetObject, spell.Range))
@@ -5313,13 +5360,25 @@ namespace DOL.AI.Brain
             Body.IsWithinRadius(member, BotSupportReach.SupportRadius) &&
             !_supportReach.IsSkipped(member, GameLoop.GameLoopTime);
 
+        // Owner 2026-10-27: a /spawn companion does not walk away from its player to heal or buff a member that is
+        // far from the player (in a battleground the Cleric and Friar ran off alone to buff a revived Paladin).
+        public const int CompanionSupportLeash = 1_500;
+
+        public static bool LeavesPlayerToSupport(bool temporaryCompanion, bool autonomous, bool playerNear, int targetToPlayer) =>
+            temporaryCompanion && !autonomous && playerNear && targetToPlayer > CompanionSupportLeash;
+
+        private bool LeavesPlayerToSupport(GameLiving target) =>
+            AssistedPlayer is { IsAlive: true } player && LeavesPlayerToSupport(BotBody?.IsTemporaryGroupHelper == true,
+                BotBody?.IsAutonomousWorldBot == true, player.CurrentRegionID == Body.CurrentRegionID,
+                player.CurrentRegionID == target.CurrentRegionID ? (int)player.GetDistanceTo(target) : int.MaxValue);
+
         /// <summary>
         /// Walks toward a group member that is out of range of a heal or buff. False once the
         /// walk has made no progress for 12 seconds (that member is then skipped for 30).
         /// </summary>
         private bool ApproachSupportTarget(GameLiving target)
         {
-            if (target == null || target == Body || !InSupportReach(target) ||
+            if (target == null || target == Body || !InSupportReach(target) || LeavesPlayerToSupport(target) ||
                 !_supportReach.KeepApproaching(target, Body.GetDistanceTo(target), GameLoop.GameLoopTime))
                 return false;
             BotBody.WalkTo(new Point3D(target.X, target.Y, target.Z), BotBody.MaxSpeed);

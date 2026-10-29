@@ -152,6 +152,11 @@ static func _server_skills(lists: Array) -> void:
 			var lv := int(sk.level)
 			var bonus := int(sk.bonus)
 			lists[0].add_child(_text_row(String(sk.name), str(lv) if bonus <= 0 else "%d+%d" % [lv, bonus]))
+			# a specialization the server acts on when it is used (UseSkill type 0): Stealth hides you / brings you out
+			# (StealthSpecHandler) - a row of its own here, to click or drag onto the quickbar (owner 2026-10-28, GitHub
+			# issue #16: a Nightshade found no Stealth in the Abilities window and no way to hide)
+			if String(sk.name) in Server.USABLE_SPECS:
+				lists[1].add_child(_server_row("ability", "srv:spec:%s" % String(sk.name), String(sk.name), "icon", int(sk.icon), ""))
 		elif page in [1, 5, 6]:
 			lists[1].add_child(_server_row("ability", "srv:skill:%d" % (i - first), String(sk.name), "icon", int(sk.icon), ""))
 	lists[0].add_child(_text_row("POINTS", str(PlayerData.spec_points()), UiArt.GOLD_HI))

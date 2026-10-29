@@ -8,6 +8,7 @@ extends Node3D
 # con colours from the client's own name-font palette (fonts/14font.bmp rows); purple isn't in it
 const CON_COLORS := {-3: Color8(130, 129, 128), -2: Color8(135, 225, 113), -1: Color8(85, 93, 214),
 		0: Color8(197, 193, 0), 1: Color8(254, 131, 49), 2: Color8(245, 0, 0), 3: Color(0.78, 0.35, 1.0)}
+const StealthLook := preload("res://game/stealth_look.gd")   # the dark green ghost of a hidden figure
 const FLAG_GHOST := 0x01
 const FLAG_DONTSHOWNAME := 0x04
 const FLAG_CANTTARGET := 0x08
@@ -90,10 +91,17 @@ func sync_pick() -> void:
 		var vis := (state.alive or state.corpse_left > 0.0) and not state.stealthed
 		if visible != vis:
 			visible = vis
+		_sync_stealth_look()
 	if _pick and state:
 		var pm := Node.PROCESS_MODE_INHERIT if state.alive and not state.stealthed else Node.PROCESS_MODE_DISABLED
 		if _pick.process_mode != pm:
 			_pick.process_mode = pm
+
+
+## The server's game: hidden but shown to you (a realm-mate, your group's gamebot) - the dark green ghost.
+func _sync_stealth_look() -> void:
+	if model and is_instance_valid(model) and model.has_node(StealthLook.NAME) != state.stealth_look:
+		StealthLook.set_on(model, state.stealth_look)
 
 
 static var prof_build := {}                   # debug timing of view building, microseconds (tests/crowd_probe.gd)
@@ -757,6 +765,7 @@ func _process_view(delta: float, cam: Camera3D) -> void:
 		var vis := (state.alive or state.corpse_left > 0.0) and not state.stealthed
 		if visible != vis:
 			visible = vis
+		_sync_stealth_look()
 	_animate_lod(delta, cam)
 	if _swim_fit > 0:
 		_swim_fit -= 1

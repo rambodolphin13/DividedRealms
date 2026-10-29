@@ -1,4 +1,5 @@
 using DOL.AI.Brain;
+using DOL.GS;
 using NUnit.Framework;
 
 namespace DOL.UnitTests
@@ -28,6 +29,36 @@ namespace DOL.UnitTests
                 Assert.That(BotBrain.PrefersSpellRange(new DOL.GS.PlayerClass.ClassAnimist()), Is.True);
                 Assert.That(BotBrain.PrefersSpellRange(new DOL.GS.PlayerClass.ClassEnchanter()), Is.True);
                 Assert.That(BotBrain.PrefersSpellRange(new DOL.GS.PlayerClass.ClassShaman()), Is.False, "Shamans melee between nukes");
+            });
+        }
+
+        [Test]
+        public void TemporaryCompanionHealersHoldTheirPositionDuringAFight()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(CompanionHealerCombatHold.Holds(true, false, true, true, true), Is.True,
+                    "a /spawn healer stays put while the group fights");
+                Assert.That(CompanionHealerCombatHold.Holds(true, false, true, false, true), Is.False,
+                    "it follows again when the fight is over");
+                Assert.That(CompanionHealerCombatHold.Holds(true, false, true, true, false), Is.False,
+                    "it follows a leader beyond the leash");
+                Assert.That(CompanionHealerCombatHold.Holds(true, false, false, true, true), Is.False,
+                    "other companions keep their formation");
+                Assert.That(CompanionHealerCombatHold.Holds(false, true, true, true, true), Is.False,
+                    "autonomous healers are unchanged");
+            });
+        }
+
+        [Test]
+        public void TemporaryCompanionsDoNotLeaveThePlayerToSupportAFarMember()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(BotBrain.LeavesPlayerToSupport(true, false, true, 2_000), Is.True, "the member is far from the player");
+                Assert.That(BotBrain.LeavesPlayerToSupport(true, false, true, 1_000), Is.False, "the member is near the player");
+                Assert.That(BotBrain.LeavesPlayerToSupport(true, false, false, 2_000), Is.False, "the player is not here");
+                Assert.That(BotBrain.LeavesPlayerToSupport(false, true, true, 2_000), Is.False, "autonomous gamebots are unchanged");
             });
         }
 

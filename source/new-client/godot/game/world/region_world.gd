@@ -291,7 +291,7 @@ func load_around(p: Vector3) -> void:
 
 func _exit_tree() -> void:
 	if _task >= 0:
-		WorkerThreadPool.wait_for_task_completion(_task)
+		GpuJobs.wait_task(_task)                       # (running the GPU steps it may wait on)
 		_task = -1
 		if _built:
 			_built.free()

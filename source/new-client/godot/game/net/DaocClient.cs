@@ -974,6 +974,10 @@ public partial class DaocClient : Node
 				d["kind"] = "door_state";                 // relic temples, every zone door) - the client's door id
 				d["door_id"] = (long)r.Int(); d["open"] = r.Byte() == 1; d["flag"] = (int)r.Byte();
 				return d;
+			case 0x8D:                                    // PlayerModelTypeChange (168): 3 you went into stealth, 2 you came
+				d["kind"] = "model_type";                 // out (StealthECSGameEffect); 1 / 0 the GM wireframe
+				d["oid"] = r.Short(); d["type"] = (int)r.Byte(); r.Byte();
+				return d;
 			case 0xF6:                                    // ChangeTarget (168): the server picks your target - /target <name>,
 				d["kind"] = "change_target";              // /assist; 0 = none (the client answers with its own Target packet)
 				d["oid"] = (int)r.Short(); r.Short();
@@ -1084,7 +1088,8 @@ public partial class DaocClient : Node
 				for (int i = 0; i < n; i++)
 				{
 					var e = new Godot.Collections.Dictionary();
-					e["index"] = (int)r.Byte(); r.Byte();
+					// its second byte: 0xFF = an ability's icon (icons.csv: Stealth, Sprint ...), else a spell's
+					e["index"] = (int)r.Byte(); e["ability_icon"] = r.Byte() == 0xFF;
 					e["immune"] = (int)r.Byte();
 					e["icon"] = r.Short(); e["seconds"] = r.Short(); e["tooltip"] = r.Short();
 					e["negative"] = (int)r.Byte();

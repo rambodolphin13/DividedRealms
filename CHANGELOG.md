@@ -49,11 +49,45 @@ The newest version is first. For the full detail of every earlier update, see
   the group goes on without it, instead of waiting the full fifteen minutes (a low-level group was seen dying
   about 70 times near its meetup during one wait and then being dropped anyway). (From the
   chris4aker/OfflineDAoC-SocialExpansion fork.)
+- Bots and companions use their area spells on two or more monsters (GitHub issue #17). Point blank spells (centred on
+  the caster) were never cast at all, because of a range check that could not pass. Now:
+  - Thanes, Reavers, Clerics and Shamans use their instant point blank spells when two or more monsters already in the
+    fight are around them.
+  - Wizards, Theurgists, Eldritches, Enchanters, Mentalists, Spiritmasters, Runemasters and Bonedancers cast theirs
+    where they stand, or walk a short way in (up to 700 units) to reach two or more while their group holds the
+    monsters and nothing is hitting them. A caster that is hit or interrupted waits 15 seconds, and two failures end
+    it for that fight, so it never walks in and out in a loop.
+  - An area nuke is chosen over a single nuke when its total over the monsters it hits is bigger.
+  - No area spell is cast when it would also hit a mesmerized monster (waking it) or one not in the fight yet (pulling
+    it).
+  - Ground-targeted area spells land on the target; bots never set a ground target, so these always failed.
+- Every class with a mesmerize or stun now controls adds, not only Bards: a monster attacking the group that nobody
+  is killing gets mesmerized (an area mez only where it cannot reach the monster being killed), and a stun protects
+  someone an add is hitting while they fight something else. The instant mez and stun with a ten-minute reuse are kept
+  for three or more adds. Healers, Clerics and Druids in a group never did this, because their support turn cancelled
+  any harmful spell; they now do, after heals, and keep a quarter of their power for healing.
+- Augmentation Healers cast Celerity while a melee groupmate is fighting in melee without it. The buff choice had no
+  place for it, so it was never cast.
+- Cabalist, Enchanter and Spiritmaster bots and companions use their pet focus damage shield again. It had been
+  turned off because a bot shielding its pet stood still for good: every later spell was queued behind the shield's
+  channel. Now a bot's next spell ends the channel, as a player's does, and the shield is used as a player uses it:
+  only while a monster is hitting the pet (the pet tanking, as when soloing), in a fight that will last, with nothing
+  hitting the caster and power to save. It is dropped two seconds after nobody hits the pet any more (and so when the
+  fight ends), when the caster has to move or is hit, and for heals or a mez, and the bot carries on.
+- A monster's area spell that recasts itself from each target it lands on (Lydsyg's disease in Iarnvidiur's Lair)
+  could fill the server's memory against a large raid until it stopped. A monster can no longer ask for the same
+  instant spell on the same target within a second, queue it twice, or hold more than 16 casts. (From the
+  chris4aker/OfflineDAoC-LivingServer fork.)
 
 **World**
 - Abermenai, the 15-19 battleground, loads in the original game client. The client shipped it without terrain, so
   arriving there showed a red screen and dropped you to character select. It now has Thidranki's terrain, which
   matches: the two battlegrounds share the same map.
+- Monsters with no faction bring friends again: their own kind. Bring A Friend only counted monsters of the same or an
+  allied faction, and two thirds of the aggressive monsters in the game have no faction, so they never brought anyone,
+  whatever the size of the group (Midgard's frore liches, windswept wraiths and chillsome wights, for example). A
+  monster with no faction now brings others of the same name that have no faction either, the way wraiths brought
+  wraiths; monsters with a faction work as before. The server setting baf_same_name_without_faction turns it off.
 - The Huntsmen and Woodsmen of Campacorentin Forest patrol the roads in pairs again instead of standing still. Period
   sightings show a Huntsman and a Woodsman together all along the forest's main roads; each Huntsman now walks one
   stretch of road up and down with a Woodsman at his side, along the same road the horse routes take.
@@ -83,6 +117,21 @@ The newest version is first. For the full detail of every earlier update, see
   address on the router's network and also works with WANPPPConnection routers.
 - A friend's characters live in the host's world for now. Taking your own character along and back is planned:
   [docs/CHARACTER-PASSPORT.md](docs/CHARACTER-PASSPORT.md).
+**Companions and commands**
+- /spawn specs opens a menu like /spawn that lists every class of your realm with its builds, such as
+  [Healer (Mending)] [Healer (Augmentation)] [Healer (Pacification)]; click one to add that companion. /spawn healer
+  augmentation does the same from a macro, and /spawn healer still picks a build at random. Each build is named after
+  the spec line it really trains highest; melee builds are named by their weapon setup (One Handed and Shield, Two
+  Handed, Celtic Dual, Hand to Hand, Left Axe).
+- Companions with Stealth hide when you stealth and come out when you do, or when they are drawn into a fight. They
+  follow the same rules you do (not in combat or casting, not too close to an enemy), a Minstrel stops its songs first,
+  and while hidden they cast nothing but heals.
+- /tc always takes you to your capital's Realm Exchange. /transfercorpse also claimed /tc, so the server reported an
+  error at every start and the two could swap. /transfercorpse keeps its full name. (From the lometur/HearthDAoC
+  fork; Nikse77 and chris4aker found the same clash.)
+- /spawn Clerics, Druids and Healers stand and heal during a fight instead of walking back to their place in the
+  formation between heals, follow you again three seconds after it, or at once if you get more than 1,500 units away,
+  and no longer walk away from you to heal or buff someone. (From the Nikse77/OfflineDAoC fork, branch mod-0.37.)
 
 **The new client (0.38c)**
 - A monster or NPC that dies stops attacking at once. It sometimes went on swinging for a second or two over its
@@ -145,6 +194,16 @@ The newest version is first. For the full detail of every earlier update, see
   so a following /invite found no target. (From the chris4aker/OfflineDAoC-SocialExpansion fork.)
 - Abilities such as Sprint, Stealth and Quickcast can be dragged onto the quickbar, as the skills sheet says.
   (From the chris4aker/OfflineDAoC-SocialExpansion fork.)
+- Stealth works. Stealth is a specialization, not an ability, and the new client had no way to use it: it was
+  missing from the Abilities window, could not go on the quickbar, and /stealth answered "unrecognized command"
+  (issue #16). Stealth now has its own row in the Abilities window to click or drag onto the quickbar, and /stealth
+  and /hide work. While hidden you, and stealthed group members you can still see, are drawn as a dark green
+  ghostly form; enemies who can't detect a stealther still don't see it at all. The Stealth buff also shows its own
+  icon instead of another spell's picture.
+- The new client no longer freezes after a teleport. Right after /tc (or any region change, or a neighbouring zone
+  loading in), it could lock up for good and show "Not Responding": the background zone loaders were touching the
+  graphics card while it was drawing. They now leave those steps to the game's main thread, a little at a time, so
+  nothing stutters, and region changes load a bit faster than before.
 
 **Credits**
 - Thanks to the [chris4aker/OfflineDAoC-SocialExpansion](https://github.com/chris4aker/OfflineDAoC-SocialExpansion)
@@ -153,6 +212,15 @@ The newest version is first. For the full detail of every earlier update, see
   quickbar.
 - Thanks to the [stefanrows/OfflineDAoC](https://github.com/stefanrows/OfflineDAoC) fork for Join Friend: the client-only
   join window, its remembered details and the remote-session diagnostics.
+- Thanks to chris4aker's Living Server fork
+  ([chris4aker/OfflineDAoC-LivingServer](https://github.com/chris4aker/OfflineDAoC-LivingServer), formerly
+  OfflineDAoC-SocialExpansion) for the fix for groups waiting on members that keep dying on the way to their meetup,
+  the boss recast guard, and three new-client fixes: the FACE / FOLLOW / STICK buttons, the server's target changes
+  (/target, /assist) and abilities on the quickbar.
+- Thanks to the [Nikse77/OfflineDAoC](https://github.com/Nikse77/OfflineDAoC) fork (branch mod-0.37) for the /spawn
+  healer fixes.
+- Thanks to lometur's [HearthDAoC](https://github.com/lometur/HearthDAoC) fork (Thomas Farral) for the /tc fix;
+  Nikse77 and chris4aker found the same clash.
 
 ## 0.37 / 0.37b / 0.37c — 2026-10-18
 

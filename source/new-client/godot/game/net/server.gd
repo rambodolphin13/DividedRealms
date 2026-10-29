@@ -611,7 +611,8 @@ func _on_world_inner(kind: String, d: Dictionary) -> void:
 					# client draws it tinted red (owner 2026-10-19)
 					effects[int(e.index)] = {"icon": int(e.icon), "name": String(e.name), "negative": int(e.negative),
 							"until": Time.get_ticks_msec() + int(e.seconds) * 1000 if timed else 0,
-							"disabled": (int(e.get("immune", 0)) & 1) != 0}
+							"disabled": (int(e.get("immune", 0)) & 1) != 0,
+							"ability": bool(e.get("ability_icon", false))}
 			PlayerData.effects_changed.emit()
 		"map_marker":
 			map_markers[int(d.id)] = Vector4(float(d.region), float(d.x), float(d.y), float(d.z))
@@ -1102,7 +1103,9 @@ func effects_list() -> Array:
 	var now := Time.get_ticks_msec()
 	for k in keys:
 		var e: Dictionary = effects[k]
-		var ic := skill_icon("spell", int(e.icon))
+		# an ability's effect (UpdateIcons' second byte 0xFF: Stealth, Sprint ...) takes the abilities' icon: Stealth's
+		# 403 as a spell icon was another spell's picture (owner 2026-10-28)
+		var ic := skill_icon("icon" if bool(e.get("ability", false)) else "spell", int(e.icon))
 		out.append({"icon": int(ic[0]), "border": int(ic[1]), "name": String(e.name), "fx": int(e.icon),
 				"seconds": maxf(0.001, (int(e.until) - now) / 1000.0) if int(e.until) > 0 else 1e9,
 				"disabled": bool(e.get("disabled", false))})
@@ -1203,7 +1206,22 @@ func reuse_left(id: String) -> float:
 	return left
 
 
+## The specializations the server does something with when used (its ISpecActionHandlers: StealthSpecHandler only).
+const USABLE_SPECS := ["Stealth"]
+
+
+## A specialization's place in your usable skills (the specs come first), by its name; -1 if you have none of it.
+func spec_index(spec_name: String) -> int:
+	for i in skills.size():
+		if int(skills[i].page) != 0:
+			break
+		if String(skills[i].name) == spec_name:
+			return i
+	return -1
+
+
 ## A quickbar / sheet entry used: "srv:skill:<n>" (n = place among the non-spec skills) -> UseSkill,
+## "srv:spec:<name>" (a specialization, found by name: the list's order can change) -> UseSkill type 0,
 ## "srv:spell:<line>:<level>" -> UseSpell, "srv:<slot>" (an item) -> UseSlot.
 func use_entry(id: String, player: Node3D, zone_id: int, target_in_view: bool) -> bool:
 	if client == null or not id.begins_with("srv:"):
@@ -1212,7 +1230,12 @@ func use_entry(id: String, player: Node3D, zone_id: int, target_in_view: bool) -
 	var heading := heading_of(fposmod(-rad_to_deg(player.facing()), 360.0))
 	var speed := Vector2(player.velocity.x, player.velocity.z).length() / 0.025
 	var parts := id.split(":")
-	if parts.size() >= 3 and parts[1] == "skill":
+	if parts.size() >= 3 and parts[1] == "spec":
+		var si := spec_index(id.substr(9))
+		if si < 0:
+			return false
+		client.call("UseSkill", r.x, r.y, r.z, speed, heading, target_in_view, si, 0)
+	elif parts.size() >= 3 and parts[1] == "skill":
 		client.call("UseSkill", r.x, r.y, r.z, speed, heading, target_in_view, int(parts[2]), 1)
 	elif parts.size() >= 4 and parts[1] == "spell":
 		client.call("UseSpell", r.x, r.y, r.z, speed, heading, target_in_view, int(parts[3]), int(parts[2]))

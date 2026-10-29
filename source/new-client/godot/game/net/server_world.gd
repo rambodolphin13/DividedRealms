@@ -7,6 +7,7 @@ extends NpcManager
 ## its updates a mover keeps walking toward where the server said it is going (the client's own dead reckoning).
 ## Also the server's chat lines, your health / power / endurance, swings, casts, emotes and deaths.
 
+const StealthLook := preload("res://game/stealth_look.gd")   # the dark green ghost of a hidden figure
 const RUN_UNITS := 150.0                     # a mover faster than this (units / s) runs, slower walks
 const SNAP_M := 6.0                          # an update this far from where it is drawn: jump there
 # eChatType -> the chat window's kinds
@@ -141,6 +142,7 @@ func _on_world(kind: String, d: Dictionary) -> void:
 		"sound_effect": _sound_effect(d)
 		"door_state": _door_state(d)
 		"change_target": _change_target(int(d.oid))
+		"model_type": _model_type(d)
 		"siege_window", "siege_close": _siege_window(kind, d)
 		"siege_anim": _siege_anim(d)
 		"warmap_keeps", "warmap_fights":
@@ -373,6 +375,7 @@ func _add_npc(d: Dictionary) -> void:
 	st.level = int(d.level) & 0x7F
 	st.yaw = Server.yaw_of(int(d.heading))
 	st.stealthed = false                                        # (the server only sends what you can see)
+	st.stealth_look = (f2 & 0x04) != 0                          # hidden, but you can see it: the green ghost
 	st.wait = 1e9                                               # (no roaming of its own)
 	states.append(st)
 	by_oid[oid] = st
@@ -495,6 +498,9 @@ func _update_npc(st: NpcState, d: Dictionary) -> void:
 	st.spawn["level"] = int(d.level) & 0x7F
 	st.level = int(d.level) & 0x7F
 	st.spawn["quest"] = _quest_indicator(d)
+	# a gamebot stealthing / coming out: the server sends it again with its STEALTH flag (GameNPC.Flags) to everyone
+	# who can still see it - those who can't detect it get it removed instead
+	st.stealth_look = (int(d.get("flags2", 0)) & 0x04) != 0
 	var p := scene_pos(float(d.x), float(d.y), float(d.z))
 	if st.pos.distance_to(p) > SNAP_M:
 		st.pos = p
@@ -1733,6 +1739,39 @@ func request_door(door: ZoneDoor) -> void:
 				"con_color": Color.WHITE, "health": float(info.health) / 100.0})
 		Server.client.call("Target", int(info.oid), 0x8000 | 0x6000)
 	Server.client.call("DoorRequest", door.door_id, 0 if door.is_open else 1)
+
+
+## PlayerModelTypeChange: 3 you went into stealth, 2 you came out (StealthECSGameEffect; 1 / 0 are the GM wireframe) -
+## the old client draws your own hidden figure as the dark green ghost (owner 2026-10-28). Another living's.
+var _me_stealth := false
+
+
+func _model_type(d: Dictionary) -> void:
+	var t := int(d.type)
+	if t != 2 and t != 3:
+		return
+	if int(d.oid) == Server.me_oid:
+		_me_stealth = t == 3
+		_sync_my_stealth()
+	else:
+		var st: NpcState = by_oid.get(int(d.oid))
+		if st:
+			st.stealth_look = t == 3
+
+
+## Your figure as the ghost while you are hidden (again on a new figure: a shapechange, a mount).
+func _sync_my_stealth() -> void:
+	if viewer == null or viewer.player == null or not is_instance_valid(viewer.player):
+		return
+	var m = viewer.player.get("_model")
+	if m is Node3D and is_instance_valid(m) and (m as Node).has_node(StealthLook.NAME) != _me_stealth:
+		StealthLook.set_on(m, _me_stealth)
+
+
+func _process(delta: float) -> void:
+	super(delta)
+	if _me_stealth:
+		_sync_my_stealth()
 
 
 ## DoorState: open / shut a door of a loaded zone (both leaves of a double door).

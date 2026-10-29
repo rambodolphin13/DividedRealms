@@ -264,6 +264,9 @@ static func _pack_model(path: String) -> PackedScene:
 		var et = (mats_json[i] as Dictionary).get("emissiveTexture", {})
 		if et is Dictionary and int(et.get("texCoord", 0)) == 1 and mats[i] is BaseMaterial3D:
 			(mats[i] as BaseMaterial3D).emission_on_uv2 = true
+	# their render-server materials made on the main thread (GpuJobs: made on a worker - this runs on the zone and
+	# NPC-view workers - they raced the render thread's draw lists)
+	GpuJobs.ready_materials(Array(mats))
 	# the generated tree is only the template: free it once packed - a loose node is never freed for us, and
 	# every zone left all its monster models and their textures behind (owner 2026-10-10: 7-8 fps after a zone
 	# change, video memory full; ~970 MB more after Camelot Hills -> Shannon Estuary than a fresh start)
@@ -700,7 +703,7 @@ static func _prep_run(jobs: Dictionary, out: Dictionary) -> void:
 
 func _exit_tree() -> void:
 	if _prep_task >= 0:
-		WorkerThreadPool.wait_for_task_completion(_prep_task)
+		GpuJobs.wait_task(_prep_task)                  # (running the GPU steps it may wait on)
 		_prep_task = -1
 
 

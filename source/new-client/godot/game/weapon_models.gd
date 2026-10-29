@@ -127,6 +127,7 @@ static func pack(path: String) -> PackedScene:
 	var state := GLTFState.new()
 	if doc.append_from_file(ProjectSettings.globalize_path(path), state) != OK:
 		return null
+	GpuJobs.ready_materials(Array(state.get_materials()))   # (made on the main thread: NPC views prepare weapons on a worker)
 	var scene := doc.generate_scene(state)
 	var packed := PackedScene.new()
 	var ok := packed.pack(scene) == OK

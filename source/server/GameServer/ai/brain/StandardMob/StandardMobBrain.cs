@@ -811,8 +811,9 @@ namespace DOL.AI.Brain
             if (!CanBaf)
                 return;
 
-            // BaF only happens if the NPC has a faction, and if it was attacked (no BAF on body pull).
-            if (Body.Faction == null || Body.attackComponent.AttackerTracker.Count == 0)
+            // BaF only happens if the NPC was attacked (no BAF on body pull), and if it has a faction or (with no
+            // faction) brings its own kind (BafFriends).
+            if (!BafFriends.CanBringFriends(Body) || Body.attackComponent.AttackerTracker.Count == 0)
             {
                 _canBaf = false;
                 return;
@@ -967,7 +968,7 @@ namespace DOL.AI.Brain
 
                 foreach (GameNPC npc in Body.GetNPCsInRadius((ushort) radius))
                 {
-                    if (npc == Body || !npc.IsFriend(Body) || !npc.IsAggressive || !npc.IsAvailableToJoinFight || npc.Brain is not StandardMobBrain)
+                    if (npc == Body || !BafFriends.IsFriend(Body, npc) || !npc.IsAggressive || !npc.IsAvailableToJoinFight || npc.Brain is not StandardMobBrain)
                         continue;
 
                     long xDiff = Body.X - npc.X;

@@ -45,6 +45,7 @@ static func pack_figure(prefix: String) -> PackedScene:
 	state.base_path = ProjectSettings.globalize_path(dir)
 	if doc.append_from_file(dir + "/figure.gltf", state) != OK:
 		return null
+	GpuJobs.ready_materials(Array(state.get_materials()))   # (made on the main thread: NPC views prepare figures on a worker)
 	var root := doc.generate_scene(state)
 	var packed := PackedScene.new()
 	packed.pack(root)
@@ -80,6 +81,7 @@ static func pack_helm(path: String) -> PackedScene:
 	var st := GLTFState.new()
 	if doc.append_from_file(ProjectSettings.globalize_path(path), st) != OK:
 		return null
+	GpuJobs.ready_materials(Array(st.get_materials()))  # (made on the main thread: helms are prepared on a worker)
 	var scene := doc.generate_scene(st)
 	var packed := PackedScene.new()
 	var ok := packed.pack(scene) == OK

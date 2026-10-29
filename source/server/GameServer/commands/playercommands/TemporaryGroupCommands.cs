@@ -52,12 +52,14 @@ namespace DOL.GS.Commands
 
         private readonly GamePlayer _owner;
         private readonly GameObject _previousTarget;
+        private readonly bool _specs;
         private ECSGameTimer _expirationTimer;
         private bool _closed;
 
-        private TemporaryGroupSpawnMenu(GamePlayer owner)
+        private TemporaryGroupSpawnMenu(GamePlayer owner, bool specs)
         {
             _owner = owner;
+            _specs = specs;
             _previousTarget = owner.TargetObject;
             Name = "Companion Class Menu";
             Realm = owner.Realm;
@@ -81,14 +83,30 @@ namespace DOL.GS.Commands
             return $"Choose a {GlobalConstants.RealmToName(realm)} companion to add to your group:\n\n{links}\n\nClick one class name.";
         }
 
-        internal static bool Open(GamePlayer player)
+        /// <summary>/spawn specs: every class with its builds on one line, named after the spec line each trains highest.</summary>
+        public static string BuildSpecMenuText(eRealm realm)
+        {
+            IEnumerable<string> lines = TemporaryGroupClassCatalog.ForRealm(realm).Select(entry =>
+            {
+                IReadOnlyList<TemporaryGroupSpecCatalog.Option> options = TemporaryGroupSpecCatalog.For(entry.CharacterClass);
+                return options.Count == 0
+                    ? $"[{entry.CharacterClass}]"
+                    : string.Join("   ", options.Select(option => $"[{entry.CharacterClass} ({option.Label})]"));
+            });
+            return $"Choose a {GlobalConstants.RealmToName(realm)} companion and its build:\n\n{string.Join('\n', lines)}\n\n" +
+                   "Click one. In a macro: /spawn <class> <spec>, for example /spawn healer augmentation.";
+        }
+
+        private string MenuText() => _specs ? BuildSpecMenuText(_owner.Realm) : BuildMenuText(_owner.Realm);
+
+        internal static bool Open(GamePlayer player, bool specs = false)
         {
             if (player?.CurrentRegion == null)
                 return false;
 
             player.TempProperties.GetProperty<TemporaryGroupSpawnMenu>(ActiveMenuProperty)?.Close(true);
 
-            var menu = new TemporaryGroupSpawnMenu(player);
+            var menu = new TemporaryGroupSpawnMenu(player, specs);
             if (!menu.AddToWorld())
                 return false;
 
@@ -100,7 +118,7 @@ namespace DOL.GS.Commands
                 menu.Close(true);
                 return 0;
             }, MenuLifetimeMilliseconds);
-            player.Out.SendMessage(BuildMenuText(player.Realm), eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+            player.Out.SendMessage(menu.MenuText(), eChatType.CT_Say, eChatLoc.CL_PopupWindow);
             return true;
         }
 
@@ -112,10 +130,11 @@ namespace DOL.GS.Commands
             if (!ReferenceEquals(source, _owner) || string.IsNullOrWhiteSpace(text))
                 return false;
 
-            if (!TemporaryGroupClassCatalog.TryResolve(_owner.Realm, text, out eCharacterClass characterClass))
+            if (!SpawnTemporaryGroupBotCommandHandler.TryResolve(_owner.Realm, text, out eCharacterClass characterClass,
+                    out TemporaryGroupSpecCatalog.Option spec, out _))
                 return false;
 
-            SpawnTemporaryGroupBotCommandHandler.Spawn(_owner.Client, characterClass);
+            SpawnTemporaryGroupBotCommandHandler.Spawn(_owner.Client, characterClass, spec);
 
             // A class can be clicked repeatedly and other classes can be added
             // without typing /spawn again. Reassert the invisible conversation
@@ -126,7 +145,7 @@ namespace DOL.GS.Commands
             {
                 _owner.TargetObject = this;
                 _owner.Out.SendChangeTarget(this);
-                _owner.Out.SendMessage(BuildMenuText(_owner.Realm), eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+                _owner.Out.SendMessage(MenuText(), eChatType.CT_Say, eChatLoc.CL_PopupWindow);
             }
             return true;
         }
@@ -172,7 +191,8 @@ namespace DOL.GS.Commands
         }
     }
 
-    [CmdAttribute("&spawn", ePrivLevel.Player, "Opens the companion class menu or creates a temporary helper", "/spawn [class name] [spec]")]
+    [CmdAttribute("&spawn", ePrivLevel.Player, "Opens the companion class menu or creates a temporary helper",
+        "/spawn [class name] [spec]", "/spawn specs")]
     public sealed class SpawnTemporaryGroupBotCommandHandler : AbstractCommandHandler, ICommandHandler
     {
         public void OnCommand(GameClient client, string[] args)
@@ -191,29 +211,71 @@ namespace DOL.GS.Commands
                 return;
             }
 
-            string requestedClass = string.Join(' ', args.Skip(1));
-            eSpecType spec = eSpecType.None;
-            if (!TemporaryGroupClassCatalog.TryResolve(player.Realm, requestedClass, out eCharacterClass characterClass))
+            string requested = string.Join(' ', args.Skip(1));
+            if (args.Length == 2 && args[1].Equals("specs", StringComparison.OrdinalIgnoreCase))
             {
-                // "/spawn wizard fire": the last word may name the spec.
-                string classPart = args.Length > 2 ? string.Join(' ', args.Skip(1).Take(args.Length - 2)) : null;
-                if (classPart == null || !TemporaryGroupClassCatalog.TryResolve(player.Realm, classPart, out characterClass))
+                if (player.Group != null && player.Group.MemberCount >= player.Group.MaximumMemberCount)
                 {
-                    DisplayMessage(client, $"'{requestedClass}' is not an available {GlobalConstants.RealmToName(player.Realm)} companion class. Type /classes.");
+                    DisplayMessage(client, "Your group is full.");
                     return;
                 }
-                if (!BotSpec.TryResolveSpecialization(characterClass, args[^1], out spec))
-                {
-                    DisplayMessage(client, $"'{args[^1]}' is not a {characterClass} spec. Choices: " +
-                        string.Join(", ", BotSpec.GetSpecializationChoices(characterClass)) + ".");
-                    return;
-                }
+                if (!TemporaryGroupSpawnMenu.Open(player, specs: true))
+                    DisplayMessage(client, "The companion menu could not open here. Use /spawn <class name> <spec> instead.");
+                return;
+            }
+
+            if (!TryResolve(player.Realm, requested, out eCharacterClass characterClass, out TemporaryGroupSpecCatalog.Option spec,
+                    out string problem))
+            {
+                DisplayMessage(client, problem);
+                return;
             }
 
             Spawn(client, characterClass, spec);
         }
 
-        internal static void Spawn(GameClient client, eCharacterClass characterClass, eSpecType spec = eSpecType.None)
+        /// <summary>
+        /// "healer", "healer augmentation" or "Healer (Augmentation)" (a menu click). The spec is one of the class's builds
+        /// named after the line it trains highest (TemporaryGroupSpecCatalog); none means a random build, as before.
+        /// </summary>
+        internal static bool TryResolve(eRealm realm, string text, out eCharacterClass characterClass,
+            out TemporaryGroupSpecCatalog.Option spec, out string problem)
+        {
+            spec = null;
+            problem = null;
+            text = text?.Trim() ?? "";
+            string classText = text;
+            string specText = null;
+            int open = text.IndexOf('(');
+            int space = text.IndexOf(' ');
+            if (open > 0 && text.EndsWith(')'))
+            {
+                classText = text[..open].Trim();
+                specText = text[(open + 1)..^1].Trim();
+            }
+            else if (space > 0 && !TemporaryGroupClassCatalog.TryResolve(realm, text, out _))
+            {
+                classText = text[..space];
+                specText = text[(space + 1)..].Trim();
+            }
+
+            if (!TemporaryGroupClassCatalog.TryResolve(realm, classText, out characterClass))
+            {
+                problem = $"'{classText}' is not a Classic + SI {GlobalConstants.RealmToName(realm)} class. Type /classes or /spawn specs.";
+                return false;
+            }
+            if (string.IsNullOrEmpty(specText))
+                return true;
+            if (TemporaryGroupSpecCatalog.TryResolve(characterClass, specText, out spec))
+                return true;
+            string known = TemporaryGroupSpecCatalog.Describe(characterClass);
+            problem = known.Length == 0
+                ? $"The {characterClass} companion has a single build. Use /spawn {characterClass.ToString().ToLowerInvariant()}."
+                : $"'{specText}' is not a {characterClass} build. {characterClass} specs: {known}.";
+            return false;
+        }
+
+        internal static void Spawn(GameClient client, eCharacterClass characterClass, TemporaryGroupSpecCatalog.Option spec = null)
         {
             GamePlayer player = client?.Player;
             if (player == null || !TemporaryGroupClassCatalog.ForRealm(player.Realm)
@@ -243,7 +305,7 @@ namespace DOL.GS.Commands
                     (byte)identity.Gender,
                     temporaryGroupHelper: true,
                     equipmentLevel: gearLevel,
-                    spec: spec);
+                    chosenSpec: spec == null ? null : TemporaryGroupSpecCatalog.Create(characterClass, spec));
             }
             catch (Exception exception)
             {
@@ -299,9 +361,7 @@ namespace DOL.GS.Commands
                 brain.FSM.SetCurrentState(eFSMStateType.FOLLOW);
 
             client.Out.SendMessage(
-                $"{helper.Name}, level {helper.Level} {characterClass}" +
-                (helper.BotSpec != null && helper.BotSpec.SpecType != eSpecType.None ? $" ({helper.BotSpec.SpecType} spec)" : "") +
-                ", joined fully equipped: armor/accessories level {Math.Max(1, helper.Level - 10)}–{helper.Level}, weapons/offhand level {Math.Max(1, helper.Level - 2)}–{helper.Level}. " +
+                $"{helper.Name}, level {helper.Level} {characterClass}{(spec == null ? "" : $" ({spec.Label})")}, joined fully equipped: armor/accessories level {Math.Max(1, helper.Level - 10)}–{helper.Level}, weapons/offhand level {Math.Max(1, helper.Level - 2)}–{helper.Level}. " +
                 "This helper takes no loot, is never saved, and vanishes when removed from the group.",
                 eChatType.CT_System, eChatLoc.CL_SystemWindow);
         }
