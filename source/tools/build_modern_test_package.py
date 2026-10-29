@@ -63,6 +63,10 @@ RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json',
                   'Join Friend.cmd')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}
+# Items whose look needs private client art the client patch can't add yet: the developer's world sells them, the
+# package's world doesn't. mount_67 rides mount 89, the saddled Chimera (tools/horses/install_chimera_mount.py adds it
+# to gamedata.mpk and figures/, neither of which client-patch.json patches).
+WITHHELD_MERCHANT_ITEMS = ('mount_67',)
 
 START_CMD = r'''@echo off
 setlocal
@@ -240,6 +244,8 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
         # clean_world switches upstream's Sluaghbinder on; this fork has retired it (build_custom_release_037.py).
         release.set_edition(con, False)
         sluaghbinder = remove_sluaghbinder.apply(con)
+        withheld = {item: con.execute('DELETE FROM MerchantItem WHERE ItemTemplateID = ?', (item,)).rowcount
+                    for item in WITHHELD_MERCHANT_ITEMS}
         con.commit()
         world = release.verify_clean(con, policy, defaults)
     con.close()     # the world file is renamed below
@@ -307,7 +313,7 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
     files = {p.relative_to(out).as_posix(): sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
     (out / 'PACKAGE MANIFEST.sha256').write_text(''.join(f'{h}  {n}\n' for n, h in files.items()), encoding='utf-8')
     report = dict(built_utc=datetime.now(timezone.utc).isoformat(), label=label, runtime_files_copied=len(copied),
-                  world=world, world_data=world_data, world_update={f'{previous} -> {release_version}': world_update}, sluaghbinder=sluaghbinder, replaced=replaced, dotnet=version,
+                  world=world, world_data=world_data, world_update={f'{previous} -> {release_version}': world_update}, sluaghbinder=sluaghbinder, withheld_merchant_items=withheld, replaced=replaced, dotnet=version,
                   client_patch={f['Path']: [f['InputSha256'], f['OutputSha256']] for f in patch['Files']}, files=len(files))
     return report
 
