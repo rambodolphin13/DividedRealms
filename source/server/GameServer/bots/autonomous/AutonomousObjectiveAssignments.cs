@@ -233,7 +233,7 @@ public static class AutonomousObjectiveAssignments
             DateTime utcNow = DateTime.UtcNow;
             GameBot[] roster = AutonomousBotRegistry.Snapshot()
                 .Where(bot => bot.IsAutonomousWorldBot && !bot.IsTemporaryGroupHelper && !bot.IsPlayerLedGroup &&
-                              bot.PersistentRecord != null)
+                              bot.PersistentRecord != null && !AutonomousBeggars.Is(bot))
                 .ToArray();
             // The existing one-minute pass is also a backstop for a service bot
             // whose own movement/maintenance branch is delayed. No new timer.
@@ -483,10 +483,11 @@ public static class AutonomousObjectiveAssignments
         return GameLoop.GameLoopTime - wait.StartedTick >= GroupMatchmakingTimeout.TotalMilliseconds;
     }
 
-    /// <summary>How long an ungrouped GroupPvE bot has waited for its current assignment's party (0 when unknown).</summary>
-    public static long MatchmakingWaitMilliseconds(GameBot bot)
+    /// <summary>How long an ungrouped bot has waited on its current GroupPve assignment (0 when it isn't waiting).</summary>
+    public static long GroupWaitMilliseconds(GameBot bot)
     {
-        if (bot?.PersistentRecord == null || !Is(bot, eAutonomousObjectiveKind.GroupPve)) return 0;
+        if (bot?.PersistentRecord == null || bot.Group != null || !Is(bot, eAutonomousObjectiveKind.GroupPve))
+            return 0;
         long key = bot.DatabaseID > 0 ? bot.DatabaseID : bot.ObjectID;
         return GroupWaits.TryGetValue(key, out var wait) &&
                string.Equals(wait.Assignment, bot.PersistentRecord.ObjectiveAssignmentId ?? string.Empty, StringComparison.Ordinal)
@@ -542,6 +543,18 @@ public static class AutonomousObjectiveAssignments
         // Recovery and task-boundary callers cannot reintroduce a disabled goal.
         if (AutonomousBotGoalPolicy.IsConfigured && !forcedRaid)
             kind = AutonomousBotGoalPolicy.EnsureAllowed(bot.Level, kind);
+        // No healer free for the queue at this level: solo instead of a 20-minute wait that ends solo anyway (AutonomousGroupSupply).
+        if (kind == eAutonomousObjectiveKind.GroupPve && !forcedRaid && !AutonomousGroupSupply.ShouldQueue(bot))
+        {
+            eAutonomousObjectiveKind solo = AutonomousBotGoalPolicy.IsConfigured
+                ? AutonomousBotGoalPolicy.EnsureAllowed(bot.Level, eAutonomousObjectiveKind.SoloPve) : eAutonomousObjectiveKind.SoloPve;
+            if (solo != eAutonomousObjectiveKind.GroupPve)
+            {
+                kind = solo;
+                DOL.Logging.LoggerManager.Create(typeof(AutonomousObjectiveAssignments)).Debug(
+                    $"AUTONOMOUS_GROUP_HEALER_SHORT bot=\"{bot.Name}\" realm={GlobalConstants.RealmToName(bot.Realm)} level={bot.Level} assigned={kind}");
+            }
+        }
         OfflineWorldBotRecord record = bot.PersistentRecord;
         // eRealm.Albion and _FirstPlayerRealm share a value; ToString() labelled Albion assignments "_firstplayerrealm-...".
         string assignment = $"{GlobalConstants.RealmToName(bucket.Realm).ToLowerInvariant()}-{bucket.Band}-{epoch}-{kind}";

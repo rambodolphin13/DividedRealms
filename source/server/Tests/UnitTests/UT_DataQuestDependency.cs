@@ -4,9 +4,8 @@ using NUnit.Framework;
 
 namespace DOL.GS.Tests;
 
-// HearthDAoC: a data quest's QuestDependency entries. Upstream's form is a quest name; the fork adds quest IDs
-// ("#20188", any one of "#20157/20469") and closing entries ("!#20478": not while that quest is active or finished),
-// because upstream's epic chains reuse names (spec docs/fork/specs/2026-10-09-epic-chains-design.md, section 3.1).
+// A data quest's QuestDependency entries: a quest name, quest IDs ("#20188", any one of "#20157/20469") and closing
+// entries ("!#20478": not while that quest is active or finished). From lometur/HearthDAoC.
 [TestFixture]
 public sealed class UT_DataQuestDependency
 {

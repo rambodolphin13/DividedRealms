@@ -63,13 +63,8 @@ namespace DOL.GS.Quests
 	/// StepItemTemplates - Any items that need to be given to the player for a step.  Every step can give an item to a player. All
 	/// steps give an item at the completion of the step except Delivery and DeliveryFinish.  If StepItemTemplates are defined for a 
 	/// Delivery step then the item is given at the beginning of the step and accepted by a target to end the step.
-	/// HearthDAoC: but not when the player already carries that item in the backpack, or the step just finishing gives it;
-	/// a player who lost it gets a new one (QuestDeliveryItems.ShouldHand). The copy being handed over to finish the step
-	/// doesn't count as carried, so a step that hands the same item back still hands it.
-	/// HearthDAoC: accepting a quest whose first step is a delivery hands that step's item (QuestDeliveryItems.FirstStepItem);
-	/// upstream never did, so those quests could not be finished. A first delivery back to the giver hands nothing.
-	/// HearthDAoC: whispering AcceptText to the giver asks "Do you accept?" first (DataQuestOffers); the quest starts when the
-	/// player accepts, and the NPC says "Come back when you're ready." on a decline.
+	/// Not when the player already carries it (the copy being handed over doesn't count) or the finishing step hands it.
+	/// Accepting a quest whose first step is a delivery hands that item, unless it goes back to the giver (QuestDeliveryItems).
     /// For Kill and Search steps, StepItemTemplates can include a drop chance behind the template name.  Ex: |some_template_name;50|  
     /// If the item does not drop then the step is not advanced.
 	/// If no items are given to a player at any of the steps then this can be null, otherwise it must have values for each step. 
@@ -77,21 +72,14 @@ namespace DOL.GS.Quests
 	/// 
 	/// AdvanceText - The text needed, if any, to advance this step.  If no step requires advance text then this can be null, otherwise
 	/// text must be provided for every step.  Empty values || are ok.
-	/// HearthDAoC: a text with a token the server replaces (<Player>, the player's name) also matches as the player reads it,
-	/// without case (QuestWhispers.Advances); a plain text still needs the exact text.
 	/// 
 	/// TargetName - Must be in the format Name;RegionID|Name;RegionID.... RegionID can be 0 to indicate any Target of the correct Name can advance the quest
-	/// HearthDAoC: the name, and StartName, match an object's name without case (QuestNames.Same).
+	/// TargetName and StartName match an object's name without case (QuestNames.Same).
 	/// 
 	/// TargetText - Text shown to player when current step ends.
 	/// 
 	/// CollectItemTemplate - Item that needs to be collected to end the current step.  If no items are ever collected this can be kept null,
 	/// otherwise it needs an entry for each step.  Empty values || are ok.
-	/// HearthDAoC: an entry id;N (N a number of 2 or more) needs N of the item (QuestDeliveryItems.CollectEntry). An NPC is only
-	/// ever handed one item, so handing one over with fewer than N in the backpack advances nothing and takes nothing (the NPC
-	/// says the step's TargetText on a Collect or Deliver step, and the player is told, say, "Omis needs 2 of them."); with N or
-	/// more the step advances and takes the item handed over and N-1 more. Any other entry is read as upstream reads it.
-	/// Level 11 "Entry Into Tomorrow": Omis takes both stones (cq_crediac_stone;2) and makes the Crediac.
 	/// 
 	/// MaxCount, MinLevel, MaxLevel - Single values to determine who can do quest.  All must be provided.  MaxCount == 0 for no limit
 	/// 
@@ -126,8 +114,6 @@ namespace DOL.GS.Quests
 	public class DataQuest : AbstractQuest
 	{
 		private static readonly Logging.Logger log = Logging.LoggerManager.Create(MethodBase.GetCurrentMethod().DeclaringType);
-		// HearthDAoC: quests whose malformed dependency entry was already logged.
-		private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, bool> s_badDependencyLogged = new();
 
 		protected int m_step = 1;
 		protected DbDataQuest m_dataQuest = null;
@@ -256,10 +242,12 @@ namespace DOL.GS.Quests
 		protected int[] m_rewardItemsChosen = null;
 		protected List<DbItemTemplate> m_finalRewards = new List<DbItemTemplate>();
 		protected List<string> m_questDependencies = new List<string>();
+		// Quests whose malformed dependency entry was already logged.
+		private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, bool> s_badDependencyLogged = new();
 		protected List<byte> m_allowedClasses = new List<byte>();
 		string m_classType = string.Empty;
 		string m_additionalData = string.Empty;
-		// HearthDAoC: the item the player is handing over while its step advances (null otherwise); it doesn't count as carried.
+		// The item being handed over while its step advances; it doesn't count as carried.
 		DbInventoryItem m_handingOver;
 
 		#region Construction
@@ -582,7 +570,7 @@ namespace DOL.GS.Quests
 						if (str != string.Empty)
 						{
 							m_questDependencies.Add(str);
-							// HearthDAoC: an ID entry that doesn't parse is never met; say so once per quest.
+							// An ID entry that doesn't parse is never met; say so once per quest.
 							if (!QuestDependencies.IsValid(str) && s_badDependencyLogged.TryAdd(m_dataQuest.ID, true))
 								log.Error($"DataQuest [{m_dataQuest.ID}] {m_dataQuest.Name}: dependency \"{str}\" is not valid and is never met");
 						}
@@ -966,6 +954,7 @@ namespace DOL.GS.Quests
 					if (m_charQuest.Step != oldStep)
 					{
 						GameServer.Database.SaveObject(m_charQuest);
+						QuestIndicators.Refresh(m_questPlayer); // markers change when a data quest moves
 					}
 				}
 			}
@@ -1070,7 +1059,7 @@ namespace DOL.GS.Quests
 			}
 
 			// check to see if this quest requires another to be done first
-			// HearthDAoC: an entry is a quest name or a quest ID form (QuestDependencies: "#id", "#a/b", "!#a/b").
+			// An entry is a quest name or a quest ID form ("#id", "#a/b", "!#a/b"; QuestDependencies, from HearthDAoC).
 			if (m_questDependencies.Count > 0)
 			{
 				var finishedNames = new List<string>();
@@ -1675,15 +1664,9 @@ namespace DOL.GS.Quests
 					{
 						// Allow StepItemTemplate to be empty, assume quest player received item in a previous step or outside of the quest
 
-						// HearthDAoC: ... but not a second copy of an item the player already carries or that the step just
-						// finishing hands over. "Traveler's Way -- Supply Run" (and 76 more classic quests) gave the supplies
-						// at the first step and again at Thol Dunnin, and Ley Manton takes only one (owner test 2026-10-09).
-						// A player who lost the item still gets a new one. The item being handed over to finish this step is
-						// still in the backpack here and doesn't count: a step that hands it back (Omis writes between the
-						// lines of the Arawnite orders, "Path of the Renegade") hands a copy.
-						List<string> carried = CarriedItemIds(QuestPlayer);
+						// Not a second copy of an item the player carries or the finishing step hands (HearthDAoC).
 						string deliveryItem = m_stepItemTemplates[Step].Trim();
-						if (QuestDeliveryItems.ShouldHand(deliveryItem, carried, stepTemplates))
+						if (QuestDeliveryItems.ShouldHand(deliveryItem, CarriedItemIds(QuestPlayer), stepTemplates))
 						{
 							stepTemplates.Add(deliveryItem);
 						}
@@ -1775,7 +1758,6 @@ namespace DOL.GS.Quests
 							foreach (GameNPC n in m_questPlayer.GetNPCsInRadius(WorldMgr.VISIBILITY_DISTANCE))
 					        {
 					         	GameNPC npc = n;
-					         	// HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
 					         	if (npc != null && (QuestNames.Same(TargetName, npc.Name) && (TargetRegion == 0 || TargetRegion == npc.CurrentRegionID)))
 					         		UpdateQuestIndicator(npc, m_questPlayer);
 					        }
@@ -1814,9 +1796,8 @@ namespace DOL.GS.Quests
 		}
 
 		/// <summary>
-		/// HearthDAoC: advances the step for an item the player hands over. GamePlayerEvent.GiveItem fires while the item
-		/// is still in the backpack and it is removed only after the step advanced, so it is marked as being handed over
-		/// for AdvanceQuestStep (CarriedItemIds leaves it out).
+		/// Advances the step for an item the player hands over. The item is still in the backpack until the step has
+		/// advanced, so it is marked for CarriedItemIds, which leaves it out (HearthDAoC).
 		/// </summary>
 		protected bool AdvanceQuestStepHandingOver(GameObject obj, DbInventoryItem item)
 		{
@@ -1831,10 +1812,7 @@ namespace DOL.GS.Quests
 			}
 		}
 
-		/// <summary>
-		/// HearthDAoC: the item ids that count as carried in the player's backpack (QuestDeliveryItems.CarriedIds): every
-		/// item but the one being handed over. OnPlayerGiveItem's RemoveItem takes that whole item, so all its copies go.
-		/// </summary>
+		/// <summary>The backpack's item ids that count as carried: all but the item being handed over (HearthDAoC).</summary>
 		protected List<string> CarriedItemIds(GamePlayer player)
 		{
 			lock (player.Inventory.Lock)
@@ -1846,11 +1824,8 @@ namespace DOL.GS.Quests
 		}
 
 		/// <summary>
-		/// HearthDAoC: for a turn-in that needs <paramref name="needed"/> items of <paramref name="id"/> (a CollectItemTemplate
-		/// entry "id;N"), the backpack's other items to take with the one handed over, and the copies of each
-		/// (QuestDeliveryItems.OthersToTake); empty when one item is needed. With too few, null, and the player is told
-		/// "&lt;NPC&gt; needs N of them.": an NPC is only ever handed one item, so the step waits until the player carries
-		/// them all (level 11: Omis takes both stones).
+		/// For a turn-in that needs <paramref name="needed"/> items ("id;N"), the other backpack items to take with the one
+		/// handed over; empty when one is needed, null (and the player is told) when there are too few (HearthDAoC).
 		/// </summary>
 		protected static List<(DbInventoryItem Item, int Count)> OtherCollectItems(GamePlayer player, GameObject obj, DbInventoryItem item, string id, int needed)
 		{
@@ -1880,14 +1855,7 @@ namespace DOL.GS.Quests
 			return null;
 		}
 
-		/// <summary>
-		/// HearthDAoC: takes the items OtherCollectItems chose, as the item handed over is taken; a stack loses only the
-		/// copies wanted. The items are chosen before the step advances and taken after it, as upstream takes the item
-		/// handed over; the inventory lock is not held across the advance, which gives experience, rewards and level-ups
-		/// and would then hold the inventory while other locks are taken. Nothing else changes this player's backpack in
-		/// between (a player's packets are handled one at a time, and quest items can't be traded), so an item gone at
-		/// this point is only logged.
-		/// </summary>
+		/// <summary>Takes the items OtherCollectItems chose, after the step advanced; a stack loses only the copies wanted.</summary>
 		protected void RemoveCollectItems(GameObject obj, GamePlayer player, List<(DbInventoryItem Item, int Count)> take)
 		{
 			foreach ((DbInventoryItem other, int count) in take)
@@ -1919,7 +1887,6 @@ namespace DOL.GS.Quests
 				}
 			}
 		}
-
 
 		#endregion Utility
 
@@ -2110,7 +2077,7 @@ namespace DOL.GS.Quests
 				{
 					if ((quest.ID + DATAQUEST_CLIENTOFFSET) == qargs.QuestID)
 					{
-						if (RefuseWhenJournalFull(player)) // HearthDAoC: before any record exists (#112)
+						if (RefuseWhenJournalFull(player))
 							return;
 						DbCharacterXDataQuest charQuest = GetCharacterQuest(player, quest.ID, true);
 						DataQuest dq = new DataQuest(player, giver, quest, charQuest);
@@ -2229,6 +2196,7 @@ namespace DOL.GS.Quests
 								player.AddFinishedQuest(this);
 
 							player.Out.SendQuestListUpdate();
+							QuestIndicators.Refresh(player); // a quest finished on the spot can unlock another NPC's quest
 							player.Out.SendMessage(string.Format(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractQuest.FinishQuest.Completed", Name)), eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
 							player.Out.SendMessage(string.Format(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractQuest.FinishQuest.Completed", Name)), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 						}
@@ -2239,7 +2207,7 @@ namespace DOL.GS.Quests
 
 				if (StartType == eStartType.AutoStart)
 				{
-					if (RefuseWhenJournalFull(player)) // HearthDAoC: before any record exists (#112)
+					if (RefuseWhenJournalFull(player))
 						return;
 					DbCharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
 					DataQuest dq = new DataQuest(player, obj, DBDataQuest, charQuest);
@@ -2267,7 +2235,7 @@ namespace DOL.GS.Quests
 
                 if (StartType == eStartType.SearchStart)
                 {
-                    if (RefuseWhenJournalFull(player)) // HearthDAoC: before the start item or any record exists (#112)
+                    if (RefuseWhenJournalFull(player)) // before the start item or any record exists
                         return;
                     if (m_searchStartItemTemplate != string.Empty)
                     {
@@ -2503,6 +2471,19 @@ namespace DOL.GS.Quests
 
 
 		/// <summary>
+		/// Tells the player and returns true when the journal is full; checked before any record, item or text exists,
+		/// so a refused quest isn't half-started (HearthDAoC).
+		/// </summary>
+		private static bool RefuseWhenJournalFull(GamePlayer player)
+		{
+			if (!QuestJournal.IsFull(player.QuestList.Count))
+				return false;
+
+			player.Out.SendMessage(QuestJournal.FullText, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			return true;
+		}
+
+		/// <summary>
 		/// Check offered quests to see if whisper should be processed
 		/// </summary>
 		/// <param name="player"></param>
@@ -2516,56 +2497,16 @@ namespace DOL.GS.Quests
 			{
 				TryTurnTo(living, player);
 
-				// HearthDAoC: a full journal gets no prompt (AddQuest would refuse the quest after the prompt was answered).
 				if (RefuseWhenJournalFull(player))
 					return;
 
-				// HearthDAoC: the player is asked "Do you accept?" before the quest starts (owner 2026-10-09: never just a
-				// click on a key word); the answer starts it through StartOffered. The prompt needs a GameNPC; any other
-				// giver starts the quest at once, as upstream did.
-				if (living is GameNPC giver)
-					DataQuestOffers.Offer(player, giver, this);
-				else
-					StartOffered(player, living);
-			}
-		}
-
-		/// <summary>
-		/// HearthDAoC: tells the player the journal is full and returns true when <c>GamePlayer.AddQuest</c> would refuse
-		/// this quest for that reason. Decided before any record, item or text exists (see <see cref="DataQuestOffers.JournalIsFull"/>).
-		/// </summary>
-		private static bool RefuseWhenJournalFull(GamePlayer player)
-		{
-			if (!DataQuestOffers.JournalIsFull(player.QuestList.Count))
-				return false;
-
-			player.Out.SendMessage(DataQuestOffers.JournalFullText, eChatType.CT_System, eChatLoc.CL_SystemWindow);
-			return true;
-		}
-
-		/// <summary>
-		/// HearthDAoC: starts this quest for a player who accepted the offer (or whispered to a giver that can't ask).
-		/// Called on the offering instance, whose DBDataQuest describes the quest.
-		/// </summary>
-		public virtual void StartOffered(GamePlayer player, GameLiving living)
-		{
-			// HearthDAoC: the player may have taken other quests while the prompt was open; a full journal creates no
-			// record (it would show in the journal at the next login without its item), hands no item and says only so.
-			if (RefuseWhenJournalFull(player))
-				return;
-
-			{
-				// HearthDAoC: a quest whose first step is a delivery never handed that step's item (nothing "begins" step 1),
-				// so 56 classic quests, among them the level 30 Regal Nobility, could not be finished (owner test 2026-10-09).
-				// Hand it before the quest starts; with no room the quest does not start. A first delivery back to the giver
-				// hands nothing: the giver wants the player to bring it (11 classic quests).
+				// A quest whose first step is a delivery hands that item on accept (nothing "begins" step 1), unless the
+				// delivery goes back to the giver; with no free slot the quest does not start (HearthDAoC).
 				DbItemTemplate firstItem = null;
-				bool firstStepIsDelivery = m_stepTypes.Count > 0 && (m_stepTypes[0] == eStepType.Deliver || m_stepTypes[0] == eStepType.DeliverFinish);
-				if (firstStepIsDelivery)
+				if (m_stepTypes.Count > 0 && (m_stepTypes[0] == eStepType.Deliver || m_stepTypes[0] == eStepType.DeliverFinish))
 				{
-					List<string> carried = CarriedItemIds(player);
 					string firstTarget = m_targetNames.Count > 0 ? m_targetNames[0] : null;
-					string firstTemplate = QuestDeliveryItems.FirstStepItem(true, m_stepItemTemplates, carried, firstTarget, living?.Name);
+					string firstTemplate = QuestDeliveryItems.FirstStepItem(true, m_stepItemTemplates, CarriedItemIds(player), firstTarget, living?.Name);
 					if (firstTemplate != null)
 					{
 						if (!player.Inventory.IsSlotsFree(1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
@@ -2583,12 +2524,10 @@ namespace DOL.GS.Quests
 				DbCharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
 				DataQuest dq = new DataQuest(player, living, DBDataQuest, charQuest);
 				dq.Step = 1;
-				// HearthDAoC: a full quest log refuses the quest; then no item and no text (the item without the quest).
 				if (!player.AddQuest(dq))
 					return;
 				if (firstItem != null)
 					GiveItem(living, player, firstItem, false);
-				_speaker = living; // HearthDAoC: a staged first text waits for the giver (the offer's answer is no interaction)
 				if (m_sourceTexts.Count > 0)
 				{
 					SendMessage(player, m_sourceTexts[0], 0, eChatType.CT_System, eChatLoc.CL_PopupWindow);
@@ -2613,7 +2552,6 @@ namespace DOL.GS.Quests
 		/// <param name="obj"></param>
 		protected virtual void OnPlayerInteract(GamePlayer player, GameObject obj)
 		{
-			// HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
 			if (QuestNames.Same(TargetName, obj.Name) && (TargetRegion == obj.CurrentRegionID || TargetRegion == 0))
 			{
 				switch (StepType)
@@ -2683,12 +2621,10 @@ namespace DOL.GS.Quests
 			if (item == null || item.OwnerID == null || m_collectItems.Count == 0)
 				return;
 
-			// HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
 			if (QuestNames.Same(TargetName, obj.Name) && (TargetRegion == obj.CurrentRegionID || TargetRegion == 0)
 			   && player.Level >= Level && player.Level <= MaxLevel)
 			{
-				// HearthDAoC: an entry "id;N" (N >= 2) needs N of the item (QuestDeliveryItems.CollectEntry); the item handed
-				// over matches by the id without ";N". Any other entry is read as upstream reads it.
+				// An entry "id;N" (N >= 2) needs N of the item; any other entry is read as before (HearthDAoC).
 				(string collectId, int collectNeeded) = (null, 1);
 				if (m_collectItems.Count >= Step)
 					(collectId, collectNeeded) = QuestDeliveryItems.CollectEntry(m_collectItems[Step - 1]);
@@ -2716,12 +2652,10 @@ namespace DOL.GS.Quests
 									}
 								}
 
-								// HearthDAoC: with fewer than the entry's N items nothing advances or is taken.
 								List<(DbInventoryItem Item, int Count)> others = OtherCollectItems(player, obj, item, collectId, collectNeeded);
 								if (others == null)
 									break;
 
-								// HearthDAoC: the item handed over doesn't count as carried while the step advances.
 								if (AdvanceQuestStepHandingOver(obj, item))
 								{
 									RemoveItem(obj, player, item, true);
@@ -2733,7 +2667,6 @@ namespace DOL.GS.Quests
 						case eStepType.DeliverFinish:
 						case eStepType.CollectFinish:
 							{
-								// HearthDAoC: with fewer than the entry's N items nothing advances or is taken.
 								List<(DbInventoryItem Item, int Count)> others = OtherCollectItems(player, obj, item, collectId, collectNeeded);
 								if (others == null)
 									break;
@@ -2770,7 +2703,6 @@ namespace DOL.GS.Quests
 							}
 						}
 
-						// HearthDAoC: the item handed over doesn't count as carried while the step advances.
 						if (AdvanceQuestStepHandingOver(obj, item))
 						{
 							RemoveItem(obj, player, item, true);
@@ -2840,11 +2772,7 @@ namespace DOL.GS.Quests
 		{
 			//log.DebugFormat("Whisper {0}, listening for {1}, on step type {2}", text, AdvanceText, m_stepTypes[Step - 1]);
 
-			// HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
-			// HearthDAoC: an AdvanceText with a token the server replaces (<Player>: "The Lost Stone" asks the player's name) is also
-			// matched as the player reads it, without case (QuestWhispers.Advances); upstream compared only the text as it is.
-			if (QuestNames.Same(TargetName, obj.Name) && (TargetRegion == obj.CurrentRegionID || TargetRegion == 0)
-				&& QuestWhispers.Advances(AdvanceText, BehaviourUtils.GetPersonalizedMessage(AdvanceText, p), text))
+			if (QuestNames.Same(TargetName, obj.Name) && (TargetRegion == obj.CurrentRegionID || TargetRegion == 0) && AdvanceText == text)
 			{
 				switch (StepType)
 				{
@@ -2985,6 +2913,7 @@ namespace DOL.GS.Quests
 									player.AddFinishedQuest(this);
 
 								player.Out.SendQuestListUpdate();
+								QuestIndicators.Refresh(player); // a quest finished on the spot can unlock another NPC's quest
 								player.Out.SendMessage(string.Format(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractQuest.FinishQuest.Completed", Name)), eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
 								player.Out.SendMessage(string.Format(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractQuest.FinishQuest.Completed", Name)), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 							}
@@ -3001,7 +2930,6 @@ namespace DOL.GS.Quests
 		/// <param name="enemy"></param>
 		protected virtual void OnEnemyKilled(GamePlayer player, GameLiving living)
 		{
-			// HearthDAoC: names compare without case (QuestNames.Same): upstream's quest data spells many targets differently from their spawns.
 			if (QuestNames.Same(TargetName, living.Name) && (TargetRegion == living.CurrentRegionID || TargetRegion == 0))
 			{
 				switch (StepType)
@@ -3399,6 +3327,7 @@ namespace DOL.GS.Quests
 				UpdateQuestIndicator(npc, m_questPlayer);
 			}
 
+			QuestIndicators.Refresh(m_questPlayer); // markers change when a data quest is finished
 			return true;
 		}
 
@@ -3437,8 +3366,8 @@ namespace DOL.GS.Quests
 			}
 			else
 			{
-				// HearthDAoC: an abandoned repeat keeps its finished count but goes back to step 0, as a finish leaves it;
-				// with its step kept, the next login put it back in the journal (#112).
+				// An abandoned repeat keeps its count but goes back to step 0, as a finish leaves it; with its step kept
+				// the next login put it back in the journal (HearthDAoC).
 				m_charQuest.Step = 0;
 				GameServer.Database.SaveObject(m_charQuest);
 			}
@@ -3448,6 +3377,7 @@ namespace DOL.GS.Quests
 
 			if (m_startNPC != null)
 				UpdateQuestIndicator(m_startNPC, m_questPlayer);
+			QuestIndicators.Refresh(m_questPlayer); // markers change when a data quest is abandoned
 		}
 
 		/// <summary>

@@ -43,15 +43,18 @@ public static class AutonomousFrontierTransport
 
     public static bool PartialDepartureDue(long blockedSince, long now) =>
         blockedSince > 0 && now - blockedSince >= WarbandWaitMilliseconds;
-    public static bool SliceFull(int processed, double elapsedMilliseconds) =>
-        processed >= SlicePassengerLimit || elapsedMilliseconds >= SliceMilliseconds;
-
     /// <summary>
     /// A full backpack at the medallion merchant keeps the bot there only while a sale actually made room.
     /// With nothing sellable it used to hold "Making room for frontier medallion" every turn until the
-    /// fifteen-minute watchdog sent it to its capital; now the walking itinerary takes over at once.
+    /// fifteen-minute watchdog sent it to its capital (from rambodolphin13/OfflineDAoC 092701e).
     /// </summary>
     public static bool KeepWaitingForMedallionRoom(bool backpackFull, bool soldTrash) => backpackFull && soldTrash;
+
+    /// <summary>How long a bot with a full bag and nothing to sell stays away from the medallion merchant.</summary>
+    public const long MedallionNoRoomBackoffMilliseconds = 5 * 60_000;
+
+    public static bool SliceFull(int processed, double elapsedMilliseconds) =>
+        processed >= SlicePassengerLimit || elapsedMilliseconds >= SliceMilliseconds;
 
     public static Vector3 WaitingOffset(long botId, int attempt = 0)
     {

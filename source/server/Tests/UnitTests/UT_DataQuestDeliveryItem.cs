@@ -4,15 +4,8 @@ using NUnit.Framework;
 
 namespace DOL.GS.Tests;
 
-// HearthDAoC: a Deliver or DeliverFinish step's item is handed when the step begins only if the player doesn't carry
-// it and the step just finishing isn't handing it ("Traveler's Way -- Supply Run" gave two bundles of supplies at
-// Thol Dunnin; 77 classic quests, owner test 2026-10-09). The copy being handed over to finish a step doesn't count as
-// carried, so a step that hands the same item back still does ("Path of the Renegade" and 61 more classic quests).
-// A quest whose first step is a delivery hands that step's item
-// when it is accepted, which upstream never did (56 classic quests could not be finished, among them the level 30
-// Regal Nobility), unless that delivery goes back to the giver, who wants the player to bring the item (11 more).
-// A CollectItemTemplate entry "id;N" (N >= 2) needs N items: an NPC is only ever handed one, and level 11 "Entry Into
-// Tomorrow" has Omis take both stones and make the Crediac (owner 2026-10-09).
+// Delivery items: no second copy of a carried item, the item handed back after a hand-over, the first step's item on
+// accept (not for a delivery back to the giver), and "id;N" turn-ins. From lometur/HearthDAoC.
 [TestFixture]
 public sealed class UT_DataQuestDeliveryItem
 {
@@ -171,11 +164,8 @@ public sealed class UT_DataQuestDeliveryItem
         });
     }
 
-    // HearthDAoC (0.37 sync): upstream 0.36 hands a Deliver step's item to a player on that step who lacks it, at every
-    // refresh (ClassicQuests.GiveDeliveryItem). A first delivery back to the giver is the item the giver wants the player
-    // to bring: on the clean 0.37b world all 11 "bring me" quests' step-1 templates exist, so each would be handed free.
-    // These cases test the rule; that GiveDeliveryItem returns on it is deploy/tests/test_quest_rewards.py's
-    // RefreshSourceTests (the refresh is private and needs a live player).
+    // ClassicQuests.GiveDeliveryItem re-hands a delivery item every refresh; a first delivery back to the giver is one
+    // the player brings, so it must be skipped.
     [TestCase(20098, "Gridash", "Gridash")] // Sveabone Hilt Sword: "Run along and buy me a bronze short sword"
     [TestCase(20781, "Duana", "Duana")]     // Seek the Moonstone C (20781-20784): the collar an earlier quest gave
     [TestCase(21008, "Audun", "Audun")]     // An End to the Daggers (21008-21013): the Red Dagger Map

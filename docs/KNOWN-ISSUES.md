@@ -87,6 +87,9 @@ meetup fix drop two no-shows (in the server log).
   - Bots don't know what you are doing beyond your words: a "gz" is answered only by a bot that just
     levelled, and other replies guess from the words alone.
   - Chat volume hasn't been tuned for very large rosters (1,000+ bots a realm).
+  - In development for Beta 1.1 (the talking update, [bot-voices/TALKING-UPDATE.md](bot-voices/TALKING-UPDATE.md)):
+    true-only lines, conversation threads, combat calls, bot tells and /lfg and /trade traffic. They're tested
+    without a running world only; its "Not checked in game yet" list is what's left.
 - **Added the 0.37c new client after installing this?** Run `INSTALL.cmd` again so the new client's
   launcher gets the Living Server tab and its gate fixes too.
 - **Versions:** Beta 1.0 is for 0.37 / 0.37b only, and the installer refuses anything else. When
@@ -103,8 +106,8 @@ meetup fix drop two no-shows (in the server log).
 - **Raids:** Darkness Falls, Legion and the other level 70+ encounters are won on numbers: their special
   mechanics aren't scripted for bots, and a raid can still lose. Raided in game so far: the three dragons,
   Galladoria, Summoner's Hall, Darkness Falls, Avalon City, Crystal Cave, Marfach Caverns and Hall of the
-  Corrupt. The Lord Gildas and Trollheim route fixes in this build were proven against the real pathfinding
-  library but haven't run in a live raid. Late Hibernian raiders once stood 33 minutes on the Cruachan Gorge
+  Corrupt. Lord Gildas fell to a live raid on Beta 1.0 (2026-10-22, 180 bots in 61 minutes); the Trollheim route
+  fix was proven against the real pathfinding library but hasn't run in a live raid yet. Late Hibernian raiders once stood 33 minutes on the Cruachan Gorge
   border before finding their way; the cause isn't found yet. Fomor City is not raided (no navmesh path to
   Myrddraxis).
 - **Moving to 0.37:** `PREPARE-FOR-UPDATE.cmd` was used for a real update (the owner's 0.36c game to 0.37c).

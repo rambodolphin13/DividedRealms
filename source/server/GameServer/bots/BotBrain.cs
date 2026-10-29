@@ -169,9 +169,10 @@ namespace DOL.AI.Brain
 
         public virtual bool HasAggro => !AggroList.IsEmpty;
 
-        /// <summary>True when the bot is already casting this very spell, which must be left to finish.</summary>
-        public static bool IsAlreadyCastingSpell(bool isCasting, int? currentSpellId, int spellId) =>
-            isCasting && currentSpellId == spellId;
+        /// <summary>True when the bot is already casting this very spell on this very target, which must be left to finish.
+        /// The same spell picked for someone else (an emergency heal on another member) still replaces it.</summary>
+        public static bool IsAlreadyCastingSpell(bool isCasting, int? currentSpellId, int spellId, object currentTarget, object target) =>
+            isCasting && currentSpellId == spellId && currentTarget != null && ReferenceEquals(currentTarget, target);
 
         /// <summary>The aggro entry with the most effective threat (null when the list is empty).</summary>
         public GameLiving HighestAggroTarget
@@ -1233,7 +1234,10 @@ namespace DOL.AI.Brain
 
         private void MaybeIdleRoleplay()
         {
-            if (!CanAmbientWander || Body.IsMoving || Body.IsCasting || Body.InCombat)
+            // In the player's group a bot talks in /group (MaybeAutonomousWorldChat), not to strangers. Play test 2026-10-28: an
+            // idle cleric in the player's group said a /say line every four or five minutes ("anyone running Stonehenge
+            // Barrows today?") on top of its /group talk.
+            if (!CanAmbientWander || BotBody?.IsPlayerLedGroup == true || Body.IsMoving || Body.IsCasting || Body.InCombat)
                 return;
 
             DateTime now = DateTime.UtcNow;
@@ -1276,6 +1280,9 @@ namespace DOL.AI.Brain
                     BotBody.StopMoving();
                 return;
             }
+            // Beggars (bot_living_beggars): a few Crafters live on a corner of their capital and do nothing else.
+            if (AutonomousBeggars.Think(this))
+                return;
             bool nativeSpeedTravelStarted;
             if (CompanionFollowPolicy.ObserveAndCancelBuffs(BotBody, out nativeSpeedTravelStarted))
             {
@@ -1301,6 +1308,9 @@ namespace DOL.AI.Brain
             ObserveLeaderActivity();
             CompanionStealth.Maintain(BotBody);
             WatchPetFocusShield();
+            // The talking update: in the real player's group a gamebot calls the fight in /group (pull, adds, oom, wipe).
+            if (BotBody?.IsAutonomousWorldBot == true && BotBody.IsPlayerLedGroup)
+                AutonomousBotCombatCalls.Observe(BotBody);
             BotBody?.WakeRecoveryRestIfCombatBlocked();
             BotBody?.EnsureAutonomousRecoveryTimers();
 
@@ -5749,8 +5759,9 @@ namespace DOL.AI.Brain
             {
                 // The same spell is already being cast (a cure mezz on a mate who is still mezzed is picked again on
                 // every turn): let it finish. Stopping it below and starting over made the healer recast without end.
-                // (From stefanrows/OfflineDAoC, 714a9e20.)
-                if (IsAlreadyCastingSpell(BotBody.IsCasting, BotBody.castingComponent?.SpellHandler?.Spell?.ID, spellToCast.ID))
+                // (From stefanrows/OfflineDAoC 714a9e20, via rambodolphin13/OfflineDAoC 88e7414.)
+                if (IsAlreadyCastingSpell(BotBody.IsCasting, BotBody.castingComponent?.SpellHandler?.Spell?.ID, spellToCast.ID,
+                        BotBody.castingComponent?.SpellHandler?.Target, spellTarget))
                     return true;
                 spellTarget = BotGroupSupport.ReserveHeal(BotBody, spellToCast, spellTarget);
                 if (spellTarget == null) return isCastingHeal;
@@ -5974,6 +5985,35 @@ namespace DOL.AI.Brain
                     ReportResurrectionBlock(resurrection, Body.IsCasting ? "casting another spell" :
                         BotBody.Mana < BotBody.PowerCost(resurrection) ? $"not enough power to cast ({BotBody.Mana}/{BotBody.PowerCost(resurrection)})" :
                         BotBody.IsBeingInterruptedByOther ? "being interrupted" : "resurrection on recast");
+                    return false;
+                }
+                // A real player is raised where the caster stands: clear what would hit them first (play test 2026-10-28).
+                int raiseRange = BotBody.castingComponent.CalculateSpellRange(resurrection);
+                GameLiving playerCorpse = Body.Group.GetMembersInTheGroup().FirstOrDefault(member => member is GamePlayer && !member.IsAlive &&
+                    member.ObjectState == GameObject.eObjectState.Active && member.CurrentRegionID == Body.CurrentRegionID &&
+                    Body.IsWithinRadius(member, raiseRange));
+                if (playerCorpse != null && BotGroupSupport.ThreatToRaisedPlayer(BotBody) is GameNPC threat)
+                {
+                    // Back off to a clear spot within rez range, as players rez from the edge of a camp. In a camp that
+                    // respawns (in-game check 2026-10-28) clearing alone never ended. Nothing may be hitting the caster now
+                    // (InCombat lingers after each kill, so it never ended there either); at the spot, fight what is left.
+                    if (Body.attackComponent.AttackerTracker.Count == 0 &&
+                        BotGroupSupport.SafeRaiseSpot(BotBody, playerCorpse, raiseRange) is Vector3 spot &&
+                        Vector2.Distance(new(Body.X, Body.Y), new(spot.X, spot.Y)) > 80)
+                    {
+                        BotBody.attackComponent.StopAttack();
+                        BotBody.StopFollowing();
+                        BotBody.PathTo(spot, BotBody.MaxSpeed);
+                        ReportResurrectionBlock(resurrection, $"moving clear of {threat.Name} before raising a player");
+                        return true;
+                    }
+                    if (!Body.InCombat && CanAggroTarget(threat))
+                    {
+                        AddToAggroList(threat, Math.Max(100, threat.EffectiveLevel * 10));
+                        FSM.SetCurrentState(eFSMStateType.AGGRO);
+                        AttackMostWanted();
+                    }
+                    ReportResurrectionBlock(resurrection, $"clearing {threat.Name} before raising a player");
                     return false;
                 }
                 GameLiving corpse = BotGroupSupport.ReserveResurrection(BotBody, resurrection);

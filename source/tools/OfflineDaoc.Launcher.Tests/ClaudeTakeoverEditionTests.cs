@@ -39,7 +39,7 @@ public sealed class ClaudeTakeoverEditionTests
     {
         var reserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         MethodInfo generate = Launcher.GetType("OfflineDaoc.Launcher.BotCharacterGenerator")!
-            .GetMethod("Generate", BindingFlags.Static | BindingFlags.Public)!;
+            .GetMethod("Generate", BindingFlags.Static | BindingFlags.Public, [typeof(int), typeof(ISet<string>), typeof(ISet<string>)])!;
         int Roll()
         {
             object identity = generate.Invoke(null, [3, reserved, null])!;
@@ -53,7 +53,7 @@ public sealed class ClaudeTakeoverEditionTests
     public void NewerClassesAreRolledOnlyWhileTheirSwitchIsOn()
     {
         MethodInfo generate = Launcher.GetType("OfflineDaoc.Launcher.BotCharacterGenerator")!
-            .GetMethod("Generate", BindingFlags.Static | BindingFlags.Public)!;
+            .GetMethod("Generate", BindingFlags.Static | BindingFlags.Public, [typeof(int), typeof(ISet<string>), typeof(ISet<string>)])!;
         List<int> Rolls(int realm, ISet<string>? switches)
         {
             var reserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

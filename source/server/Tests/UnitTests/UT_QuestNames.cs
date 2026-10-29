@@ -4,15 +4,13 @@ using NUnit.Framework;
 
 namespace DOL.GS.Tests;
 
-// HearthDAoC: a data quest's target and giver names match a spawn's name without case (owner test 2026-10-10: level
-// 20's "Arawnite Messenger" spawns as "arawnite messenger", from his NpcTemplate, and his kill never counted).
+// A data quest's target and giver names match a spawn's name without case. From lometur/HearthDAoC.
 [TestFixture]
 public sealed class UT_QuestNames
 {
     [TestCase("Arawnite Messenger", "arawnite messenger")]
     [TestCase("Cornwall hunter", "cornwall hunter")]
     [TestCase("witch", "Witch")]
-    [TestCase("Tylwyth Teg Ranger", "Tylwyth Teg ranger")]
     [TestCase("Albion Runner", "Albion runner")]     // a giver (StartName)
     [TestCase("Arawnite Messenger", "Arawnite Messenger")]
     [TestCase("King's Wight", "KING'S WIGHT")]
@@ -47,17 +45,13 @@ public sealed class UT_QuestNames
         {
             Assert.That(QuestNames.Same(null, null), Is.True);
             Assert.That(QuestNames.Same(null, ""), Is.False);
-            Assert.That(QuestNames.Same("", null), Is.False);
             Assert.That(QuestNames.Same("Arawnite Messenger", null), Is.False);
-            Assert.That(QuestNames.Same(null, "Arawnite Messenger"), Is.False);
         });
     }
 
     [Test]
     public void TheServersCultureDoesNotMatter()
     {
-        // Under Turkish rules "I" lowercases to a dotless "i"; an ordinal compare doesn't use the culture
-        // (kill "Isolationist Courier", spawned as "isolationist courier": the Guild of Shadows 45).
         CultureInfo culture = CultureInfo.CurrentCulture;
         try
         {

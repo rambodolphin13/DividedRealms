@@ -20,6 +20,9 @@
     <Compile Include="../../server/GameServer/gameutils/LevelRangeXpRates.Parsing.cs" Link="SocialExpansion/LevelRangeXpRates.Parsing.cs" />
     <!-- Host for Friends: the server's own UPnP client, so the router check asks the router the same way. -->
     <Compile Include="../../server/CoreBase/Network/UpnpNat.cs" Link="Friends/UpnpNat.cs" />
+    <!-- Living Server: 2003-style bot names, the same mix as the server's own bots. -->
+    <Compile Include="../../server/GameServer/bots/autonomous/EraBotNames.cs" Link="SocialExpansion/EraBotNames.cs" />
+    <Compile Include="../../server/GameServer/bots/autonomous/EraBotNameWords.cs" Link="SocialExpansion/EraBotNameWords.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Join Friend.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

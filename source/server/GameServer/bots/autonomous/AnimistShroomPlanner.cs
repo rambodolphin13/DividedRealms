@@ -154,6 +154,7 @@ namespace DOL.GS
         /// Below this power fraction an Animist keeps one damage shroom on the fight and skips vents and spores.
         /// Tester 2026-10-26: grouped Animists planted up to ten shrooms a pull, ran dry, and their own shrooms kept
         /// them on the slow in-combat regeneration timer; other casters recovered between pulls.
+        /// (From rambodolphin13/OfflineDAoC d4dcaf2.)
         /// </summary>
         public const double ExtraShroomPowerFraction = 0.50;
 

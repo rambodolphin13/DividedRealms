@@ -2666,6 +2666,7 @@ namespace DOL.GS
             {
                 Group.UpdateMember(this, false, true);
             }
+            QuestIndicators.Refresh(this); // markers follow a class change (trainer, /player class)
             return true;
         }
 
@@ -4495,6 +4496,7 @@ namespace DOL.GS
                     }
                 }
 
+                QuestIndicators.Refresh(this); // markers follow the level at once, up or down
             }
         }
 
@@ -7916,6 +7918,8 @@ namespace DOL.GS
         public override bool MoveTo(ushort regionID, int x, int y, int z, ushort heading)
         {
             bool changingRegion = regionID != CurrentRegionID;
+            // Where a living player left from: gamebots in the player's group standing there go along (a release is no trip).
+            TemporaryGroupStableTravel.MarkTransferOrigin(this);
             // If we are jumping somewhere away from our house not using house.Exit, we need to make the server know we have left the house.
             if ((CurrentHouse != null || InHouse) && CurrentHouse.RegionID != regionID)
             {
@@ -11383,8 +11387,7 @@ namespace DOL.GS
         /// <returns>true if added, false if player is already doing the quest!</returns>
         public bool AddQuest(AbstractQuest quest)
         {
-            // HearthDAoC: upstream's "if (QuestList.Count > 25)" had no body, so it guarded the duplicate check: the
-            // journal had no limit, and that check (by C# type, which every data quest shares) ran only above 25 (#112).
+            // The journal holds 25 quests, and a quest the player is on isn't added again (HearthDAoC).
             if (QuestJournal.IsFull(QuestList.Count))
                 return false;
 
@@ -11397,6 +11400,7 @@ namespace DOL.GS
             QuestList.TryAdd(quest, index);
             quest.OnQuestAssigned(this);
             Out.SendQuestUpdate(quest);
+            QuestIndicators.Refresh(this); // markers change when a quest is taken
             return true;
         }
 

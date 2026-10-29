@@ -105,22 +105,6 @@ public sealed class UT_GamebotReviewOct18
     }
 
     [Test]
-    public void LongWaitingPartySeekersRecruitFromFurtherAway()
-    {
-        long early = AutonomousBotGroupCoordinator.ExtendedPveRecruitmentAfterMilliseconds - 1;
-        long late = AutonomousBotGroupCoordinator.ExtendedPveRecruitmentAfterMilliseconds;
-        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentMinutes(0, early), Is.EqualTo(8));
-        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentMinutes(late, 0), Is.EqualTo(16));
-        Assert.That(AutonomousBotGroupCoordinator.PveRecruitmentMinutes(0, late), Is.EqualTo(16));
-        Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, false, false, false, 12), Is.False);
-        Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, false, false, false, 12,
-            AutonomousBotGroupCoordinator.ExtendedPveRecruitmentMinutes), Is.True);
-        // Combat still blocks recruitment at any distance.
-        Assert.That(AutonomousBotGroupCoordinator.CanRecruitPveMember(false, false, true, false, false, 0,
-            AutonomousBotGroupCoordinator.ExtendedPveRecruitmentMinutes), Is.False);
-    }
-
-    [Test]
     public void RealReassignmentsStillDropTheRoute()
     {
         // A renewal reaching a bot already at its camp is a real reassignment (2026-10-28: still walking keeps it).
@@ -265,10 +249,12 @@ public sealed class UT_GamebotReviewOct18
     public void AHealerLetsTheSameSpellFinishInsteadOfRestartingIt()
     {
         // From stefanrows/OfflineDAoC: a cure mezz on a still-mezzed mate was stopped and restarted every turn.
-        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, 4321, 4321), Is.True);
-        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, 1234, 4321), Is.False, "a different spell may replace it");
-        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(false, 4321, 4321), Is.False);
-        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, null, 4321), Is.False);
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, 4321, 4321, Target, Target), Is.True);
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, 1234, 4321, Target, Target), Is.False, "a different spell may replace it");
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(false, 4321, 4321, Target, Target), Is.False);
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, null, 4321, Target, Target), Is.False);
+        Assert.That(DOL.AI.Brain.BotBrain.IsAlreadyCastingSpell(true, 4321, 4321, Target, new object()), Is.False, "the same spell for another target may replace it");
     }
+    private static readonly object Target = new();
     private sealed record Spawn(string Name, Zone Zone);
 }

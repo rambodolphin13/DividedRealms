@@ -5,15 +5,15 @@ using System.Globalization;
 namespace DOL.GS.Quests
 {
     /// <summary>
-    /// HearthDAoC: the forms of a data quest's QuestDependency entries ('|'-separated; every entry must be met):
+    /// The forms of a data quest's QuestDependency entries ('|'-separated; every entry must be met). From lometur/HearthDAoC.
     /// <list type="bullet">
-    /// <item><c>Name</c>: a finished quest has that name (upstream's form; since upstream 0.37 a scripted quest counts too).</item>
+    /// <item><c>Name</c>: a finished quest has that name (a finished scripted quest of that name counts too).</item>
     /// <item><c>#20188</c>: the data quest with that ID is finished.</item>
     /// <item><c>#20157/20469</c>: at least one of these is finished.</item>
     /// <item><c>!#20478</c> or <c>!#20478/21324</c>: none of these is active or finished.</item>
     /// </list>
-    /// Upstream's epic chains reuse names (the Guild of Shadows 25 and 30 are both "Regal Nobility"), so a name can't
-    /// say which step comes before; an ID can (spec docs/fork/specs/2026-10-09-epic-chains-design.md, section 3.1).
+    /// The epic chains reuse names (the Guild of Shadows 25 and 30 are both "Regal Nobility"), so a name can't say which
+    /// step comes before; an ID can.
     /// </summary>
     public static class QuestDependencies
     {
