@@ -128,6 +128,15 @@ public sealed class UT_BotTripFixesOct28
             // Never across the monster: every point is on the bot's side of it.
             Assert.That(System.Numerics.Vector2.Dot(point - threat, bot - threat), Is.GreaterThanOrEqualTo(-1f));
         }
+        // A pack is backed away from as a whole: past the far member's aggro, from the pack's centre.
+        var (center, packRadius) = AutonomousRouteThreatPolicy.PackRetreat(
+        [
+            (threat, 500), (threat + new System.Numerics.Vector2(400, 0), 500),
+        ], AutonomousRouteThreatPolicy.MeleeMargin);
+        Assert.That(center.X, Is.EqualTo(threat.X + 200).Within(0.5f));
+        Assert.That(packRadius, Is.EqualTo(200 + 500 + 80 + 250).Within(0.5f));
+        Assert.That(AutonomousRouteThreatPolicy.DistanceToSegment(new(0, 0), new(100, 0), new(50, 30)), Is.EqualTo(30f).Within(0.01f));
+        Assert.That(AutonomousRouteThreatPolicy.DistanceToSegment(new(0, 0), new(100, 0), new(130, 40)), Is.EqualTo(50f).Within(0.01f));
         // Straight away first.
         Assert.That(System.Numerics.Vector2.Normalize(points[0] - threat).X,
             Is.EqualTo(System.Numerics.Vector2.Normalize(bot - threat).X).Within(0.001f));

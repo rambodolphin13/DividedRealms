@@ -107,6 +107,32 @@ namespace DOL.GS
         public static float RetreatRadius(int aggroRange, int margin) => aggroRange + margin + RetreatClearance;
 
         /// <summary>
+        /// The centre a bot backs away from and how far, for a whole pack: past the aggro of every member, not only the
+        /// first one found. On 2026-10-29 (backing away from the first monster only) 803 of 1,199 deaths to the monster
+        /// just given up for were to packs, the bot caught by the members it had not backed away from.
+        /// </summary>
+        public static (Vector2 Center, float Radius) PackRetreat(ReadOnlySpan<(Vector2 Position, int AggroRange)> pack, int margin)
+        {
+            Vector2 center = Vector2.Zero;
+            foreach (var member in pack)
+                center += member.Position;
+            center /= Math.Max(1, pack.Length);
+            float reach = 0;
+            foreach (var member in pack)
+                reach = Math.Max(reach, Vector2.Distance(member.Position, center) + member.AggroRange);
+            return (center, reach + margin + RetreatClearance);
+        }
+
+        /// <summary>Horizontal distance from a point to the segment a-b.</summary>
+        public static float DistanceToSegment(Vector2 a, Vector2 b, Vector2 point)
+        {
+            Vector2 ab = b - a;
+            float lengthSquared = ab.LengthSquared();
+            float t = lengthSquared < 0.01f ? 0 : Math.Clamp(Vector2.Dot(point - a, ab) / lengthSquared, 0, 1);
+            return Vector2.Distance(a + ab * t, point);
+        }
+
+        /// <summary>
         /// Where to back off to from a monster: points at <paramref name="radius"/> from it, straight away from it
         /// first, then turning up to 90 degrees either side (never past the monster).
         /// </summary>

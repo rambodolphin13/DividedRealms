@@ -126,9 +126,10 @@ namespace DOL.GS
 
             var blockerBrain = (StandardMobBrain)blocker.Brain;
             Vector3 blockerPosition = new(blocker.X, blocker.Y, blocker.Z);
-            int pack = 1 + threats.Count(other =>
-                other != blocker && Math.Abs(other.Z - blocker.Z) <= 160 && other.Brain is StandardMobBrain otherBrain &&
-                other.GetDistanceTo(blocker) < Math.Max(320, blockerBrain.AggroRange + otherBrain.AggroRange + 80));
+            GameNPC[] packMembers = threats.Where(other =>
+                other == blocker || Math.Abs(other.Z - blocker.Z) <= 160 && other.Brain is StandardMobBrain otherBrain &&
+                other.GetDistanceTo(blocker) < Math.Max(320, blockerBrain.AggroRange + otherBrain.AggroRange + 80)).ToArray();
+            int pack = packMembers.Length;
             ConColor con = ConLevels.GetConColor(bot.GetConLevel(blocker));
             bool bossLike = blocker is IGameEpicNpc ||
                             AutonomousPveTargetPolicy.IsUnreachableFlyer(blocker.Flags, blocker.Z, bot.Z) && !ranged;
@@ -165,7 +166,7 @@ namespace DOL.GS
                 case RouteThreatAction.Retarget:
                     _lastRouteThreatRetargetTick = now;
                     AbandonCamp(bot, $"Route blocked by {blocker.Name} (level {blocker.Level}, {pack} together) with no way around");
-                    BackAwayFrom(bot, nav, zone, blocker, blockerBrain.AggroRange, margin, threats);
+                    BackAwayFrom(bot, nav, zone, blocker, packMembers, margin, threats);
                     return true;
 
                 default: // Pull
@@ -259,33 +260,46 @@ namespace DOL.GS
         }
 
         /// <summary>
-        /// After giving up a camp because of a monster, walks out of its reach (and clear of the other monsters around)
-        /// instead of waiting out the replan beside it (AutonomousRouteThreatPolicy.RetreatClearance).
+        /// After giving up a camp because of a monster or its pack, walks out of the whole pack's reach (by a way that
+        /// passes no other monster's aggro) instead of waiting out the replan beside it
+        /// (AutonomousRouteThreatPolicy.RetreatClearance, PackRetreat). Every attempt is logged as AUTONOMOUS_ROUTE_RETREAT.
         /// </summary>
-        private void BackAwayFrom(GameBot bot, IPathfindingMgr nav, Zone zone, GameNPC threat, int aggroRange, int margin,
+        private void BackAwayFrom(GameBot bot, IPathfindingMgr nav, Zone zone, GameNPC threat, GameNPC[] pack, int margin,
             GameNPC[] others)
         {
-            float radius = AutonomousRouteThreatPolicy.RetreatRadius(aggroRange, margin);
-            Vector2 here = new(bot.X, bot.Y), at = new(threat.X, threat.Y);
-            if (Vector2.Distance(here, at) >= radius)
+            var members = new (Vector2 Position, int AggroRange)[pack.Length];
+            for (int i = 0; i < pack.Length; i++)
+                members[i] = (new(pack[i].X, pack[i].Y), (pack[i].Brain as StandardMobBrain)?.AggroRange ?? 0);
+            (Vector2 center, float radius) = AutonomousRouteThreatPolicy.PackRetreat(members, margin);
+            Vector2 here = new(bot.X, bot.Y);
+            float distance = Vector2.Distance(here, center);
+            if (distance >= radius)
                 return;
             Vector3 start = new(bot.X, bot.Y, bot.Z);
-            foreach (Vector2 candidate in AutonomousRouteThreatPolicy.RetreatCandidates(here, at, radius))
+            foreach (Vector2 candidate in AutonomousRouteThreatPolicy.RetreatCandidates(here, center, radius))
             {
-                if (others.Any(npc => npc != threat && npc.Brain is StandardMobBrain mob &&
-                                      Vector2.Distance(candidate, new(npc.X, npc.Y)) < mob.AggroRange + margin))
+                if (others.Any(npc => !pack.Contains(npc) && npc.Brain is StandardMobBrain mob &&
+                                      AutonomousRouteThreatPolicy.DistanceToSegment(here, candidate, new(npc.X, npc.Y)) <
+                                      mob.AggroRange + margin))
                     continue;
                 if (!AutonomousNavigationSurface.TryFloor(nav, zone, new(candidate.X, candidate.Y, bot.Z), out Vector3 floor) ||
                     !AutonomousZoneItinerary.HasCompleteCorridor(nav, zone, start, floor))
                     continue;
                 bot.PathTo(floor, bot.MaxSpeed);
                 // The next plan starts once the bot is clear (the usual replan wait is longer than the walk).
-                long walk = (long)(Vector2.Distance(here, new(floor.X, floor.Y)) * 1000 / Math.Max((short)50, bot.MaxSpeed)) + 1_000;
+                float walkDistance = Vector2.Distance(here, new(floor.X, floor.Y));
+                long walk = (long)(walkDistance * 1000 / Math.Max((short)50, bot.MaxSpeed)) + 1_000;
                 _nextPlanTick = Math.Max(_nextPlanTick, GameLoop.GameLoopTime + walk);
                 SetStatus(bot, $"Backing away from {threat.Name}", "Find a reachable level-appropriate XP camp",
                     "Getting out of its reach before choosing another camp", threat.Name);
+                Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=walking " +
+                         $"target=\"{threat.Name}\" pack={pack.Length} from={distance:0} radius={radius:0} walk={walkDistance:0} " +
+                         $"zone=\"{zone.Description}\" at={bot.X},{bot.Y},{bot.Z} to={floor.X:0},{floor.Y:0},{floor.Z:0}");
                 return;
             }
+            Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=no_way_out " +
+                     $"target=\"{threat.Name}\" pack={pack.Length} from={distance:0} radius={radius:0} " +
+                     $"zone=\"{zone.Description}\" at={bot.X},{bot.Y},{bot.Z}");
         }
 
         private long _nextDangerBypassLogTick;
