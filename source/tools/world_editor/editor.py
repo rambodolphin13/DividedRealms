@@ -352,7 +352,12 @@ class Editor:
                 for row in con.execute(f'SELECT * FROM "{table}" WHERE {query} LIMIT 20000', args):
                     r = dict(row)
                     rows.append({'table': table, 'key': r[key], 'values': r})
-        return {'zone': zone, 'entities': rows, 'fields': FIELDS,
+            # The server uses the region's water level for zones whose own WaterLevel is 0.
+            region_water = 0
+            if 'WaterLevel' in self.schema.get('Regions', {}).get('columns', {}):
+                found = con.execute('SELECT WaterLevel FROM Regions WHERE RegionID = ?', (zone['RegionID'],)).fetchone()
+                region_water = (found[0] or 0) if found else 0
+        return {'zone': zone, 'entities': rows, 'fields': FIELDS, 'regionWater': region_water,
                 'geometry': self.terrain(zid), 'fingerprint': self.world_fingerprint()}
 
     def rows(self, table, text='', column=None, equals=None, offset=0, limit=100):

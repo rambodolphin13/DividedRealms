@@ -97,6 +97,74 @@ public sealed class ModernClientSetupTests
         Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(PatchedGame));
     }
 
+    // A later release: game.dll gets one more edit than TestPatch's, and pregame/splash.mpk is patched for the first time.
+    private static readonly byte[] Splash = "stock 1.130 splash archive"u8.ToArray();
+    private static readonly byte[] PatchedSplash = "divided realms splash"u8.ToArray();
+    private static readonly byte[] NewerGame = Encoding.ASCII.GetBytes("MZ pristine GAME BYTES 0123456789+section");
+
+    private static ModernClientSetup.Patch NewerPatch() => new(1, "1.130",
+    [
+        new("game.dll", Hash(Game), Hash(NewerGame), NewerGame.Length,
+            [new(12, 10, Convert.ToBase64String("GAME BYTES"u8.ToArray())), new(Game.Length, 0, Convert.ToBase64String("+section"u8.ToArray()))]),
+        TestPatch().Files[1],
+        new("pregame/splash.mpk", Hash(Splash), Hash(PatchedSplash), PatchedSplash.Length, [new(0, Splash.Length, Convert.ToBase64String(PatchedSplash))])
+    ]);
+
+    private (string Client, string Destination) OlderReleaseCopy()
+    {
+        string client = PristineClient(), destination = Path.Combine(root, "game", "client-modern", "app");
+        File.WriteAllBytes(Path.Combine(client, "pregame", "splash.mpk"), Splash);
+        ModernClientSetup.Install(client, destination, TestPatch(), null, CancellationToken.None);
+        return (client, destination);
+    }
+
+    [Test]
+    public void SetupRemembersThePlayersClientFolder()
+    {
+        var (client, destination) = OlderReleaseCopy();
+        Assert.That(ModernClientSetup.RememberedSource(destination), Is.EqualTo(Path.GetFullPath(client)));
+        Assert.That(ModernClientSetup.Stale(destination, TestPatch()), Is.Empty, "a fresh setup matches its own release");
+    }
+
+    [Test]
+    public void ANewerReleasePatchesTheOlderCopyAgainFromTheRememberedClient()
+    {
+        var (client, destination) = OlderReleaseCopy();
+        var patch = NewerPatch();
+        Assert.That(ModernClientSetup.Stale(destination, patch).Select(f => f.Path), Is.EqualTo(new[] { "game.dll", "pregame/splash.mpk" }));
+        Assert.That(ModernClientSetup.NeedSource(destination, patch).Select(f => f.Path), Is.EqualTo(new[] { "game.dll" }),
+            "the copy's splash is still the stock one, but its game.dll holds the older patch");
+
+        ModernClientSetup.Update(destination, patch, ModernClientSetup.RememberedSource(destination));
+        Assert.That(ModernClientSetup.Stale(destination, patch), Is.Empty);
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(NewerGame));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "pregame", "splash.mpk")), Is.EqualTo(PatchedSplash));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll.bak")), Is.EqualTo(PatchedGame), "the replaced file is kept");
+        Assert.That(File.ReadAllBytes(Path.Combine(client, "game.dll")), Is.EqualTo(Game), "the player's own client is unchanged");
+    }
+
+    [Test]
+    public void FilesStillPristineInTheCopyArePatchedWithoutTheClientFolder()
+    {
+        var (_, destination) = OlderReleaseCopy();
+        var patch = new ModernClientSetup.Patch(1, "1.130", [TestPatch().Files[0], TestPatch().Files[1], NewerPatch().Files[2]]);
+        Assert.That(ModernClientSetup.NeedSource(destination, patch), Is.Empty);
+        ModernClientSetup.Update(destination, patch, null);
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "pregame", "splash.mpk")), Is.EqualTo(PatchedSplash));
+    }
+
+    [Test]
+    public void AnUpdateWithoutAPristineClientChangesNothing()
+    {
+        var (client, destination) = OlderReleaseCopy();
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Update(destination, NewerPatch(), null));
+        File.WriteAllText(Path.Combine(client, "game.dll"), "a newer client");
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Update(destination, NewerPatch(), client));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(PatchedGame));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "pregame", "splash.mpk")), Is.EqualTo(Splash),
+            "the splash, which could have been patched, waits until every file can be");
+    }
+
     [Test]
     public void AWrongClientIsRefusedBeforeAnythingIsCopied()
     {

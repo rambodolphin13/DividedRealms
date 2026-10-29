@@ -75,7 +75,7 @@ function changed() {
   $('undo').disabled=!S.undo.length; $('redo').disabled=!S.redo.length;
   if(S.data&&syncAdded())makeMarkers();
   for(const key of [...S.selected])if(S.pending.get(key)?.op==='delete')S.selected.delete(key);
-  updateMarkers(); renderEntities(); renderInspector(); renderZoneFields(); renderRows(); renderRow();
+  updateMarkers(); updateWater(); renderEntities(); renderInspector(); renderZoneFields(); renderRows(); renderRow();
   if(S.mode==='itemsView'&&S.catalog){renderItemList();renderItemSide();
     const look=selectedLook();if(look&&look.key!==S.previewKey)previewItem(look).catch(e=>toast(e.message,true));}
   if(S.mode==='merchantsView'&&S.lists){renderLists();renderListView();}
@@ -126,6 +126,8 @@ scene.add(new THREE.HemisphereLight(0xe5f4ff,0x66634b,2));
 const sun=new THREE.DirectionalLight(0xffeed3,2.8);sun.position.set(-500,1000,400);scene.add(sun);
 const camera=new THREE.PerspectiveCamera(50,1,0.5,80000);camera.position.set(800,1100,800);
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.15;controls.maxPolarAngle=Math.PI*.495;
+// The wheel is handled below (zoomAt) so it dives toward what is under the cursor, not a plane through the orbit target.
+controls.enableZoom=false;
 const world=new THREE.Group(), markerGroup=new THREE.Group(), extras=new THREE.Group();scene.add(world,markerGroup,extras);
 let terrain=null, collision=null, markers=[], markerLookup=new Map(), pointer=new THREE.Vector2(), ray=new THREE.Raycaster();
 const units=.025;
@@ -176,13 +178,14 @@ function makeMarkers() {
   }
   updateMarkers();
 }
+let visibleCache=[];
 function visibleEntities() {
   const search=$('search').value.toLowerCase();
   const enabled=new Set([...document.querySelectorAll('[data-kind]:checked')].map(e=>e.dataset.kind));
   return allEntities().filter(e=>enabled.has(e.table)&&!isDeleted(e)&&`${pendingValues(e).Name} ${e.values.Guild||''} ${e.key}`.toLowerCase().includes(search)&&(!$('townOnly').checked||(e.table==='Mob'&&Boolean(e.values.Guild))));
 }
 function updateMarkers() {
-  const visibleList=visibleEntities(),visible=new Set(visibleList.map(identity));
+  const visibleList=visibleCache=visibleEntities(),visible=new Set(visibleList.map(identity));
   for(const mesh of markers){const e=mesh.userData.entity,v=pendingValues(e);mesh.rotation.z=Math.PI;mesh.rotation.y=-(v.Heading||0)/4096*Math.PI*2;
     const selected=S.selected.has(identity(e));mesh.material.color.setHex(selected?0xfff4b3:S.pending.has(identity(e))?0xeb8797:baseColors[e.table]||0xffffff);mesh.visible=visible.has(identity(e));}
   scaleMarkers();
@@ -205,6 +208,32 @@ function updateExtras(list){
     const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points.map(p=>local(p).add(new THREE.Vector3(0,.5,0)))),new THREE.LineBasicMaterial({color:baseColors.PathPoints,depthTest:false,transparent:true}));line.renderOrder=4;extras.add(line);}
 }
 controls.addEventListener('change',scaleMarkers);
+// Server water level (Zones.WaterLevel): below this height the server makes players swim. 0 means no water.
+const water=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x3a8fc4,transparent:true,opacity:.42,depthWrite:false,side:THREE.DoubleSide}));
+water.rotation.x=-Math.PI/2;water.renderOrder=2;water.visible=false;scene.add(water);
+let pickWater=false;
+function zoneEntity() {const z=S.data.zone;return {table:'Zones',key:z.ZoneID,values:Object.fromEntries(Object.keys(schema('Zones').columns).map(k=>[k,z[k]]))};}
+function waterLevel() {return Number(rawValues(zoneEntity()).WaterLevel)||0;}
+// What the server uses: the zone's own level, else its region's.
+function effectiveWater() {const own=waterLevel();return own?{level:own,source:'zone'}:{level:Number(S.data.regionWater)||0,source:S.data.regionWater?'region':'none'};}
+function updateWater() {
+  const on=$('showWater').checked&&Boolean(S.data);$('waterTools').classList.toggle('hidden',!on);
+  if(!on){water.visible=false;pickWater=false;$('waterPick').classList.remove('active');return;}
+  const z=S.data.zone,{level,source}=effectiveWater(),w=z.Width*8192*units,h=z.Height*8192*units;
+  water.scale.set(w,h,1);water.position.set(w/2,level*units,h/2);water.visible=level>0;
+  if(document.activeElement!==$('waterLevel'))$('waterLevel').value=level;
+  $('waterSource').textContent={zone:'zone',region:'from region',none:'no water'}[source];
+  $('waterSource').title={zone:'This zone sets its own water level.',region:'This zone has no level of its own (0), so the server uses the region level. Changing it here gives the zone its own level.',none:'Neither the zone nor its region has a water level. The client still draws its own water, but the server never treats anyone as underwater here.'}[source];
+}
+function setWater(level) {
+  if(!S.data)return;level=Math.round(THREE.MathUtils.clamp(level,0,65535));if(level===waterLevel())return;
+  checkpoint();stage(zoneEntity(),{WaterLevel:level});changed();
+}
+$('showWater').onchange=updateWater;
+$('waterLevel').onchange=()=>{const n=Number($('waterLevel').value);if(Number.isFinite(n))setWater(n);else updateWater();};
+$('waterDown').onclick=e=>setWater(effectiveWater().level-(e.shiftKey?128:16));
+$('waterUp').onclick=e=>setWater(effectiveWater().level+(e.shiftKey?128:16));
+$('waterPick').onclick=()=>{pickWater=!pickWater;$('waterPick').classList.toggle('active',pickWater);if(pickWater)toast('Click the ground or a floor to set the water level to its height.');};
 function home() {
   if(!S.data)return;const z=S.data.zone;const w=z.Width*8192*units,h=z.Height*8192*units;
   const ys=S.data.entities.map(e=>pendingValues(e).Z*units).filter(Number.isFinite).sort((a,b)=>a-b);const elevation=ys[Math.floor(ys.length/2)]||0;
@@ -213,12 +242,20 @@ function home() {
 function focus() {
   const chosen=selectedEntities();if(!chosen.length)return;
   const center=new THREE.Vector3();chosen.forEach(e=>center.add(local(pendingValues(e))));center.divideScalar(chosen.length);
-  controls.target.copy(center).add(new THREE.Vector3(0,1,0));camera.position.copy(center).add(new THREE.Vector3(10,11,14));controls.update();
+  controls.target.copy(center).add(new THREE.Vector3(0,1,0));camera.position.copy(center).add(new THREE.Vector3(3,4,4.5));controls.update();
 }
 $('home').onclick=home;$('focus').onclick=focus;
 new ResizeObserver(()=>{const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}).observe(viewport);
 const frameClock=new THREE.Clock();let frameTime=0;
-renderer.setAnimationLoop(()=>{const dt=Math.min(frameClock.getDelta(),.05);if(S.mode!=='worldView')return;frameTime=performance.now()/1000;controls.update();visuals.tick(frameTime,dt,visibleEntities(),S.selected,controls.target.y+3);renderer.render(scene,camera);});
+// Near/far follow the orbit distance so close-ups aren't clipped and depth precision stays usable.
+function fitClipPlanes(){const d=camera.position.distanceTo(controls.target),near=THREE.MathUtils.clamp(d*.01,.02,.5),far=THREE.MathUtils.clamp(d*60,1500,80000);
+  if(Math.abs(near-camera.near)>camera.near*.05||Math.abs(far-camera.far)>camera.far*.05){camera.near=near;camera.far=far;camera.updateProjectionMatrix();}}
+// Drop to 1× resolution while frames are slow (high-DPI screens, close-ups filling the view with scenery).
+const fullRatio=Math.min(devicePixelRatio,2);let frameAvg=1/60,ratioChanged=0;
+function adaptResolution(dt,now){frameAvg+=(dt-frameAvg)*.05;if(fullRatio<=1||now-ratioChanged<4)return;const r=renderer.getPixelRatio();
+  if(r>1&&frameAvg>1/38){renderer.setPixelRatio(1);ratioChanged=now;}else if(r===1&&frameAvg<1/57){renderer.setPixelRatio(fullRatio);ratioChanged=now;}
+  if(renderer.getPixelRatio()!==r)renderer.setSize(viewport.clientWidth,viewport.clientHeight);}
+renderer.setAnimationLoop(()=>{const dt=Math.min(frameClock.getDelta(),.05);if(S.mode!=='worldView')return;frameTime=performance.now()/1000;controls.update();fitClipPlanes();adaptResolution(dt,frameTime);visuals.tick(frameTime,dt,visibleCache,S.selected,controls.target.y+3);renderer.render(scene,camera);});
 function pointerRay(e) {const r=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(pointer,camera);}
 function surfaceHit(e) {pointerRay(e);const hits=ray.intersectObject(collision||terrain||new THREE.Group());return $('cutaway').checked?hits.find(h=>h.point.y<=controls.target.y+3):hits[0];}
 function entityHit(){return ray.intersectObjects([...markers.filter(m=>m.visible),...visuals.pickables])[0];}
@@ -233,6 +270,23 @@ function floorAt(x,y,reference) {
   const p=local({X:x,Y:y,Z:reference});const r=new THREE.Raycaster(new THREE.Vector3(p.x,p.y+64*units,p.z),new THREE.Vector3(0,-1,0),0,50000);
   return r.intersectObject(mesh)[0]?.point.y/units??null;
 }
+// Wheel zoom about the point under the cursor (an NPC, else the floor), so it stays under the cursor while the
+// camera closes in. Each notch covers 20% of the distance; stops 1.5 units from an NPC (whole body in view) or
+// 0.4 units (~16 world units) from the floor.
+function zoomAt(e) {
+  e.preventDefault();if(!S.data)return;
+  const delta=e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?400:1);if(!delta)return;
+  // An NPC under the cursor anchors at its chest, not at its floating marker.
+  pointerRay(e);const entity=entityHit()?.object.userData.entity;
+  let anchor=entity?local(pendingValues(entity)).add(new THREE.Vector3(0,1,0)):surfaceHit(e)?.point;
+  if(!anchor){const plane=new THREE.Plane(new THREE.Vector3(0,1,0),-controls.target.y);anchor=ray.ray.intersectPlane(plane,new THREE.Vector3());}
+  if(!anchor||anchor.distanceTo(camera.position)>30000)anchor=controls.target.clone();
+  const reach=camera.position.distanceTo(anchor);let f=Math.pow(.8,-THREE.MathUtils.clamp(delta,-300,300)/100);
+  if(f<1)f=Math.max(f,Math.min(1,(entity?1.5:.4)/reach));else if(camera.position.distanceTo(controls.target)*f>20000)return;
+  if(Math.abs(f-1)<1e-4)return;
+  camera.position.sub(anchor).multiplyScalar(f).add(anchor);controls.target.sub(anchor).multiplyScalar(f).add(anchor);scaleMarkers();
+}
+renderer.domElement.addEventListener('wheel',zoomAt,{passive:false});
 let down=null,drag=null;
 renderer.domElement.addEventListener('pointerdown',e=>{
   if(e.button!==0||!S.data)return;down={x:e.clientX,y:e.clientY};
@@ -244,7 +298,10 @@ renderer.domElement.addEventListener('pointerdown',e=>{
     controls.enabled=false;renderer.domElement.setPointerCapture(e.pointerId);e.stopImmediatePropagation();e.preventDefault();changed();
   }
 },true);
-renderer.domElement.addEventListener('pointermove',e=>{
+// Raycasting the collision mesh is costly; handle at most one pointer move per frame.
+let moveEvent=null;
+renderer.domElement.addEventListener('pointermove',e=>{if(!moveEvent)requestAnimationFrame(()=>{const m=moveEvent;moveEvent=null;pointerMove(m);});moveEvent=e;});
+function pointerMove(e){
   const hit=surfaceHit(e);if(hit){const p=coordinates(hit.point);$('coords').textContent=`X ${p.X} · Y ${p.Y} · Z ${p.Z}`;}
   if(!drag){const hovered=entityHit()?.object.userData.entity;$('hoverCard').classList.toggle('hidden',!hovered);if(hovered){const v=pendingValues(hovered),r=viewport.getBoundingClientRect();$('hoverCard').textContent=(v.Name||'(unnamed)')+(v.Guild?' · '+v.Guild:'')+` · ${layer(hovered.table).label||hovered.table}`;$('hoverCard').style.left=Math.min(e.clientX-r.left+14,r.width-230)+'px';$('hoverCard').style.top=(e.clientY-r.top+18)+'px';}}
   if(!drag||!hit)return;
@@ -255,10 +312,11 @@ renderer.domElement.addEventListener('pointermove',e=>{
     if(z===null)continue;stage(entity,{X,Y,Z:Math.round(z)});
   }
   updateMarkers();
-});
+}
 renderer.domElement.addEventListener('pointerup',guarded(async e=>{
   if(drag){drag=null;controls.enabled=true;down=null;changed();return;}
   if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>5){down=null;return;}down=null;
+  if(pickWater){pickWater=false;$('waterPick').classList.remove('active');const surface=surfaceHit(e);if(surface)setWater(surface.point.y/units);return;}
   pointerRay(e);const hit=entityHit();
   if(S.tool==='path'){
     const surface=surfaceHit(e);if(!surface)return;const p=coordinates(surface.point);
@@ -593,7 +651,7 @@ function renderInspector() {
   if(notes.length){const warning=document.createElement('p');warning.className='notice warning';warning.textContent=notes.join(' ');$('inspector').prepend(warning);}
 }
 function renderZoneFields() {
-  if(!S.data||!S.config)return;const z=S.data.zone;form($('zoneFields'),{table:'Zones',key:z.ZoneID,values:Object.fromEntries(Object.keys(schema('Zones').columns).map(k=>[k,z[k]]))},Object.keys(S.config.fields.Zones),'Layout and other columns');
+  if(!S.data||!S.config)return;const z=S.data.zone;form($('zoneFields'),zoneEntity(),Object.keys(S.config.fields.Zones),'Layout and other columns');
   $('zoneBounds').textContent=`Region ${z.RegionID}\nOrigin ${z.OffsetX*8192}, ${z.OffsetY*8192}\nExtent ${z.Width*8192} × ${z.Height*8192}\n${z.layoutMatches?'Client bounds match server':'CLIENT / SERVER BOUNDS DIFFER'}`;
 }
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('#worldView .tab').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab));});
