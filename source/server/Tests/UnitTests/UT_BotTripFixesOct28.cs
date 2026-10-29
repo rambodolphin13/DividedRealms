@@ -137,8 +137,24 @@ public sealed class UT_BotTripFixesOct28
         Assert.That(packRadius, Is.EqualTo(200 + 500 + 80 + 250).Within(0.5f));
         Assert.That(AutonomousRouteThreatPolicy.DistanceToSegment(new(0, 0), new(100, 0), new(50, 30)), Is.EqualTo(30f).Within(0.01f));
         Assert.That(AutonomousRouteThreatPolicy.DistanceToSegment(new(0, 0), new(100, 0), new(130, 40)), Is.EqualTo(50f).Within(0.01f));
+
         // Straight away first.
         Assert.That(System.Numerics.Vector2.Normalize(points[0] - threat).X,
             Is.EqualTo(System.Numerics.Vector2.Normalize(bot - threat).X).Within(0.001f));
+    }
+
+    [Test]
+    public void TheCotswoldPortalPadFollowsTheInstalledWorldsPlatform()
+    {
+        // Navmesh floor under the pad: 2816 in the 1.130 world, 2698 in the classic one; the measured pad is 2694.
+        var pad = new System.Numerics.Vector3(564976, 509200, 2694);
+        var modern = ShroudedIslesPortals.SnapToFloor(pad, 2816);
+        Assert.That(modern.Z, Is.EqualTo(2816f));
+        Assert.That(ShroudedIslesPortals.IsOnPad(modern, new(565031, 509168, 2816)), Is.True,
+            "where the bots stood for fifteen minutes");
+        Assert.That(ShroudedIslesPortals.SnapToFloor(pad, 2698).Z, Is.EqualTo(2698f));
+        // No floor found, or one far off: the measured pad stays.
+        Assert.That(ShroudedIslesPortals.SnapToFloor(pad, null), Is.EqualTo(pad));
+        Assert.That(ShroudedIslesPortals.SnapToFloor(pad, 3200).Z, Is.EqualTo(2694f));
     }
 }

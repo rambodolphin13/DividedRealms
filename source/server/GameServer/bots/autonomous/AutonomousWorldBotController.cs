@@ -4640,6 +4640,13 @@ namespace DOL.GS
                                      $"region={bot.CurrentRegionID} from=\"{currentZone.Description}\" to=\"{destinationZone.Description}\" " +
                                      $"hours={AutonomousZoneSeamBlocks.BlockDuration.TotalHours:0} destinationBlocked=" +
                                      $"{AutonomousZoneSeamBlocks.IsDestinationBlocked(bot.Realm, bot.CurrentRegionID, destinationZone.ID)}");
+                        // A camp on ground no seam reaches (2026-10-29: Emain Macha's grogans at 435304,321563 sit on a
+                        // part of the mesh apart from the zone's main ground) failed 198 times in 9 hours from start
+                        // zones too varied for a seam block. Three bots failing it puts the camp away for everyone.
+                        if (_camp != null && AutonomousCampRouteQuarantine.ReportFailure(_camp.Id, bot.DatabaseID))
+                            Log.Warn($"AUTONOMOUS_CAMP_ROUTE_QUARANTINE camp=\"{_camp.Id}\" target=\"{_camp.MonsterName}\" " +
+                                     $"zone=\"{_camp.ZoneName}\" bots={AutonomousCampRouteQuarantine.DistinctBotsToQuarantine} " +
+                                     $"hours={AutonomousCampRouteQuarantine.QuarantineDuration.TotalHours:0} reason=no-zone-seam");
                         RejectPendingBoarding(bot, "No safe connected zone seam on the approach");
                         AbandonCamp(bot, "No safe connected zone seam on the selected route");
                         return false;

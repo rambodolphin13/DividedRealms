@@ -65,12 +65,33 @@ namespace DOL.GS
                     Log.Warn($"SHROUDED_ISLES_PORTAL_SKIPPED id={point.Id} region={point.SourceRegion} target={point.TargetRegion}");
                     continue;
                 }
+                Pads[point.Id] = SnapToFloor(Pads[point.Id], FloorAt(region, Pads[point.Id]));
                 region.AddArea(new PortalArea(point));
                 Vector3 pad = Pads[point.Id];
                 Log.Info($"SHROUDED_ISLES_PORTAL id={point.Id} region={point.SourceRegion} " +
                          $"pad={pad.X:0},{pad.Y:0},{pad.Z:0} radius={PadRadius} -> " +
                          $"{point.TargetRegion}:{point.TargetX},{point.TargetY},{point.TargetZ}");
             }
+        }
+
+        /// <summary>
+        /// How far the installed world's platform may sit from the measured pad height. The 1.130 (modern) world's
+        /// Cotswold platform is at 2816, not 2694: on 2026-10-29, 222 bots stood on it for 15 minutes 339 times and no
+        /// player could have used it either.
+        /// </summary>
+        public const int PadFloorSearch = 200;
+
+        /// <summary>Pure rule: the pad moves to the navmesh floor found under it, when there is one close enough.</summary>
+        public static Vector3 SnapToFloor(Vector3 pad, float? floorZ) =>
+            floorZ.HasValue && Math.Abs(floorZ.Value - pad.Z) <= PadFloorSearch ? pad with { Z = floorZ.Value } : pad;
+
+        private static float? FloorAt(Region region, Vector3 pad)
+        {
+            Zone zone = region.GetZone((int)pad.X, (int)pad.Y);
+            IPathfindingMgr nav = PathfindingProvider.Instance;
+            if (zone == null || !nav.IsAvailable || !nav.HasNavmesh(zone))
+                return null;
+            return nav.GetClosestPoint(zone, pad, 16, 16, PadFloorSearch, nav.DefaultFilters)?.Z;
         }
 
         /// <summary>Pure rule: a player may use a portal again only after a short pause.</summary>
