@@ -10,6 +10,19 @@ The newest version is first. For the full detail of every earlier update, see
   the player to character select or out of bounds. The launcher now adds them to its client copy, and builds Abermenai's
   terrain from the client's own Thidranki files. Marfach's map isn't in 1.130, so the client patch carries it. An
   existing copy is patched on the next start.
+- Modern test builds: bots bound for Pennine Mountains no longer turn back and forth at the Black Mountains North border.
+  They chose the nearest crossing into Snowdonia, which led onto a cut-off ridge; crossings that reach the destination's
+  main ground now come first (574 bots and 2,399 failed goals in one test run).
+- Bots stop sending everyone at a zone crossing nobody can reach. In Valley of Bri Leith the crossings into Lough Derg
+  sit just behind a thin wall from where the walk arrives (142 bots, 408 give-ups). Once three bots give up beside a
+  crossing, the zone planner uses another one for two hours.
+- A bot inside its own realm's keep can leave through the doors. When a keep fell, the army's objective went back to
+  PvE while it was still inside, the doors stopped working for it, and 213 bots were teleported home.
+- Bots back away from monsters they can't fight over hills as well as flat ground. The retreat point's floor had to be
+  almost level with the bot, so 23% of retreats found no way out in one test run and 5% in the next.
+- Fixed a server error when two kills in the same moment levelled up the same bot.
+- Modern test builds: 31 Hall of the Corrupt monsters that stood outside the 1.130 dungeon are placed in its rooms, so a
+  raid can reach them. Lady Darra's summoned paladins still appear at their old spots.
 
 0.37 / 0.37b / 0.37c is the latest release.
 
