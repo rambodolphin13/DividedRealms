@@ -156,46 +156,58 @@ def world_update(base_db: Path, target_db: Path, policy: dict, version: str) -> 
                  "Delete": [[json_value(v) for v in r] for r in deletes]}
         update["Tables"].append(entry)
         update["Summary"][table] = {"added": len(inserts), "changed": len(updates), "removed": len(deletes)}
+    base.close()
+    target.close()
     return update
+
+
+def apply_world_update(con, update: dict) -> int:
+    """Applies a world update with the statements the patcher runs (OfflineDaoc.Patcher/WorldUpdate.cs); returns how many
+    of its rows found nothing to act on (no commit)."""
+    for t in update["NewTables"]:
+        con.execute(t["Create"].replace("CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ", 1))
+        for index in t.get("Indexes", []):
+            con.execute(index.replace("CREATE INDEX ", "CREATE INDEX IF NOT EXISTS ")
+                        .replace("CREATE UNIQUE INDEX ", "CREATE UNIQUE INDEX IF NOT EXISTS "))
+    for c in update["NewColumns"]:
+        if c["Column"].lower() not in {r[1].lower() for r in table_info(con, c["Table"])}:
+            con.execute(f'ALTER TABLE "{c["Table"]}" ADD COLUMN "{c["Column"]}" {c["Decl"]}')
+    decode = lambda v: base64.b64decode(v["$b64"]) if isinstance(v, dict) else v
+    kept = 0
+    for t in update["Tables"]:
+        cols, table = t["Columns"], t["Table"]
+        cmp = [i for i, n in enumerate(cols) if n not in update["IgnoreColumns"] and n not in t["IgnoreCompare"]]
+        where = " AND ".join(f'"{cols[i]}" IS ?' for i in cmp)
+        for row in t["Insert"]:
+            cur = con.execute(f'INSERT OR IGNORE INTO "{table}" ({",".join(chr(34) + c + chr(34) for c in cols)}) '
+                              f'VALUES ({",".join("?" * len(cols))})', [decode(v) for v in row])
+            kept += cur.rowcount == 0
+        for row in t["Update"]:
+            if "Set" in row:                       # field update, as the patcher does it
+                s = [cols.index(c) for c in row["Set"]]
+                k = [cols.index(c) for c in t["Key"]]
+                m = list(dict.fromkeys(k + s))
+                cur = con.execute(f'UPDATE "{table}" SET {",".join(chr(34) + cols[i] + chr(34) + "=?" for i in s)} '
+                                  f'WHERE {" AND ".join(chr(34) + cols[i] + chr(34) + " IS ?" for i in m)}',
+                                  [decode(row["New"][i]) for i in s] + [decode(row["Old"][i]) for i in m])
+            else:
+                cur = con.execute(f'UPDATE "{table}" SET {",".join(chr(34) + c + chr(34) + "=?" for c in cols)} WHERE {where}',
+                                  [decode(v) for v in row["New"]] + [decode(row["Old"][i]) for i in cmp])
+            kept += cur.rowcount == 0
+        for row in t["Delete"]:
+            cur = con.execute(f'DELETE FROM "{table}" WHERE {where}', [decode(row[i]) for i in cmp])
+            kept += cur.rowcount == 0
+    return kept
 
 
 def check_world_update(update: dict, base_db: Path, target_db: Path, policy: dict):
     """Applying the update to the released world must give exactly the new clean world (the test a patched fresh
     install must pass), using the same statements the patcher runs."""
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         work = Path(tmp) / "world.db"
         shutil.copy2(base_db, work)
         con = sqlite3.connect(work)
-        for t in update["NewTables"]:
-            con.execute(t["Create"])
-            for index in t.get("Indexes", []):
-                con.execute(index)
-        for c in update["NewColumns"]:
-            con.execute(f'ALTER TABLE "{c["Table"]}" ADD COLUMN "{c["Column"]}" {c["Decl"]}')
-        decode = lambda v: base64.b64decode(v["$b64"]) if isinstance(v, dict) else v
-        kept = 0
-        for t in update["Tables"]:
-            cols, table = t["Columns"], t["Table"]
-            cmp = [i for i, n in enumerate(cols) if n not in update["IgnoreColumns"] and n not in t["IgnoreCompare"]]
-            where = " AND ".join(f'"{cols[i]}" IS ?' for i in cmp)
-            for row in t["Insert"]:
-                cur = con.execute(f'INSERT OR IGNORE INTO "{table}" ({",".join(chr(34) + c + chr(34) for c in cols)}) '
-                                  f'VALUES ({",".join("?" * len(cols))})', [decode(v) for v in row])
-                kept += cur.rowcount == 0
-            for row in t["Update"]:
-                if "Set" in row:                       # field update, as the patcher does it
-                    s = [cols.index(c) for c in row["Set"]]
-                    k = [cols.index(c) for c in t["Key"]]
-                    cur = con.execute(f'UPDATE "{table}" SET {",".join(chr(34) + cols[i] + chr(34) + "=?" for i in s)} '
-                                      f'WHERE {" AND ".join(chr(34) + cols[i] + chr(34) + " IS ?" for i in k + s)}',
-                                      [decode(row["New"][i]) for i in s] + [decode(row["Old"][i]) for i in k + s])
-                else:
-                    cur = con.execute(f'UPDATE "{table}" SET {",".join(chr(34) + c + chr(34) + "=?" for c in cols)} WHERE {where}',
-                                      [decode(v) for v in row["New"]] + [decode(row["Old"][i]) for i in cmp])
-                kept += cur.rowcount == 0
-            for row in t["Delete"]:
-                cur = con.execute(f'DELETE FROM "{table}" WHERE {where}', [decode(row[i]) for i in cmp])
-                kept += cur.rowcount == 0
+        kept = apply_world_update(con, update)
         con.commit()
         con.close()
         assert kept == 0, f"{kept} rows of the update did not apply to the released world"

@@ -5,18 +5,24 @@ The client's gamedata.mpk lists what it can draw:
   horsearmorthememap.csv saddle / horse armor theme (HorseArmor item's DPS_AF), per realm
   horsematerialmap.csv   barding style (HorseBarding item's DPS_AF), 1-36
 
-Each realm gets a Horse Trader (every mount) and a Tack Merchant (that realm's saddles and armor,
-every barding, the four saddlebags). Items are level 1 and cheap; pair them with the server
-setting rates / mount_any_level_full_speed = True so every mount rides at full speed and works in RvR.
+Every stable master sells them after its route tickets: every mount, then its realm's saddles and armor,
+every barding and the four saddlebags. A stable master with no ticket list gets its realm's stable_tack_<realm>
+list. Neutral stable masters count as the realm of their region; boat stable masters are left alone. The
+world's database is read (read-only) to find the ticket lists, the items and settings it already has (those are
+not added again) and the old Horse Trader / Tack Merchant NPCs and lists, which are removed.
+Items are level 1 and cheap; pair them with the server setting rates / mount_any_level_full_speed = True so
+every mount rides at full speed and works in RvR.
 
-    python source/tools/horses/make_horse_edits.py --client <client app folder> --out horse-edits.json
+    python source/tools/horses/make_horse_edits.py --client <client app folder> --db <world db> --out horse-edits.json
     python source/tools/world_editor/cli.py --game <game folder> plan horse-edits.json --out horses.patch.json
 """
 import argparse
 import csv
 import io
 import json
+import sqlite3
 import sys
+from contextlib import closing
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'new-client' / 'pipeline'))
@@ -49,9 +55,11 @@ MOUNT_NAMES = {
 
 # Mounts that don't look right with a rider in game (owner, 2026-10-28): dragonfly, wingless
 # stone dragon, minotaur, troll, stone dragon (64), evil pixie. Left out until they are fixed.
-# 70 "test boar" points at a monster the client doesn't have (invisible). 67, the stock Chimera, has no saddle
-# node; install_chimera_mount.py adds the saddled copy as mount 89 (the modern world's mount_67 item rides it).
-HIDDEN_MOUNTS = {61, 64, 65, 66, 67, 68, 69, 70}
+# 70 "test boar" points at a monster the client doesn't have (invisible).
+HIDDEN_MOUNTS = {61, 64, 65, 66, 68, 69, 70}
+# 67, the stock Chimera, has no saddle node; install_chimera_mount.py adds the saddled copy as mount 89, and the
+# mount_67 item rides that.
+RIDES = {67: 89}
 
 # Mounts whose riders fly (server setting world / flying_mount_ids; needs the modern client's flight patch):
 # wyvern, gryphon, stone dragon, the baby wolf/glimmer dragons, stone dragon mount, the brooms, ghost mount,
@@ -67,16 +75,12 @@ BAGS = [(96, 'Left Front Saddlebag'), (97, 'Right Front Saddlebag'), (98, 'Left 
 # Existing rows copied for their item flags, durability and package; everything visible is reset.
 COPY_HORSE, COPY_SADDLE, COPY_BARDING = 'clockworkmount', 'saddle0', 'barding28'
 
-# Where each realm's traders stand: beside the stable master of the main starting town
-# (Albion's starting town has none, so its pair stands in the square). x, y, z, heading, model, size.
-SPOTS = {
-    1: [(574330, 529300, 2893, 1987, 9, 52), (574430, 529380, 2893, 1987, 9, 52)],
-    2: [(773330, 754120, 4600, 2707, 215, 51), (773580, 754360, 4600, 2707, 215, 51)],
-    3: [(294100, 641500, 4850, 3720, 361, 49), (294380, 641240, 4850, 3720, 361, 49)],
-}
-TRADER_NAMES = {1: ('Edwin Farrier', 'Maud Saddler'), 2: ('Hrolf Hestur', 'Sigrun Taumr'),
-                3: ('Fiachra Each', 'Una Diallaid')}
-COPY_MOB = '11817f39-c48a-4a3a-bc20-66af9eb5a425'  # Elvar Tambor, a plain Albion GameMerchant
+STABLE_MASTER = 'DOL.GS.GameStableMaster'
+PAGE, PAGES = 30, 5
+STOCK_FROM = 10  # the stock starts at page 0 slot 10, after the route tickets (no list has more than 7)
+# Home realm of the regions neutral stable masters stand in (Albion and the Shrouded Isles).
+REGION_REALM = {1: 1, 51: 1, 100: 2, 151: 2, 200: 3, 181: 3}
+OLD_TRADER_LISTS = [f'{kind}_{code}' for kind in ('horse_trader', 'tack_merchant') for code in ('alb', 'mid', 'hib')]
 
 
 def table(mpk, name):
@@ -101,18 +105,55 @@ def item(copy, key, name, item_type, model, dps_af, spd_abs, realm, price):
         'IsTradable': 1, 'IsDropable': 1, 'CanDropAsLoot': 0, 'Description': ''}}
 
 
-def build(client):
+def query(con, sql, *args):
+    con.row_factory = sqlite3.Row
+    return [dict(r) for r in con.execute(sql, args)]
+
+
+def stable_edits(con, horses, tack):
+    """Stock every stable master after its tickets; drop the old Horse Trader / Tack Merchant NPCs and lists."""
+    edits, stock_by_list = [], {}
+    for m in query(con, 'SELECT Mob_ID, Realm, Region, ItemsListTemplateID FROM Mob WHERE ClassType = ?', STABLE_MASTER):
+        realm = m['Realm'] or REGION_REALM.get(m['Region'], 0)
+        list_id = m['ItemsListTemplateID'] or ''
+        if not list_id:
+            list_id = f'stable_tack_{REALMS[realm][0]}' if realm in REALMS else 'stable_tack_neutral'
+            edits.append({'table': 'Mob', 'key': m['Mob_ID'], 'set': {'ItemsListTemplateID': list_id}})
+        stock = horses + tack[realm]
+        assert stock_by_list.setdefault(list_id, stock) == stock, f'{list_id} is shared by stable masters of two realms'
+
+    for list_id, stock in stock_by_list.items():
+        rows = query(con, 'SELECT ItemTemplateID, PageNumber, SlotPosition FROM MerchantItem WHERE ItemListID = ?', list_id)
+        have = {r['ItemTemplateID'] for r in rows}
+        used = [r['PageNumber'] * PAGE + r['SlotPosition'] for r in rows if r['ItemTemplateID'] not in stock]
+        if used and max(used) >= STOCK_FROM:
+            raise ValueError(f'{list_id} has tickets past page 0 slot {STOCK_FROM - 1}')
+        assert STOCK_FROM + len(stock) <= PAGE * PAGES, list_id
+        for n, key in enumerate(stock, STOCK_FROM):
+            if key not in have:
+                edits.append({'table': 'MerchantItem', 'insert': {
+                    'ItemListID': list_id, 'ItemTemplateID': key, 'PageNumber': n // PAGE, 'SlotPosition': n % PAGE}})
+
+    for list_id in OLD_TRADER_LISTS:
+        for r in query(con, 'SELECT Mob_ID FROM Mob WHERE ItemsListTemplateID = ?', list_id):
+            edits.append({'table': 'Mob', 'delete': r['Mob_ID']})
+        for r in query(con, 'SELECT MerchantItem_ID FROM MerchantItem WHERE ItemListID = ?', list_id):
+            edits.append({'table': 'MerchantItem', 'delete': r['MerchantItem_ID']})
+    return edits
+
+
+def build(client, db):
     mpk = read_mpk(Path(client) / 'gamedata.mpk')
     edits, horses, tack = [], [], {r: [] for r in REALMS}
 
     for r in table(mpk, 'horsemap.csv'):
         mid = int(r[0])
-        if mid in HIDDEN_MOUNTS:
+        if mid in HIDDEN_MOUNTS or mid in RIDES.values():
             continue
         name = MOUNT_NAMES.get(mid, r[1].strip())
         key = f'mount_{mid:02}'
         # DPS_AF on a horse is unused by the server; keep the copied value clear.
-        edits.append(item(COPY_HORSE, key, name, 9, 2912, 0, mid, 0, mount_price(mid, name)))
+        edits.append(item(COPY_HORSE, key, name, 9, 2912, 0, RIDES.get(mid, mid), 0, mount_price(mid, name)))
         horses.append(key)
 
     for r in table(mpk, 'horsearmorthememap.csv'):
@@ -146,20 +187,8 @@ def build(client):
         edits.append(item(COPY_BARDING, key, name, slot, 2911, 0, 0, 0, GOLD))
         bag_keys.append(key)
 
-    for realm, (code, realm_name, _) in REALMS.items():
-        lists = {f'horse_trader_{code}': horses, f'tack_merchant_{code}': tack[realm] + barding_keys + bag_keys}
-        for list_id, keys in lists.items():
-            assert len(keys) <= 150, list_id  # 5 pages of 30
-            for n, key in enumerate(keys):
-                edits.append({'table': 'MerchantItem', 'insert': {
-                    'ItemListID': list_id, 'ItemTemplateID': key, 'PageNumber': n // 30, 'SlotPosition': n % 30}})
-        for (x, y, z, heading, model, size), name, list_id, title in zip(
-                SPOTS[realm], TRADER_NAMES[realm], lists, ('Horse Trader', 'Tack Merchant')):
-            edits.append({'table': 'Mob', 'copy': COPY_MOB, 'key': f'{list_id}_npc', 'set': {
-                'Name': name, 'Guild': title, 'X': x, 'Y': y, 'Z': z, 'Heading': heading,
-                'Region': {1: 1, 2: 100, 3: 200}[realm], 'Realm': realm, 'Model': model, 'Size': size,
-                'ItemsListTemplateID': list_id, 'NPCTemplateID': -1, 'EquipmentTemplateID': '',
-                'Flags': 16, 'Speed': 0, 'AggroLevel': 0, 'AggroRange': 0, 'Level': 50}})
+    # Realm 0 (a neutral stable master outside the home regions) gets no realm saddles or armor.
+    tack = {realm: tack.get(realm, []) + barding_keys + bag_keys for realm in (0, *REALMS)}
 
     # The server adds this row with its default (False) on first start; add it switched on.
     edits.append({'table': 'ServerProperty', 'insert': {
@@ -169,15 +198,24 @@ def build(client):
         'Category': 'world', 'Key': 'flying_mount_ids', 'DefaultValue': '',
         'Value': ';'.join(str(m) for m in FLYING_MOUNTS if m not in HIDDEN_MOUNTS),
         'Description': 'Mount IDs (client horsemap.csv, separated by ;) whose riders can fly. Needs the patched modern client.'}})
+
+    with closing(sqlite3.connect(Path(db).resolve().as_uri() + '?mode=ro', uri=True)) as con:
+        # Items and settings the world already has stay as they are.
+        items = {r['Id_nb'] for r in query(con, 'SELECT Id_nb FROM ItemTemplate')}
+        props = {r['Key'] for r in query(con, 'SELECT "Key" FROM ServerProperty')}
+        edits = [e for e in edits if not (e['table'] == 'ItemTemplate' and e['key'] in items or
+                                          e['table'] == 'ServerProperty' and e['insert']['Key'] in props)]
+        edits += stable_edits(con, horses, tack)
     return edits
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--client', required=True, help='client app folder holding gamedata.mpk')
+    p.add_argument('--db', required=True, help='the world database (runtime/data/opendaoc.sqlite3.db), read only')
     p.add_argument('--out', required=True)
     args = p.parse_args()
-    edits = build(args.client)
+    edits = build(args.client, args.db)
     Path(args.out).write_text(json.dumps(edits, indent=1), encoding='utf-8')
     counts = {}
     for e in edits:

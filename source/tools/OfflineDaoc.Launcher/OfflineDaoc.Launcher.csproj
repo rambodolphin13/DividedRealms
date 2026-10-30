@@ -23,6 +23,8 @@
     <!-- Living Server: 2003-style bot names, the same mix as the server's own bots. -->
     <Compile Include="../../server/GameServer/bots/autonomous/EraBotNames.cs" Link="SocialExpansion/EraBotNames.cs" />
     <Compile Include="../../server/GameServer/bots/autonomous/EraBotNameWords.cs" Link="SocialExpansion/EraBotNameWords.cs" />
+    <!-- The patcher's world update, so the launcher brings a modern test world up to its release by the same rules. -->
+    <Compile Include="../OfflineDaoc.Patcher/WorldUpdate.cs" Link="Updates/WorldUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Join Friend.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

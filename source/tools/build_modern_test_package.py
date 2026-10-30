@@ -1,13 +1,22 @@
 """Build the public modern-test package: this fork's game for the original 1.130 client, without any retail file.
 
-    python build_modern_test_package.py --install <artifacts/modern-client-test> --pristine <pristine 1.130 client>
-                                        --repo <this repository> --out <new package folder> [--zip]
+    python build_modern_test_package.py --install <artifacts/modern-client-test> --pristine <pristine 1.130 client> --classic <classic client>
+                                        --repo <this repository> --out <new package folder>
+                                        --label "<version> modern test" [--zip]
 
 The install (the developer's modern test, only read) gives the server folder and the world. The package gets:
   * runtime/: the install's server folder (personal, diagnostic and run-state files left out, as build_release_037.py
     does), this repository's Release GameServer and launcher builds, and a clean world (build_release_037.clean_world:
     no account, character, bot or save; default keeps, doors and relics; zero-bot start, GM off, 1x XP, automatic
     account creation). The modern switches (native class slots, modern races, the test classes) stay as installed.
+    The world ships as data/world-clean.sqlite3.db, never as data/opendaoc.sqlite3.db: the launcher makes the played
+    world from it on first start, so copying a newer release over an older folder can't overwrite anyone's saves.
+  * runtime/world-updates: one world update per release (modern_world_updates.py). This release's step, from the
+    previous release's clean world (found in release-baselines/modern beside the repository) to this one, is added to
+    the repository's chain (source/tools/release-baselines/modern/world-updates; commit it with the release), and this
+    clean world is kept there for the next release. The launcher applies the steps a world hasn't had, so a world from
+    any earlier release gets this release's fixes and keeps its saves. The version is the label's first word: give
+    every published build a new one (building the same label again replaces its step).
   * runtime/client-patch.json (make_client_patch.py, from the pristine client) and modern-client.json: on first start
     the launcher copies the player's own 1.130 client into runtime/client-modern/app and patches the copy.
   * tools/connect-local1130.exe (upstream's connect.exe with its 1.130 edit), tools/dotnet (the .NET runtime), the
@@ -35,6 +44,7 @@ from pathlib import Path
 
 import build_release_037 as release
 import make_client_patch
+import modern_world_updates
 import remove_sluaghbinder
 
 PORT = 10330
@@ -44,7 +54,8 @@ CONNECTOR = 'connect-local1130.exe'
 # world-workshop-data holds the developer's editor backups (database snapshots): never shipped. The editor itself
 # (world-workshop) is installed from the repository's clean package build instead of the install's copy.
 # server-backups holds deploy backups (developer builds), herald the launcher's Herald page written from this game's records.
-RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', 'server-backups', 'herald'}
+# world-updates is written from the repository's chain (the install may have an older one).
+RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', 'server-backups', 'herald', 'world-updates'}
 WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
 # host-for-friends.json and the firewall script are the developer's Host for Friends state (friends' addresses, local paths).
 RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json',
@@ -52,6 +63,10 @@ RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json',
                   'Join Friend.cmd')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}
+# Items whose look needs private client art the client patch can't add yet: the developer's world sells them, the
+# package's world doesn't. mount_67 rides mount 89, the saddled Chimera (tools/horses/install_chimera_mount.py adds it
+# to gamedata.mpk and figures/, neither of which client-patch.json patches).
+WITHHELD_MERCHANT_ITEMS = ('mount_67',)
 
 START_CMD = r'''@echo off
 setlocal
@@ -102,6 +117,11 @@ This download contains no game client: you use your own.
 
 Playing with friends: one of you hosts (HOST FOR FRIENDS in the launcher), the others double-click
 JOIN FRIEND.cmd (set up your client once with step 4 first). See docs/PLAY-WITH-FRIENDS.md.
+
+Updating from an earlier test build: close the launcher, extract the new download over this
+folder and choose to replace every file. Your world and characters are kept: the launcher adds
+the new build's world fixes to your world (after a backup in runtime\\backups) and patches your
+client copy again (it may ask for your Dark Age of Camelot folder once).
 
 This is a development test build. See docs/PLAY-MODERN-TEST.md and docs/PROGRESS-2026-10.md.
 '''
@@ -155,9 +175,10 @@ def check_package(out: Path, pristine: Path):
     bad = [b for b in bad if not b.startswith('tools/dotnet/')]
     assert not bad, f'files that must not ship: {bad[:20]}'
     assert not (runtime / 'client-modern').exists(), 'a client folder would ship'
-    for name in ('server/GameServer.dll', 'server/CoreServer.exe', 'server/navmesh/roads.json', 'data/opendaoc.sqlite3.db',
-                 'OfflineDAoC.exe', 'client-patch.json', 'modern-client.json'):
+    for name in ('server/GameServer.dll', 'server/CoreServer.exe', 'server/navmesh/roads.json', 'data/world-clean.sqlite3.db',
+                 'world-updates/world-updates.json', 'OfflineDAoC.exe', 'client-patch.json', 'modern-client.json'):
         assert (runtime / name).is_file(), f'required file missing: {name}'
+    assert not (runtime / 'data/opendaoc.sqlite3.db').exists(), 'a played-world file would ship and overwrite saves when copied over'
     retail = {sha(pristine / name) for name in ('game.dll', 'camelot.exe', 'pregame/character_creation.xml')}
     shipped = [p for p in out.rglob('*') if p.is_file() and p.stat().st_size in {(pristine / n).stat().st_size for n in
                ('game.dll', 'camelot.exe', 'pregame/character_creation.xml')}]
@@ -176,7 +197,7 @@ def check_package(out: Path, pristine: Path):
     assert not binary, f'binaries naming the developer: {binary[:20]}'
 
 
-def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> dict:
+def build(install: Path, pristine: Path, classic: Path, repo: Path, out: Path, label: str) -> dict:
     if out.exists():
         raise SystemExit(f'{out} exists; refusing to overwrite a package folder')
     with socket.socket() as probe:
@@ -192,12 +213,16 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
     connector = install / 'tools' / CONNECTOR
     if sha(connector) != CONNECTOR_SHA256:
         raise SystemExit('The install\'s 1.130 connector is not the expected one')
+    chain = repo / 'source/tools/release-baselines/modern/world-updates'
+    release_version = label.split()[0]
+    previous = modern_world_updates.previous_release(chain, release_version)
+    previous_world = modern_world_updates.baseline(previous)
     installed_profile = json.loads((install / 'runtime/modern-client.json').read_text(encoding='utf-8-sig'))
     policy = json.loads((repo / 'source/tools/OfflineDaoc.ProgressImport/progress-policy.json').read_text())
     defaults = json.loads((repo / 'source/tools/release-world-defaults.json').read_text(encoding='utf-8'))
 
     print('Making the client patch from the pristine client...', flush=True)
-    patch = make_client_patch.build(pristine)
+    patch = make_client_patch.build(pristine, classic)
     game = next(f for f in patch['Files'] if f['Path'] == 'game.dll')
     if game['OutputSha256'].lower() != installed_profile['GameSha256'].lower():
         raise SystemExit('The client patch does not rebuild the client the test install runs')
@@ -212,14 +237,25 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
     with sqlite3.connect((install / 'runtime/data/opendaoc.sqlite3.db').as_uri() + '?mode=ro', uri=True) as src, \
             sqlite3.connect(database) as dst:
         src.backup(dst)
+    src.close()
+    dst.close()
     world = release.clean_world(database, policy, defaults)
     with sqlite3.connect(database) as con:
         # clean_world switches upstream's Sluaghbinder on; this fork has retired it (build_custom_release_037.py).
         release.set_edition(con, False)
         sluaghbinder = remove_sluaghbinder.apply(con)
+        withheld = {item: con.execute('DELETE FROM MerchantItem WHERE ItemTemplateID = ?', (item,)).rowcount
+                    for item in WITHHELD_MERCHANT_ITEMS}
         con.commit()
         world = release.verify_clean(con, policy, defaults)
+    con.close()     # the world file is renamed below
     world_data = release.check_world_data(database, repo)
+
+    print("Adding this release's world update...", flush=True)
+    world_update = modern_world_updates.add_step(chain, release_version, previous, previous_world, database)
+    modern_world_updates.stamp(database, chain)
+    modern_world_updates.install(chain, runtime)
+    database.rename(runtime / 'data' / modern_world_updates.CLEAN_WORLD)
 
     server_config(runtime / 'server/config/serverconfig.xml')
 
@@ -273,10 +309,11 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
                       and ('docs/' + rel.as_posix()) in tracked)
 
     check_package(out, pristine)
+    modern_world_updates.keep_baseline(release_version, runtime / 'data' / modern_world_updates.CLEAN_WORLD)
     files = {p.relative_to(out).as_posix(): sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
     (out / 'PACKAGE MANIFEST.sha256').write_text(''.join(f'{h}  {n}\n' for n, h in files.items()), encoding='utf-8')
     report = dict(built_utc=datetime.now(timezone.utc).isoformat(), label=label, runtime_files_copied=len(copied),
-                  world=world, world_data=world_data, sluaghbinder=sluaghbinder, replaced=replaced, dotnet=version,
+                  world=world, world_data=world_data, world_update={f'{previous} -> {release_version}': world_update}, sluaghbinder=sluaghbinder, withheld_merchant_items=withheld, replaced=replaced, dotnet=version,
                   client_patch={f['Path']: [f['InputSha256'], f['OutputSha256']] for f in patch['Files']}, files=len(files))
     return report
 
@@ -285,13 +322,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--install', type=Path, required=True)
     parser.add_argument('--pristine', type=Path, required=True)
+    parser.add_argument('--classic', type=Path, required=True, help='classic client folder with zones/zone276 (only read)')
     parser.add_argument('--repo', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--label', default='0.38-dev modern test')
     parser.add_argument('--zip', action='store_true')
     args = parser.parse_args()
     out = args.out.resolve()
-    report = build(args.install.resolve(), args.pristine.resolve(), args.repo.resolve(), out, args.label)
+    report = build(args.install.resolve(), args.pristine.resolve(), args.classic.resolve(), args.repo.resolve(), out, args.label)
     (out.parent / (out.name + '-build-report.json')).write_text(json.dumps(report, indent=2), encoding='utf-8')
     if args.zip:
         print('Zipping...', flush=True)

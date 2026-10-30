@@ -160,6 +160,9 @@ internal sealed partial class MainForm : Form
         _database = Path.Combine(_root, "data", "opendaoc.sqlite3.db");
         _serverDirectory = Path.Combine(_root, "server");
         _serverExecutable = Path.Combine(_serverDirectory, "CoreServer.exe");
+        // Before anything reads the world: a release copied over an older one brings its world updates (modern test).
+        if (FindExactServerProcess() is null)
+            PrepareWorld();
         if (_modernClient != null)
         {
             _clientDirectory = _modernClient.ClientDirectory;
@@ -254,8 +257,9 @@ internal sealed partial class MainForm : Form
         _serverReadinessPoll.Tick += async (_, _) => await RefreshWhenServerReadyAsync();
         Shown += async (_, _) =>
         {
-            // The modern test package ships without a client: offer to set up the player's own on first start.
-            if (_modernClient != null && !ModernClientSetup.IsSetUp(_modernClient))
+            // The modern test package ships without a client: offer to set up the player's own on first start, and bring
+            // a copy set up by an older release up to this release's client patch.
+            if (_modernClient != null)
                 ModernClientSetupForm.EnsureSetUp(this, _modernClient, _root);
             await RefreshDashboardAsync();
             await RefreshRealmExchangeAsync();
@@ -2780,6 +2784,8 @@ internal sealed partial class MainForm : Form
             MessageBox.Show(this, "The compiled server package is missing.", "Cannot start", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
+        if (!PrepareWorld())
+            return;
 
         var availableGb = AvailableMemoryBytes() / 1024d / 1024d / 1024d;
         if (availableGb < 4 && MessageBox.Show(this,
@@ -3051,6 +3057,26 @@ internal sealed partial class MainForm : Form
         // Each installation gets its own local account on first use; the server
         // creates it on the first Enter Realm (AutoAccountCreation).
         return PortableCredentials.ReadOrCreate(_root);
+    }
+
+    /// <summary>Applies this release's pending world updates (WorldUpdates); false when they failed (the world is as it was).</summary>
+    private bool PrepareWorld()
+    {
+        try
+        {
+            var done = WorldUpdates.Prepare(_root);
+            if (done.Any(line => line.StartsWith("World data updated", StringComparison.Ordinal)))
+                MessageBox.Show(IsHandleCreated ? this : null, "This release's world fixes were added to your world. Your characters and " +
+                    "progress are kept.\n\n" + string.Join("\n", done.Where(l => !l.StartsWith("  ", StringComparison.Ordinal))),
+                    "World updated", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(IsHandleCreated ? this : null, "The world couldn't be updated to this release, so it was left as it was:\n" + ex.Message,
+                "World update failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
     }
 
     private bool IsServerRunning()

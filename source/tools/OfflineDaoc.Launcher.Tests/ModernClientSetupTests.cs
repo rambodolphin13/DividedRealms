@@ -69,6 +69,63 @@ public sealed class ModernClientSetupTests
         Assert.Throws<InvalidDataException>(() => ModernClientSetup.Apply("a player's own splash"u8.ToArray(), splash));
     }
 
+    // make_client_patch.py wrote this expected archive from the same stock archive and edit (see the test below).
+    private const string StockArchive = "TVBBSwKsztdCIAUGBxkJCgsNDQ4PeNqrys9LLdbLLcgGABK0A6Z42qvKz0st1ktJLGEYmeASCwMDC5QtD6XVgVg8aPo2AAwXBm142ouuys9LNTI1iOXlKkpNz8zPszU0M+PlykvMTbV15OUCAJnACM4=";
+    private const string PatchedArchive = "TVBBSwJgA6A7IwQGBxkJCgsNDQ4PeNqrys9LLdbLLcgGABK0A6Z4AQEcAeP+em9uZXMuZGF0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANIEAAAEAAAAAAAAADgAAAAAAAAAQwAAALfxqFgSqAeUeAEBOADH/1t6b25lMjUwXQ0KcmVnaW9uPTI1MA0KbmFtZT1BDQoNClt6b25lMjUzXQ0KcmVnaW9uPTI1Mw0Kz+MPdg==";
+
+    private static (byte[] Stock, byte[] Output, ModernClientSetup.PatchedFile File) MemberEdit()
+    {
+        byte[] stock = Convert.FromBase64String(StockArchive), output = Convert.FromBase64String(PatchedArchive);
+        return (stock, output, new("zones/zones.mpk", Hash(stock), Hash(output), output.Length,
+            [new(18, 3, Convert.ToBase64String("250"u8.ToArray())), new(31, 0, Convert.ToBase64String("\r\n[zone253]\r\nregion=253\r\n"u8.ToArray()))],
+            Member: "zones.dat"));
+    }
+
+    [Test]
+    public void AMemberEditRebuildsTheArchiveByteForByteAsThePatchBuilderDid()
+    {
+        var (stock, output, file) = MemberEdit();
+        Assert.That(ModernClientSetup.Apply(stock, file), Is.EqualTo(output));
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Apply(output, file));
+    }
+
+    // Set OFFLINE_DAOC_PRISTINE_1130 and OFFLINE_DAOC_CLIENT_PATCH (a folder with make_client_patch.py's client-patch.json)
+    // to run the real patch through this code; every file is hash-checked against what the Python builder made.
+    [Test]
+    public void TheRealClientPatchBuildsFromTheRealClient()
+    {
+        string? client = Environment.GetEnvironmentVariable("OFFLINE_DAOC_PRISTINE_1130");
+        string? folder = Environment.GetEnvironmentVariable("OFFLINE_DAOC_CLIENT_PATCH");
+        if (client == null || folder == null) Assert.Ignore("No pristine client and patch on this machine.");
+        var patch = ModernClientSetup.Load(folder!);
+        Assert.That(ModernClientSetup.CheckSource(client!, patch), Is.Null);
+        foreach (var file in patch.Files)
+            Assert.DoesNotThrow(() => ModernClientSetup.Apply(File.ReadAllBytes(Path.Combine(client!, file.InputPath)), file), file.Path);
+    }
+
+    [Test]
+    public void AFileMadeFromAnotherStockFileIsCheckedAgainstThatFile()
+    {
+        byte[] thidranki = "archive ter252.mpk contents"u8.ToArray(), abermenai = "archive ter253.mpk contents"u8.ToArray();
+        var patch = new ModernClientSetup.Patch(1, "1.130", [.. TestPatch().Files,
+            new("zones/zone253/ter253.mpk", Hash(thidranki), Hash(abermenai), abermenai.Length,
+                [new(13, 1, Convert.ToBase64String("3"u8.ToArray()))], From: "zones/zone252/ter252.mpk")]);
+        string source = PristineClient(), client = Path.Combine(root, "copy");
+        Directory.CreateDirectory(Path.Combine(source, "zones", "zone252"));
+        Assert.That(ModernClientSetup.CheckSource(source, patch), Does.Contain("ter252"));
+        File.WriteAllBytes(Path.Combine(source, "zones", "zone252", "ter252.mpk"), thidranki);
+
+        ModernClientSetup.Install(source, client, patch, null, CancellationToken.None);
+        Assert.That(File.ReadAllBytes(Path.Combine(client, "zones", "zone253", "ter253.mpk")), Is.EqualTo(abermenai));
+        Assert.That(File.Exists(Path.Combine(source, "zones", "zone253", "ter253.mpk")), Is.False);
+
+        // A copy set up by an older release has the stock file, so the new one needs no client folder.
+        File.Delete(Path.Combine(client, "zones", "zone253", "ter253.mpk"));
+        Assert.That(ModernClientSetup.NeedSource(client, patch), Is.Empty);
+        ModernClientSetup.Update(client, patch, null);
+        Assert.That(ModernClientSetup.Stale(client, patch), Is.Empty);
+    }
+
     [Test]
     public void InstallCopiesAndPatchesWithoutTouchingTheSource()
     {
@@ -95,6 +152,74 @@ public sealed class ModernClientSetupTests
         ModernClientSetup.Install(client, destination, TestPatch(), null, CancellationToken.None);
         Assert.That(ModernClientSetup.IsSetUp(profile), Is.True);
         Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(PatchedGame));
+    }
+
+    // A later release: game.dll gets one more edit than TestPatch's, and pregame/splash.mpk is patched for the first time.
+    private static readonly byte[] Splash = "stock 1.130 splash archive"u8.ToArray();
+    private static readonly byte[] PatchedSplash = "divided realms splash"u8.ToArray();
+    private static readonly byte[] NewerGame = Encoding.ASCII.GetBytes("MZ pristine GAME BYTES 0123456789+section");
+
+    private static ModernClientSetup.Patch NewerPatch() => new(1, "1.130",
+    [
+        new("game.dll", Hash(Game), Hash(NewerGame), NewerGame.Length,
+            [new(12, 10, Convert.ToBase64String("GAME BYTES"u8.ToArray())), new(Game.Length, 0, Convert.ToBase64String("+section"u8.ToArray()))]),
+        TestPatch().Files[1],
+        new("pregame/splash.mpk", Hash(Splash), Hash(PatchedSplash), PatchedSplash.Length, [new(0, Splash.Length, Convert.ToBase64String(PatchedSplash))])
+    ]);
+
+    private (string Client, string Destination) OlderReleaseCopy()
+    {
+        string client = PristineClient(), destination = Path.Combine(root, "game", "client-modern", "app");
+        File.WriteAllBytes(Path.Combine(client, "pregame", "splash.mpk"), Splash);
+        ModernClientSetup.Install(client, destination, TestPatch(), null, CancellationToken.None);
+        return (client, destination);
+    }
+
+    [Test]
+    public void SetupRemembersThePlayersClientFolder()
+    {
+        var (client, destination) = OlderReleaseCopy();
+        Assert.That(ModernClientSetup.RememberedSource(destination), Is.EqualTo(Path.GetFullPath(client)));
+        Assert.That(ModernClientSetup.Stale(destination, TestPatch()), Is.Empty, "a fresh setup matches its own release");
+    }
+
+    [Test]
+    public void ANewerReleasePatchesTheOlderCopyAgainFromTheRememberedClient()
+    {
+        var (client, destination) = OlderReleaseCopy();
+        var patch = NewerPatch();
+        Assert.That(ModernClientSetup.Stale(destination, patch).Select(f => f.Path), Is.EqualTo(new[] { "game.dll", "pregame/splash.mpk" }));
+        Assert.That(ModernClientSetup.NeedSource(destination, patch).Select(f => f.Path), Is.EqualTo(new[] { "game.dll" }),
+            "the copy's splash is still the stock one, but its game.dll holds the older patch");
+
+        ModernClientSetup.Update(destination, patch, ModernClientSetup.RememberedSource(destination));
+        Assert.That(ModernClientSetup.Stale(destination, patch), Is.Empty);
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(NewerGame));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "pregame", "splash.mpk")), Is.EqualTo(PatchedSplash));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll.bak")), Is.EqualTo(PatchedGame), "the replaced file is kept");
+        Assert.That(File.ReadAllBytes(Path.Combine(client, "game.dll")), Is.EqualTo(Game), "the player's own client is unchanged");
+    }
+
+    [Test]
+    public void FilesStillPristineInTheCopyArePatchedWithoutTheClientFolder()
+    {
+        var (_, destination) = OlderReleaseCopy();
+        var patch = new ModernClientSetup.Patch(1, "1.130", [TestPatch().Files[0], TestPatch().Files[1], NewerPatch().Files[2]]);
+        Assert.That(ModernClientSetup.NeedSource(destination, patch), Is.Empty);
+        ModernClientSetup.Update(destination, patch, null);
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "pregame", "splash.mpk")), Is.EqualTo(PatchedSplash));
+    }
+
+    [Test]
+    public void AnUpdateWithoutAPristineClientChangesNothing()
+    {
+        var (client, destination) = OlderReleaseCopy();
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Update(destination, NewerPatch(), null));
+        File.WriteAllText(Path.Combine(client, "game.dll"), "a newer client");
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Update(destination, NewerPatch(), client));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(PatchedGame));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "pregame", "splash.mpk")), Is.EqualTo(Splash),
+            "the splash, which could have been patched, waits until every file can be");
     }
 
     [Test]
