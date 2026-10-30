@@ -8,9 +8,9 @@ Divided Realms is a free, single-player Dark Age of Camelot world that runs on y
 **original retail 1.130 client**, every modern class and race, and a world full of bots that level, talk, raid and
 siege whether or not you log in. Bring friends along if you like: one of you hosts, the others join.
 
-> **[Download the latest test build (0.38-dev7)](https://github.com/rambodolphin13/OfflineDAoC/releases/tag/v0.38-dev7-modern-test)**
-> · [All releases](https://github.com/rambodolphin13/OfflineDAoC/releases)
-> · [Report a bug](https://github.com/rambodolphin13/OfflineDAoC/issues/new/choose)
+> **[Download the latest test build (0.38-dev7)](https://github.com/rambodolphin13/DividedRealms/releases/tag/v0.38-dev7-modern-test)**
+> · [All releases](https://github.com/rambodolphin13/DividedRealms/releases)
+> · [Report a bug](https://github.com/rambodolphin13/DividedRealms/issues/new/choose)
 >
 > **We're looking for testers.** These are development builds: the automated tests pass, but a lot of the newest work
 > needs people playing it.
@@ -86,7 +86,7 @@ siege whether or not you log in. Bring friends along if you like: one of you hos
 - About 7 GB of free disk space.
 
 **Then:**
-1. Download the zip from the [latest release](https://github.com/rambodolphin13/OfflineDAoC/releases/tag/v0.38-dev7-modern-test)
+1. Download the zip from the [latest release](https://github.com/rambodolphin13/DividedRealms/releases/tag/v0.38-dev7-modern-test)
    and extract it.
 2. Double-click **START DIVIDED REALMS.cmd**. The launcher asks for your DAoC folder, copies the client and patches the
    copy. **Your own install is not changed.**
@@ -99,7 +99,7 @@ The full guide is [docs/PLAY-MODERN-TEST.md](docs/PLAY-MODERN-TEST.md).
 
 ## Found a bug?
 
-Please [open a bug report](https://github.com/rambodolphin13/OfflineDAoC/issues/new/choose). The form asks for your
+Please [open a bug report](https://github.com/rambodolphin13/DividedRealms/issues/new/choose). The form asks for your
 build, class, level, realm and zone, and what you saw. Logs from `runtime\server\logs` help a lot.
 
 Not tested yet, so especially welcome:
