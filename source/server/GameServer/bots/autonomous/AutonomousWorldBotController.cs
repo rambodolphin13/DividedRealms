@@ -4942,6 +4942,16 @@ namespace DOL.GS
                          $"destination={(int)destination.X},{(int)destination.Y},{(int)destination.Z} " +
                          $"failedDestination={(int)failedDestination.X},{(int)failedDestination.Y},{(int)failedDestination.Z} " +
                          $"pathStatus={failureStatus} reason=\"three verified local recovery attempts failed; selecting a new goal\"");
+                // Gave up close to a zone crossing it was walking to: three bots doing so bench it for the zone planner.
+                // Stopping far from it says nothing about the crossing, only about something on the way.
+                if (_resolvedBoundaryStep is { } crossing &&
+                    Vector2.DistanceSquared(new(failedDestination.X, failedDestination.Y), new(crossing.Inside.X, crossing.Inside.Y)) <= 160 * 160 &&
+                    Vector2.DistanceSquared(new(current.X, current.Y), new(crossing.Inside.X, crossing.Inside.Y)) <= 1_000 * 1_000 &&
+                    AutonomousSeamCrossingQuarantine.ReportFailure(bot.CurrentRegionID, crossing.Inside, bot.DatabaseID))
+                    Log.Warn($"AUTONOMOUS_SEAM_CROSSING_QUARANTINE region={bot.CurrentRegionID} zone={_resolvedBoundaryZone?.ID} " +
+                             $"crossing={(int)crossing.Inside.X},{(int)crossing.Inside.Y},{(int)crossing.Inside.Z}>{(int)crossing.Outside.X},{(int)crossing.Outside.Y} " +
+                             $"bots={AutonomousSeamCrossingQuarantine.DistinctBotsToQuarantine} hours={AutonomousSeamCrossingQuarantine.QuarantineDuration.TotalHours:0} " +
+                             $"stuckAt={bot.X},{bot.Y},{bot.Z}");
                 NoteRouteGiveUp(bot, destination, failedDestination);
                 RejectPendingBoarding(bot, "The boarding approach exhausted collision-safe recovery");
                 // Service and trainer interiors in the installed client meshes
