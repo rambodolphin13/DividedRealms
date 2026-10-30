@@ -270,6 +270,8 @@ namespace DOL.GS
         /// passes no other monster's aggro) instead of waiting out the replan beside it
         /// (AutonomousRouteThreatPolicy.RetreatClearance, PackRetreat). Every attempt is logged as AUTONOMOUS_ROUTE_RETREAT.
         /// </summary>
+        private const int RetreatFloorSearch = 1536;
+
         private void BackAwayFrom(GameBot bot, IPathfindingMgr nav, Zone zone, GameNPC threat, GameNPC[] pack, int margin,
             GameNPC[] others)
         {
@@ -288,7 +290,11 @@ namespace DOL.GS
                                       AutonomousRouteThreatPolicy.DistanceToSegment(here, candidate, new(npc.X, npc.Y)) <
                                       mob.AggroRange + margin))
                     continue;
-                if (!AutonomousNavigationSurface.TryFloor(nav, zone, new(candidate.X, candidate.Y, bot.Z), out Vector3 floor) ||
+                // The point is 1,000-1,600 units off, so its floor can be a hillside above or below the bot. The local floor
+                // check (128 up) failed every uphill point: 2,506 of 10,882 retreats on 2026-10-29 found no way out, most
+                // in Gripklosa Mountains and Vigilant Rock, and those bots died three times as often as the ones that left.
+                Vector3? found = nav.GetClosestPoint(zone, new(candidate.X, candidate.Y, bot.Z), 64, 64, RetreatFloorSearch, nav.DefaultFilters);
+                if (found is not { } floor || Vector2.DistanceSquared(new(floor.X, floor.Y), candidate) > 96 * 96 ||
                     !AutonomousZoneItinerary.HasCompleteCorridor(nav, zone, start, floor))
                     continue;
                 bot.PathTo(floor, bot.MaxSpeed);

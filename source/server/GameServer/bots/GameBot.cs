@@ -1793,26 +1793,38 @@ namespace DOL.GS
             if (experienceGained <= 0)
                 return;
 
-            long previousExperience = Experience;
-            byte previousLevel = Level;
-            Experience += experienceGained;
-            AutonomousStuckWatchdog.MarkProgress(this, eAutonomousProgressKind.Experience);
+            long previousExperience;
+            byte previousLevel;
             bool leveled = false;
-            while (Level < MaxLevel && Experience >= GamePlayer.GetExperienceAmountForLevel(Level))
+            // The reaper handles deaths in parallel: two kills in one tick both levelled the same bot and rebuilt its
+            // spell lists at once, and one rebuild read a list the other had just cleared (NullReferenceException in
+            // SortSpells, 2026-10-29 21:08).
+            lock (_experienceLock)
             {
-                Level++;
-                ApplyLevelStatGrowth(Level);
-                leveled = true;
+                previousExperience = Experience;
+                previousLevel = Level;
+                Experience += experienceGained;
+                while (Level < MaxLevel && Experience >= GamePlayer.GetExperienceAmountForLevel(Level))
+                {
+                    Level++;
+                    ApplyLevelStatGrowth(Level);
+                    leveled = true;
+                }
+
+                if (leveled)
+                {
+                    // New specialization points remain unspent until the bot chooses
+                    // to reach and interact with its real class trainer.
+                    RefreshSpecDependantSkills(false);
+                    SetBotSpells();
+                    SortStyles();
+                    SortSpells();
+                }
             }
+            AutonomousStuckWatchdog.MarkProgress(this, eAutonomousProgressKind.Experience);
 
             if (leveled)
             {
-                // New specialization points remain unspent until the bot chooses
-                // to reach and interact with its real class trainer.
-                RefreshSpecDependantSkills(false);
-                SetBotSpells();
-                SortStyles();
-                SortSpells();
                 Health = MaxHealth;
                 Mana = MaxMana;
                 Endurance = MaxEndurance;
@@ -2059,6 +2071,7 @@ namespace DOL.GS
         public int PowerCost(Spell spell) => BotSpellPower.Cost(this, spell, null);
 
         private Dictionary<int, SpellLine> _powerSpellLines = new();
+        private readonly object _experienceLock = new();
 
         // Combat still uses its existing dispatch line (no damage/spec behavior
         // changes). Power alone resolves the learned line for staff focus. The

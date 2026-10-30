@@ -363,11 +363,21 @@ namespace DOL.GS
                 var reaches = new Dictionary<int, bool>();
                 var reachesMain = new Dictionary<int, bool?>();
                 var picks = new List<(float Score, SeamStep First, SeamStep? Second)>();
+                bool? ReachesMain(int area) => reachesMain.TryGetValue(area, out bool? known) ? known
+                    : reachesMain[area] = ChainReachesMain(topology, route, area);
                 foreach (SeamStep[] group in areas)
                 {
+                    // Within one near-side area, crossings onto ground that reaches the destination's main area come first:
+                    // all of Black Mountains North's crossings into Snowdonia start on its main ground, and the two nearest
+                    // land on a ridge that only turns back, so Albion bots went Black Mtns North > Snowdonia > back for
+                    // Pennine camps (2026-10-30: 2,399 goals, 574 bots at 544160,368576).
+                    // Only when passing through: a camp in the next zone may stand on ground apart from its main area.
+                    bool anyMain = !Contains(edge.To, goal) && group.Any(s => ReachesMain(s.OutsideArea) == true &&
+                        (reaches.TryGetValue(s.OutsideArea, out bool ok) ? ok : reaches[s.OutsideArea] = ChainContinues(topology, route, s.OutsideArea)));
                     SeamStep? best = null, next = null; float bestScore = float.MaxValue, nextScore = float.MaxValue;
                     foreach (SeamStep s in group)
                     {
+                        if (anyMain && ReachesMain(s.OutsideArea) == false) continue;
                         if (!(reaches.TryGetValue(s.OutsideArea, out bool known) ? known
                                 : reaches[s.OutsideArea] = ChainContinues(topology, route, s.OutsideArea))) continue;
                         float score = Vector3.DistanceSquared(start, s.Step.Inside) + Vector3.DistanceSquared(s.Step.Outside, goal);
