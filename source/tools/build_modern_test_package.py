@@ -1,6 +1,6 @@
 """Build the public modern-test package: this fork's game for the original 1.130 client, without any retail file.
 
-    python build_modern_test_package.py --install <artifacts/modern-client-test> --pristine <pristine 1.130 client>
+    python build_modern_test_package.py --install <artifacts/modern-client-test> --pristine <pristine 1.130 client> --classic <classic client>
                                         --repo <this repository> --out <new package folder>
                                         --label "<version> modern test" [--zip]
 
@@ -197,7 +197,7 @@ def check_package(out: Path, pristine: Path):
     assert not binary, f'binaries naming the developer: {binary[:20]}'
 
 
-def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> dict:
+def build(install: Path, pristine: Path, classic: Path, repo: Path, out: Path, label: str) -> dict:
     if out.exists():
         raise SystemExit(f'{out} exists; refusing to overwrite a package folder')
     with socket.socket() as probe:
@@ -222,7 +222,7 @@ def build(install: Path, pristine: Path, repo: Path, out: Path, label: str) -> d
     defaults = json.loads((repo / 'source/tools/release-world-defaults.json').read_text(encoding='utf-8'))
 
     print('Making the client patch from the pristine client...', flush=True)
-    patch = make_client_patch.build(pristine)
+    patch = make_client_patch.build(pristine, classic)
     game = next(f for f in patch['Files'] if f['Path'] == 'game.dll')
     if game['OutputSha256'].lower() != installed_profile['GameSha256'].lower():
         raise SystemExit('The client patch does not rebuild the client the test install runs')
@@ -322,13 +322,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--install', type=Path, required=True)
     parser.add_argument('--pristine', type=Path, required=True)
+    parser.add_argument('--classic', type=Path, required=True, help='classic client folder with zones/zone276 (only read)')
     parser.add_argument('--repo', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--label', default='0.38-dev modern test')
     parser.add_argument('--zip', action='store_true')
     args = parser.parse_args()
     out = args.out.resolve()
-    report = build(args.install.resolve(), args.pristine.resolve(), args.repo.resolve(), out, args.label)
+    report = build(args.install.resolve(), args.pristine.resolve(), args.classic.resolve(), args.repo.resolve(), out, args.label)
     (out.parent / (out.name + '-build-report.json')).write_text(json.dumps(report, indent=2), encoding='utf-8')
     if args.zip:
         print('Zipping...', flush=True)

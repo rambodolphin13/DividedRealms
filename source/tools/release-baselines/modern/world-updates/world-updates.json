@@ -36,6 +36,12 @@
    "From": "0.38-dev6",
    "File": "world-0.38-dev7.json",
    "Sha256": "6B998C10D86225AA457B520265D875C54232C934BED6489306D2C5E8D275B618"
+  },
+  {
+   "Version": "0.38-dev8",
+   "From": "0.38-dev7",
+   "File": "world-0.38-dev8.json",
+   "Sha256": "79B7829DFDC9FE3CDA1FDADBB3E715F9108D98AB565A1E54944DABF3F812EBCE"
   }
  ]
 }

@@ -105,6 +105,15 @@ Rollback (close the client first; preview without `--apply`):
 python source/tools/modern_world_overlay.py rollback artifacts/modern-client-test/runtime/client-modern/app artifacts/modern-client-test/backups/world-overlay-20261026-180051-287487 --apply
 ```
 
+### What a release client gets (October 30, 2026)
+
+The zone-table overlay above went only to the local test client, so release players on their own 1.130 client could not
+enter regions 246, 248, 250-253 and 276. `make_client_patch.py` now patches their copy: `zones/zones.mpk` keeps the whole
+stock table, with zones 250-252 moved to regions 250-252 and the missing sections added, and `ter253.mpk`/`lod253.mpk` are
+made from the client's own zone 252. Marfach Caverns (region 276: 47 NPCs, 6 entrances) needs `dat276.mpk` and its
+`sounds.dat`, which 1.130 lacks and can't make: no stock dungeon shares a placement with it. By the owner's decision the
+patch carries those two files, read from the classic client at build time (`--classic`). Its models are stock.
+
 ## Fix B: move the server to live's world
 
 **Work:**

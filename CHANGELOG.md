@@ -5,6 +5,12 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 / 0.38b / 0.38c (not released yet)
 
+- Modern test builds: the four battlegrounds, Dodens Gruva, Summoner's Hall and Marfach Caverns load on a player's own 1.130 client.
+  The stock client's zone table had none of these regions, and client setup never added them, so going there dropped
+  the player to character select or out of bounds. The launcher now adds them to its client copy, and builds Abermenai's
+  terrain from the client's own Thidranki files. Marfach's map isn't in 1.130, so the client patch carries it. An
+  existing copy is patched on the next start.
+
 0.37 / 0.37b / 0.37c is the latest release.
 
 **Bots and raids**
