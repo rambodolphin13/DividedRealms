@@ -68,6 +68,15 @@ internal static class Program
             return;
         }
         ApplicationConfiguration.Initialize();
+        Application.ThreadException += (_, e) =>
+        {
+            // A known WinForms bug: a tooltip timer fires for a tool that was just replaced. Harmless, so no crash box.
+            if (e.Exception is KeyNotFoundException && e.Exception.StackTrace?.Contains("KeyboardToolTipStateMachine") == true)
+                return;
+            using ThreadExceptionDialog dialog = new(e.Exception);
+            if (dialog.ShowDialog() == DialogResult.Abort)
+                Application.Exit();
+        };
         if (args.Length == 1 && args[0] == "--join")
         {
             // Join Friend.cmd: client only. No dashboard, no local server, no local save.

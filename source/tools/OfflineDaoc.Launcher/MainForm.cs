@@ -111,6 +111,7 @@ internal sealed partial class MainForm : Form
         ReshowDelay = 100,
         ShowAlways = true,
     };
+    private string? _performanceTip;
     private readonly DataGridView _grid = new();
     private readonly DataGridView _auctionGrid = new();
     private readonly BindingSource _rvrSource = new();
@@ -1373,9 +1374,16 @@ internal sealed partial class MainForm : Form
             _midgardValue.Text = RealmRosterValue(snapshot.Bots, "Midgard");
             _hiberniaValue.Text = RealmRosterValue(snapshot.Bots, "Hibernia");
             _performanceValue.Text = snapshot.BotAiDelay is { } aiDelay ? $"{aiDelay.AverageMs:0.0} ms" : "—";
-            _helpTip.SetToolTip(_performanceValue, snapshot.BotAiDelay is { } aiPeak
+            // Only when the text changed: re-setting a tooltip on every refresh while the pointer is on it trips a
+            // WinForms keyboard-tooltip state machine bug (KeyNotFoundException, 2026-10-30).
+            string performanceTip = snapshot.BotAiDelay is { } aiPeak
                 ? $"{PerformanceHelp}{Environment.NewLine}Last minute: average {aiPeak.AverageMs:0.0} ms, slowest {aiPeak.PeakMs:N0} ms over {aiPeak.Samples:N0} ticks."
-                : $"{PerformanceHelp}{Environment.NewLine}Shown about a minute after the server starts.");
+                : $"{PerformanceHelp}{Environment.NewLine}Shown about a minute after the server starts.";
+            if (performanceTip != _performanceTip)
+            {
+                _performanceTip = performanceTip;
+                _helpTip.SetToolTip(_performanceValue, performanceTip);
+            }
             _startButton.Enabled = !_resettingKeepsRelics && !_savingXpRates && !_stoppingServer && snapshot.ServerState == "Stopped" && File.Exists(_serverExecutable);
             _resetKeepsRelics.Enabled = !_resettingKeepsRelics && !_savingXpRates && snapshot.ServerState == "Stopped" && BotGoalsServerStopped();
             _stopButton.Enabled = !_stoppingServer && snapshot.ServerState is "Running" or "Starting";
