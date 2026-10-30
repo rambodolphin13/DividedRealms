@@ -38,10 +38,31 @@ static func on_main_thread() -> bool:
 	return OS.get_thread_caller_id() == OS.get_main_thread_id()
 
 
+## A thread the main thread is waiting for this very frame: the scene tree's sub-thread process groups (AnimLod's
+## posing threads run NPC / bot views' _process as WorkerThreadPool group tasks the main thread waits on). A step
+## queued from there would never run - the main thread can't pump while it waits for this thread (2026-10-30: a live
+## login hung for good after Tir na Nog loaded). Such a caller runs its step itself; where it happens is reported once
+## per place so the caller can be moved to the main thread.
+static var _reported := {}
+
+
+static func _main_waits_on_me() -> bool:
+	if WorkerThreadPool.get_caller_group_id() < 0:
+		return false
+	var where := ""
+	for f in get_stack():
+		where += "%s:%d %s | " % [String(f.source).get_file(), int(f.line), String(f.function)]
+	if not _reported.has(where):
+		_reported[where] = true
+		push_warning("[gpujobs] a step asked from a process-group thread (run there, not queued): " + where)
+	return true
+
+
 ## The callable's result, run on the main thread (now, when called from it).
 static func run(c: Callable, label := "") -> Variant:
-	if on_main_thread() or _closing:
+	if on_main_thread() or _closing or _main_waits_on_me():
 		return c.call()
+	_wait_begin(label)
 	var result := [null]
 	var done := [false]
 	_mutex.lock()
@@ -68,8 +89,10 @@ static func run(c: Callable, label := "") -> Variant:
 				_queue.remove_at(mine)
 			_mutex.unlock()
 			if mine >= 0:
+				_wait_end()
 				return c.call()
 		OS.delay_usec(250)
+	_wait_end()
 	return result[0]
 
 
@@ -81,11 +104,9 @@ static func run(c: Callable, label := "") -> Variant:
 static func ready_materials(mats: Array) -> void:
 	if mats.is_empty():
 		return
-	# a StandardMaterial3D's shader compiled here, on the calling thread (BaseMaterial3D.get_shader_rid(): the shader
-	# only - Godot's shader map is built for workers to do this): on the main thread each compile cost ~20 ms
-	for m in mats:
-		if m is BaseMaterial3D:
-			(m as BaseMaterial3D).get_shader_rid()
+	# (owner 2026-10-29: the client froze at login and in Keltoi Fogou - a call here to BaseMaterial3D.get_shader_rid(),
+	# which GDScript doesn't have, raised a script error that skipped the steps below for every NPC, armour, weapon and
+	# helm model: their materials were made on the workers again, the /tc freeze's race. Removed.)
 	# a few a step, so the pump's per-frame budget spreads a zone's hundreds over frames (64 terrain patches and a
 	# zone's model materials made in one step took 40 ms of a frame)
 	var steps: Array = []
@@ -106,10 +127,11 @@ static func ready_materials(mats: Array) -> void:
 static func run_all(steps: Array, label := "") -> void:
 	if steps.is_empty():
 		return
-	if on_main_thread() or _closing:
+	if on_main_thread() or _closing or _main_waits_on_me():
 		for c in steps:
 			(c as Callable).call()
 		return
+	_wait_begin(label)
 	var dones: Array = []
 	_mutex.lock()
 	for c in steps:
@@ -140,6 +162,7 @@ static func run_all(steps: Array, label := "") -> void:
 			(steps[i] as Callable).call()
 			(dones[i] as Array)[0] = true
 		if left.size() == mine.size():
+			_wait_end()
 			return
 		OS.delay_usec(250)
 
@@ -167,6 +190,37 @@ static func pump(budget_usec := BUDGET_USEC) -> void:
 			return
 
 
+## Background work that may wait on these steps goes on a thread of its own, never on the WorkerThreadPool
+## (2026-10-30, the login freezes): the pool keeps only ~30% of its threads for low-priority tasks; a few of ours
+## waiting here took them all, and the main thread, inside an engine call that queued a low-priority pool task of its
+## own and waited for it, could never pump the steps they waited for. Effect prefetch, NPC-view preparation and zone
+## building all run this way.
+static func start_job(c: Callable) -> Thread:
+	var t := Thread.new()
+	t.start(c)
+	return t
+
+
+static func job_done(t: Thread) -> bool:
+	return t == null or not t.is_alive()
+
+
+## The job's thread joined (it must have ended: job_done) - returns its result.
+static func finish_job(t: Thread) -> Variant:
+	return t.wait_to_finish() if t and t.is_started() else null
+
+
+## Waits for a job on the main thread, running the steps it may wait on (a zone change / quit while it works).
+static func wait_job(t: Thread) -> Variant:
+	if t == null or not t.is_started():
+		return null
+	while t.is_alive():
+		if on_main_thread():
+			pump(1000000)
+		OS.delay_usec(200)
+	return t.wait_to_finish()
+
+
 ## A worker task finished, on the main thread - queued GPU steps keep running meanwhile.
 static func wait_task(task: int) -> void:
 	while not WorkerThreadPool.is_task_completed(task):
@@ -188,9 +242,70 @@ static func _install() -> void:
 
 
 func _process(_delta: float) -> void:
+	_beat = Time.get_ticks_msec()
 	pump()
 
 
+func _ready() -> void:
+	_beat = Time.get_ticks_msec()
+	if _watch == null:
+		_watch = Thread.new()
+		_watch.start(_watchdog)
+
+
+# ---------------------------------------------------------------- the freeze watchdog (2026-10-30)
+# A live login hung for good after Tir na Nog loaded (no CPU, "Not Responding"), now and then. When the main thread
+# hasn't run a frame for 8 s this prints, once a stall, what every worker is waiting on here (its step's label and
+# where it asked from) and how many steps are queued - godot.log then shows whether the main thread was waiting on
+# a worker that was waiting on it.
+static var _beat := 0
+static var _watch: Thread
+static var _waiting := {}                     # thread id -> "label @ where" while it waits on a queued step
+
+
+static func _wait_begin(label: String) -> void:
+	var where := ""
+	for f in get_stack():
+		where += "%s:%d %s | " % [String(f.source).get_file(), int(f.line), String(f.function)]
+	_mutex.lock()
+	_waiting[OS.get_thread_caller_id()] = "%s @ %s" % [label, where]
+	_mutex.unlock()
+
+
+static func _wait_end() -> void:
+	_mutex.lock()
+	_waiting.erase(OS.get_thread_caller_id())
+	_mutex.unlock()
+
+
+func _watchdog() -> void:
+	var reported := false
+	while not _closing:
+		OS.delay_msec(1000)
+		var stall := Time.get_ticks_msec() - _beat
+		if stall < 8000:
+			reported = false
+			continue
+		if reported:
+			continue
+		reported = true
+		_mutex.lock()
+		var lines: Array = _waiting.values()
+		var queued := _queue.size()
+		_mutex.unlock()
+		print("[watchdog] main thread stalled %.1f s; %d GPU steps queued; %d workers waiting on one:" % [stall / 1000.0, queued, lines.size()])
+		for l in lines:
+			print("[watchdog]   ", l)
+
+
 func _exit_tree() -> void:                         # quitting: what is queued runs now, later steps on their workers
+	# no more frames drawn first (2026-10-29, a live test quit while NPC views were still loading: "Parameter
+	# 'material' is null" x4, then a crash): from here the workers make their own materials, and with a frame being
+	# drawn that is the very race GpuJobs exists for. Nothing is shown after quitting anyway.
+	RenderingServer.render_loop_enabled = false
 	_closing = true
 	pump(1000000)
+	NifScene.stop_prefetch()
+	if _watch and _watch.is_started():
+		_watch.wait_to_finish()
+		_watch = null

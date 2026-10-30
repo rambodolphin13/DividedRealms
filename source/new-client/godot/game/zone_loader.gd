@@ -291,6 +291,7 @@ func _bind_splat(mat: ShaderMaterial) -> void:
 		tiles.append(float(l.tiles))
 		tileable.append(1.0 if l.tileable else 0.0)
 	mat.set_shader_parameter("layer_tex", texs)
+	mat.set_shader_parameter("layer_tex_clamped", texs)        # (the whole-zone layers: no wrap at the borders)
 	mat.set_shader_parameter("layer_tiles", tiles)
 	mat.set_shader_parameter("layer_tileable", tileable)
 	mat.set_shader_parameter("layer_count", mini(layers.size() - 1, 8))
@@ -597,6 +598,12 @@ func _build_fixtures() -> void:
 			cells[c].append(i)
 		var size := _parts_radius(parts) * 2.0 if not parts.meshes.is_empty() else 2.0
 		var far := clampf(VIEW_RANGE_PER_M * size, VIEW_RANGE_MIN_M, VIEW_RANGE_MAX_M)
+		# the server's world objects baked in (items/...: banners, pennants, barrels) end at the original's far plane,
+		# the region's fog clip (game.dll sets the camera's far to it). A tower's 40 m pennant got the 900 m range of
+		# its height and hung over the treeline from far beyond what the client drew, its pole too thin to see and
+		# the tower hidden by the ridge (owner 2026-10-29: "floating banner at salisbury plains")
+		if str(model.get("nif", "")).begins_with("items/") and info.has("fog"):
+			far = minf(far, maxf(SkySystem.region_fog_clip(self), VIEW_RANGE_MIN_M))
 		if model.has("effect_range_m"):
 			far = float(model.effect_range_m)            # moneffects.csv max visible range
 		if not parts.particles.is_empty():              # fires, smoke, glows: the NIF's own particle systems

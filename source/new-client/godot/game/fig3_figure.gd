@@ -81,6 +81,7 @@ static func pack_helm(path: String) -> PackedScene:
 	var st := GLTFState.new()
 	if doc.append_from_file(ProjectSettings.globalize_path(path), st) != OK:
 		return null
+	CacheTrim.share_textures(st, path)                   # (one copy of each texture file across all helms)
 	GpuJobs.ready_materials(Array(st.get_materials()))  # (made on the main thread: helms are prepared on a worker)
 	var scene := doc.generate_scene(st)
 	var packed := PackedScene.new()
@@ -150,6 +151,7 @@ func load_figure(prefix: String, texture_set := "x4plus") -> bool:
 			push_warning("figure missing: " + prefix)
 			return false
 	model = (_scenes[prefix] as PackedScene).instantiate() as Node3D
+	CacheTrim.track("figure", prefix, model)
 	add_child(model)
 	for node in model.find_children("*", "MeshInstance3D", true, false):
 		var part := String(node.name).get_slice("__", 0)    # a part's extra shapes are named <part>__1, __2 ...
@@ -391,6 +393,7 @@ func set_helm(model: int, hidden := false, color := 0) -> void:
 				at.bone_name = bone
 				skel.add_child(at)
 				var h := ps.instantiate() as Node3D
+				CacheTrim.track("helm", path, h)
 				for c in h.find_children("collision*", "", true, false):
 					c.queue_free()
 				# the mesh as the NIF places it under the helmet node, shape offset included (owner 2026-10-11: undoing the
@@ -404,10 +407,8 @@ func set_helm(model: int, hidden := false, color := 0) -> void:
 					if dyed != Color.WHITE and mesh_i.mesh:
 						for si in mesh_i.mesh.get_surface_count():
 							var mat := mesh_i.get_active_material(si)
-							if mat is BaseMaterial3D:
-								var m2 := (mat as BaseMaterial3D).duplicate() as BaseMaterial3D
-								m2.albedo_color = m2.albedo_color * dyed
-								mesh_i.set_surface_override_material(si, m2)
+							if mat is BaseMaterial3D:                 # (one shared dyed copy: WeaponModels.dyed_material)
+								mesh_i.set_surface_override_material(si, WeaponModels.dyed_material(mat, dyed))
 				_helm = at
 				_helm_hair = int(e.get("hair", 0))
 	_refresh_hair()
@@ -638,7 +639,9 @@ func _blend(mi: MeshInstance3D, target: String, w: float) -> void:
 func _tex(base: String) -> Texture2D:
 	var key := base.to_lower()
 	if _tex_cache.has(_texture_dir + key):
-		return _tex_cache[_texture_dir + key]
+		CacheTrim.touch("figtex", _texture_dir + key)
+		_textures[key] = _tex_cache[_texture_dir + key]          # (held by this figure: CacheTrim keeps it while it lives)
+		return _textures[key]
 	if not _textures.has(key):
 		_textures[key] = load_texture(_texture_dir, key)
 		if _textures[key] == null:

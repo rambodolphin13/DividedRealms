@@ -64,6 +64,17 @@ CAST_SLOTS = ['Cast Start', 'Cast Mid', 'Cast End', '1H Circ Start', '1H Circ Mi
               'Z Start', 'Z Mid', 'Z End']                  # (no instrument poses: pets never play songs)
 
 
+_ANIMS = None
+
+
+def anim_files():
+    """The client's animation files (lower-case names)."""
+    global _ANIMS
+    if _ANIMS is None:
+        _ANIMS = {p.name.lower() for p in (CLIENT / 'anims').iterdir()}
+    return _ANIMS
+
+
 def cast_clips(anim_set, clips):
     """The anim set's casting clips added to `clips` (deduplicated by kfa file); returns {style clip name: clip}."""
     from build_races import cast_clip
@@ -570,6 +581,13 @@ def main():
                     if v[0].lower() not in kfas:
                         clips[WEAPON_CLIPS[k]] = v
                         kfas.add(v[0].lower())
+            # a clip whose .kfa the client doesn't ship is left out (owner 2026-10-29, grindylows invisible: model 923
+            # "On Stomach Legless Zombie 1", anim set 136 names ZomW_run1.kfa - only ZomW_run.kfa exists - and the
+            # missing file failed the whole model; the client draws it without the clip, NPCs walk instead of run)
+            for c, v in list(clips.items()):
+                if str(v[0]).lower() not in anim_files():
+                    print(model, mr[1], 'clip', c, v[0], 'not in the client: left out')
+                    clips.pop(c)
             built_cast[key] = cast_clips(nr[3], clips) if nr[3].strip().isdigit() else {}
             try:
                 try:
@@ -588,8 +606,8 @@ def main():
                     built_cast[key] = {}
                     report = nc.build(nif_name, parts, clips, str(d / 'model.gltf'), 'textures/original', file_bind=True)
             except Exception as e:
-                print(model, mr[1], 'BUILD FAILED', type(e).__name__, e)
-                entry['missing'] = f'build failed: {e}'
+                print(model, mr[1], 'BUILD FAILED', type(e).__name__, repr(e))
+                entry['missing'] = f'build failed: {type(e).__name__} {e}'
                 out_meta[model] = entry
                 continue
             write_look_textures(model, looks, idx, d)

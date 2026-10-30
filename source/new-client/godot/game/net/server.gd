@@ -133,6 +133,8 @@ func _on_raw(code: int, data: PackedByteArray) -> void:
 		conc_list = _read_conc(data)
 	elif code == 0xC5 or code == 0xC6:                   # AddFriend / RemoveFriend: your friends online
 		_friends_packet(code == 0xC5, data)
+	elif code == 0xF3 and data.size() >= 4:              # TimerWindow (PacketLib168 2505): crafting, salvage, repair
+		_timer_packet(data)
 	elif code == 0x92 and data.size() >= 14:             # Weather (PacketLib168): the region's storm
 		weather = {"x": _be32(data, 0), "width": _be32(data, 4),
 				"fog": _be16(data, 8), "speed": _be16(data, 10), "intensity": _be16(data, 12),
@@ -490,6 +492,8 @@ func _save_looks() -> void:
 ## PLAY: the server loads the character and puts it in the world; the zone loads when its position arrives.
 func enter_world(c: Dictionary) -> void:
 	max_speed_pct = 100
+	companion_defensive = false                           # (the server's stance starts aggressive at every login)
+	model_types = {}
 	game_time_ms = -1                                     # (a fresh login waits for the server's own time)
 	_friends_listed = false
 	friends_online = []
@@ -563,6 +567,8 @@ func _on_world_inner(kind: String, d: Dictionary) -> void:
 				return
 		"max_speed":
 			max_speed_pct = int(d.percent)
+		"model_type":                                     # (kept: a GM is hidden at world init, before the world
+			model_types[int(d.oid)] = int(d.type)         # listens - owner 2026-10-29, the ghost was missing)
 		"time":                                           # (recorded even between worlds: a new one starts from it)
 			game_time_ms = int(d.time)
 			game_time_at = Time.get_ticks_msec()
@@ -624,6 +630,11 @@ func _on_world_inner(kind: String, d: Dictionary) -> void:
 			on_points(d)
 		"character":
 			on_character(d)
+		"craft_skills":                                   # VariousUpdate 8: your tradeskills (at world init, each gain)
+			craft_skills = {}
+			for s in d.get("skills", []):
+				craft_skills[int(s.id)] = {"points": int(s.points), "name": String(s.name)}
+			craft_changed.emit()
 		"weapon_armor":                                   # the sheet's weapon skill / damage, armor factor
 			weapon_stats = d
 			PlayerData.changed.emit()
@@ -891,6 +902,82 @@ var _lines_building: Array = []
 var _skill_icons := {}                   # content/rules/skill_icons.json (pipeline/build_skill_icons.py)
 var _model_icons := {}                   # content/items/model_icons.json (pipeline/build_model_icons.py)
 signal skills_changed
+
+
+# ---------------------------------------------------------------- crafting (owner 2026-10-30: "the crafting UI ... and
+# the crafter self repair salvage stuff")
+## Your tradeskills (VariousUpdate 8: eCraftingSkill id -> {points, name}); the primary one and its title come in
+## VariousUpdate 3 (info.craft_skill / craft_title).
+var craft_skills := {}
+signal craft_changed
+## The group's companion stance (server chat 2026-10-30, both modes): /aggressive or /defensive for the whole group, the
+## server's DebugMode 'H' op 30 on every change ([4] 1 defensive / 0 aggressive). Not saved: aggressive at login.
+var companion_defensive := false
+signal stance_changed
+var info_item_slot := -1                 # the inventory slot whose information was just asked for (its answer's buttons)
+## The server's timer window (0xF3): seconds and its text ("Currently Making: bronze dagger", "Salvaging: ...",
+## "Repairing: ..."); seconds -1 when it closes.
+signal craft_timer(seconds: int, title: String)
+var _recipes := {}
+
+
+func _timer_packet(data: PackedByteArray) -> void:
+	var secs := (data[0] << 8) | data[1]
+	var flag := data[3]                                   # 1 open, 0 close (a GM's craft opens with 0 seconds)
+	if flag == 0:
+		craft_timer.emit(-1, "")
+		return
+	var n := data[2]
+	var title := data.slice(4, mini(4 + n, data.size())).get_string_from_ascii()
+	craft_timer.emit(secs, title)
+
+
+## Make a recipe (MakeProductHandler 0xED: CraftedItem.CraftedItemID). Asked again while making one, the server
+## cancels that one instead - its only cancel.
+func craft(recipe_id: int) -> void:
+	if client:
+		client.call("Craft", recipe_id)
+
+
+## Salvage / self-repair a backpack item (DetailDisplayHandler 102 / 100), with the original client's own line first.
+func salvage(slot: int) -> void:
+	if client and slot >= 40 and slot <= 79:
+		PlayerData.message.emit("Attempting to salvage your %s." % String(ItemDb.item("srv:%d" % slot).get("name", "item")), "system")
+		_quiet_delves += 1                                # (a GM's "Delve objectType=102" debug line: not shown)
+		client.call("Detail", 102, slot)
+	else:
+		PlayerData.message.emit("You can only salvage items in your backpack!", "error")
+
+
+func self_repair(slot: int) -> void:
+	if client and slot >= 40 and slot <= 79:
+		PlayerData.message.emit("Attempting to self-repair your %s." % String(ItemDb.item("srv:%d" % slot).get("name", "item")), "system")
+		_quiet_delves += 1
+		client.call("Detail", 100, slot)
+	else:
+		PlayerData.message.emit("You can only repair items in your backpack!", "error")
+
+
+## The recipes of a realm ("alb" / "mid" / "hib") (content/crafting/recipes.json, pipeline/build_recipes.py: the
+## server's tables): trade id (string) -> [recipe].
+func recipes_for(realm: String) -> Dictionary:
+	if _recipes.is_empty():
+		var t = JSON.parse_string(FileAccess.get_file_as_string("res://content/crafting/recipes.json")) \
+				if FileAccess.file_exists("res://content/crafting/recipes.json") else null
+		_recipes = t if t is Dictionary else {"skills": {}}
+	return (_recipes.get("normal", {}) as Dictionary).get(str(REALM_IDS.get(realm, 1)), {})
+
+
+func trade_name(trade_id: int) -> String:
+	if craft_skills.has(trade_id):
+		return String(craft_skills[trade_id].name)
+	recipes_for("alb")
+	return String((_recipes.get("skills", {}) as Dictionary).get(str(trade_id), "Trade %d" % trade_id))
+
+
+## Your realm's key ("alb" / "mid" / "hib") - the character being played.
+func my_realm() -> String:
+	return String(selected.get("realm", "alb"))
 
 
 func on_skills(d: Dictionary) -> void:
@@ -1274,6 +1361,7 @@ var weight_max := -1
 var game_time_ms := -1                   # the server's last time of day (ms into the game day; Time packet), -1 none yet
 var game_time_at := 0                    # ...when it came (ticks ms)
 var day_increment := 24.0                # ...and its clock's speed (WORLD_DAY_INCREMENT)
+var model_types := {}                     # object id -> its last PlayerModelTypeChange (3 hidden, 2 seen)
 var max_speed_pct := 100                 # your last MaxSpeed (percent): kept across a region change - the server sends it
 										 # only when it changes (a skald's speed song pulses on at the same value)
 var group_members: Array = []            # the group window's members in group order (you included)
@@ -1320,13 +1408,23 @@ func on_inventory(d: Dictionary) -> void:
 		if int(d.window) == 3:
 			vault_open.emit("VAULT", VAULT_FIRST, VAULT_COUNT)
 		else:
-			vault_open.emit("ACCOUNT VAULT", CHEST_FIRST, ACCOUNT_VAULT_COUNT)
+			vault_open.emit(_house_window_title(), CHEST_FIRST, ACCOUNT_VAULT_COUNT)
 		return
 	if not chest.is_empty():
 		_listings_packet({"items": chest}, false)
 		if mine.is_empty():
 			return
 	_on_inventory_items(d, mine)
+
+
+## The HouseVault window (4) is a house vault (GameHouseVault: 100 slots, client 150-249) or the account vault
+## keeper's page: the account vault when you last right-clicked an Account Vault Keeper, else the house vault.
+func _house_window_title() -> String:
+	var v: Node = viewer()
+	var n = v.get("_interact_npc") if v else null
+	if is_instance_valid(n) and n is Node and n.get("spawn") is Dictionary 			and String(n.spawn.get("name", "")).to_lower().contains("account"):
+		return "ACCOUNT VAULT"
+	return "HOUSE VAULT"
 
 
 ## Slots no longer held (a container opened afresh: its list replaces what was there).

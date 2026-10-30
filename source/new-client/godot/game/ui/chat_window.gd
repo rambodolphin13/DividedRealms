@@ -201,6 +201,8 @@ func _client_command(text: String) -> bool:
 			PlayerData.track_requested.emit(cmd)
 		"realmwar", "rw":
 			PlayerData.window_toggle.emit("warmap")
+		"craft" when Server.active and rest == "":       # the tradeskill window (the original's own /craft;
+			PlayerData.window_toggle.emit("craft")         # owner 2026-10-30)
 		"qbar":
 			var ui := get_parent().get_parent() as GameUI
 			var args := rest.split(" ", false)

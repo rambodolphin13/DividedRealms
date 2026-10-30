@@ -11,8 +11,8 @@ Every texture slot a shape uses (base, dark, detail, decal, glow, gloss) is expo
 become TEXCOORD_0..3 and the full material lives in the glTF's extras.nif_materials (materials are named
 "nifmat:<n>"), so the engine draws every layer and can swap texture sets. Layers that can't be drawn yet (bump /
 environment maps) come back as warnings instead of disappearing.
-Collision follows the client (game.dll 0x45f865 + 0x483ac6): the FIRST node, depth-first, named exactly "collidee"
-(any case) holds the model's wall geometry. The client hides that subtree and tests its triangles; it is exported as
+Collision follows the client (game.dll 0x482ba5): EVERY node named "collidee" (any case) outside the door groups
+holds wall geometry (find_collidees; until 2026-10-29 only the first, which lost 59 models' walls). The client hides that subtree and tests its triangles; it is exported as
 hidden "collision_<n>" nodes, textured or not. Door leaves carry their own "collideeNN" nodes, which the door system
 handles. Other untextured, unmapped shapes are hidden and are not walls.
 """
@@ -259,6 +259,35 @@ def find_collidee(nif):
     return None, None
 
 
+def find_collidees(nif):
+    """[(node, parent world matrix)] of every wall node: each node named exactly 'collidee' (any case), depth-first,
+    outside the door groups and leaves (their collision is the door system's). The client marks every such node
+    triangle-tested and hides it (game.dll 0x482ba5 from 0x478749: an 8-character case-insensitive compare with
+    "collidee" on every node, recursing into all children) - not just the first: Caer Ulfwych's tower5 has the
+    ladder's 'climb001/collidee' first and its walls in 'collisionswitch/collidee' (owner 2026-10-29: "no collision at
+    all i can just walk straight thru its walls"; 59 client NIFs had their walls after another collidee). A NIF whose
+    only collidee nodes are in doors keeps the first one, as before (and the city patches' '__patch_collidee')."""
+    out = []
+
+    def dfs(b, parent_m, in_door):
+        if b is None:
+            return
+        name = (b.get('name') or '')
+        door = in_door or bool(DOOR_GROUP.match(name) or DOOR_LEAF.match(name))
+        if name.lower() == 'collidee' and not door:
+            out.append((b, parent_m))
+            return
+        m = local_matrix(b) @ parent_m
+        for c in b.get('children') or []:
+            dfs(c, m, door)
+    for r in nif.roots:
+        dfs(r, np.identity(4), False)
+    if out:
+        return out
+    node, m = find_collidee(nif)
+    return [(node, m)] if node is not None else []
+
+
 def climb_shapes(nif):
     """[(shape, data, model matrix)] under every node whose name starts with 'climb' (not 'sclimb': the keep wall
     climb points of the later Climb Walls ability). The client makes those nodes triangle-tested collision (game.dll
@@ -297,7 +326,6 @@ def collidee_shapes(nif):
     """[(shape, data, model matrix)] under the collidee node: every shape, hidden or not (the client hides the whole
     subtree for drawing and tests it for collision)."""
     sp = spec()
-    node, parent_m = find_collidee(nif)
     out = []
 
     def walk(b, pm):
@@ -311,7 +339,7 @@ def collidee_shapes(nif):
             return
         for c in b.get('children') or []:
             walk(c, m)
-    if node is not None:
+    for node, parent_m in find_collidees(nif):
         walk(node, parent_m)
     return out
 
@@ -703,12 +731,12 @@ def collect(nif, node_anims=False):
     (effects): also the hidden shapes a NiVisController shows, tagged with their animated node."""
     sp = spec()
     shapes, doors = [], []
-    collidee, _ = find_collidee(nif)
+    collidees = {id(n) for n, _ in find_collidees(nif)}
 
     def walk(b, parent_m, inherited):
         if b is None or any(sp.is_a(b.type, t) for t in SKIP_TYPES):
             return
-        if b is collidee:                                  # walls only, never drawn (see collidee_shapes)
+        if id(b) in collidees:                             # walls only, never drawn (see collidee_shapes)
             return
         if b.get('flags', 0) & 1 and not (node_anims and _controller(b, 'NiVisController') is not None):   # hidden
             return
@@ -1372,6 +1400,7 @@ def particle_systems(nif, textures, warnings, node_anims=False):
                     'planar_angle': float(c.get('horizontal_direction', 0.0)),
                     'planar_angle_variation': float(c.get('horizontal_angle', 0.0)),
                     'emit_rate': float(c.get('emit_rate', 0.0)), 'lifetime': float(c.get('lifetime', 1.0)),
+                    'emit_flags': int(c.get('emit_flags', 0) or 0),   # bit 0: the emit rate counts (else the pool)
                     'lifetime_random': float(c.get('lifetime_random', 0.0)),
                     'box': (np.abs(np.array(_gvec(sr))) * UNITS_TO_METRES).tolist(),
                     'max_particles': int(c.get('num_particles', 0) or 0),

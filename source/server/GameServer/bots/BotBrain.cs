@@ -356,12 +356,22 @@ namespace DOL.AI.Brain
             long highestEffectiveAggro = -1;
             long highestEffectiveAggroInAttackRange = -1;
 
+            // A mesmerized or rooted monster waits while anything else is in the fight (BotBrain.CrowdControlRespect).
+            bool uncontrolledAvailable = false;
+            // The monster the player is mesmerizing, stunning or rooting is left alone even before the spell lands.
+            GameLiving leaderHeld = PlayerLedPullCoordinator.LeaderControlTarget(AssistedPlayer);
+            foreach (GameLiving candidate in AggroList.Keys)
+            {
+                if (candidate is { IsAlive: true } && !ShouldBeIgnoredFromAggroList(candidate) && !IsBreakablyControlled(candidate))
+                {
+                    uncontrolledAvailable = true;
+                    break;
+                }
+            }
+
             foreach (var pair in AggroList)
             {
                 GameLiving living = pair.Key;
-
-                if (Body.TargetObject == living)
-                    currentTarget = pair;
 
                 if (ShouldBeRemovedFromAggroList(living))
                 {
@@ -371,6 +381,13 @@ namespace DOL.AI.Brain
 
                 if (ShouldBeIgnoredFromAggroList(living))
                     continue;
+
+                if (PassOverControlled(IsBreakablyControlled(living), uncontrolledAvailable) ||
+                    living == leaderHeld)
+                    continue;
+
+                if (Body.TargetObject == living)
+                    currentTarget = pair;
 
                 AggroAmount aggroAmount = pair.Value;
                 double distance = Body.GetDistanceTo(living);
@@ -428,6 +445,11 @@ namespace DOL.AI.Brain
             }
 
             if (realTarget is IGamePlayer && realTarget.Realm != Body.Realm)
+                return true;
+
+            // An enemy keep's doors and walls are fought whatever their con (owner 2026-10-29: companions would not help
+            // the player break a battleground keep's door).
+            if (realTarget is DOL.GS.Keeps.GameKeepDoor or DOL.GS.Keeps.GameKeepComponent && realTarget.Realm != Body.Realm)
                 return true;
 
             // Evaluate the monster from the character's perspective, not the
@@ -637,6 +659,8 @@ namespace DOL.AI.Brain
         private long _nextInstrumentKitCheck;
         private long _nextNecromancerCommandTick;
         private int _activeTwistedSongId;
+        private long _songHoldUntil, _songMovingSince, _songStoppedSince;   // holding one song (owner 2026-10-30)
+        private bool _songTraveling;
         private readonly Dictionary<int, SpellLine> _knownSpellLines = new();
         private GamePlayer _subscribedAssistedPlayer;
         private GameLiving _orderedPullTarget;
@@ -1311,6 +1335,7 @@ namespace DOL.AI.Brain
             // The talking update: in the real player's group a gamebot calls the fight in /group (pull, adds, oom, wipe).
             if (BotBody?.IsAutonomousWorldBot == true && BotBody.IsPlayerLedGroup)
                 AutonomousBotCombatCalls.Observe(BotBody);
+            WatchHarmfulAura();
             BotBody?.WakeRecoveryRestIfCombatBlocked();
             BotBody?.EnsureAutonomousRecoveryTimers();
 
@@ -1388,7 +1413,9 @@ namespace DOL.AI.Brain
                 return;
             }
 
-            GameLiving leaderTarget = PlayerLedPullCoordinator.FindLeaderTarget(AssistedPlayer);
+            // The player's mesmerize, stun or root joins the fight on another monster of the pack (owner 2026-10-29).
+            GameLiving leaderTarget = PlayerLedPullCoordinator.FindLeaderTarget(AssistedPlayer) ??
+                PlayerLedPullCoordinator.FindLeaderControlFight(AssistedPlayer, BotBody);
             if (leaderTarget != null && PlayerLedPullCoordinator.Available(BotBody, AssistedPlayer) &&
                 Body.IsWithinRadius(leaderTarget, GROUP_DEFENSE_ASSIST_RADIUS))
                 AssistPlayerAttack(leaderTarget);
@@ -1898,6 +1925,19 @@ namespace DOL.AI.Brain
                 merchant.Realm != eRealm.None && merchant.Realm != bot.Realm)
                 return false;
 
+            // Darkness Falls seals buy seal gear here, paid in the bot's own seals (owner 2026-10-30).
+            if (merchant is GameDarknessFallsSealsMerchant sealMerchant &&
+                AutonomousBotEconomy.TryBuySealItem(bot, sealMerchant, out DbInventoryItem sealGear, out int sealsPaid, out bool sealUpgrade))
+            {
+                SetMerchantStatus(bot, $"Bought {sealGear.Name} from {merchant.Name}", sealUpgrade
+                    ? $"Paid {sealsPaid} looted seals for a seal gear upgrade"
+                    : $"Paid {sealsPaid} looted seals for an item to sell; no seal upgrade left to save for");
+                AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Inventory);
+                AutonomousObjectiveAssignments.TryCompleteBetweenTaskServicesIfSatisfied(bot);
+                _nextMerchantServiceTick = now + 3_000;
+                return true;
+            }
+
             if (bot.Inventory?.AllItems.Any(i=>BotSiegeRuntime.IsSupply(i.Id_nb))==true)
             {
                 int repairKits=BotSiegeRuntime.TryRestockRepairKits(bot,merchant);
@@ -2319,56 +2359,71 @@ namespace DOL.AI.Brain
                              bot.PersistentRecord?.Activity?.Contains("travel", StringComparison.OrdinalIgnoreCase) == true ||
                              bot.PersistentRecord?.Activity?.Contains("walking", StringComparison.OrdinalIgnoreCase) == true;
 
-            IEnumerable<Spell> songCandidates = (bot.MiscSpells ?? [])
+            // Hold one song for the situation, like a player (owner 2026-10-30): no twisting a second song in and out.
+            long now = GameLoop.GameLoopTime;
+            bool moving = traveling || ownerMoving;
+            if (moving)
+            {
+                if (_songMovingSince == 0) _songMovingSince = now;
+                _songStoppedSince = 0;
+            }
+            else
+            {
+                _songMovingSince = 0;
+                if (_songStoppedSince == 0) _songStoppedSince = now;
+            }
+            _songTraveling = moving
+                ? ownerMoving || now - _songMovingSince >= BotSongTwistPolicy.TravelAfterMovingMilliseconds || _songTraveling
+                : _songTraveling && now - _songStoppedSince < BotSongTwistPolicy.StayTravelingMilliseconds;
+
+            Dictionary<eSpellType, Spell> songsByType = (bot.MiscSpells ?? [])
                 .Concat(bot.InstantMiscSpells ?? [])
                 .Where(spell => spell != null && spell.IsPulsing && !spell.IsHarmful &&
-                                spell.Level <= bot.Level && IsMaintainableClassBuff(spell) &&
-                                bot.Mana >= bot.PowerCost(spell) &&
-                                (!ownerMoving || BotSongTwistPolicy.IsCompanionTravelSong(
-                                    (eCharacterClass)bot.CharacterClass.ID, spell.SpellType)))
-                .DistinctBy(spell => spell.ID)
-                .Where(spell => spell.SpellType != eSpellType.SpeedEnhancement || !immediateCombat && (traveling || groupedSupport))
-                .Where(spell => !BotSongTwistPolicy.KeepsRunning(Body, spell));
-            if (ownerMoving)
-                songCandidates = songCandidates.GroupBy(spell => spell.SpellType)
-                    .Select(group => group.OrderByDescending(spell => spell.Level)
-                        .ThenByDescending(spell => spell.Value).First());
-            List<Spell> songs = songCandidates
-                .OrderByDescending(spell => spell.SpellType == eSpellType.SpeedEnhancement && !immediateCombat)
-                .ThenByDescending(spell => groupedSupport && spell.Target is eSpellTarget.GROUP or eSpellTarget.REALM)
-                .ThenByDescending(spell => spell.Value)
-                .ThenByDescending(spell => spell.Level)
-                .ToList();
-            // Owner 2026-10-28: a Minstrel that is out of combat and on the move keeps the speed song alone, without twisting.
-            if (!immediateCombat && traveling && (eCharacterClass)bot.CharacterClass.ID == eCharacterClass.Minstrel &&
-                songs.FirstOrDefault(candidate => candidate.SpellType == eSpellType.SpeedEnhancement) is Spell speedSong)
-                songs = [speedSong];
-
-            if (songs.Count == 0)
-            {
-                // No currently affordable replacement is not a reason to cancel
-                // a still-useful native pulse (nor bypass its own power checks).
-                _nextSongTwistTick = GameLoop.GameLoopTime + 4_000;
-                return false;
-            }
+                                spell.Level <= bot.Level && IsMaintainableClassBuff(spell))
+                .GroupBy(spell => spell.SpellType)
+                .ToDictionary(group => group.Key, group => group
+                    .OrderByDescending(spell => groupedSupport && spell.Target is eSpellTarget.GROUP or eSpellTarget.REALM)
+                    .ThenByDescending(spell => spell.Level)
+                    .ThenByDescending(spell => spell.Value).First());
 
             // The real pulse may have ended from interruption or lack of power.
-            // Do not let a stale tracked ID permanently suppress its restart.
             ECSPulseEffect activePulse = Body.effectListComponent.GetPulseEffects()
                 .FirstOrDefault(effect => !effect.IsEnding && !effect.IsEnded &&
                     effect.SpellHandler?.Spell is Spell activeSpell && activeSpell.IsPulsing &&
                     !activeSpell.IsHarmful && IsMaintainableClassBuff(activeSpell));
             _activeTwistedSongId = activePulse?.SpellHandler.Spell.ID ?? 0;
-            int chosenId = BotSongTwistPolicy.Choose(songs[0].ID, _activeTwistedSongId,
-                songs.Select(candidate => new BotSongTwistPolicy.Song(candidate.ID, candidate.CastTime,
-                    bot.GetSkillDisabledDuration(candidate), SongRemainingMilliseconds(candidate))).ToArray());
-            Spell song = songs.FirstOrDefault(candidate => candidate.ID == chosenId);
+            eSpellType? activeType = activePulse?.SpellHandler.Spell.SpellType;
 
-            // Preserve the anchor. Only leave after its reuse clears and a real
-            // child pulse has enough life for the secondary and return casts.
-            if (song == null)
+            GameLiving[] audience = bot.Group?.GetMembersInTheGroup()
+                .Where(member => member.IsAlive && member.CurrentRegionID == bot.CurrentRegionID &&
+                                 bot.IsWithinRadius(member, 2000)).ToArray() ?? [bot];
+            eSpellType? wanted = BotSongTwistPolicy.PerformerHold(_songTraveling, immediateCombat,
+                audience.Any(member => Short(member, m => m.MaxMana > 0 && m.ManaPercent < 85)),
+                audience.Any(member => Short(member, m => m.HealthPercent < 85)),
+                audience.Any(member => Short(member, m => m.EndurancePercent < 85)),
+                songsByType.Keys, activeType);
+            Spell song = wanted is { } type ? songsByType[type] : null;
+            // Under live chant rules songs stay up once started, so nothing is recast: with the held song running the
+            // bot adds the others it can pay for, one at a time. Travelling keeps the speed song alone.
+            bool liveChants = DOL.GS.ServerProperties.Properties.ALLOW_MULTIPLE_CHANTS;
+            if (liveChants && (song == null || BotSongTwistPolicy.KeepsRunning(bot, song)))
+                song = _songTraveling ? null : songsByType.Values.FirstOrDefault(other =>
+                    !BotSongTwistPolicy.KeepsRunning(bot, other) && bot.Mana >= bot.PowerCost(other) &&
+                    (other.SpellType != eSpellType.SpeedEnhancement || !immediateCombat && groupedSupport));
+            if (song == null || song.ID == _activeTwistedSongId)
             {
-                _nextSongTwistTick = GameLoop.GameLoopTime + 750;
+                _nextSongTwistTick = now + (song == null ? 4_000 : 1_000);
+                return false;
+            }
+            // a held song stays at least HoldMilliseconds; starting to travel may always switch to speed
+            if (!liveChants && activePulse != null && now < _songHoldUntil && song.SpellType != eSpellType.SpeedEnhancement)
+            {
+                _nextSongTwistTick = Math.Min(_songHoldUntil, now + 1_000);
+                return false;
+            }
+            if (bot.Mana < bot.PowerCost(song) || bot.GetSkillDisabledDuration(song) > 0)
+            {
+                _nextSongTwistTick = now + 1_000;
                 return false;
             }
 
@@ -2396,6 +2451,7 @@ namespace DOL.AI.Brain
             if (cast)
             {
                 _activeTwistedSongId = song.ID;
+                _songHoldUntil = GameLoop.GameLoopTime + BotSongTwistPolicy.HoldMilliseconds;
             }
 
             // Actual casts, child lifetimes and skill reuse own the timing, not
@@ -2405,6 +2461,13 @@ namespace DOL.AI.Brain
             // Cast selectors still see the pending/active request and cannot
             // enqueue another spell; follow/route decisions may run alongside it.
             return cast && !immediateCombat && !BotSongTwistPolicy.IsMobileSong(bot, song);
+        }
+
+        // A member whose stats can't be read (not fully in the world yet) counts as short of nothing.
+        private static bool Short(GameLiving member, Func<GameLiving, bool> test)
+        {
+            try { return test(member); }
+            catch (Exception) { return false; }
         }
 
         private long SongRemainingMilliseconds(Spell song)
@@ -2467,37 +2530,10 @@ namespace DOL.AI.Brain
             }
             else
             {
-                bool injured = bot.HealthPercent < 95 || bot.Group?.GetMembersInTheGroup().Any(member =>
-                    member.IsAlive && member.HealthPercent < 95 && member.CurrentRegionID == bot.CurrentRegionID &&
-                    bot.IsWithinRadius(member, GROUP_DEFENSE_ASSIST_RADIUS)) == true;
-                bool combatHealing = injured && (bot.InCombat || HasAggro || bot.IsAttacking);
-                // A solo Paladin holds one chant instead of cycling three: each recast briefly
-                // retargets the bot to itself mid-fight, and the held chant was endurance or
-                // armor, not damage (solo Paladins killed at half the Armsman rate, Oct 3-5).
-                bool fighting = bot.InCombat || HasAggro || bot.IsAttacking;
-                if ((bot.Group?.MemberCount ?? 1) <= 1)
-                {
-                    eSpellType anchor = BotSongTwistPolicy.SoloPaladinAnchor(fighting, bot.HealthPercent);
-                    chosen = chants.FirstOrDefault(spell => spell.SpellType == anchor) ??
-                        chants.FirstOrDefault(spell => spell.SpellType == eSpellType.DamageAdd) ??
-                        chants.FirstOrDefault(spell => spell.SpellType != eSpellType.CombatHeal);
-                    if (chosen == null || chosen.ID == active?.ID || bot.GetSkillDisabledDuration(chosen) > 0 ||
-                        bot.Mana < bot.PowerCost(chosen)) return;
-                    GameObject soloTarget = bot.TargetObject;
-                    try { bot.TargetObject = bot; bot.CastSpell(chosen, m_mobSpellLine, false); }
-                    finally { bot.TargetObject = soloTarget; }
-                    return;
-                }
-                chants = chants.Where(spell => spell.SpellType != eSpellType.CombatHeal || combatHealing)
-                    .OrderByDescending(spell => spell.SpellType == eSpellType.EnduranceRegenBuff)
-                    .ThenByDescending(spell => spell.SpellType == eSpellType.SpecArmorFactorBuff)
-                    .ThenByDescending(spell => spell.SpellType == eSpellType.DamageAdd).ToList();
-                if (chants.Count == 0) return;
-                int id = BotSongTwistPolicy.Choose(chants[0].ID, active?.ID ?? 0,
-                    chants.Select(spell => new BotSongTwistPolicy.Song(spell.ID, spell.CastTime,
-                        bot.Mana >= bot.PowerCost(spell) ? bot.GetSkillDisabledDuration(spell) : int.MaxValue,
-                        SongRemainingMilliseconds(spell))).ToArray());
-                chosen = chants.FirstOrDefault(spell => spell.ID == id);
+                // A Paladin holds one chant, grouped or solo (owner 2026-10-30: endurance in a fight, no cycling):
+                // endurance, else damage add, else armor. Each recast replays the chant's sound.
+                eSpellType held = BotSongTwistPolicy.PaladinHold(chants.Select(spell => spell.SpellType).ToHashSet());
+                chosen = chants.FirstOrDefault(spell => spell.SpellType == held);
             }
 
             if (chosen == null || chosen.ID == active?.ID || bot.GetSkillDisabledDuration(chosen) > 0 ||
@@ -3326,12 +3362,17 @@ namespace DOL.AI.Brain
                 : null;
             if (activePetTarget != null)
                 AddToAggroList(activePetTarget, Math.Max(1, activePetTarget.EffectiveLevel));
+            // The pet's fight is not followed onto a mesmerized or rooted monster (BotBrain.CrowdControlRespect).
+            if (activePetTarget != null && IsBreakablyControlled(activePetTarget))
+                activePetTarget = null;
             // Once our own pet has made contact, keep the owner and pet on that
             // same live opponent unless the owner is personally attacked or is
             // protecting a group member. Generic aggro may still contain the
             // previous pull and used to make archers/casters repeatedly switch
             // away from the fight their pet had already started.
             Body.TargetObject = protectionTarget ?? directAttacker ?? activePetTarget ?? CalculateNextAttackTarget();
+            RedirectPetFromControlledTarget(Body.TargetObject as GameLiving);
+            MaintainTankPeel();
             // A tethered boss outside its tether is immune: stop hitting it and lead it home (AutonomousTetherReset).
             if (Body.TargetObject is GameNPC tetheredBoss && AutonomousTetherReset.TryHandle(BotBody, tetheredBoss))
                 return;

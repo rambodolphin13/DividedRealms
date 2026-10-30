@@ -80,6 +80,7 @@ var dead := false
 var sitting := false                   # /sit (Combat.sit): sit_down once, then sit_idle until standing up
 var speed_mult := 1.0                  # sprint (x1.3, Abilities)
 var cc := ""                           # "stun" / "mez" / "root" from monster spells (Casting): no moving
+var no_turn := false                   # the server's MaxSpeed "no turning" flag (stunned, mesmerized): heading held
 var snare_mult := 1.0                  # snares: the run speed's share left
 var shade := false                       # a Necromancer with a servant up (Pets)
 var riding := false                     # on a stable horse (HorseRoutes moves you; jump gets you off)
@@ -730,7 +731,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			cam_pitch = clampf(cam_pitch - dy * 0.004, -1.35, 0.6)
 		else:
 			cam_pitch = clampf(cam_pitch - dy * 0.004, -CAM_PITCH, CAM_PITCH)
-		if rmb:
+		if rmb and not no_turn:
 			char_yaw = cam_yaw                          # steering: the character follows the camera
 	elif event is InputEventMouseButton:
 		if event.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
@@ -742,7 +743,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif not (rmb or lmb) and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 				get_viewport().warp_mouse(_cursor_at)
-			if event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+			if event.pressed and event.button_index == MOUSE_BUTTON_RIGHT and not no_turn:
 				char_yaw = cam_yaw                      # right-click snaps the character to the camera heading
 		elif event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and _over_window():
 			pass                                        # the wheel over a window scrolls it, never the camera
@@ -841,7 +842,8 @@ func _physics_step(delta: float) -> void:
 			stop_track()
 		else:
 			var d := track_target.global_position - global_position
-			char_yaw = atan2(-d.x, -d.z)
+			if not no_turn:
+				char_yaw = atan2(-d.x, -d.z)
 			var gap := Vector2(d.x, d.z).length()
 			if track_mode == "follow" and gap > FOLLOW_GAP_M or track_mode == "stick" and gap > STICK_GAP_M:
 				fwd = true
@@ -859,7 +861,8 @@ func _physics_step(delta: float) -> void:
 		_fly(delta, ahead, strafe, turn)
 		return
 
-	char_yaw += turn * TURN_RATE * delta
+	if not no_turn:
+		char_yaw += turn * TURN_RATE * delta
 	var moving := absf(ahead) > 0.0 or absf(strafe) > 0.0
 	if not lmb and (moving or absf(turn) > 0.0):
 		cam_yaw = lerp_angle(cam_yaw, char_yaw, minf(1.0, delta * 8.0))   # camera swings back behind

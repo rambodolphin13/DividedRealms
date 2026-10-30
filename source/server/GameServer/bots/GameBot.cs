@@ -1125,7 +1125,7 @@ namespace DOL.GS
                 StopCurrentSpellcast();
                 (Brain as BotBrain)?.PrepareForTankPull();
                 StopMoving();
-                if (!MoveTo(Owner.CurrentRegionID, (int)Math.Round(destination.X),
+                if (!MoveCorpseForRelease(Owner.CurrentRegionID, (int)Math.Round(destination.X),
                     (int)Math.Round(destination.Y), (int)Math.Round(destination.Z), Owner.Heading))
                     return;
 
@@ -1137,6 +1137,7 @@ namespace DOL.GS
                 EnterPlayerLedGroup(Owner);
                 Brain?.FSM?.SetCurrentState(eFSMStateType.FOLLOW);
                 Brain?.Start();
+                ShowStandingToViewers();
                 return;
             }
 
@@ -1172,17 +1173,7 @@ namespace DOL.GS
                 AutonomousLivingServer.OnBotReleasing(this);
             // Transfer the corpse first: a failed MoveTo must not revive the bot
             // at its killer or cause HandleDeathRecovery to discard its timer.
-            bool moved;
-            _releasingCorpse = true;
-            try
-            {
-                moved = MoveTo(releaseRegion, release.X, release.Y, release.Z, Heading);
-            }
-            finally
-            {
-                _releasingCorpse = false;
-            }
-            if (!moved)
+            if (!MoveCorpseForRelease(releaseRegion, release.X, release.Y, release.Z, Heading))
                 return;
             Health = Math.Max(1, MaxHealth / 3);
             Mana = Math.Max(0, MaxMana / 3);
@@ -1192,6 +1183,7 @@ namespace DOL.GS
             _nextReturnRoleplayTick = GameLoop.GameLoopTime + Util.Random(45_000, 90_000);
             Brain?.FSM?.SetCurrentState(eFSMStateType.FOLLOW);
             Brain?.Start();
+            ShowStandingToViewers();
             if (returnToParty)
                 Say(ReturnDialogue("release"));
 
@@ -1207,6 +1199,25 @@ namespace DOL.GS
 
         /// <summary>How far from a repeat-death spot a release bind must be when there is a choice.</summary>
         public const float ReleaseClearanceFromDeathSpot = 6_000;
+
+        /// <summary>
+        /// A release moves the corpse first and raises it after: the move re-created the bot for every viewer while it
+        /// was still dead, and a client keeps an NPC created dead lying down whatever its health says later, so it showed
+        /// as a second dead body (owner 2026-10-30). Re-send it standing.
+        /// </summary>
+        private void ShowStandingToViewers()
+        {
+            if (!IsAlive || ObjectState != eObjectState.Active)
+                return;
+            foreach (GamePlayer viewer in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+            {
+                if (viewer.Client?.ClientState is not GameClient.eClientState.Playing || !viewer.CanDetect(this))
+                    continue;
+                viewer.Out.SendObjectRemove(this);
+                ClientService.CreateObjectForPlayer(viewer, this);
+                viewer.Out.SendLivingEquipmentUpdate(this);
+            }
+        }
 
         private Point3D? FindNearestBindPoint()
         {
@@ -1871,6 +1882,10 @@ namespace DOL.GS
 
             if (goStealth)
             {
+                // A relic carrier cannot hide: the relic would fall at once (2026-10-30 livestream).
+                if (GameRelic.IsPlayerCarryingRelic(this))
+                    return;
+
                 // Songs and pulsing spells are mutually exclusive with stealth.
                 // Keep the same legality rule without using GamePlayer-only effects.
                 if (effectListComponent.ContainsEffectForEffectType(eEffect.Pulse))
@@ -2866,46 +2881,41 @@ namespace DOL.GS
         /// The ordinary RemoveFromWorld pet release is retained, allowing the
         /// pet manager to re-summon a legal pet in the destination region.
         /// </summary>
-        private long _deadMoveLoggedForDeath = -1;
+        private int _corpseReleaseMove;
+
+        /// <summary>The release's own corpse move (the bot is raised right after): the one move a dead bot may make.</summary>
+        private bool MoveCorpseForRelease(ushort regionID, int x, int y, int z, ushort heading)
+        {
+            _corpseReleaseMove++;
+            try { return MoveTo(regionID, x, y, z, heading); }
+            finally { _corpseReleaseMove--; }
+        }
+
+        /// <summary>
+        /// A body stays where it fell until it is raised or released (owner 2026-10-30: a companion killed outside an inn
+        /// showed up dead beside the innkeeper 6 seconds later, by an in-region teleport). Any other move of a dead bot is
+        /// refused and logged with its caller.
+        /// </summary>
+        private bool RefuseCorpseMove(string kind, ushort regionID, int x, int y, int z)
+        {
+            if (Health > 0 || ObjectState != eObjectState.Active || _corpseReleaseMove > 0)
+                return false;
+            log.Warn($"BOT_CORPSE_MOVE_REFUSED {kind} bot=\"{Name}\" id={DatabaseID} from={CurrentRegionID}:{X},{Y},{Z} " +
+                     $"to={regionID}:{x},{y},{z}{Environment.NewLine}{Environment.StackTrace}");
+            return true;
+        }
 
         public override bool MoveInRegion(ushort regionID, int x, int y, int z, ushort heading, bool forceMove)
         {
-            LogDeadMove(regionID, x, y, z, "MoveInRegion");
+            if (RefuseCorpseMove("MoveInRegion", regionID, x, y, z))
+                return false;
             return base.MoveInRegion(regionID, x, y, z, heading, forceMove);
-        }
-
-        // True only while this bot's own release (ReleaseToNearestBindAndReturn) moves its corpse to the bind.
-        private bool _releasingCorpse;
-
-        private void LogDeadMove(ushort regionID, int x, int y, int z, string how)
-        {
-            // Audit 2026-10-17: this ran on every gamebot death with every feature off and captured a stack trace
-            // each time. It now logs only with the Living Server death part on, and the normal release (the move
-            // expected on every death) is named instead of walking the stack.
-            // Playtest 2026-10-18: 2,951 lines in three hours, almost all the normal release. That one is expected on
-            // every death, so it is Debug now; any other move of a dead gamebot (the bug this line is for) stays Info.
-            if (!AutonomousLivingServer.DeathOn || !IsAutonomousWorldBot || IsAlive || _deadMoveLoggedForDeath == _deathTick ||
-                !(_releasingCorpse ? log.IsDebugEnabled : log.IsInfoEnabled))
-                return;
-            _deadMoveLoggedForDeath = _deathTick;
-            string stack = _releasingCorpse
-                ? $"{nameof(GameBot)}.{nameof(ReleaseToNearestBindAndReturn)}"
-                : string.Join(" <- ", new System.Diagnostics.StackTrace(2, false).GetFrames()
-                    .Take(8).Select(frame => frame.GetMethod() is { } method ? $"{method.DeclaringType?.Name}.{method.Name}" : "?"));
-            string line = $"LIVING_SERVER_DEAD_MOVE bot=\"{Name}\" id={DatabaseID} how={how} deadMs={GameLoop.GameLoopTime - _deathTick} " +
-                          $"from={CurrentRegionID}:{X},{Y},{Z} to={regionID}:{x},{y},{z} by={stack}";
-            if (_releasingCorpse)
-                log.Debug(line);
-            else
-                log.Info(line);
         }
 
         public override bool MoveTo(ushort regionID, int x, int y, int z, ushort heading)
         {
-            // In game 2026-10-17 dead gamebots were found near their bind within seconds of dying, still dead, so
-            // nobody could rez them. LogDeadMove says once per death who moves a dead gamebot (a normal release
-            // moves the corpse before reviving it, so it shows up here too, about 20 s or 90 s after the death).
-            LogDeadMove(regionID, x, y, z, "MoveTo");
+            if (RefuseCorpseMove("MoveTo", regionID, x, y, z))
+                return false;
             // Owner 2026-10-07: travelling the old frontiers, the pets of the player's /spawn and /raid companions died
             // on every move (the move removes the bot from the world, which released its pet) and their pet classes kept
             // re-summoning. Within a region a companion's pet now comes along and is placed behind it, as a player's pet
@@ -3033,7 +3043,7 @@ namespace DOL.GS
             // this removal is classified after it has begun.
             bool intentionalWorldMove = IsIntentionalWorldMove;
             if (!intentionalWorldMove)
-                TempProperties.GetProperty<GameRelic>(GameRelic.PLAYER_CARRY_RELIC_WEAK)?.DropFromCarrier(this);
+                TempProperties.GetProperty<GameRelic>(GameRelic.PLAYER_CARRY_RELIC_WEAK)?.DropFromCarrier(this, "bot-removed");
             if (IsAutonomousWorldBot && !intentionalWorldMove)
                 SaveAutonomousState(true);
             // A charm cast can have created its tagged candidate before the
@@ -3947,6 +3957,12 @@ namespace DOL.GS
 
             // Both skill lists are cached when first built. Rebuild them so a level-up or a trainer visit adds the
             // spells it unlocked: the bot tester found every leveling bot except the Bonedancer stuck on its level 1 spells.
+            GetAllUsableSkills(true);
+            GetAllUsableListSpells(true);
+
+            // The usable-skill lists are cached: rebuild them from the current specs and level first. Read from the cache,
+            // a bot trained or levelled in the field kept its old spells until it was created again (owner 2026-10-30:
+            // a level 5 Hunter trained to Beastcraft 5 used none of the new buffs until dismissed and summoned at the inn).
             GetAllUsableSkills(true);
             GetAllUsableListSpells(true);
 

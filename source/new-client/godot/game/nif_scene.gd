@@ -49,6 +49,7 @@ func load_scene(gltf_path: String, texture_set := "x4plus") -> bool:
 		folders["x4plus"] = dir.path_join("textures/x4plus")
 	materials = NifMaterials.new(folders, texture_set)
 	materials.use_material_light = true                 # ambient-lit like the client (dark materials stay dark)
+	materials.main_only = true                          # (effects are packed on workers: their materials made on main)
 	var doc := GLTFDocument.new()
 	var state := GLTFState.new()
 	if doc.append_from_file(gltf_path, state) != OK:
@@ -129,22 +130,67 @@ static func loading(gltf_path: String) -> bool:
 	return _loading.has(gltf_path)
 
 
+## The packing runs on one dedicated thread of its own, one effect after another - never on the WorkerThreadPool
+## (2026-10-30, the login freeze: a live login hung for good after the zone loaded, every few logins). Packing waits on
+## the main thread for its materials and particles (GpuJobs), and the pool keeps only ~30% of its threads for
+## low-priority tasks: two or three prefetches waiting there took them all, and the main thread, in an engine call
+## that queues a low-priority pool task of its own and waits for it, waited for a slot those prefetches would only free
+## once the main thread ran their steps. A thread of our own can wait on the main thread without holding a pool slot.
+static var _fetch_thread: Thread
+static var _fetch_queue: Array = []
+static var _fetch_mutex := Mutex.new()
+static var _fetch_wake := Semaphore.new()
+static var _fetch_stop := false
+
+
 static func prefetch(gltf_path: String) -> void:
 	if gltf_path == "" or _packed.has(gltf_path) or _loading.has(gltf_path):
 		return
 	_loading[gltf_path] = true
-	WorkerThreadPool.add_task(func():
-		var ps := NifScene.pack_copy(gltf_path)
+	_fetch_mutex.lock()
+	_fetch_queue.append(gltf_path)
+	_fetch_mutex.unlock()
+	if _fetch_thread == null:
+		_fetch_stop = false
+		_fetch_thread = Thread.new()
+		_fetch_thread.start(_fetch_loop)
+	_fetch_wake.post()
+
+
+static func _fetch_loop() -> void:
+	while true:
+		_fetch_wake.wait()
+		if _fetch_stop:
+			return
+		_fetch_mutex.lock()
+		var path: String = _fetch_queue.pop_front() if not _fetch_queue.is_empty() else ""
+		_fetch_mutex.unlock()
+		if path == "":
+			continue
+		var ps := NifScene.pack_copy(path)
 		(func():
-			NifScene._packed[gltf_path] = ps
-			NifScene._loading.erase(gltf_path)).call_deferred())
+			NifScene._packed[path] = ps
+			NifScene._loading.erase(path)).call_deferred()
+
+
+## Quitting: the prefetch thread ends (GpuJobs._exit_tree - its steps run on it from then on).
+static func stop_prefetch() -> void:
+	if _fetch_thread == null:
+		return
+	_fetch_stop = true
+	_fetch_wake.post()
+	if _fetch_thread.is_started():
+		_fetch_thread.wait_to_finish()
+	_fetch_thread = null
 
 
 static func copy_of(gltf_path: String) -> NifScene:
 	if not _packed.has(gltf_path):
 		_packed[gltf_path] = pack_copy(gltf_path)
 	var p: PackedScene = _packed[gltf_path]
-	return p.instantiate() as NifScene if p else null
+	var copy := p.instantiate() as NifScene if p else null
+	CacheTrim.track("fx", gltf_path, copy)
+	return copy
 
 
 ## Copies (one per spell cast / monster) find their own meshes and particles again.
@@ -205,7 +251,10 @@ func _bind() -> void:
 				continue
 			var spec: Dictionary = m.get_meta("spec")
 			if spec.has("alpha_anim") or spec.has("color_anims") or spec.has("uv_anim"):
-				var own := m.duplicate() as ShaderMaterial            # this copy fades / changes colour on its own
+				# this copy fades / changes colour on its own - duplicated on the main thread (2026-10-30, the login freeze:
+				# an effect packed on a worker made this copy's render-server material there - duplicate() sets every
+				# parameter, the race GpuJobs exists for)
+				var own := GpuJobs.run(func(): return m.duplicate(), "effect material") as ShaderMaterial
 				mi.set_surface_override_material(i, own)
 				var aa: Dictionary = spec.get("alpha_anim", {})
 				var cas: Array = spec.get("color_anims", [])

@@ -607,7 +607,10 @@ def borrowed_length(bone, vals, bind) -> bool:
 def fig3_tables():
     g = read_mpk(str(CLIENT / 'gamedata.mpk'))
     rows = lambda n: list(csv.reader(io.StringIO(g[n].decode('latin1'))))
-    parts = {r[0]: r for r in rows('fig3parts.csv') if r and r[0].isdigit()}
+    parts = {}
+    for r in rows('fig3parts.csv'):                     # first row per id (the file's trailing junk reuses 189-200)
+        if r and r[0].isdigit():
+            parts.setdefault(r[0], r)
     fmap = {}
     for r in rows('fig3map.csv'):
         if r and r[0].isdigit() and len(r) > 3:

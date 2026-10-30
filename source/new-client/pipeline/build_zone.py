@@ -39,6 +39,14 @@ ESRGAN = ROOT / 'tools/realesrgan/realesrgan-ncnn-vulkan.exe'
 BOM = '\N{ZERO WIDTH NO-BREAK SPACE}\xef\xbb\xbf'
 
 
+def zone_local_npks(zone_id):
+    """{file name (lower case): path} of the zone's own models (zones/zoneNNN/nifs, any case) - they come before the
+    shared zones/Nifs ones with the same names."""
+    zd = next((d for d in (CLIENT / 'zones').iterdir() if d.is_dir() and d.name.lower() == f'zone{zone_id:03d}'), None)
+    nd = next((d for d in zd.iterdir() if d.is_dir() and d.name.lower() == 'nifs'), None) if zd else None
+    return {p.name.lower(): p for p in nd.iterdir() if p.suffix.lower() == '.npk'} if nd else {}
+
+
 def read_csv(raw):
     return [r for r in csv.reader(io.StringIO(raw.decode('latin1')))]
 
@@ -894,6 +902,9 @@ def build(zone_id, upscale=True):
     nifs = {int(r[0]): r for r in read_csv(dat['nifs.csv']) if r and r[0].strip().isdigit()}
     fixtures = [r for r in read_csv(dat['fixtures.csv'])[2:] if len(r) > 11 and r[1].strip().isdigit()]
     npk_files = {p.name.lower(): p for p in (CLIENT / 'zones/Nifs').iterdir()}
+    npk_files.update(zone_local_npks(zone_id))   # the zone's own nifs folder first (owner 2026-10-29: Avalon Marsh's
+    #   Darkness Falls portal drew zones/Nifs' generic 7 KB 'avpier' pier, solid white; the 1.64 client ships the
+    #   zone's own AVPIER.npk - pillars, portal platform, purple flames - with its textures in zone009/nifs)
     mdir = out / 'models'
     mdir.mkdir(exist_ok=True)
     tex_names, models, model_index = set(), [], {}
@@ -986,8 +997,9 @@ def build(zone_id, upscale=True):
         tex_names.add(clutter['atlas'])
     warnings = sorted({w for m in models for w in m.get('warnings', [])})
 
-    # textures
+    # textures: the zone's own nifs folder first, as its models (zone_local_npks)
     idx = TextureIndex()
+    idx.first = [f'zones/zone{zone_id:03d}/nifs']
     odir = out / 'textures/original'
     odir.mkdir(parents=True, exist_ok=True)
     missing = []

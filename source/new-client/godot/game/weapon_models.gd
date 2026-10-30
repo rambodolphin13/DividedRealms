@@ -119,6 +119,7 @@ static func make_animated(model: int) -> Node3D:
 	var holder := Node3D.new()
 	holder.name = "Siege_%d" % model
 	holder.add_child(p.instantiate())
+	CacheTrim.track("weapon", path, holder)
 	return holder
 
 
@@ -127,6 +128,7 @@ static func pack(path: String) -> PackedScene:
 	var state := GLTFState.new()
 	if doc.append_from_file(ProjectSettings.globalize_path(path), state) != OK:
 		return null
+	CacheTrim.share_textures(state, path)                 # (one copy of each texture file across all weapons)
 	GpuJobs.ready_materials(Array(state.get_materials()))   # (made on the main thread: NPC views prepare weapons on a worker)
 	var scene := doc.generate_scene(state)
 	var packed := PackedScene.new()
@@ -161,17 +163,35 @@ static func dye(w: Node3D, color: int) -> void:
 		if mi.mesh == null:
 			continue
 		for i in mi.mesh.get_surface_count():
-			var m := mi.get_active_material(i)
-			if m is ShaderMaterial:
-				var d := (m as ShaderMaterial).duplicate() as ShaderMaterial
-				var t = d.get_shader_parameter("tint")
-				var base: Color = t if t is Color else Color.WHITE
-				d.set_shader_parameter("tint", Color(base.r * c.r, base.g * c.g, base.b * c.b))
+			var d := dyed_material(mi.get_active_material(i), c)
+			if d:
 				mi.set_surface_override_material(i, d)
-			elif m is BaseMaterial3D:
-				var s := (m as BaseMaterial3D).duplicate() as BaseMaterial3D
-				s.albedo_color = s.albedo_color * c
-				mi.set_surface_override_material(i, s)
+
+
+## A material in an item's dye, shared by every copy with the same material and dye (2026-10-30: a new copy per dressing -
+## the server dresses you twice as you log in - was made and freed in one frame, and the renderer met an instance
+## whose material was gone: "Parameter 'material' is null" x4 at every login and quit; also one material, not one a copy).
+static var _dyed := {}
+
+
+static func dyed_material(m: Material, c: Color) -> Material:
+	if m == null or c == Color.WHITE:
+		return null
+	var key := "%d|%s" % [m.get_instance_id(), c.to_html()]
+	if _dyed.has(key) and is_instance_valid(_dyed[key]):
+		return _dyed[key]
+	var d: Material = null
+	if m is ShaderMaterial:
+		d = (m as ShaderMaterial).duplicate() as ShaderMaterial
+		var t = (d as ShaderMaterial).get_shader_parameter("tint")
+		var base: Color = t if t is Color else Color.WHITE
+		(d as ShaderMaterial).set_shader_parameter("tint", Color(base.r * c.r, base.g * c.g, base.b * c.b))
+	elif m is BaseMaterial3D:
+		d = (m as BaseMaterial3D).duplicate() as BaseMaterial3D
+		(d as BaseMaterial3D).albedo_color = (d as BaseMaterial3D).albedo_color * c
+	if d:
+		_dyed[key] = d
+	return d
 
 
 ## left: hung on a left-hand bone (Bip01 L Held / L Shield) - gripped by its NIF's HELD2 node when it has one, as the
@@ -190,6 +210,7 @@ static func make(model: int, drawn := false, left := false, sheath := "") -> Nod
 	var holder := Node3D.new()
 	holder.name = "Weapon_%d" % model
 	var w := p.instantiate() as Node3D
+	CacheTrim.track("weapon", path, w)
 	for c in w.find_children("collision*", "", true, false):
 		c.queue_free()                                    # the NIF's collidee shapes: not part of the held model
 	w.transform = TO_NIF

@@ -1067,7 +1067,7 @@ namespace DOL.GS
         private bool TryRouteToNeededService(GameBot bot)
         {
             eWorldServiceKind? needed = AutonomousBotEconomy.GetNeededService(bot);
-            if (needed is not eWorldServiceKind.RealmExchange and not eWorldServiceKind.Vendor)
+            if (needed is not eWorldServiceKind.RealmExchange and not eWorldServiceKind.Vendor and not eWorldServiceKind.SealMerchant)
             {
                 _serviceNpc = null;
                 _serviceKind = null;
@@ -1088,6 +1088,12 @@ namespace DOL.GS
                 {
                     _serviceNpc = null;
                 }
+            }
+            if (_serviceNpc == null && needed == eWorldServiceKind.SealMerchant)
+            {
+                // Seal gear is optional: with no reachable seal merchant the bot simply carries on.
+                _serviceKind = null;
+                return false;
             }
             if (_serviceNpc == null)
             {
@@ -1188,7 +1194,7 @@ namespace DOL.GS
                         _nextServiceSearchTick = 0;
                         bot.StopMovingOnPath();
                         bot.StopMoving();
-                        SetStatus(bot, "Choosing another merchant", needed == eWorldServiceKind.RealmExchange ? "Use the Realm Exchange" : "Sell ordinary backpack loot",
+                        SetStatus(bot, "Choosing another merchant", ServiceGoal(needed.Value),
                             "The chosen service has no reachable spot to stand beside it", string.Empty, destination.ZoneName);
                         return true;
                     }
@@ -1196,7 +1202,7 @@ namespace DOL.GS
                 if (TryBeginFasterStableRoute(bot, point, _serviceNpc.Name))
                     return true;
                 IssuePath(bot, point, preciseArrival: true);
-                SetStatus(bot, $"Traveling to {_serviceNpc.Name}", needed == eWorldServiceKind.RealmExchange ? "Use the Realm Exchange" : "Sell ordinary backpack loot",
+                SetStatus(bot, $"Traveling to {_serviceNpc.Name}", ServiceGoal(needed.Value),
                     "Routing to a real world service before resuming progression", _serviceNpc.Name, destination.ZoneName);
                 return true;
             }
@@ -1211,7 +1217,7 @@ namespace DOL.GS
             }
             bot.StopMovingOnPath();
             bot.StopMoving();
-            SetStatus(bot, $"Ready to use {_serviceNpc.Name}", needed == eWorldServiceKind.RealmExchange ? "Use the Realm Exchange" : "Sell ordinary backpack loot",
+            SetStatus(bot, $"Ready to use {_serviceNpc.Name}", ServiceGoal(needed.Value),
                 "Reached the real service; BotBrain will transact only within range", _serviceNpc.Name, destination.ZoneName);
             bot.StopFollowing();
             // Hand the exact reached broker to the transaction layer after
@@ -1235,6 +1241,15 @@ namespace DOL.GS
             bool exchange = kind == eWorldServiceKind.RealmExchange;
             GameNPC best = null;
             double bestMinutes = double.MaxValue;
+            if (kind == eWorldServiceKind.SealMerchant)
+            {
+                // Only the bot's own realm's seal merchants in Darkness Falls that have something it can pay for.
+                foreach (GameMerchant merchant in bot.CurrentRegion?.Merchants ?? [])
+                    if (merchant is GameDarknessFallsSealsMerchant seals && IsServiceCandidate(bot, seals) &&
+                        AutonomousBotEconomy.FindSealPurchase(bot, seals) != null)
+                        ConsiderService(seals);
+                return best;
+            }
             // Same candidates and ordering as before (first candidate wins a tie,
             // like OrderBy + FirstOrDefault), but merchants come from each
             // region's live merchant index instead of scanning every monster,
@@ -1280,6 +1295,13 @@ namespace DOL.GS
                 }
             }
         }
+
+        private static string ServiceGoal(eWorldServiceKind kind) => kind switch
+        {
+            eWorldServiceKind.RealmExchange => "Use the Realm Exchange",
+            eWorldServiceKind.SealMerchant => "Trade Darkness Falls seals for seal gear",
+            _ => "Sell ordinary backpack loot",
+        };
 
         private static bool IsServiceCandidate(GameBot bot, GameNPC npc) =>
             npc.ObjectState is GameObject.eObjectState.Active && npc.CurrentZone != null && IsZoneAccessible(bot.Realm, npc.CurrentZone);
@@ -3683,6 +3705,9 @@ namespace DOL.GS
                 legalCells = legalCells.Where(camp => camp.RegionId != AutonomousDarknessFallsPolicy.RegionId)
                     .Concat(df).ToArray();
             }
+            // Less competition first: crowded camps only when every camp is crowded (AutonomousCampCompetition).
+            legalCells = AutonomousCampCompetition.PreferQuiet(legalCells, camp => camp.Id, camp => camp.LiveMobCount,
+                bot.PersistentRecord?.CurrentCampId, sharedGroup ? groupSize : 1);
             // This is the deployed selection point. Each distinct verified
             // location has one entry; outdoor draws are weighted by live spawns
             // (capped) with no distance or name preference.

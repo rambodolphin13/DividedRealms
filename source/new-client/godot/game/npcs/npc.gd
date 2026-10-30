@@ -1017,6 +1017,13 @@ func play_death(vocal := false) -> void:
 		tw.tween_property(_hover_node, "position:y", _hover_node.position.y - _hover, clampf(_hover * 0.35, 0.25, 0.8)) 				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
+## A dead character you may still target - to resurrect it (owner 2026-10-30: "if I want to rez a companion bot ... is
+## that working?"): a player-race figure (gamebots, companions; the server's ResurrectSpellHandler revives a dead
+## GameBot on the spot), as the original client lets you target a dead player. Monster bodies stay untargetable.
+func rez_target() -> bool:
+	return state != null and not state.alive and not corpse and (model is Fig3Figure or info.has("race"))
+
+
 ## A body the server let go (RemoveObject type 0: the server deletes a monster the moment it dies; the old client
 ## kept the body - owner 2026-10-13: "monster bodies just disappear when they die instead of having a death animation
 ## and falling thru the ground after awhile"): it dies here if it hadn't yet, lies there CORPSE_S, sinks into the

@@ -84,6 +84,9 @@ namespace DOL.GS
             public RealmRaidMuster.Hub Hub;
             public bool HubDeparted;
             public long HubDepartedTick;
+            /// <summary>The most staged at once, and when that count last grew (an arrival).</summary>
+            public int StagingBest;
+            public long StagingArrivalTick;
             public long NextDefenseBroadcast;
             public readonly Dictionary<int, Vector3> HubPosts = new();
             public Vector3[] OutboundSeams = [];
@@ -366,9 +369,14 @@ namespace DOL.GS
                                 RealmEventBanter.RaidReminder(raid.Definition.Name, raid.Forced), "raid_forming", RaidSlots(raid.Definition.Name, null));
                         }
                         int present = PresentAtStaging(raid);
+                        if (present > raid.StagingBest)
+                        {
+                            raid.StagingBest = present;
+                            raid.StagingArrivalTick = now;
+                        }
                         bool ready = RealmRaidRecruitmentPolicy.Ready(raid.Forced, now - raid.Created, present, DragonLanded(raid), raid.Required);
                         bool expired = !ready && RealmRaidRecruitmentPolicy.StagingExpired(raid.Forced, now, raid.Created, raid.HubDepartedTick,
-                            present, DragonLanded(raid), raid.Required);
+                            present, DragonLanded(raid), raid.StagingArrivalTick, raid.Required);
                         // Out of time with at least half the raid there: it goes in short, and the rest follow it in.
                         if (expired && DragonLanded(raid) && RealmRaidRecruitmentPolicy.GoesInShortAtDeadline(raid.Forced, present, raid.Required))
                         {

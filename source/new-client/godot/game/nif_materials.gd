@@ -30,10 +30,19 @@ static var WEB := RegEx.create_from_string("(?i)spiderweb|cob_crnr|cobweb")
 
 
 ## Material for one spec (a Dictionary from extras.nif_materials); identical specs share one material.
+## main_only: built on the main thread when asked from a worker (GpuJobs) - a ShaderMaterial's parameters set on a
+## worker make its render-server material there, the race GpuJobs exists for (2026-10-30: the login freeze -
+## "Parameter 'material' is null" x4, then the main thread stalled with effect-prefetch workers waiting on it, or a
+## crash; NifScene sets it for effects, which are packed on workers ahead of time).
+var main_only := false
+
+
 func material(spec: Dictionary) -> ShaderMaterial:
 	var key := JSON.stringify(spec, "", true)
 	if _materials.has(key):
 		return _materials[key]
+	if main_only and not GpuJobs.on_main_thread():
+		return GpuJobs.run(func(): return material(spec), "effect material") as ShaderMaterial
 	var mat := ShaderMaterial.new()
 	var alpha := String(spec.get("alpha", "opaque"))
 	# spider webs (nspiderweb, cob_crnr): soft alpha the client blended - as a cut-out at their near-zero test

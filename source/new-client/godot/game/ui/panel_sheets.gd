@@ -57,6 +57,9 @@ static func build(parent: Control, tab: String) -> void:
 		PlayerData.hook(parent, Server.skills_changed, func():
 			if is_instance_valid(parent) and parent.is_inside_tree():
 				fill.call())
+		PlayerData.hook(parent, Server.craft_changed, func():
+			if is_instance_valid(parent) and parent.is_inside_tree():
+				fill.call())
 
 
 static func _skills(lists: Array) -> void:
@@ -160,6 +163,27 @@ static func _server_skills(lists: Array) -> void:
 		elif page in [1, 5, 6]:
 			lists[1].add_child(_server_row("ability", "srv:skill:%d" % (i - first), String(sk.name), "icon", int(sk.icon), ""))
 	lists[0].add_child(_text_row("POINTS", str(PlayerData.spec_points()), UiArt.GOLD_HI))
+	# your tradeskills (VariousUpdate 8; the SI client's skills window listed them under "Tradeskills") - a click
+	# opens the tradeskill window on that trade (owner 2026-10-30)
+	if not Server.craft_skills.is_empty():
+		lists[1].add_child(_text_row("TRADESKILLS", "", UiArt.GOLD_HI))
+		var ids: Array = Server.craft_skills.keys()
+		ids.sort()
+		for id in ids:
+			var cs: Dictionary = Server.craft_skills[id]
+			if int(cs.points) <= 1 and String(cs.name) != String(Server.info.get("craft_skill", "")):
+				continue                                    # (every trade starts at 1: the ones taken up only)
+			var row := _text_row(String(cs.name), str(int(cs.points)))
+			row.mouse_filter = Control.MOUSE_FILTER_STOP
+			row.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			row.tooltip_text = "Open the tradeskill window"
+			var trade_id := int(id)
+			row.gui_input.connect(func(ev: InputEvent):
+				if ev is InputEventMouseButton and (ev as InputEventMouseButton).pressed \
+						and (ev as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+					PlayerData.window_toggle.emit("craft:%d" % trade_id))
+			lists[1].add_child(row)
+		lists[1].add_child(_text_row("ALL TRADES: /CRAFT", "", UiArt.DIM))
 
 
 ## The server's spell lines in its order (GamePlayerUtils.UpdateUsableListSpells: the baseline lines, then the

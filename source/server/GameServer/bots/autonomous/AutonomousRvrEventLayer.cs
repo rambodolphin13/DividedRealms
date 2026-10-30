@@ -1420,6 +1420,15 @@ public static partial class AutonomousRvrEventLayer
         }
     }
 
+    /// <summary>
+    /// The realm record of a siege that was neither captured nor defended, named by why it ended (owner 2026-10-29: it
+    /// read "Ended (unconfirmed)", nearly always because the keep stopped being a target, e.g. another realm took it).
+    /// </summary>
+    public static string SiegeEndOutcome(string reason) =>
+        reason?.StartsWith("Siege objective is no longer available") == true ? "Ended: keep no longer a target" :
+        reason?.Contains("four-hour") == true || reason?.Contains("timer") == true ? "Timed out" :
+        string.IsNullOrWhiteSpace(reason) ? "Ended" : "Ended: " + reason.Split(':', '.')[0].Trim();
+
     private static void EndEvent(ActiveEvent active, long nowTick, string reason, eRealm winner = eRealm.None)
     {
         if (!active.DefenseReaction && (reason.StartsWith("Keep captured") || reason.StartsWith("Siege defended")))
@@ -1432,7 +1441,7 @@ public static partial class AutonomousRvrEventLayer
                 realm == active.DefenderRealm, reason.StartsWith("Siege defended"), reason.StartsWith("Rally failed"), winner, realm), topic, slots);
         }
         RealmEventRecords.Finish(active.TargetId, reason.StartsWith("Rally failed") ? "Failed rally" : reason.StartsWith("Keep captured") ? "Captured" :
-            reason.StartsWith("Siege defended") ? reason.Contains("expired") ? "Defended (timeout)" : "Defended" : "Ended (unconfirmed)", reason,
+            reason.StartsWith("Siege defended") ? reason.Contains("expired") ? "Defended (timeout)" : "Defended" : SiegeEndOutcome(reason), reason,
             active.Attackers.Values.Sum() + active.Defenders.Values.Sum() + active.ThirdRealm.Values.Sum());
         foreach (string force in active.Attackers.Keys.Concat(active.Defenders.Keys).Concat(active.ThirdRealm.Keys))
             ReleasedForces[force] = reason;

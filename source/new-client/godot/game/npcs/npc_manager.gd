@@ -256,6 +256,7 @@ static func _pack_model(path: String) -> PackedScene:
 	state.base_path = ProjectSettings.globalize_path(path.get_base_dir())
 	if doc.append_from_file(path, state) != OK:
 		return null
+	CacheTrim.share_textures(state, path)                # (one copy of each texture file across all monsters)
 	# a glow map laid out on the model's second UV set (build_monsters: emissiveTexture texCoord 1 - the Glowing Demon
 	# Knight's eye slits; owner 2026-10-20: its eye glowed on the chest): Godot's glTF import drops texCoord there
 	var mats_json: Array = state.json.get("materials", []) if state.json is Dictionary else []
@@ -314,6 +315,24 @@ func _drop_unused_models() -> void:
 	for k in _scenes.keys():
 		if not used.has(k):
 			_scenes.erase(k)
+
+
+## Past the video memory budget (CacheTrim.over_budget; owner 2026-10-29, the 6 GB card filled and the frame rate
+## never came back): the monster models no view near you draws go as well - a spawn coming into view gets its model
+## again on the NPC-view worker (_prepared), as when its zone first loaded. Returns how many went.
+func drop_models_without_views() -> int:
+	var used := {}
+	for i in active:
+		if int(i) >= 0 and int(i) < states.size():
+			var info: Dictionary = (states[int(i)] as NpcState).info
+			if info.has("gltf"):
+				used[String(info.gltf)] = true
+	var n := 0
+	for k in _scenes.keys():
+		if not used.has(k) and _scenes[k] != null:
+			_scenes.erase(k)
+			n += 1
+	return n
 
 
 ## The world simulation: every spawn, every physics tick, near the player or not.
@@ -566,7 +585,7 @@ func update_views(max_build: int) -> void:
 ## and that no cache holds yet load on a worker thread (the caches' own loaders: NpcManager._pack_model,
 ## Fig3Figure.pack_figure / load_texture / pack_helm, WeaponModels.pack, NifScene.pack_copy); the view is built on a
 ## later pass - a quarter of a second or so - when they are in. The loading screen's prebuild still builds at once.
-var _prep_task := -1
+var _prep_task: Thread                        # the preparing job (its own thread: GpuJobs.start_job)
 var _prep_jobs := {}                         # what the running task loads: key -> [kind, arg]
 var _prep_out := {}                          # its results (the worker's own until the task is done)
 var _prep_next := {}                         # what views waiting now need, for the next task
@@ -643,11 +662,11 @@ func _prep_needs(s: NpcState) -> Dictionary:
 
 ## The finished task's files into the caches; the next task started with what views wait for now.
 func _prep_start() -> void:
-	if _prep_task >= 0:
-		if not WorkerThreadPool.is_task_completed(_prep_task):
+	if _prep_task != null:
+		if not GpuJobs.job_done(_prep_task):
 			return
-		WorkerThreadPool.wait_for_task_completion(_prep_task)
-		_prep_task = -1
+		GpuJobs.finish_job(_prep_task)
+		_prep_task = null
 		for k in _prep_out:
 			var job: Array = _prep_jobs.get(k, [])
 			if job.is_empty():
@@ -684,7 +703,7 @@ func _prep_start() -> void:
 	_prep_jobs = _prep_next
 	_prep_next = {}
 	_prep_out = {}
-	_prep_task = WorkerThreadPool.add_task(_prep_run.bind(_prep_jobs, _prep_out), false, "npc views")
+	_prep_task = GpuJobs.start_job(_prep_run.bind(_prep_jobs, _prep_out))
 
 
 ## The worker: each file loaded by its cache's own loader (no cache touched here).
@@ -702,9 +721,9 @@ static func _prep_run(jobs: Dictionary, out: Dictionary) -> void:
 
 
 func _exit_tree() -> void:
-	if _prep_task >= 0:
-		GpuJobs.wait_task(_prep_task)                  # (running the GPU steps it may wait on)
-		_prep_task = -1
+	if _prep_task != null:
+		GpuJobs.wait_job(_prep_task)                   # (running the GPU steps it may wait on)
+		_prep_task = null
 
 
 ## Click: the NPC under the mouse (or nothing). Called by the zone viewer on a left click that wasn't a drag.
@@ -726,7 +745,7 @@ func pick(camera: Camera3D, screen_pos: Vector2) -> Npc:
 		var c: Object = hit.collider
 		if c and c.has_meta("npc"):
 			var n: Npc = c.get_meta("npc")
-			if is_instance_valid(n) and n.state.alive:
+			if is_instance_valid(n) and (n.state.alive or n.rez_target()):   # (a dead bot / companion: to resurrect)
 				last_pick_dist = from.distance_to(hit.position)
 				return n
 			q.exclude = q.exclude + [hit.rid]
@@ -768,7 +787,7 @@ func _pick_name(camera: Camera3D, screen_pos: Vector2) -> Npc:
 
 
 func select(n: Npc) -> void:
-	if n == null or not n.state.alive:
+	if n == null or not (n.state.alive or n.rez_target()):
 		return                                             # (a corpse can't be targeted - owner's old client)
 	target = n
 	var s := n.spawn
