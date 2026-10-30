@@ -1,6 +1,5 @@
 using System.Data.SQLite;
 using System.Diagnostics;
-using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using DOL.GS;
@@ -3082,7 +3081,8 @@ internal sealed partial class MainForm : Form
     private bool IsServerRunning()
     {
         int port = _modernClient?.Port ?? 10300;
-        return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Any(endpoint => endpoint.Port == port);
+        // The listener table first, then a short loopback connect when the table leaves the server out (issue #32).
+        return ServerPortProbe.IsListening(port);
     }
 
     private void BeginServerReadinessPolling()
