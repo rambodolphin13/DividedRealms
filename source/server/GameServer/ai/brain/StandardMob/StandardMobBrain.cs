@@ -602,8 +602,20 @@ namespace DOL.AI.Brain
             // Keep Necromancer shades so that we can attack them if their pets die.
             return !living.IsAlive ||
                    living.CurrentRegion != Body.CurrentRegion ||
+                   LosesStealthedTarget(living) ||
                    (!GameServer.ServerRules.IsAllowedToAttack(Body, living, true) && !living.effectListComponent.ContainsEffectForEffectType(eEffect.Shade));
         }
+
+        /// <summary>
+        /// Owner 2026-10-30: a pet, or any monster in a battleground, loses a player or bot that goes into stealth
+        /// (before, it kept chasing and hitting a target it could no longer see). Keep stealthers see through it.
+        /// </summary>
+        public static bool LosesStealthedTarget(bool hunterIsPet, bool inBattleground, bool seesStealth, bool targetIsPlayerLike, bool targetStealthed) =>
+            targetStealthed && targetIsPlayerLike && !seesStealth && (hunterIsPet || inBattleground);
+
+        protected bool LosesStealthedTarget(GameLiving living) =>
+            LosesStealthedTarget(this is IControlledBrain, BattlegroundBrackets.IsBattlegroundRegion(Body.CurrentRegionID),
+                Body is DOL.GS.Keeps.GuardStealther, living is GamePlayer or GameBot, living.IsStealthed);
 
         protected virtual bool ShouldBeIgnoredFromAggroList(GameLiving living)
         {
