@@ -6362,6 +6362,9 @@ namespace DOL.GS
         public const string LAST_CHARGED_ITEM_USE_TICK = "LastChargedItemUsedTick";
         public const string ITEM_USE_DELAY = "ItemUseDelay";
         public const long ChargedItemLockoutMs = 10000;
+
+        /// <summary>Each of an item's two abilities keeps its own CanUseEvery timer (use type 1 and 2).</summary>
+        public static string ItemReuseKey(string itemId, int useType) => $"ITEMREUSEDELAY{itemId}_{useType}";
         public const string NEXT_POTION_AVAIL_TIME = "LastPotionItemUsedTick";
         public const string NEXT_SPELL_AVAIL_TIME_BECAUSE_USE_POTION = "SpellAvailableTime";
 
@@ -6969,7 +6972,7 @@ namespace DOL.GS
                                 long lastChargedItemUseTick = TempProperties.GetProperty<long>(LAST_CHARGED_ITEM_USE_TICK);
                                 long changeTime = CurrentRegion.Time - lastChargedItemUseTick;
                                 long delay = TempProperties.GetProperty<long>(ITEM_USE_DELAY);
-                                long itemDelay = TempProperties.GetProperty<long>("ITEMREUSEDELAY" + useItem.Id_nb);
+                                long itemDelay = TempProperties.GetProperty<long>(ItemReuseKey(useItem.Id_nb, type));
                                 long itemReuse = (long)useItem.CanUseEvery * 1000;
 
                                 if (itemDelay == 0)
@@ -7182,7 +7185,7 @@ namespace DOL.GS
                         {
                             TempProperties.SetProperty(LAST_CHARGED_ITEM_USE_TICK, CurrentRegion.Time);
                             TempProperties.SetProperty(ITEM_USE_DELAY, ChargedItemLockoutMs);
-                            TempProperties.SetProperty("ITEMREUSEDELAY" + useItem.Id_nb, CurrentRegion.Time);
+                            TempProperties.SetProperty(ItemReuseKey(useItem.Id_nb, type), CurrentRegion.Time);
                         }
                     }
                 }
