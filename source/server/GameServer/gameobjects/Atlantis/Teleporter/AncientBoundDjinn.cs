@@ -98,7 +98,8 @@ namespace DOL.GS
         {
             get
             {
-                switch (CurrentZone.ID)
+                // PermanentDjinn asks before it is in the world, when X and Y still read 0.
+                switch (CurrentRegion?.GetZone(RealX, RealY)?.ID)
                 {
                     // Oceanus Hesperos.
 
