@@ -5,6 +5,9 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 (not released yet)
 
+- Friends on a hosted game no longer count as link-dead after 5 seconds without a position update, which could cancel
+  /quit, close a trade or put them out of a house while standing still. The limit is now 15 seconds.
+- The client's stuck appeal is accepted without a long description.
 - Boats deploy: /boat summon works on the modern client, and using a boat from your bags or quickbar while swimming
   launches it, and /boat unsummon puts it back in your bags. Steer by setting a ground target. Boats bought from Atlantis shipwrights before this work too.
 - Swimming and diving: the server now reads swimming from modern clients, Atlantis allows diving, and swimming in

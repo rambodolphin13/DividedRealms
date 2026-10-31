@@ -24,6 +24,9 @@ The project's AI-developed additions do not remove upstream attribution.
 - The new client's converted zones, models, textures, sounds and interface art are derived from the
   original DAoC client's files, like the original client itself; they are not authored by this
   project.
+- 1.130 opcode reference (docs/reference/daoc-opcodes-1.130.json): the eod-client project's published
+  table, eveofdarkness.org/opcodes, by joej, CC BY 4.0 (posts) and GPL-3.0-or-later (client and protocol
+  code). Not affiliated with the original Eve of Darkness project.
 - Additional launcher/portal snapshots and bundled SDK/native/Python packages:
   retain their own licenses and notices; inclusion is not a blanket relicense.
 - World Workshop editor: Three.js r170, OrbitControls, GLTFLoader, BufferGeometryUtils,
