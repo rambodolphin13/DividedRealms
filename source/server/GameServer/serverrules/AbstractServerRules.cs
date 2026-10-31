@@ -2207,7 +2207,7 @@ namespace DOL.GS.ServerRules
             }
         }
 
-        private static long CalculateOutpostExperienceBonus(GamePlayer playerToAward, long baseXpReward)
+        public static long CalculateOutpostExperienceBonus(GamePlayer playerToAward, long baseXpReward)
         {
             //outpost XP
             //1.54 http://www.camelotherald.com/more/567.shtml
