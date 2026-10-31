@@ -3726,8 +3726,8 @@
     <niobject name="NiPSysEmitterCtlrData" abstract="0" inherit="NiObject">
         Particle system emitter controller data.
         <add name="Float Keys?" type="KeyGroup" template="float">Unknown.</add>
-        <add name="Num Visibility Keys?" type="uint">Number of keys.</add>
-        <add name="Visibility Keys?" type="Key" arg="1" template="byte" arr1="Num Visibility Keys?">Unknown.</add>
+        <add name="Num Visibility Keys" type="uint">Number of keys.</add>
+        <add name="Visibility Keys" type="Key" arg="1" template="byte" arr1="Num Visibility Keys">Unknown.</add>
     </niobject>
 
     <niobject name="NiPSysGravityModifier" abstract="0" inherit="NiPSysModifier">

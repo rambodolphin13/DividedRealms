@@ -5,6 +5,16 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 (not released yet)
 
+- World Workshop can move, turn and scale the client's own buildings and scenery in outdoor zones, from the Zone tab.
+  Server doors near a building can move with it. The change stays in this client, navmeshes do not follow it, and it can
+  be undone from the Custom looks list.
+- Custom looks and item imports can be uninstalled in any order. An uninstall is refused while another look still uses
+  a skin or NIF of the one being removed.
+- World Workshop reads the item and monster table sizes from each client's game.dll and refuses an item import past them.
+- The dungeon piece dr_demonroom2b now converts for the new client and World Workshop. A mistake in our copy of the NIF
+  format file had stopped it loading.
+- New optional tool classslots/model_table.py raises the 1.130 monster model limit from 2500 to 32768. It has not been
+  tried in game and is not part of the normal client build.
 - Friends on a hosted game no longer count as link-dead after 5 seconds without a position update, which could cancel
   /quit, close a trade or put them out of a house while standing still. The limit is now 15 seconds.
 - The client's stuck appeal is accepted without a long description.
