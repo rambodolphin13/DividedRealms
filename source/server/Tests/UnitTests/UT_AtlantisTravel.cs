@@ -11,6 +11,8 @@ namespace DOL.UnitTests
         [TestCase((ushort) 73, 1049, true, Description = "Hesperos seabed")]
         [TestCase((ushort) 31, 7000, true, Description = "Midgard's copy of Mesothalassa")]
         [TestCase((ushort) 134, 3299, true, Description = "Hibernia's copy of Anatole")]
+        [TestCase((ushort) 70, 3295, true, Description = "Ruins of Atlantis, a sea zone")]
+        [TestCase((ushort) 72, 7296, true, Description = "Hibernia's copy of the Ruins")]
         [TestCase((ushort) 73, 8112, false, Description = "An island above the sea")]
         [TestCase((ushort) 82, 7112, false, Description = "Land of Atum lies below sea level but is land")]
         [TestCase((ushort) 81, 6418, false, Description = "Stygian Delta is land")]
