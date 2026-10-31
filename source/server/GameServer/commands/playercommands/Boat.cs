@@ -344,6 +344,38 @@ namespace DOL.GS.Commands
 									client.Player.MountSteed(playerBoat, true);
 									client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Boat.Summoned", playerBoat.Name), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
 								}
+								else if (GameBoat.PlayerHasItem(client.Player, "Elvish_Caravel"))
+								{
+									GameBoat playerBoat = new GameBoat();
+									DbInventoryItem item = client.Player.Inventory.GetFirstItemByID("Elvish_Caravel", eInventorySlot.Min_Inv, eInventorySlot.Max_Inv);
+									playerBoat.BoatID = System.Guid.NewGuid().ToString();
+									playerBoat.Name = client.Player.Name + "'s Elvish Caravel";
+									playerBoat.X = client.Player.X;
+									playerBoat.Y = client.Player.Y;
+									playerBoat.Z = client.Player.Z;
+									playerBoat.Model = 1657;
+									playerBoat.Heading = client.Player.Heading;
+									playerBoat.Realm = client.Player.Realm;
+									playerBoat.CurrentRegionID = client.Player.CurrentRegionID;
+									playerBoat.OwnerID = client.Player.InternalID;
+									playerBoat.MaxSpeedBase = 700;
+									client.Player.Inventory.RemoveItem(item);
+									InventoryLogging.LogInventoryAction(client.Player, "(ground)", eInventoryActionType.Other, item.Template, item.Count);
+									playerBoat.Riders = new GamePlayer[33];
+									BlankBrain brain = new BlankBrain();
+									playerBoat.SetOwnBrain(brain);
+									playerBoat = BoatMgr.CreateBoat(client.Player, playerBoat);
+									if (client.Player.Guild != null)
+									{
+										if (client.Player.Guild.Emblem != 0)
+											playerBoat.Emblem = (ushort)client.Player.Guild.Emblem;
+
+										playerBoat.GuildName = client.Player.Guild.Name;
+									}
+									playerBoat.AddToWorld();
+									client.Player.MountSteed(playerBoat, true);
+									client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Boat.Summoned", playerBoat.Name), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+								}
 								else
 								{
 									client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Boat.NotOwnBoat"), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);

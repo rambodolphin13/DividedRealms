@@ -444,7 +444,7 @@ namespace DOL.GS
 
             int maxRoamingRadius = Owner.RoamingRange;
 
-            if (Owner.CurrentZone.IsPathfindingEnabled)
+            if (Owner.CurrentZone.IsPathfindingEnabled && !Pathfinder.IsBelowAtlantisSea(Owner.CurrentZone.ID, (int) Owner.SpawnPoint.Z))
             {
                 EDtPolyFlags[] filters = PathfindingProvider.Instance.DefaultFilters;
                 Vector3? target = PathfindingProvider.Instance.GetRandomPoint(Owner.CurrentZone, new(Owner.SpawnPoint.X, Owner.SpawnPoint.Y, Owner.SpawnPoint.Z), maxRoamingRadius, filters);

@@ -5,6 +5,9 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 (not released yet)
 
+- Atlantis: monsters roam and chase properly on new navigation meshes, while sea monsters still swim in straight lines.
+  Merchants stock their full lists, every dock sells a ticket with return boats to Oceanus Hesperos, and boats bought
+  from a shipwright can be used with /boat summon, including Hibernia's Elvish Caravel.
 - Server fixes from OpenDAoC: the game clock no longer drifts from real time, a player memory leak and threading bugs
   in factions are gone, scouts no longer get stuck, and NPCs stop attacking other targets in range while moving. Also
   fixed: training several realm abilities at once, spellcraft gem limits, ranged critical chance and charm conflicts.

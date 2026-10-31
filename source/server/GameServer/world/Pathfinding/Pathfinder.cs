@@ -69,12 +69,22 @@ namespace DOL.GS
             return count;
         }
 
+        // The Atlantis sea zones are meshed as a flat sheet on the surface, with no seabed. Sea monsters stay off
+        // the mesh and move in straight lines, or Detour finds no start point and they stand still.
+        public const int ATLANTIS_SEA_LEVEL = 7950;
+
+        public static bool IsBelowAtlantisSea(ushort zoneId, int spawnZ) =>
+            spawnZ < ATLANTIS_SEA_LEVEL && zoneId is (>= 30 and <= 34) or (>= 73 and <= 77) or (>= 130 and <= 134);
+
         public bool ShouldPath(Zone zone, Vector3 target)
         {
             if (zone == null || !zone.IsPathfindingEnabled)
                 return false;
 
             if ((Owner.Flags & (eFlags.FLYING | eFlags.SWIMMING)) != 0 || Owner is GameTaxi || Owner is GameTaxiBoat)
+                return false;
+
+            if (Owner.SpawnPoint != null && IsBelowAtlantisSea(zone.ID, (int) Owner.SpawnPoint.Z))
                 return false;
 
             // Target is in a different zone (TODO: implement this maybe? not sure if really required).

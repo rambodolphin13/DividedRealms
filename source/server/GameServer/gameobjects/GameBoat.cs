@@ -163,6 +163,7 @@ namespace DOL.GS
                 case 1612: m_boatType = 6; break;
                 case 1613: m_boatType = 7; break;
                 case 1614: m_boatType = 8; break;
+                case 1657: m_boatType = 8; break;
             }
 
             DBBoat = m_dbBoat;
