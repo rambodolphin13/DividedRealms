@@ -473,7 +473,7 @@ namespace DOL.GS
                 bool postCombatRecovery = BotRestRecovery.NeedsOrContinuesRest(bot) && !BotRestRecovery.BlocksRest(bot);
                 if (brain.HasAggro || (bot.InCombat && !postCombatRecovery) || bot.IsAttacking)
                 {
-                    if (DropStaleFight(brain, bot, nowTick))
+                    if (DropStaleFight(brain, bot, nowTick) || TryGroupBreakOff(brain, bot, nowTick))
                         return true;
                     // Defense owns movement; do not resume an old dragon-ring
                     // waypoint from a different position after the fight.

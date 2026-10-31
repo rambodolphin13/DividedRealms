@@ -62,8 +62,8 @@ namespace DOL.GS.Commands
         public static GameBot[] BotsOf(GamePlayer player) =>
             player?.Group?.GetMembersInTheGroup().OfType<GameBot>().Where(bot => bot.PlayerGroupLeader == player).ToArray() ?? [];
 
-        /// <summary>Grey gives nothing; a pair of bots stops at yellow and a bigger party at orange. Pure.</summary>
-        public static bool IsHuntTarget(int conLevel, int hunters) => conLevel > -3 && conLevel <= (hunters >= 3 ? 1 : 0);
+        /// <summary>Grey gives nothing; one bot stops at yellow, a pair at orange and a bigger party at red. Pure.</summary>
+        public static bool IsHuntTarget(int conLevel, int hunters) => conLevel > -3 && conLevel <= (hunters >= 3 ? 2 : hunters == 2 ? 1 : 0);
 
         /// <summary>Whether a member can go into the next fight (a song class never fills its power, so it doesn't count that). Pure.</summary>
         public static bool ReadyForPull(bool alive, int healthPercent, int maxPower, int powerPercent, bool songClass) =>

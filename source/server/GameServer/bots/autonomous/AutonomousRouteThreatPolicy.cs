@@ -39,6 +39,30 @@ namespace DOL.GS
         // retarget cooldown was running. A party never pulls a monster this many levels above its average, and a monster it must
         // not pull and cannot go around makes it give up the camp even inside the cooldown (at most once a minute).
         public const int GroupMaximumLevelsAbove = 8;
+        // Playtest 2026-10-31, 40 minutes on 3,000 bots: solo single oranges killed 7% within 150 seconds (12% in Atlantis),
+        // not the 34-54% of the 2026-10-18 logs, and groups lost nobody in 95 yellow and orange pulls. A party of four bots
+        // beat level 60 reds in 15-33 seconds. Atlantis is too thick with roaming monsters to walk around them all.
+        /// <summary>From this level a lone bot takes a single orange rather than give up its camp.</summary>
+        public const int HighLevelSoloMinimum = 45;
+        public const int StrongPartyMinimumMembers = 4;
+        public const int StrongPartyMinimumLevel = 45;
+        public const int StrongPartyMaximumLevelsAbove = 12;
+        public const int StrongPartyEasyRedPack = 2;
+        /// <summary>A monster this hurt is nearly dead: running now only throws the fight away.</summary>
+        public const int BreakOffFoeHealthPercent = 40;
+        public const int BreakOffMinimumParty = 3;
+
+        /// <summary>A party that can fight well above its level: four or more at level with a healer. Pure.</summary>
+        public static bool IsStrongParty(int members, bool hasHealer, int averageLevel) =>
+            members >= StrongPartyMinimumMembers && hasHealer && averageLevel >= StrongPartyMinimumLevel;
+
+        /// <summary>
+        /// Half the party down, or the healer gone against an orange or worse, and the monster far from finished. A lost
+        /// healer alone is no reason to run from an easy monster (playtest 2026-10-31: six of seven ran from one sentry). Pure.
+        /// </summary>
+        public static bool ShouldBreakOff(int members, int alive, bool hadHealer, bool healerAlive, int strongestFoeHealthPercent, ConColor hardestFoe) =>
+            members >= BreakOffMinimumParty && strongestFoeHealthPercent >= BreakOffFoeHealthPercent && alive > 0 &&
+            ((members - alive) * 2 >= members + 1 || hadHealer && !healerAlive && hardestFoe >= ConColor.ORANGE);
         public const long ForcedRetargetCooldownMilliseconds = 60_000;
 
         /// <summary>
@@ -58,7 +82,8 @@ namespace DOL.GS
         /// </summary>
         public static RouteThreatAction Decide(ConColor con, bool grouped, int packSize, bool bossLike,
             bool detourAvailable, int detoursSoFar, bool mayRetarget, bool cautious = false, bool mayAbandonHopeless = false,
-            int levelsAboveReference = 0, bool mayForceRetarget = false)
+            int levelsAboveReference = 0, bool mayForceRetarget = false, bool strongParty = false, bool highLevelSolo = false,
+            bool denseWorld = false)
         {
             // A grey monster is no threat (and in DAoC rarely aggroes); lower cons are fought in
             // bigger packs. Run 7 (2026-10-06): 14% of give-ups were greys 6+ levels below the
@@ -69,13 +94,16 @@ namespace DOL.GS
             if (!grouped && !bossLike)
             {
                 ConColor felt = cautious && con == ConColor.YELLOW ? ConColor.ORANGE : con;
-                int easySolo = felt <= ConColor.GREEN ? 3 : felt <= ConColor.BLUE ? 2 : 0;
-                int fightableSolo = felt <= ConColor.GREEN ? 5 : felt <= ConColor.BLUE ? 3 : felt <= ConColor.ORANGE ? 1 : 0;
+                // Atlantis: solo blue packs killed more often than single oranges (14% against 12%).
+                int easySolo = felt <= ConColor.GREEN ? 3 : felt <= ConColor.BLUE ? denseWorld ? 1 : 2 : 0;
+                int fightableSolo = felt <= ConColor.GREEN ? 5 : felt <= ConColor.BLUE ? denseWorld ? 2 : 3 : felt <= ConColor.ORANGE ? 1 : 0;
                 if (packSize <= easySolo)
                     return RouteThreatAction.Pull;
                 if (canDetour)
                     return RouteThreatAction.Detour;
                 if (felt == ConColor.YELLOW && packSize <= 1)
+                    return RouteThreatAction.Pull;
+                if (felt == ConColor.ORANGE && highLevelSolo && packSize <= 1)
                     return RouteThreatAction.Pull;
                 if (felt == ConColor.ORANGE && mayRetarget)
                     return RouteThreatAction.Retarget;
@@ -89,14 +117,16 @@ namespace DOL.GS
             int manageablePack = grouped ? con <= ConColor.BLUE ? 6 : 4
                 : con <= ConColor.GREEN ? 5 : con <= ConColor.BLUE ? 3 : 2;
             bool easy = !bossLike && (grouped
-                ? con <= ConColor.ORANGE && packSize <= easyPack
+                ? con <= ConColor.ORANGE && packSize <= easyPack || strongParty && con == ConColor.RED && packSize <= StrongPartyEasyRedPack
                 : con <= ConColor.YELLOW && packSize <= easyPack);
             if (easy)
                 return RouteThreatAction.Pull;
             if (canDetour)
                 return RouteThreatAction.Detour;
+            int levelsAllowed = strongParty ? StrongPartyMaximumLevelsAbove : GroupMaximumLevelsAbove;
             bool manageable = !bossLike && (grouped
-                ? con <= ConColor.RED && packSize <= manageablePack && levelsAboveReference < GroupMaximumLevelsAbove
+                ? con <= ConColor.RED && packSize <= manageablePack && levelsAboveReference < levelsAllowed ||
+                  strongParty && con == ConColor.PURPLE && packSize == 1 && levelsAboveReference < levelsAllowed
                 : con <= ConColor.ORANGE && packSize <= manageablePack);
             if (manageable)
                 return RouteThreatAction.Pull;

@@ -101,6 +101,14 @@ namespace DOL.GS.Spells
 
         public override bool CheckBeginCast(GameLiving selectedTarget)
         {
+            // The timer starts with the cast, so a class with nothing to summon hears it now, not after it is spent.
+            if (Caster is GamePlayer player && (eCharacterClass) player.CharacterClass.ID is not eCharacterClass.Skald &&
+                ArtifactSummons.ItemsFor((int) Spell.Value, (eCharacterClass) player.CharacterClass.ID, player.Realm).Count == 0)
+            {
+                MessageToCaster("This artifact has nothing to give your class.", eChatType.CT_SpellResisted);
+                return false;
+            }
+
             bool night = Caster.CurrentRegion.IsNightTime;
 
             if ((int) Spell.Value == ArtifactSummons.Sun && night)

@@ -6927,7 +6927,12 @@ namespace DOL.GS
                                                             TempProperties.SetProperty(NEXT_SPELL_AVAIL_TIME_BECAUSE_USE_POTION, 6 * 1000 + CurrentRegion.Time);
                                                     }
 
-                                                    if (spellHandler.StartSpell(this, useItem))
+                                                    // A thrown or fired item (the Javelin of Flame) goes at the target, not the user.
+                                                    GameLiving aim = spell.IsHarmful ? TargetObject as GameLiving : this;
+
+                                                    if (aim == null)
+                                                        Out.SendMessage("You need a target for that!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                                                    else if (spellHandler.StartSpell(aim, useItem))
                                                     {
                                                         if (useItem.Count > 1)
                                                         {

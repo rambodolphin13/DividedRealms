@@ -130,7 +130,8 @@ namespace DOL.GS
                 other == blocker || Math.Abs(other.Z - blocker.Z) <= 160 && other.Brain is StandardMobBrain otherBrain &&
                 other.GetDistanceTo(blocker) < Math.Max(320, blockerBrain.AggroRange + otherBrain.AggroRange + 80)).ToArray();
             int pack = packMembers.Length;
-            ConColor con = ConLevels.GetConColor(bot.GetConLevel(blocker));
+            ConColor seen = ConLevels.GetConColor(bot.GetConLevel(blocker));
+            ConColor con = AutonomousMobLessons.Felt(seen, blocker.Name, grouped);
             bool bossLike = blocker is IGameEpicNpc ||
                             AutonomousPveTargetPolicy.IsUnreachableFlyer(blocker.Flags, blocker.Z, bot.Z) && !ranged;
 
@@ -145,13 +146,18 @@ namespace DOL.GS
                                     now - _lastRouteThreatRetargetTick >= AutonomousRouteThreatPolicy.ForcedRetargetCooldownMilliseconds;
             RouteThreatAction action = AutonomousRouteThreatPolicy.Decide(con, grouped, pack, bossLike,
                 detour.HasValue, detours, mayRetarget, cautious: !grouped && now < _routeCautionUntilTick,
-                mayAbandonHopeless: _camp != null, levelsAboveReference: levelsAbove, mayForceRetarget: mayForceRetarget);
+                mayAbandonHopeless: _camp != null, levelsAboveReference: levelsAbove, mayForceRetarget: mayForceRetarget,
+                strongParty: grouped && AutonomousRouteThreatPolicy.IsStrongParty(bot.Group?.MemberCount ?? 0,
+                    bot.Group?.GetMembersInTheGroup().OfType<GameBot>().Any(member => member.CharacterClass != null &&
+                        BotPartyRoles.IsHealingClass((eCharacterClass)member.CharacterClass.ID)) == true, _groupDirective.AverageLevel),
+                highLevelSolo: !grouped && bot.Level >= AutonomousRouteThreatPolicy.HighLevelSoloMinimum,
+                denseWorld: AutonomousAtlantisPolicy.IsAtlantisRegion(bot.CurrentRegionID));
             if (action == RouteThreatAction.Ignore)
                 return false;
 
             Log.Info($"AUTONOMOUS_ROUTE_THREAT bot={bot.Name} id={bot.DatabaseID} class=\"{bot.ClassName}\" level={bot.Level} " +
                      $"group={(grouped ? _groupDirective.GroupId : "solo")} action={action} target=\"{blocker.Name}\" " +
-                     $"targetLevel={blocker.Level} con={con} pack={pack} aggro={blockerBrain.AggroRange} along={first:0} " +
+                     $"targetLevel={blocker.Level} con={con} seen={seen} pack={pack} aggro={blockerBrain.AggroRange} along={first:0} " +
                      $"detours={detours} levelsAbove={levelsAbove} zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
 
             switch (action)

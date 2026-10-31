@@ -99,9 +99,9 @@ namespace DOL.UnitTests
             Assert.That(PlayerBotHunt.IsHuntTarget(-3, 3), Is.False, "grey");
             Assert.That(PlayerBotHunt.IsHuntTarget(-2, 1), Is.True);
             Assert.That(PlayerBotHunt.IsHuntTarget(0, 1), Is.True);
-            Assert.That(PlayerBotHunt.IsHuntTarget(1, 2), Is.False, "orange is too much for two");
+            Assert.That(PlayerBotHunt.IsHuntTarget(2, 2), Is.False, "red is too much for two");
             Assert.That(PlayerBotHunt.IsHuntTarget(1, 3), Is.True);
-            Assert.That(PlayerBotHunt.IsHuntTarget(2, 8), Is.False, "red");
+            Assert.That(PlayerBotHunt.IsHuntTarget(3, 8), Is.False, "purple");
         }
 
         [Test]

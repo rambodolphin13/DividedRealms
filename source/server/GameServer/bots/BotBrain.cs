@@ -773,6 +773,10 @@ namespace DOL.AI.Brain
                 return false;
             }
 
+            // The player's order comes first: an add the bot was fighting could hold more aggro than the order adds
+            // (playtest 2026-10-31: bots stayed on a level 42 add while the leader tanked a 55).
+            if (BotBody?.IsPlayerLedGroup == true && Body.TargetObject != target)
+                ClearAggroList();
             _orderedPullTarget = target;
             _returnToFormationAfterPull = BotBody?.IsPlayerLedGroup == true;
             AddToAggroList(target, Math.Max(100, target.EffectiveLevel * 10));
