@@ -5,6 +5,23 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 (not released yet)
 
+- Server fixes from OpenDAoC: the game clock no longer drifts from real time, a player memory leak and threading bugs
+  in factions are gone, scouts no longer get stuck, and NPCs stop attacking other targets in range while moving. Also
+  fixed: training several realm abilities at once, spellcraft gem limits, ranged critical chance and charm conflicts.
+- Bots look like players on the modern 1.130 client: the server sends them as player characters, so they get player
+  name plates, a face of their own and player movement. Enemy bots still show as their race and rank. The server
+  setting `bot_show_as_players` turns it off, and older clients and the new client still see them as NPCs.
+- Bots invite you to groups. Say you are LFG (/lfg, /faction, /say or the LFG flag in the group window) and a bot of
+  about your level in your region sends a tell and an invitation. A bot farming the same camp as you asks now and
+  then. You lead the group that forms, and the leader of a bot group brings everyone along. /bots invites off stops
+  it; the setting is `bot_invite_players`.
+- The Healer's Eir and Bard's Ivy armor buffs work: all 12 ranks had no duration or concentration in the modern world,
+  so they did nothing for anyone. They are now permanent concentration buffs. Bots had been casting them without end,
+  stopping for every cast, which left them standing in town. Bots now skip any buff that can't stay on, and one that casts a buff three
+  times in a minute out of combat leaves it for five minutes.
+- New /bots commands for the bots in your group, gamebots included. /bots hunt sends tanks and attackers to find their
+  own fights near you while healers stay with you, so you can play a healer or support. /bots attack, /bots follow
+  and /bots status go with it.
 - Modern test builds: the four battlegrounds, Dodens Gruva, Summoner's Hall and Marfach Caverns load on a player's own 1.130 client.
   The stock client's zone table had none of these regions, and client setup never added them, so going there dropped
   the player to character select or out of bounds. The launcher now adds them to its client copy, and builds Abermenai's

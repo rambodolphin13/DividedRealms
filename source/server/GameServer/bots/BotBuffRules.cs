@@ -34,8 +34,15 @@ public static class BotBuffRules
     /// short timed buffs are not. Speed is kept up while travelling.
     /// </summary>
     public static bool IsMaintainedOutOfCombat(eSpellType spellType, bool isConcentration, bool isPulsing, long durationMs) =>
-        spellType == eSpellType.SpeedEnhancement || isConcentration || isPulsing ||
-        durationMs <= 0 || durationMs >= LongBuffMinDurationMs;
+        spellType == eSpellType.SpeedEnhancement || isConcentration || isPulsing || durationMs >= LongBuffMinDurationMs;
+
+    /// <summary>
+    /// A buff with no duration, no concentration and no pulse leaves no effect behind (SpellHandler only keeps an effect with
+    /// one of those), so no bot can ever see it land. The Healer's Eir and Bard's Ivy armor buffs are like this in the
+    /// modern world: all 12 ranks were cast without end, every cast stopping the bot (the owner's Jordheim Healers, 2026-10-30).
+    /// </summary>
+    public static bool LeavesNoEffect(bool isConcentration, bool isPulsing, long durationMs) =>
+        !isConcentration && !isPulsing && durationMs <= 0;
 
     /// <summary>A timed long buff with less than a minute left is recast before it runs out.</summary>
     public static bool NeedsRefresh(bool isConcentration, bool isPulsing, long durationMs, long remainingMs) =>

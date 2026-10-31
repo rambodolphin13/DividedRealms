@@ -2105,6 +2105,8 @@ namespace DOL.AI.Brain
                     outOfRangeBuffTarget ??= FindOutOfRangeBuffTarget(spell);
                     continue;
                 }
+                if (bot.BuffRecastBlocked(spell, target))
+                    continue;
                 // A pet buff just cast whose effect has not shown up yet keeps its
                 // old bounded retry window; other missing buffs may go next.
                 if (target == bot.ControlledBrain?.Body && spell.ID == _pendingMaintenancePetBuffId &&

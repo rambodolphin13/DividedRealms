@@ -197,6 +197,7 @@ public static partial class AutonomousLivingServer
             if (MemoryOn)
                 MemoryPulse(now);
             AutonomousLivingWorld.Pulse(now);
+            InvitePulse(now);
         }
         catch (Exception exception)
         {

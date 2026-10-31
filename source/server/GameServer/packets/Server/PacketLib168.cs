@@ -745,6 +745,13 @@ namespace DOL.GS.PacketHandler
 			else
 				stableRider = null;
 
+			if (obj is GameBot playerShaped && BotPlayerPresentation.TryGetSession(m_gameClient, playerShaped, out ushort botSession))
+			{
+				SendBotPlayerPosition(playerShaped, botSession, udp);
+				stableRider?.SendStableRideAssociation(m_gameClient.Player, true);
+				return;
+			}
+
 			ushort xOffsetInZone;
 			ushort yOffsetInZone;
 			ushort z;
@@ -884,6 +891,65 @@ namespace DOL.GS.PacketHandler
 			}
 		}
 
+		/// <summary>
+		/// A bot's position in the player layout (PlayerPositionUpdateHandler.CreateOutPak1127). The client runs a player on
+		/// from heading and speed alone, without the destination an NPC update carries, so a moving bot needs these often
+		/// (<see cref="BotPlayerPresentation.MovingUpdateInterval"/>) and a fighting one is turned to face its target here.
+		/// </summary>
+		protected void SendBotPlayerPosition(GameBot bot, ushort session, bool udp)
+		{
+			Zone zone = bot.CurrentZone;
+
+			if (zone == null)
+				return;
+
+			GameNPC mount = bot.StableRouteMountForClient;
+			GameObject target = bot.IsAttacking ? bot.TargetObject : null;
+			bool moving = bot.IsMoving && !bot.IsAtDestination;
+			ushort heading = mount?.ObjectState is GameObject.eObjectState.Active ? mount.ObjectID :
+				!moving && target?.ObjectState is GameObject.eObjectState.Active ? bot.GetHeading(target) : bot.Heading;
+			byte action = (byte) (bot.IsStealthed ? PlayerPositionUpdateHandler.ActionFlags.DIVING_IN__STEALTHED_OUT : 0);
+			byte state = BotPlayerPresentation.StateFlags(!bot.IsAlive, mount != null, (bot.Flags & GameNPC.eFlags.FLYING) != 0, bot.IsUnderwater);
+			byte health = (byte) (bot.HealthPercent + (bot.attackComponent.AttackState ? 0x80 : 0));
+
+			if (udp)
+			{
+				using var pak = PooledObjectFactory.GetForTick<GSUDPPacketOut>().Init(GetPacketCode(eServerPackets.PlayerPosition));
+				Write(pak);
+				SendUDP(pak);
+			}
+			else
+			{
+				using var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.PlayerPosition));
+				Write(pak);
+				SendTCP(pak);
+			}
+
+			void Write(PacketOut pak)
+			{
+				var position = bot.movementComponent.PositionForClient;
+				pak.WriteFloatLowEndian(position.X);
+				pak.WriteFloatLowEndian(position.Y);
+				pak.WriteFloatLowEndian(position.Z);
+				pak.WriteFloatLowEndian(moving ? (float) bot.movementComponent.HorizontalVelocityForClient : 0f);
+				pak.WriteFloatLowEndian(0f); // Fall speed.
+				pak.WriteShort(session);
+				pak.WriteShort((ushort) bot.ObjectID);
+				pak.WriteShort(zone.ID);
+				pak.WriteByte(state);
+				pak.WriteByte(0);
+				pak.WriteShort(0); // Seat.
+				pak.WriteShort(heading);
+				pak.WriteByte(action);
+				pak.WriteByte(0);
+				pak.WriteByte(0);
+				pak.WriteByte(health);
+				pak.WriteByte(bot.ManaPercent);
+				pak.WriteByte(bot.EndurancePercent);
+				pak.WriteShort(0);
+			}
+		}
+
 		public virtual void SendPlayerQuit(bool totalOut)
 		{
 			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.Quit)))
@@ -901,7 +967,7 @@ namespace DOL.GS.PacketHandler
 		{
 			int oType = 0;
 
-			if (obj is GamePlayer)
+			if (obj is GamePlayer || obj is GameBot bot && BotPlayerPresentation.TryGetSession(m_gameClient, bot, out _))
 				oType = 2;
 			else if (obj is GameNPC npc)
 				// type 0 = "leave the corpse to fade". A gamebot's body is the bot itself (it stays in the world until

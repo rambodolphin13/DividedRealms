@@ -42,6 +42,10 @@ namespace DOL.GS
         /// <summary>Set by the brain only around the pet focus shield's own cast (BotBrain.TryStartPetFocusShield).</summary>
         internal bool PetFocusShieldApproved { get; set; }
         public bool IsPlayerLedGroup => PlayerGroupLeader != null;
+
+        /// <summary>The session id clients know this bot by while it is shown as a player, 0 when it has none (BotPlayerPresentation).</summary>
+        internal ushort PresentedSession { get; set; }
+        internal ushort PresentedRegion { get; set; }
         public string ClassName { get; private set; }
         public new string InternalID { get; set; }
         public byte ClassId { get; set; }
@@ -2794,6 +2798,8 @@ namespace DOL.GS
         public override bool CastSpell(Spell spell, SpellLine line, ISpellCastingAbilityHandler spellCastingAbilityHandler = null, bool checkLos = true)
         {
             if (CompanionFollowPolicy.DeferBuff(this, spell)) return false;
+            if (BuffRecastBlocked(spell, TargetObject as GameLiving)) return false;
+            if (BotBrain.IsMaintainableClassBuff(spell) && BotBuffRules.LeavesNoEffect(spell.IsConcentration, spell.IsPulsing, spell.Duration)) return false;
             // A cast reveals the caster: a companion hidden with its player casts only heals until a fight starts.
             if (spell?.IsHealing != true && CompanionStealth.SuppressesCasting(this)) return false;
             if (AutonomousGroupFormationFollow.DeferBuff(this, spell)) return false;
@@ -2841,6 +2847,8 @@ namespace DOL.GS
                 WakeRecoveryRest();
             bool started = base.CastSpell(spell, line, spellCastingAbilityHandler, checkLos);
             CabalistRestDiagnostics.Attempt(this, spell, started);
+            if (started)
+                RecordBuffRecast(spell, TargetObject as GameLiving);
             if (started && CharacterClass?.ID == (int)eCharacterClass.Animist)
                 AnimistSingleTargetPolicy.CastOwnerSpell(this, spell);
             return started;
@@ -2849,6 +2857,28 @@ namespace DOL.GS
         public override bool CastSpell(Spell spell, SpellLine line, bool checkLos)
         {
             return CastSpell(spell, line, null, checkLos);
+        }
+
+        private BotBuffRecastGuard _buffRecastGuard;
+
+        private static bool GuardsBuffRecast(Spell spell) => spell != null && BotBuffRecastGuard.Applies(
+            BotBrain.IsMaintainableClassBuff(spell), spell.IsHarmful, spell.IsHealing, spell.IsPulsing);
+
+        private static int BuffRecastTarget(Spell spell, GameLiving target) =>
+            spell.Target == eSpellTarget.REALM ? target?.ObjectID ?? 0 : 0;
+
+        /// <summary>Out of combat this buff has been cast at this target over and over without taking (BotBuffRecastGuard).</summary>
+        internal bool BuffRecastBlocked(Spell spell, GameLiving target) => GuardsBuffRecast(spell) && !InCombat &&
+            _buffRecastGuard?.Blocks(spell.ID, BuffRecastTarget(spell, target), GameLoop.GameLoopTime) == true;
+
+        private void RecordBuffRecast(Spell spell, GameLiving target)
+        {
+            if (!GuardsBuffRecast(spell) || InCombat ||
+                !(_buffRecastGuard ??= new()).Record(spell.ID, BuffRecastTarget(spell, target), GameLoop.GameLoopTime))
+                return;
+            log.Warn($"BOT_BUFF_RECAST_LOOP bot=\"{Name}\" id={DatabaseID} class=\"{CharacterClass?.Name}\" level={Level} region={CurrentRegionID} " +
+                $"spell=\"{spell.Name}\" spellId={spell.ID} type={spell.SpellType} spellTarget={spell.Target} concentration={spell.Concentration} " +
+                $"duration={spell.Duration} target=\"{target?.Name}\"");
         }
 
         public override void StartAttack(GameObject target)
@@ -3074,6 +3104,7 @@ namespace DOL.GS
             if (!base.RemoveFromWorld())
                 return false;
 
+            BotPlayerPresentation.Release(this);
             Duel?.Stop();
 
             if (ControlledBrain != null && _keepPetThroughMove == 0)

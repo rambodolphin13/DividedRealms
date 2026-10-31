@@ -2531,6 +2531,18 @@ namespace DOL.GS.ServerProperties
 		public static bool BOT_VOICES_TELLS;
 
 		/// <summary>
+		/// Gamebots invite the player to a group: one who says they are looking for a group, or one farming the same camp now and then.
+		/// </summary>
+		[ServerProperty("bots", "bot_invite_players", "Gamebots invite a player who says they are LFG (/lfg, /faction, /say or the group window's LFG flag) and now and then one who is farming the same camp. A player turns it off for themselves with /bots invites off.", true)]
+		public static bool BOT_INVITE_PLAYERS;
+
+		/// <summary>
+		/// Bots are sent to a 1.130 client as player characters, so the client draws their names and bodies the way it draws players.
+		/// </summary>
+		[ServerProperty("bots", "bot_show_as_players", "Send gamebots and companions to the 1.130 client as player characters instead of NPCs (player name plates, faces, player movement). Older clients and the new client always see NPCs.", true)]
+		public static bool BOT_SHOW_AS_PLAYERS;
+
+		/// <summary>
 		/// How busy realm chat is (the talking update): a multiplier on how often bots start /faction and /say lines.
 		/// </summary>
 		[ServerProperty("bots", "bot_voices_chat_rate", "When bot voices are on: how much bots talk unprompted, from 0 (only answers) to 3 (very busy). 1 is a normal evening; it already rises and falls with how many bots are on and the hour.", 1.0)]
