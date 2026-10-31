@@ -62,7 +62,7 @@ namespace OfflineDaoc.TestClient
             ["runemaster"] = new(29, 2, 5, 503, new[] { 70, 60, 80, 50, 60, 70, 60, 60 }, 32, 8, "Darkness", "Suppression", "Runecarving"),
             ["hero"] = new(44, 3, 9, 302, new[] { 70, 70, 70, 60, 60, 60, 60, 60 }, 38, 19, "Blades", "Shields", "Parry"),
             ["druid"] = new(47, 3, 9, 302, new[] { 60, 60, 70, 70, 60, 60, 70, 60 }, 38, 20, "Nurture", "Nature", "Regrowth"),
-            ["eldritch"] = new(40, 3, 11, 334, new[] { 40, 85, 50, 75, 80, 60, 60, 60 }, 32, 8, "Light", "Mana", "Void"),
+            ["eldritch"] = new(40, 3, 11, 334, new[] { 40, 85, 50, 75, 80, 60, 60, 60 }, 32, 8, "Void", "Light", "Mana"),
         };
 
         // Every other class comes from classes.json (gen_classes.py): armor, weapon and specs are worked out by prepare.
@@ -712,6 +712,8 @@ namespace OfflineDaoc.TestClient
             TargetOid = oid;
             _client.Target(oid, oid == 0 ? 0 : 0x6000);
         }
+
+        public void SetGroundTarget(Entity e) => _client.GroundTarget((int)e.X, (int)e.Y, (int)e.Z, 0x100);
 
         public void Face(Entity e)
         {

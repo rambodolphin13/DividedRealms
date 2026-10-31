@@ -64,6 +64,7 @@ namespace OfflineDaoc.TestClient
             All.Add(Make("teleport", "Teleport with /jump.", Teleport, new[] { "x", "y" }, ("x", "integer", ""), ("y", "integer", ""),
                 ("z", "integer", "Default: the ground, from the zone's navmesh"), ("region", "integer", "Default: this region")));
             All.Add(Make("target", "Target by name or object id, or clear with an empty string.", Target, new[] { "who" }, ("who", "string", "")));
+            All.Add(Make("ground_target", "Set the ground target on a living, for area spells.", GroundTarget, new[] { "who" }, ("who", "string", "")));
             All.Add(Make("move_to", "Walk on the zone's navmesh to a point or a living. Result says whether it arrived and whether a mesh was used.", MoveTo, none,
                 ("who", "string", "Name or object id, instead of a point"), ("x", "number", ""), ("y", "number", ""), ("z", "number", ""),
                 ("stop_within", "number", "Default 50"), ("timeout_s", "number", "Default 120")));
@@ -303,6 +304,14 @@ namespace OfflineDaoc.TestClient
             Entity e = string.IsNullOrEmpty(who) ? null : Living(s, who);
             s.SetTarget(e?.Oid ?? 0);
             return e == null ? "target cleared" : Show(s, e);
+        }
+
+        object GroundTarget(JsonObject a)
+        {
+            TestSession s = Session(a);
+            Entity e = Living(s, Text(a, "who"));
+            s.SetGroundTarget(e);
+            return Show(s, e);
         }
 
         object MoveTo(JsonObject a)

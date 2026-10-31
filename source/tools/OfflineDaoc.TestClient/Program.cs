@@ -26,6 +26,8 @@ namespace OfflineDaoc.TestClient
             var tools = new TestTools(config);
             if (args.Contains("--check"))
                 return Check(config, tools.Nav);
+            if (Option(args, "--world-audit") is string audit)
+                return WorldAudit(config, tools.Nav, audit);
             string scenario = Option(args, "--scenario");
             int code = 0;
             if (scenario != null)
@@ -47,6 +49,70 @@ namespace OfflineDaoc.TestClient
             List<Vector3> path = from == null || to == null ? null : nav.FindPath(zone.Id, from.Value, to.Value);
             Console.WriteLine(path == null ? "No path." : $"Path of {path.Count} points ending at {path[^1]}");
             return path == null ? 1 : 0;
+        }
+
+        // Every spawn checked against the zones and navmeshes, with the server off: mobs nothing can reach, and how well
+        // each zone's mesh joins up, tried between random pairs of its own mobs.
+        static int WorldAudit(TestConfig config, NavMesh nav, string file)
+        {
+            var random = new Random(1);
+            var zones = new List<object>();
+            int[] regions = { 1, 100, 200, 30, 73, 130, 70, 71, 72, 35, 36, 37, 40, 45, 46, 51, 61, 151, 181 };
+            foreach (ZoneInfo zone in config.Zones.Where(z => regions.Contains(z.Region)))
+            {
+                var mobs = config.Query($"select Name, Level, X, Y, Z, Flags, RoamingRange from Mob where Region = {zone.Region} "
+                    + $"and X >= {zone.X * 8192} and X < {(zone.X + zone.Width) * 8192} and Y >= {zone.Y * 8192} and Y < {(zone.Y + zone.Height) * 8192}", 100000)
+                    .Where(m => Convert.ToInt32(m["Level"]) > 0).ToList();
+                if (mobs.Count == 0)
+                    continue;
+                int off = 0, above = 0, below = 0, noMesh = 0;
+                var points = new List<Vector3>();
+                var worst = new Dictionary<string, int>();
+                foreach (var m in mobs)
+                {
+                    var at = new Vector3(Convert.ToSingle(m["X"]), Convert.ToSingle(m["Y"]), Convert.ToSingle(m["Z"]));
+                    if (nav.Ground(zone.Id, at) is not Vector3 ground)
+                    {
+                        noMesh++;
+                        continue;
+                    }
+                    points.Add(ground);
+                    bool flying = (Convert.ToInt32(m["Flags"]) & 1) != 0 || (Convert.ToInt32(m["Flags"]) & 4) != 0;
+                    float flat = new Vector2(ground.X - at.X, ground.Y - at.Y).Length();
+                    if (flat > 200)
+                        off++;
+                    else if (!flying && at.Z - ground.Z > 200)
+                        above++;
+                    else if (at.Z - ground.Z < -200)
+                        below++;
+                    else
+                        continue;
+                    string name = (string)m["Name"];
+                    worst[name] = worst.GetValueOrDefault(name) + 1;
+                }
+                int tried = 0, joined = 0, partial = 0, tooLong = 0;
+                for (int i = 0; i < 40 && points.Count > 1; i++)
+                {
+                    Vector3 from = points[random.Next(points.Count)], to = points[random.Next(points.Count)];
+                    tried++;
+                    List<Vector3> path = nav.FindPath(zone.Id, from, to);
+                    if (path != null && Vector3.Distance(path[^1], to) < 150)
+                        joined++;
+                    else if (path != null && path.Count >= 256)
+                        tooLong++;                                 // Detour's point limit: a walker replans from there
+                    else if (path != null)
+                        partial++;
+                }
+                zones.Add(new
+                {
+                    zone = zone.Id, name = zone.Name, region = zone.Region, mobs = mobs.Count, no_mesh = noMesh, off_mesh = off, in_air = above, underground = below,
+                    paths_tried = tried, paths_joined = joined, paths_partial = partial, paths_too_long = tooLong,
+                    worst = worst.OrderByDescending(p => p.Value).Take(5).Select(p => $"{p.Key} x{p.Value}"),
+                });
+            }
+            File.WriteAllText(file, JsonSerializer.Serialize(zones));
+            Console.WriteLine($"{zones.Count} zones");
+            return 0;
         }
 
         static string Option(string[] args, string name)
