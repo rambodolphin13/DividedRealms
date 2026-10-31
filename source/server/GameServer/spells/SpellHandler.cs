@@ -2412,6 +2412,11 @@ namespace DOL.GS.Spells
 			return false;
 		}
 
+		public static bool IsPiercingMagic(ECSGameEffect effect)
+		{
+			return effect.EffectType is eEffect.PiercingMagic or eEffect.HereticPiercingMagic;
+		}
+
 		public virtual void OnDurationEffectApply(GameLiving target)
 		{
 			if (!target.IsAlive || target.effectListComponent == null)
@@ -2551,7 +2556,7 @@ namespace DOL.GS.Spells
 
 			GameLiving casterToUse = playerCaster ?? m_caster;
 			List<ECSGameEffect> effects = casterToUse.effectListComponent.GetEffects();
-			ECSGameEffect piercingMagic = effects.FirstOrDefault(e => e.EffectType is eEffect.PiercingMagic);
+			ECSGameEffect piercingMagic = effects.FirstOrDefault(IsPiercingMagic);
 
 			if (piercingMagic != null)
 				hitChance += piercingMagic.SpellHandler.Spell.Value;
