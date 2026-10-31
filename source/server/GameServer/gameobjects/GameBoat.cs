@@ -109,6 +109,62 @@ namespace DOL.GS
             BoatMgr.SaveAllBoats();
         }
 
+        public static string ItemIdForModel(ushort model)
+        {
+            foreach (BoatKind kind in BOAT_KINDS)
+            {
+                if (kind.Model == model)
+                    return kind.ItemId;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Turns the player's boat back into the item it was launched from. A free slot is checked first, then the
+        /// saved boat goes before the item is given, so the player can never hold both.
+        /// </summary>
+        public static void PackUp(GamePlayer player)
+        {
+            string language = player.Client.Account.Language;
+            GameBoat boat = BoatMgr.GetBoatByOwner(player.InternalID);
+
+            if (boat == null)
+            {
+                player.Out.SendMessage(LanguageMgr.GetTranslation(language, "Scripts.Player.Boat.NotOwnBoat"), eChatType.CT_Guild, eChatLoc.CL_ChatWindow);
+                return;
+            }
+
+            DbItemTemplate template = GameServer.Database.FindObjectByKey<DbItemTemplate>(ItemIdForModel(boat.Model));
+
+            if (template == null)
+            {
+                if (log.IsErrorEnabled)
+                    log.Error($"No item for boat model {boat.Model} (Owner: {player.Name})");
+
+                return;
+            }
+
+            lock (player.Inventory.Lock)
+            {
+                if (!player.Inventory.IsSlotsFree(1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
+                {
+                    player.Out.SendMessage("You need a free backpack slot to pack up your boat.", eChatType.CT_Guild, eChatLoc.CL_ChatWindow);
+                    return;
+                }
+
+                string name = boat.Name;
+                boat.RemoveFromWorld();
+
+                if (!BoatMgr.DeleteBoat(name))
+                    return;
+
+                player.Inventory.AddTemplate(GameInventoryItem.Create(template), 1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                InventoryLogging.LogInventoryAction("(ground)", player, eInventoryActionType.Other, template, 1);
+                player.Out.SendMessage(LanguageMgr.GetTranslation(language, "Scripts.Player.Boat.Unsummoned", name), eChatType.CT_Guild, eChatLoc.CL_ChatWindow);
+            }
+        }
+
         private static DbInventoryItem FindBoatItem(GamePlayer player)
         {
             foreach (DbInventoryItem item in player.Inventory.GetItemRange(eInventorySlot.Min_Inv, eInventorySlot.Max_Inv))
@@ -257,7 +313,7 @@ namespace DOL.GS
         {
             m_removeTimer.Stop();
             m_removeTimer = null;
-            Delete();
+            RemoveFromWorld();
             return 0;
         }
 

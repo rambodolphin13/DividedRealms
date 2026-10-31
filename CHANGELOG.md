@@ -6,7 +6,7 @@ The newest version is first. For the full detail of every earlier update, see
 ## 0.38 (not released yet)
 
 - Boats deploy: /boat summon works on the modern client, and using a boat from your bags or quickbar while swimming
-  launches it. Steer by setting a ground target. Boats bought from Atlantis shipwrights before this work too.
+  launches it, and /boat unsummon puts it back in your bags. Steer by setting a ground target. Boats bought from Atlantis shipwrights before this work too.
 - Swimming and diving: the server now reads swimming from modern clients, Atlantis allows diving, and swimming in
   lava burns in Typhon's Reach, the Ashen Isles and Muspelheim.
 - Atlantis: monsters roam and chase properly on new navigation meshes, while sea monsters still swim in straight lines.

@@ -39,21 +39,7 @@ namespace DOL.GS.Commands
 						}
 					case "unsummon":
 						{
-							GameBoat playerBoat = BoatMgr.GetBoatByOwner(client.Player.InternalID);
-
-							if (playerBoat != null)
-							{
-								if (client.Player.InternalID == playerBoat.OwnerID)
-								{
-									client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Boat.Unsummoned", playerBoat.Name), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-									playerBoat.SaveIntoDatabase();
-									playerBoat.RemoveFromWorld();
-								}
-							}
-							else
-							{
-								client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Boat.NotOwnBoat"), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-							}
+							GameBoat.PackUp(client.Player);
 							break;
 						}
 					case "board":

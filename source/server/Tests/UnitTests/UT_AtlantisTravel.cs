@@ -57,6 +57,16 @@ namespace DOL.UnitTests
             Assert.That(PlayerPositionUpdateHandler.IsSwimmingState(flags), Is.EqualTo(expected));
         }
 
+        [TestCase((ushort) 1615, "Viking_Longship")]
+        [TestCase((ushort) 1616, "skiff")]
+        [TestCase((ushort) 1657, "Elvish_Caravel")]
+        [TestCase((ushort) 2648, "scout_boat")]
+        [TestCase((ushort) 1, null)]
+        public void PackedBoatsBecomeTheItemTheyCameFrom(ushort model, string itemId)
+        {
+            Assert.That(GameBoat.ItemIdForModel(model), Is.EqualTo(itemId));
+        }
+
         [Test]
         public void NoRouteIsNeverInReach()
         {
