@@ -22,7 +22,7 @@ namespace OfflineDaoc.TestClient
         // Admin commands, ban, kick and the like stay out.
         static readonly string[] GrantedCommands =
         {
-            "GMinfo", "blink", "cast", "clearinventory", "crafting", "debug", "fly", "gmstealth", "harm", "heal",
+            "GMinfo", "artifact", "blink", "cast", "clearinventory", "crafting", "debug", "fly", "gmstealth", "harm", "heal",
             "item", "jump", "mob", "morph", "npc", "object", "offlinejump", "player", "speed", "spammob", "stop",
             "taxitest", "teleport", "walk", "weather", "zone",
         };

@@ -42,6 +42,8 @@ namespace DOL.GS.Spells
         [
             "Artef_Javelin",
             "Blade_Shadow",
+            "Stone_Staff_Binding",
+            "Stone_Staff_Power",
             "Blade_ShadowH",
             "Blade_ShadowM",
             "Eerie_Dark_Stone",

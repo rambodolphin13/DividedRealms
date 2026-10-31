@@ -2046,6 +2046,12 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("pve", "lootgenerator_mythirian_named_multiplier", "Multiplier on the mythirian drop chance for named and epic mobs.", 5.0)]
 		public static double LOOTGENERATOR_MYTHIRIAN_NAMED_MULTIPLIER;
 
+		[ServerProperty("loot", "artifact_glass_regions", "Comma separated regions where mobs can drop Atlantean Glass.", "73,30,130,78,35,135,79,36,136,80,37,137,83,40,140,88,45,145,89,46,146,90,47,147,91")]
+		public static string ARTIFACT_GLASS_REGIONS;
+
+		[ServerProperty("loot", "artifact_glass_min_level", "Lowest mob level that can drop Atlantean Glass.", 45)]
+		public static int ARTIFACT_GLASS_MIN_LEVEL;
+
 		[ServerProperty("pve", "lootgenerator_mythirian_min_level", "Lowest mob level that can drop a mythirian.", 45)]
 		public static int LOOTGENERATOR_MYTHIRIAN_MIN_LEVEL;
 		

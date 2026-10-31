@@ -21,6 +21,8 @@ namespace DOL.GS.Spells
         public const int BladeShadow = 6;
         public const int LightStone = 7;
         public const int DarkStone = 8;
+        public const int StoneStaffBinding = 9;
+        public const int StoneStaffPower = 10;
 
         public static IReadOnlyList<string> ItemsFor(int set, eCharacterClass characterClass, eRealm realm)
         {
@@ -36,6 +38,8 @@ namespace DOL.GS.Spells
                 BladeShadow => ["Blade_Shadow" + suffix],
                 LightStone => ["Eerie_Light_Stone"],
                 DarkStone => ["Eerie_Dark_Stone"],
+                StoneStaffBinding => ["Stone_Staff_Binding"],
+                StoneStaffPower => ["Stone_Staff_Power"],
                 _ => []
             };
         }
@@ -144,7 +148,13 @@ namespace DOL.GS.Spells
             {
                 DbItemTemplate template = GameServer.Database.FindObjectByKey<DbItemTemplate>(id);
 
-                if (template == null || player.Inventory.GetFirstItemByID(id, eInventorySlot.MinEquipable, eInventorySlot.LastBackpack) != null)
+                if (template == null)
+                    continue;
+
+                DbInventoryItem held = player.Inventory.GetFirstItemByID(id, eInventorySlot.MinEquipable, eInventorySlot.LastBackpack);
+
+                // Summoning again refills a charged item; anything else is already all it can be.
+                if (held != null && (held.MaxCharges <= 0 || !player.Inventory.RemoveItem(held)))
                     continue;
 
                 DbInventoryItem item = GameInventoryItem.Create(template);

@@ -3710,6 +3710,7 @@ namespace DOL.GS
                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainRealmPoints.YouGet", amount.ToString()), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 
             ChampionRules.GainRealmPoints(this, amount);
+            ArtifactLevels.AddXp(this, amount * ArtifactLevels.XpPerRealmPoint);
 
             while (RealmPoints >= CalculateRPsFromRealmLevel(RealmLevel + 1) && RealmLevel < ( REALMPOINTS_FOR_LEVEL.Length - 1 ) )
             {
@@ -4433,6 +4434,7 @@ namespace DOL.GS
             }
 
             Experience += expTotal;
+            ArtifactLevels.AddXp(this, (long) (expTotal / Math.Max(0.01, arguments.AllowMultiply ? LevelRangeXpRates.PlayerRate(Level, CurrentRegion.IsRvR || CurrentZone.IsRvR) : 1)));
 
             if (expTotal >= 0)
             {
@@ -9273,6 +9275,12 @@ namespace DOL.GS
         }
 
         private StatsSenderOnEquipmentChange _statsSenderOnEquipmentChange;
+
+        /// <summary>Sends the worn-item stats again after something other than equipping changed them.</summary>
+        public void RefreshEquipmentStats()
+        {
+            _statsSenderOnEquipmentChange ??= new(this, OnStatsSendCompletionAfterEquipmentChange);
+        }
 
         private int OnStatsSendCompletionAfterEquipmentChange()
         {

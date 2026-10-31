@@ -85,6 +85,24 @@ namespace DOL.GS.Spells
         public override eProperty Property1 => eProperty.SpellDamage;
     }
 
+    /// <summary>Ring of Dances: lowers the target's spell damage and five magic resists by Value.</summary>
+    [SpellHandler(eSpellType.LoreDebuff)]
+    public class ArtifactLoreDebuff(GameLiving caster, Spell spell, SpellLine line) : SingleStatDebuff(caster, spell, line)
+    {
+        public override string ShortDescription => $"Decreases {TargetPronoun} spell damage and resists by {Spell.Value}%.";
+        public override eProperty Property1 => eProperty.SpellDamage;
+        public override eProperty Property2 => eProperty.Resist_Heat;
+        public override eProperty Property3 => eProperty.Resist_Cold;
+        public override eProperty Property4 => eProperty.Resist_Matter;
+        public override eProperty Property5 => eProperty.Resist_Spirit;
+        public override eProperty Property6 => eProperty.Resist_Energy;
+        public override eBuffBonusCategory BonusCategory2 => eBuffBonusCategory.Debuff;
+        public override eBuffBonusCategory BonusCategory3 => eBuffBonusCategory.Debuff;
+        public override eBuffBonusCategory BonusCategory4 => eBuffBonusCategory.Debuff;
+        public override eBuffBonusCategory BonusCategory5 => eBuffBonusCategory.Debuff;
+        public override eBuffBonusCategory BonusCategory6 => eBuffBonusCategory.Debuff;
+    }
+
     /// <summary>Blocks the next mesmerize (Value 1) or stun (Value 2) cast on the target.</summary>
     [SpellHandler(eSpellType.ArtifactFeedback)]
     public class ArtifactFeedbackSpellHandler(GameLiving caster, Spell spell, SpellLine line) : SpellHandler(caster, spell, line)
