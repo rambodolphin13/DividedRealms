@@ -530,5 +530,14 @@ namespace DOL.GS
         Siegebreaker,
         BlightSurge,
         MaleficHorror,
+        ArtifactAllStats,
+        ArtifactSpellDamage,
+        ArtifactFeedback,
+        ArtifactCheatDeath,
+        ArtifactRecovery,
+        ArtifactMorph,
+        ArtifactShatter,
+        ArtifactProcPet,
+        ArtifactSummonItems,
     }
 }

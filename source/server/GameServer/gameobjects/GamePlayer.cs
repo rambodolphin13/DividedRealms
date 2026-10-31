@@ -6361,6 +6361,7 @@ namespace DOL.GS
         /// </summary>
         public const string LAST_CHARGED_ITEM_USE_TICK = "LastChargedItemUsedTick";
         public const string ITEM_USE_DELAY = "ItemUseDelay";
+        public const long ChargedItemLockoutMs = 10000;
         public const string NEXT_POTION_AVAIL_TIME = "LastPotionItemUsedTick";
         public const string NEXT_SPELL_AVAIL_TIME_BECAUSE_USE_POTION = "SpellAvailableTime";
 
@@ -7180,7 +7181,7 @@ namespace DOL.GS
                         if (castOk)
                         {
                             TempProperties.SetProperty(LAST_CHARGED_ITEM_USE_TICK, CurrentRegion.Time);
-                            TempProperties.SetProperty(ITEM_USE_DELAY, (long)(60000 * 2));
+                            TempProperties.SetProperty(ITEM_USE_DELAY, ChargedItemLockoutMs);
                             TempProperties.SetProperty("ITEMREUSEDELAY" + useItem.Id_nb, CurrentRegion.Time);
                         }
                     }
@@ -9103,12 +9104,6 @@ namespace DOL.GS
 
             if (item.ExtraBonus != 0)
                 ItemBonus[(eProperty) item.ExtraBonusType] += item.ExtraBonus;
-
-            if ((ePrivLevel) Client.Account.PrivLevel == ePrivLevel.Player && Client.Player != null && Client.Player.ObjectState == eObjectState.Active)
-            {
-                if (item.SpellID > 0 || item.SpellID1 > 0)
-                    TempProperties.SetProperty("ITEMREUSEDELAY" + item.Id_nb, CurrentRegion.Time);
-            }
 
             _statsSenderOnEquipmentChange ??= new(this, OnStatsSendCompletionAfterEquipmentChange);
         }
