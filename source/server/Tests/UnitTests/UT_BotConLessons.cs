@@ -22,6 +22,14 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void ASoloBotFightsAYellowPairItCannotGoAround()
+        {
+            Assert.That(Solo(ConColor.YELLOW, 2), Is.EqualTo(RouteThreatAction.Pull));
+            Assert.That(Solo(ConColor.YELLOW, 3), Is.EqualTo(RouteThreatAction.Retarget), "a yellow pack is still a pack");
+            Assert.That(AutonomousRouteThreatPolicy.Decide(ConColor.YELLOW, false, 2, false, true, 0, true), Is.EqualTo(RouteThreatAction.Detour), "around it if it can");
+        }
+
+        [Test]
         public void PacksCountForMoreInAtlantis()
         {
             Assert.That(Solo(ConColor.BLUE, 2), Is.EqualTo(RouteThreatAction.Pull));

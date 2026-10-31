@@ -74,7 +74,7 @@ namespace DOL.GS
         public const int ATLANTIS_SEA_LEVEL = 7950;
 
         public static bool IsBelowAtlantisSea(ushort zoneId, int spawnZ) =>
-            spawnZ < ATLANTIS_SEA_LEVEL && zoneId is (>= 30 and <= 34) or (>= 73 and <= 77) or (>= 130 and <= 134);
+            spawnZ < ATLANTIS_SEA_LEVEL && zoneId is (>= 30 and <= 34) or (>= 70 and <= 72) or (>= 73 and <= 77) or (>= 130 and <= 134);
 
         public bool ShouldPath(Zone zone, Vector3 target)
         {
@@ -474,7 +474,7 @@ namespace DOL.GS
         }
 
         public static bool RequiresExactClimbNode(bool bot, ushort zone, EDtPolyFlags current, EDtPolyFlags next) =>
-            bot && (zone is 160 or 249 or 60 or 191) && ((current | next) & EDtPolyFlags.Jump) != 0;
+            bot && (zone is 160 or 249 or 60 or 191 or 180) && ((current | next) & EDtPolyFlags.Jump) != 0;
 
         public bool TryGetClosestReachableNode(Zone zone, Vector3 position, Vector3 target, out Vector3? node)
         {

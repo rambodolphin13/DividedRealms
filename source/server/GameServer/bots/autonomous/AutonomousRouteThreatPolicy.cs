@@ -101,7 +101,9 @@ namespace DOL.GS
                     return RouteThreatAction.Pull;
                 if (canDetour)
                     return RouteThreatAction.Detour;
-                if (felt == ConColor.YELLOW && packSize <= 1)
+                // A yellow pair with no way around too: on 2026-10-31 solo give-ups took 37% of bot time for no kills, and 337 of
+                // the 1,223 were yellow packs, while a single yellow killed only 7%. The mob lessons turn back a pair that kills.
+                if (felt == ConColor.YELLOW && packSize <= 2)
                     return RouteThreatAction.Pull;
                 if (felt == ConColor.ORANGE && highLevelSolo && packSize <= 1)
                     return RouteThreatAction.Pull;
