@@ -38,6 +38,7 @@ public partial class DaocClient : Node
 	readonly ConcurrentQueue<(int code, byte[] data)> _inbox = new();
 	readonly object _sendLock = new();
 	ushort _sequence;
+	public int ServerPort = Port;                  // (the headless test client sets the test server's port)
 	public int SessionId;
 	public string Account = "";
 	readonly ConcurrentQueue<int> _wantRealms = new();   // the realms asked for, in order (each overview answers one)
@@ -56,7 +57,7 @@ public partial class DaocClient : Node
 		try
 		{
 			_tcp = new TcpClient { NoDelay = true };
-			_tcp.Connect(host, Port);
+			_tcp.Connect(host, ServerPort);
 			_stream = _tcp.GetStream();
 		}
 		catch (Exception e)

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>OfflineDaoc.TestClient</AssemblyName>
+    <RootNamespace>OfflineDaoc.TestClient</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The new client's own protocol code, compiled here against GodotShim.cs: one copy of the packet formats. -->
+    <Compile Include="..\..\new-client\godot\game\net\DaocClient.cs" Link="DaocClient.cs" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+    <None Include="scenarios\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

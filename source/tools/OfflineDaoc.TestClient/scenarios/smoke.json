@@ -1,0 +1,141 @@
+{
+  "name": "Smoke: log in, teleport, walk, kill a mob, cast a spell",
+  "steps": [
+    {
+      "about": "server is listening",
+      "tool": "server_status",
+      "expect": [
+        "\"listening\":true"
+      ],
+      "required": true
+    },
+    {
+      "about": "log the Cleric in",
+      "tool": "login",
+      "args": {
+        "name": "Testcleric",
+        "class": "cleric"
+      },
+      "expect": [
+        "\"oid\":"
+      ],
+      "required": true
+    },
+    {
+      "about": "raise to level 20 with a granted GM command",
+      "tool": "command",
+      "args": {
+        "text": "/player level 20"
+      }
+    },
+    {
+      "about": "teleport to Camelot Hills",
+      "tool": "teleport",
+      "args": {
+        "x": 560000,
+        "y": 512000,
+        "region": 1
+      },
+      "expect": [
+        "\"arrived\":true"
+      ],
+      "required": true
+    },
+    {
+      "about": "see NPCs nearby",
+      "tool": "nearby",
+      "args": {
+        "kind": "npc",
+        "radius": 6000,
+        "limit": 6
+      },
+      "expect": [
+        "\"oid\":"
+      ]
+    },
+    {
+      "about": "walk on the navmesh",
+      "tool": "move_to",
+      "args": {
+        "x": 561500,
+        "y": 513000
+      },
+      "expect": [
+        "\"arrived\":true",
+        "\"on_navmesh\":true"
+      ]
+    },
+    {
+      "about": "position reached the server",
+      "tool": "command",
+      "args": {
+        "text": "/loc"
+      },
+      "expect": [
+        "message"
+      ]
+    },
+    {
+      "about": "kill the nearest mob",
+      "tool": "fight",
+      "args": {
+        "who": "@mob",
+        "timeout_s": 90
+      },
+      "expect": [
+        "it died or left"
+      ]
+    },
+    {
+      "about": "spells are listed",
+      "tool": "abilities",
+      "expect": [
+        "Hammer of Faith"
+      ]
+    },
+    {
+      "about": "close to spell range of the next mob",
+      "tool": "move_to",
+      "args": {
+        "who": "@mob",
+        "stop_within": 1200,
+        "timeout_s": 40
+      },
+      "expect": [
+        "\"arrived\":true"
+      ]
+    },
+    {
+      "about": "let the swing timer clear",
+      "tool": "wait",
+      "args": {
+        "seconds": 4
+      }
+    },
+    {
+      "about": "Hammer of Faith really casts",
+      "tool": "cast",
+      "args": {
+        "spell": "Hammer of Faith",
+        "who": "@mob",
+        "wait_ms": 4500
+      },
+      "expect": [
+        "\"Kind\":\"cast\""
+      ],
+      "forbid": [
+        "must wait",
+        "cannot see",
+        "too far"
+      ]
+    },
+    {
+      "about": "read what the character did",
+      "tool": "events",
+      "args": {
+        "kinds": "message,combat,death",
+        "limit": 40
+      }
+    }
+  ]
+}
