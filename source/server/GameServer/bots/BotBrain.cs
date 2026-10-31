@@ -3752,7 +3752,8 @@ namespace DOL.AI.Brain
             int castRange = OffensiveApproachRange(target);
             if (castRange > 0 && GameLoop.GameLoopTime < _closerSpellApproachUntilTick)
                 castRange = Math.Max(300, castRange * 6 / 10);
-            if (castRange <= 0 || Body.IsWithinRadius(target, castRange))
+            // In range with a wall between (BotLineOfSight): it goes on approaching to get a clear line, as when out of range.
+            if (castRange <= 0 || Body.IsWithinRadius(target, castRange) && !BotLineOfSight.Blocks(Body, target))
                 return false;
 
             int desired = Math.Max(160, castRange - 100);

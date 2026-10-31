@@ -2919,6 +2919,8 @@ namespace DOL.GS
             // A cast reveals the caster: a companion hidden with its player casts only heals until a fight starts.
             if (spell?.IsHealing != true && CompanionStealth.SuppressesCasting(this)) return false;
             if (AutonomousGroupFormationFollow.DeferBuff(this, spell)) return false;
+            // Owner 2026-10-31: no harmful cast through a wall at a target that is not a player (BotLineOfSight).
+            if (checkLos && spell?.IsHarmful == true && BotLineOfSight.Blocks(this, TargetObject)) return false;
             // Final boundary as well as selection filtering: no rank of the
             // disabled shield can keep a Cabalist/Enchanter bot channeling.
             // The pet focus shield is cast only by its own decision (BotBrain.TryStartPetFocusShield), never by upkeep.
