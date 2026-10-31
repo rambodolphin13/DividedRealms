@@ -474,7 +474,7 @@ namespace DOL.GS
         }
 
         public static bool RequiresExactClimbNode(bool bot, ushort zone, EDtPolyFlags current, EDtPolyFlags next) =>
-            bot && (zone is 160 or 249 or 60 or 191) && ((current | next) & EDtPolyFlags.Jump) != 0;
+            bot && (zone is 160 or 249 or 60 or 191 or 180) && ((current | next) & EDtPolyFlags.Jump) != 0;
 
         public bool TryGetClosestReachableNode(Zone zone, Vector3 position, Vector3 target, out Vector3? node)
         {
