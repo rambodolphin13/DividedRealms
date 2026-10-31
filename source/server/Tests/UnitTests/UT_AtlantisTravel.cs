@@ -1,5 +1,6 @@
 using DOL.GS;
 using DOL.GS.Movement;
+using DOL.GS.PacketHandler.Client.v168;
 using NUnit.Framework;
 
 namespace DOL.UnitTests
@@ -28,6 +29,32 @@ namespace DOL.UnitTests
             PathPoint start = new(442288, 552070, 7970, 1000, default);
 
             Assert.That(GameBoatStableMaster.IsRouteStartInReach(start, x, y), Is.EqualTo(expected));
+        }
+
+        [TestCase("skiff", true)]
+        [TestCase("skiff3", true, Description = "Realm copies bought before the shipwright fix")]
+        [TestCase("Viking_Longship", true)]
+        [TestCase("viking_longship", true)]
+        [TestCase("Viking_Longship2", true)]
+        [TestCase("British_Cog2", true)]
+        [TestCase("Elvish_Caravel", true)]
+        [TestCase("red_hull_paint", false)]
+        [TestCase("bt_notos_hesperos", false)]
+        [TestCase(null, false)]
+        public void BoatItemsAreRecognised(string itemId, bool expected)
+        {
+            Assert.That(GameBoat.IsBoatItem(itemId), Is.EqualTo(expected));
+        }
+
+        [TestCase(PlayerPositionUpdateHandler.StateFlags.SWIMMING, true)]
+        [TestCase(PlayerPositionUpdateHandler.StateFlags.SWIMMING | PlayerPositionUpdateHandler.StateFlags.STRAFING_LEFT, true)]
+        [TestCase((PlayerPositionUpdateHandler.StateFlags) 0, false)]
+        [TestCase(PlayerPositionUpdateHandler.StateFlags.DEAD, false)]
+        [TestCase(PlayerPositionUpdateHandler.StateFlags.FLYING, false)]
+        [TestCase(PlayerPositionUpdateHandler.StateFlags.CLIMBING, false)]
+        public void OnlyThePlainSwimmingStateCounts(PlayerPositionUpdateHandler.StateFlags flags, bool expected)
+        {
+            Assert.That(PlayerPositionUpdateHandler.IsSwimmingState(flags), Is.EqualTo(expected));
         }
 
         [Test]

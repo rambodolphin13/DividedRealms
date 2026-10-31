@@ -6673,6 +6673,12 @@ namespace DOL.GS
                         return;
                 }
 
+                if (GameBoat.IsBoatItem(useItem.Id_nb))
+                {
+                    GameBoat.Summon(this, useItem);
+                    return;
+                }
+
                 if (useItem.Item_Type is >= ((int) eInventorySlot.LeftFrontSaddleBag) and <= ((int) eInventorySlot.RightRearSaddleBag))
                 {
                     UseSaddleBag(useItem);
@@ -8405,7 +8411,7 @@ namespace DOL.GS
                 m_swimming = value;
                 Notify(GamePlayerEvent.SwimmingStatus, this);
                 //Handle Lava Damage
-                if (m_swimming && CurrentZone.IsLava == true)
+                if (m_swimming && CurrentZone?.IsLava == true)
                 {
                     if (m_lavaBurningTimer == null)
                     {
@@ -8415,7 +8421,7 @@ namespace DOL.GS
                         m_lavaBurningTimer.Start(1);
                     }
                 }
-                if (!m_swimming && CurrentZone.IsLava == true && m_lavaBurningTimer != null)
+                if (!m_swimming && m_lavaBurningTimer != null)
                 {
                     m_lavaBurningTimer.Stop();
                     m_lavaBurningTimer = null;
@@ -8568,8 +8574,11 @@ namespace DOL.GS
 
         protected int LavaBurnTimerCallback(ECSGameTimer callingTimer)
         {
-            if (!IsAlive || ObjectState != eObjectState.Active || !IsSwimming)
+            if (!IsAlive || ObjectState != eObjectState.Active || !IsSwimming || CurrentZone?.IsLava != true)
+            {
+                m_lavaBurningTimer = null;
                 return 0;
+            }
 
             Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.LavaBurnTimerCallback.YourInLava"), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
             Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.LavaBurnTimerCallback.Take34%Damage"), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
