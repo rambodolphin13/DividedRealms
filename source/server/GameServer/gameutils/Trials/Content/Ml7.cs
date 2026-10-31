@@ -196,6 +196,11 @@ namespace DOL.GS.Trials
                 Victory = $"The {race} accept that you can endure.",
                 TimeLimitSeconds = 900,
                 LeashRange = 12000,
+                OnEnd = (run, won) =>
+                {
+                    if (!won)
+                        MoveParty(run, home);
+                },
                 Phases =
                 {
                     fight,

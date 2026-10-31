@@ -16,6 +16,21 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void Catalog_HasEveryStep()
+        {
+            var expected = Enumerable.Range(1, 9).SelectMany(ml => Enumerable.Range(1, 10).Select(step => $"{ml}.{step}"))
+                .Concat(Enumerable.Range(1, 5).Select(step => $"10.{step}"));
+            Assert.That(TrialCatalog.All.Select(trial => trial.Key), Is.EquivalentTo(expected));
+        }
+
+        [Test]
+        public void DamageKind_FollowsDamageTypeAndWeapon()
+        {
+            Assert.That(TrialMob.KindOf(null, eDamageType.Heat), Is.EqualTo(TrialDamageKind.Spell));
+            Assert.That(TrialMob.KindOf(null, eDamageType.Slash), Is.EqualTo(TrialDamageKind.Melee));
+        }
+
+        [Test]
         public void Scaling_ShrinksForSmallPartiesWithinLimits()
         {
             Assert.That(TrialScaling.HealthScale(TrialScope.Group, 8), Is.EqualTo(1.0));

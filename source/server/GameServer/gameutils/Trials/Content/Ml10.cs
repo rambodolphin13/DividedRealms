@@ -64,6 +64,11 @@ namespace DOL.GS.Trials
                 RequiresSteps = Enumerable.Range(1, step - 1).ToArray(),
                 TimeLimitSeconds = TimeLimit,
                 LeashRange = 14000,
+                OnEnd = (run, won) =>
+                {
+                    if (!won)
+                        MoveParty(run, run.Definition.Anchor);
+                },
             };
 
             definition.Phases.Add(new TrialPhase
@@ -118,7 +123,7 @@ namespace DOL.GS.Trials
                 Mobs =
                 {
                     Portal(),
-                    new TrialMobSpec { Name = "Sagittarius", Model = 1214, Level = 68, Size = 130, Health = 110000, DamageFactor = 1.4, At = Arena, MeleeDamage = eDamageType.Thrust, Tag = "boss" },
+                    new TrialMobSpec { Name = "Sagittarius", Model = 1214, Level = 68, Size = 130, Health = 110000, DamageFactor = 1.4, At = Arena, MeleeDamage = eDamageType.Thrust, Hurts = TrialDamageKind.Melee | TrialDamageKind.Ranged, Tag = "boss" },
                 },
                 Pulses = { new TrialPulse { SourceTag = "portal", IntervalSeconds = 6, Damage = 60, Radius = 300, DamageType = eDamageType.Energy } },
                 OnStart = run => Ml9.Calm(run, "portal"),
@@ -274,7 +279,7 @@ namespace DOL.GS.Trials
             if (due > run.Get("splits", 0))
             {
                 run.Set("splits", due);
-                run.Spawn(new TrialMobSpec { Name = "shard of Leo", Model = 1193, Level = 66, Size = 70, Health = 5000, DamageFactor = 1.0, Count = 2, At = Ml9.Beside(boss, 200), MeleeDamage = eDamageType.Slash, Required = false, Tag = "shard" });
+                run.Spawn(new TrialMobSpec { Name = "shard of Leo", Model = 1193, Level = 66, Size = 70, Health = 5000, DamageFactor = 1.0, Count = 2, At = Ml9.Beside(boss, 200), MeleeDamage = eDamageType.Slash, Hurts = TrialDamageKind.Ranged | TrialDamageKind.Spell, Required = false, Tag = "shard" });
                 run.Tell("Leo splits apart, and pieces of him leap at you!");
             }
             boss.Immune = run.Mobs("shard").Any();

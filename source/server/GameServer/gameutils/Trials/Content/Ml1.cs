@@ -515,6 +515,7 @@ namespace DOL.GS.Trials
                 AggroRange = 0,
                 Required = false,
                 Tag = "barrier",
+                Hurts = TrialDamageKind.Melee,
             };
         }
 
