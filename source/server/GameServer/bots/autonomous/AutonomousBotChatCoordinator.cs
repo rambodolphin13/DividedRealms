@@ -788,6 +788,9 @@ public static class AutonomousBotChatCoordinator
 
     public static string JoinReply(GameBot bot, GamePlayer player, Random random)
     {
+        // The tell can land just before the invite does: the reply is worked out when it is sent (playtest 2026-10-31).
+        if (bot.Group != null && bot.Group == player.Group)
+            return random.Next(2) == 0 ? "im already with you" : "already in your group";
         if (bot.PlayerGroupLeader != null && bot.PlayerGroupLeader != player)
             return random.Next(2) == 0 ? "sorry, already grouped up with someone" : "cant right now, im in a group";
         // The talking update: a bot the invite would refuse (siege, relic, raid...) doesn't say "send me an invite".

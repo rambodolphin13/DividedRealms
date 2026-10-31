@@ -97,6 +97,7 @@ namespace DOL.GS.Commands
                 if (bot.Brain is BotBrain brain)
                     brain.PrepareForTankPull();
                 bot.EnterPlayerLedGroup(player);
+                PlayerLedStragglers.RegroupNow(bot, player);
             }
         }
 
@@ -173,6 +174,15 @@ namespace DOL.GS.Commands
         "/bots invites on|off - whether bots invite you to groups")]
     public sealed class PlayerBotOrdersCommand : AbstractCommandHandler, ICommandHandler
     {
+        private static string BotsStatus(GamePlayer player, GameBot[] bots)
+        {
+            string[] with = bots.Where(bot => PlayerLedStragglers.IsWith(bot, player)).Select(bot => bot.Name).ToArray();
+            string[] away = bots.Where(bot => !PlayerLedStragglers.IsWith(bot, player)).Select(bot => bot.Name).ToArray();
+            return (with.Length > 0 ? $"Following you: {string.Join(", ", with)}. " : "") +
+                   (away.Length > 0 ? $"On the way to you: {string.Join(", ", away)}. " : "") +
+                   (PlayerBotHunt.Status(player) is string status ? $"Hunting: {status}." : "Not hunting.");
+        }
+
         public void OnCommand(GameClient client, string[] args)
         {
             GamePlayer player = client.Player;
@@ -196,9 +206,7 @@ namespace DOL.GS.Commands
                     break;
                 case "status":
                     GameBot[] bots = PlayerBotHunt.BotsOf(player);
-                    DisplayMessage(client, bots.Length == 0 ? "No bots are following you."
-                        : $"Following you: {string.Join(", ", bots.Select(bot => bot.Name))}. " +
-                          (PlayerBotHunt.Status(player) is string status ? $"Hunting: {status}." : "Not hunting."));
+                    DisplayMessage(client, bots.Length == 0 ? "No bots are following you." : BotsStatus(player, bots));
                     break;
                 case "invites":
                     bool off = args.Length > 2 && args[2].Equals("off", StringComparison.OrdinalIgnoreCase);

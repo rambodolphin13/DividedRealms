@@ -3095,6 +3095,9 @@ namespace DOL.AI.Brain
                     return;
                 }
 
+                if (PlayerLedStragglers.TryRegroup(_brain.BotBody, leader))
+                    return;
+
                 // Check if owner is in combat or attacking something
                 if (leader.IsAttacking || (leader.IsCasting && leader.castingComponent?.SpellHandler?.Spell?.IsHarmful == true))
                 {
