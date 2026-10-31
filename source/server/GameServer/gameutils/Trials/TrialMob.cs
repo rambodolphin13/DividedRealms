@@ -47,6 +47,13 @@ namespace DOL.GS.Trials
             base.Die(killer);
         }
 
+        /// <summary>Finishes an objective as a click would, without the click.</summary>
+        public void Complete()
+        {
+            Finished = true;
+            Run.MobFinished(this);
+        }
+
         public override bool Interact(GamePlayer player)
         {
             if (!Spec.Objective)
@@ -58,10 +65,9 @@ namespace DOL.GS.Trials
                 player.Out.SendMessage("You are too far away.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 return false;
             }
-            Finished = true;
             if (!string.IsNullOrEmpty(Spec.ObjectiveText))
                 player.Out.SendMessage(Spec.ObjectiveText, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-            Run.MobFinished(this);
+            Complete();
             return true;
         }
     }

@@ -26,6 +26,7 @@ namespace DOL.GS.Trials
         private readonly ConcurrentQueue<TrialMob> _finished = new();
         private readonly Dictionary<string, object> _state = new();
         private readonly HashSet<GamePlayer> _players;
+        private readonly HashSet<GamePlayer> _breathing = new();
         private ECSGameTimer _timer;
         private int _elapsed, _phaseElapsed, _phaseFinished, _abandoned;
         private int _phaseIndex = -1;
@@ -37,6 +38,9 @@ namespace DOL.GS.Trials
         public double HealthScale { get; }
         public double DamageScale { get; }
         public int PartySize { get; }
+        /// <summary>Test mode: each tick clears the phase, and phases that won't end are noted and passed.</summary>
+        public bool Sweeping { get; set; }
+        public List<string> SweepNotes { get; } = new();
         public TrialPhase Phase => _phaseIndex >= 0 && _phaseIndex < Definition.Phases.Count ? Definition.Phases[_phaseIndex] : null;
         public IReadOnlyCollection<GamePlayer> Players => _players;
 
@@ -61,6 +65,7 @@ namespace DOL.GS.Trials
         public void Start()
         {
             Tell($"{Definition.Name} begins.");
+            GrantBreath();
             _timer = new ECSGameTimer(Starter, Tick, 1000);
             NextPhase();
         }
@@ -166,8 +171,11 @@ namespace DOL.GS.Trials
                 if (PartyGone())
                     return 0;
 
+                GrantBreath();
                 Pulse();
                 Phase?.OnTick?.Invoke(this);
+                if (Sweeping)
+                    SweepPhase();
 
                 if (State == TrialRunState.Running && PhaseComplete())
                     NextPhase();
@@ -179,6 +187,16 @@ namespace DOL.GS.Trials
                 TrialManager.Log.Error($"Trial {Definition.Key} failed on tick", e);
                 End(false, "The trial falters and fades away.");
                 return 0;
+            }
+        }
+
+        /// <summary>Many trials are fought on the sea floor, and a long fight must not end in drowning.</summary>
+        private void GrantBreath()
+        {
+            foreach (GamePlayer player in _players.Where(player => !player.CanBreathUnderWater))
+            {
+                player.CanBreathUnderWater = true;
+                _breathing.Add(player);
             }
         }
 
@@ -223,6 +241,22 @@ namespace DOL.GS.Trials
             return center.GetPlayersInRadius(range).Where(player => player.IsAlive).Cast<GameLiving>()
                 .Concat(center.GetNPCsInRadius(range).Where(npc => npc.IsAlive && (npc is GameBot || npc.Brain is IControlledBrain)))
                 .ToList();
+        }
+
+        private void SweepPhase()
+        {
+            foreach (TrialMob mob in Mobs().ToList())
+            {
+                if (mob.Spec.Objective)
+                    mob.Complete();
+                else
+                    mob.Die(Leader);
+            }
+            if (_phaseElapsed < 6 || Phase == null || PhaseComplete())
+                return;
+            if (Phase.SurviveSeconds <= 0)
+                SweepNotes.Add($"phase {_phaseIndex + 1} did not end after clearing it");
+            NextPhase();
         }
 
         private bool PhaseComplete()
@@ -273,6 +307,8 @@ namespace DOL.GS.Trials
             }
             foreach (TrialMob mob in _mobs.Where(mob => mob.ObjectState == GameObject.eObjectState.Active).ToList())
                 mob.Delete();
+            foreach (GamePlayer player in _breathing)
+                player.CanBreathUnderWater = false;
             if (success)
                 TrialManager.Award(this);
             TrialManager.Finished(this);

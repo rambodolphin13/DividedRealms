@@ -66,7 +66,10 @@ namespace DOL.GS.Trials
                         foreach (string name in definition.Replaces)
                         {
                             foreach (GameNPC imported in WorldMgr.GetNPCsByNameFromRegion(name, regionId, eRealm.None))
-                                imported.Delete();
+                            {
+                                if (definition.ReplaceRadius <= 0 || Math.Abs(imported.X - definition.Anchor.X) <= definition.ReplaceRadius && Math.Abs(imported.Y - definition.Anchor.Y) <= definition.ReplaceRadius)
+                                    imported.Delete();
+                            }
                         }
                         TrialStarter starter = new(definition)
                         {
@@ -86,6 +89,20 @@ namespace DOL.GS.Trials
                 }
             }
             Log.Info($"Master Level trials: {TrialCatalog.All.Count} defined, {Starters.Count} starters placed.");
+        }
+
+        /// <summary>The copy in the player's current region, else the one for their realm.</summary>
+        public static TrialStarter StarterFor(GamePlayer player, TrialDefinition definition)
+        {
+            int realm = player.Realm switch
+            {
+                eRealm.Midgard => 0,
+                eRealm.Albion => 1,
+                _ => 2,
+            };
+            List<TrialStarter> matches = Starters.Where(starter => starter.Definition == definition).ToList();
+            return matches.FirstOrDefault(starter => starter.CurrentRegionID == player.CurrentRegionID) ??
+                matches.FirstOrDefault(starter => Regions[definition.Zone][realm] == starter.CurrentRegionID);
         }
 
         /// <summary>Steps of the trial's Master Level this player still needs before it. Empty once past that level.</summary>

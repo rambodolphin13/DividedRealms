@@ -504,7 +504,7 @@ namespace DOL.GS.Trials
 
         private static TrialMobSpec Hatchling(TrialPoint point) => new()
         {
-            Name = "salamander hatchling", Model = SalamanderModel, Level = 55, Size = 50, Health = 2000, DamageFactor = 0.6, At = point, Required = false, Tag = "hatchling",
+            Name = "salamander hatchling", Model = SalamanderModel, Level = 55, Size = 50, Health = 700, DamageFactor = 0.3, At = point, Required = false, Tag = "hatchling",
             MeleeDamage = eDamageType.Slash,
             OnDeath = (run, _) =>
             {

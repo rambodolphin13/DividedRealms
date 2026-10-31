@@ -120,6 +120,8 @@ namespace DOL.GS.Trials
         public int[] RequiresSteps;
         /// <summary>Monster names imported from the world database that this trial replaces. Removed at runtime only.</summary>
         public string[] Replaces = Array.Empty<string>();
+        /// <summary>Removes <see cref="Replaces"/> only this close to the anchor; 0 means the whole region.</summary>
+        public int ReplaceRadius;
         public int TimeLimitSeconds = 1800;
         public int ResetSeconds = 120;
         /// <summary>Participants this far away count as having left.</summary>

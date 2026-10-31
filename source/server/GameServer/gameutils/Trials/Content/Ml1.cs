@@ -565,7 +565,8 @@ namespace DOL.GS.Trials
                     "When you begin, swim to the arena and touch the champion you will face. It is single combat: friends may watch, but their blows will not land. " +
                     "One victory is all the proof he asks.",
                 Victory = "Krojer nods from his seat. You have proven yourself in single combat.",
-                Replaces = new[] { "Krojer", "Lady Farahnaz", "Agnon", "Sethrendar", "Xalarian", "Jilena", "Malison", "Regent" },
+                Replaces = new[] { "Krojer", "Lady Farahnaz", "Agnon", "Sethrendar", "Xalarian", "Jilena", "Malison", "Regent", "Sentinel" },
+                ReplaceRadius = 4500,
                 TimeLimitSeconds = 900,
                 Phases =
                 {
@@ -573,7 +574,6 @@ namespace DOL.GS.Trials
                     {
                         Announce = "The champions wait in the arena. Touch the one you would fight.",
                         Mobs = BuildSeats(),
-                        OnStart = CalmSentinels,
                         Done = run => run.Get<string>("champion") != null,
                     },
                     new TrialPhase
@@ -591,16 +591,6 @@ namespace DOL.GS.Trials
                     },
                 },
             };
-        }
-
-        /// <summary>The imported sentinels share a name with others elsewhere, so they stay, but they must not pull a duelist.</summary>
-        private static void CalmSentinels(TrialRun run)
-        {
-            foreach (GameNPC sentinel in run.Starter.GetNPCsInRadius(3000).Where(npc => npc.Name == "Sentinel"))
-            {
-                if (sentinel.Brain is StandardMobBrain brain)
-                    brain.AggroLevel = 0;
-            }
         }
 
         private static List<TrialMobSpec> BuildSeats()
@@ -651,8 +641,8 @@ namespace DOL.GS.Trials
                 Model = ChampionModels[index],
                 Size = 50,
                 Level = 55,
-                Health = 6500,
-                DamageFactor = 0.9,
+                Health = 2400,
+                DamageFactor = 0.45,
                 At = ChampionSeats[index],
                 AggroRange = 1500,
                 Tag = "fighter",
@@ -660,27 +650,27 @@ namespace DOL.GS.Trials
             switch (name)
             {
                 case "Agnon":
-                    spec.Health = 6000;
+                    spec.Health = 2200;
                     spec.MeleeDamage = eDamageType.Thrust;
                     break;
                 case "Sethrendar":
                     spec.MeleeDamage = eDamageType.Crush;
                     break;
                 case "Xalarian":
-                    spec.Health = 7000;
+                    spec.Health = 2600;
                     spec.MeleeDamage = eDamageType.Crush;
                     break;
                 case "Jilena":
-                    spec.Health = 7000;
-                    spec.DamageFactor = 1.1;
+                    spec.Health = 2600;
+                    spec.DamageFactor = 0.5;
                     spec.MeleeDamage = eDamageType.Slash;
                     break;
                 case "Malison":
                     spec.MeleeDamage = eDamageType.Crush;
                     break;
                 default:
-                    spec.Health = 7500;
-                    spec.DamageFactor = 1.15;
+                    spec.Health = 2800;
+                    spec.DamageFactor = 0.5;
                     spec.MeleeDamage = eDamageType.Slash;
                     break;
             }
@@ -695,8 +685,8 @@ namespace DOL.GS.Trials
                 Model = 34026,
                 Size = 60,
                 Level = 50,
-                Health = 1500,
-                DamageFactor = 0.4,
+                Health = 600,
+                DamageFactor = 0.25,
                 MeleeDamage = eDamageType.Thrust,
                 At = Ml12Kit.Ring(Arena, 200, 0, 4),
                 AggroRange = 1500,
