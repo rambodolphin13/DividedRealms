@@ -113,6 +113,8 @@ namespace DOL.GS.Trials
         public int ResetSeconds = 120;
         /// <summary>Participants this far away count as having left.</summary>
         public int LeashRange = 8000;
+        /// <summary>Runs as a run ends, won or lost, before monsters leave. The flag is true on success.</summary>
+        public Action<TrialRun, bool> OnEnd;
         public List<TrialPhase> Phases = new();
         public string Key => $"{ML}.{Step}";
     }

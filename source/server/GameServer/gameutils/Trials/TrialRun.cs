@@ -263,6 +263,14 @@ namespace DOL.GS.Trials
             State = success ? TrialRunState.Completed : TrialRunState.Failed;
             Tell(message);
             _timer?.Stop();
+            try
+            {
+                Definition.OnEnd?.Invoke(this, success);
+            }
+            catch (Exception e)
+            {
+                TrialManager.Log.Error($"Trial {Definition.Key} failed as it ended", e);
+            }
             foreach (TrialMob mob in _mobs.Where(mob => mob.ObjectState == GameObject.eObjectState.Active).ToList())
                 mob.Delete();
             if (success)
