@@ -49,7 +49,8 @@ namespace DOL.GS
 
         public static void CancelResurrection(GameBot bot)
         {
-            if (bot.Group != null && States.TryGetValue(AutonomousRealmRaid.SupportScope(bot), out State state))
+            // The scope is null when the group was disbanded since the check above (the brain runs on a worker thread).
+            if (bot.Group != null && AutonomousRealmRaid.SupportScope(bot) is { } scope && States.TryGetValue(scope, out State state))
                 state.Resurrection.ReleaseCaster(bot);
         }
 
@@ -205,7 +206,7 @@ namespace DOL.GS
 
         public static void CancelHeal(GameBot bot)
         {
-            if (bot.Group != null && States.TryGetValue(AutonomousRealmRaid.SupportScope(bot), out State state))
+            if (bot.Group != null && AutonomousRealmRaid.SupportScope(bot) is { } scope && States.TryGetValue(scope, out State state))
                 lock (state.Sync) state.Heals.Remove(bot);
         }
 
@@ -214,6 +215,7 @@ namespace DOL.GS
             if ((!CompanionRaid.IsMember(bot) && !AutonomousRealmRaid.HasSharedSupport(bot)) || !spell.IsHealing || spell.Target != eSpellTarget.REALM || spell.IsInstantCast || spell.Duration > 0)
                 return preferred;
             object scope = AutonomousRealmRaid.SupportScope(bot);
+            if (scope == null) return preferred; // the group was disbanded since the check above
             State state = States.GetOrCreateValue(scope);
             int range = bot.castingComponent.CalculateSpellRange(spell);
             var candidates = AutonomousRealmRaid.SupportMembers(bot).Concat(AutonomousRealmRaid.SupportPets(bot, range)).Concat(

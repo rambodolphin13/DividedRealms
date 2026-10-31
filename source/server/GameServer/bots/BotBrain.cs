@@ -2778,7 +2778,8 @@ namespace DOL.AI.Brain
         {
             tier = int.MaxValue;
             Group group = Body.Group;
-            var claims = group == null ? null : BuffClaims.GetValue(AutonomousRealmRaid.SupportScope(BotBody), _ => new());
+            object scope = group == null ? null : AutonomousRealmRaid.SupportScope(BotBody);
+            var claims = scope == null ? null : BuffClaims.GetValue(scope, _ => new());
             int family = (int)EffectHelper.GetEffectFromSpell(spell);
             long now = GameLoop.GameLoopTime;
             int range = Math.Max(minimumRange, spell.CalculateEffectiveRange(Body));
@@ -2849,7 +2850,9 @@ namespace DOL.AI.Brain
             GameLiving target = Body.TargetObject as GameLiving;
             bool shared = group != null && target != null && spell.Target == eSpellTarget.REALM &&
                 !spell.IsPulsing && IsMaintainableClassBuff(spell);
-            BotBuffReservations<GameLiving> claims = shared ? BuffClaims.GetValue(AutonomousRealmRaid.SupportScope(BotBody), _ => new()) : null;
+            object sharedScope = shared ? AutonomousRealmRaid.SupportScope(BotBody) : null;
+            shared = shared && sharedScope != null; // the group may have been disbanded since the check above
+            BotBuffReservations<GameLiving> claims = shared ? BuffClaims.GetValue(sharedScope, _ => new()) : null;
             int family = shared ? (int)EffectHelper.GetEffectFromSpell(spell) : 0;
             if (shared && (!NeedsBuff(target, spell) ||
                 !claims.TryReserve(Body, target, family, GameLoop.GameLoopTime, spell.CastTime)))
