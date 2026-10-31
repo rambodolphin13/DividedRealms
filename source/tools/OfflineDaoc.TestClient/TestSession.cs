@@ -4,6 +4,8 @@ using MMOEngine;
 
 namespace OfflineDaoc.TestClient
 {
+    public sealed record ClassRow(string name, int class_id, int realm, int race, int model, int gender, int[] stats);
+
     public sealed class Entity
     {
         public int Oid;
@@ -24,7 +26,11 @@ namespace OfflineDaoc.TestClient
 
     public sealed record CharacterChoice(int Realm, int Slot, string Name, int Level, string ClassName);
 
-    public sealed record ClassPreset(int ClassId, int Realm, int Race, int Model, int[] Stats);
+    // ArmorType and WeaponType are eObjectType; Specs are trained in that order, as far as the points go.
+    public sealed record ClassPreset(int ClassId, int Realm, int Race, int Model, int[] Stats, int ArmorType, int WeaponType, params string[] Specs)
+    {
+        public int Gender { get; init; }
+    }
 
     // One logged-in character: the packets coming in kept as state and events, and what a real client keeps sending.
     public sealed class TestSession : IDisposable
@@ -32,7 +38,9 @@ namespace OfflineDaoc.TestClient
         const int RunSpeed = 191;           // the speed of 100%
         const float MeleeReach = 120f;
         const int TickMs = 50;
+        public const string Retry = "reconnecting";
         const int MaxEvents = 5000;
+        const int StateSwimming = 0x04;     // PlayerPositionUpdateHandler.StateFlags
 
         // Kept as state only: at this volume they would drown what a test wants to read.
         static readonly HashSet<string> QuietKinds = new()
@@ -46,16 +54,29 @@ namespace OfflineDaoc.TestClient
         // with the 30 creation points spent 10 / 10 / 10 as the new client does.
         public static readonly System.Collections.Generic.Dictionary<string, ClassPreset> Presets = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["armsman"] = new(2, 1, 1, 32, new[] { 70, 70, 70, 60, 60, 60, 60, 60 }),
-            ["cleric"] = new(6, 1, 1, 32, new[] { 60, 60, 70, 70, 60, 70, 60, 60 }),
-            ["wizard"] = new(7, 1, 1, 32, new[] { 60, 70, 70, 60, 70, 60, 60, 60 }),
-            ["warrior"] = new(22, 2, 5, 503, new[] { 80, 60, 80, 50, 60, 60, 60, 60 }),
-            ["healer"] = new(26, 2, 5, 503, new[] { 70, 50, 80, 50, 60, 70, 60, 60 }),
-            ["runemaster"] = new(29, 2, 5, 503, new[] { 70, 60, 80, 50, 60, 70, 60, 60 }),
-            ["hero"] = new(44, 3, 9, 302, new[] { 70, 70, 70, 60, 60, 60, 60, 60 }),
-            ["druid"] = new(47, 3, 9, 302, new[] { 60, 60, 70, 70, 60, 60, 70, 60 }),
-            ["eldritch"] = new(40, 3, 11, 334, new[] { 40, 85, 50, 75, 80, 60, 60, 60 }),
+            ["armsman"] = new(2, 1, 1, 32, new[] { 70, 70, 70, 60, 60, 60, 60, 60 }, 36, 3, "Slash", "Shields", "Parry"),
+            ["cleric"] = new(6, 1, 1, 32, new[] { 60, 60, 70, 70, 60, 70, 60, 60 }, 35, 2, "Rejuvenation", "Enhancement", "Smite"),
+            ["wizard"] = new(7, 1, 1, 32, new[] { 60, 70, 70, 60, 70, 60, 60, 60 }, 32, 8, "Fire Magic", "Earth Magic", "Cold Magic"),
+            ["warrior"] = new(22, 2, 5, 503, new[] { 80, 60, 80, 50, 60, 60, 60, 60 }, 35, 11, "Sword", "Shields", "Parry"),
+            ["healer"] = new(26, 2, 5, 503, new[] { 70, 60, 80, 50, 60, 70, 60, 60 }, 35, 12, "Mending", "Augmentation", "Pacification"),
+            ["runemaster"] = new(29, 2, 5, 503, new[] { 70, 60, 80, 50, 60, 70, 60, 60 }, 32, 8, "Darkness", "Suppression", "Runecarving"),
+            ["hero"] = new(44, 3, 9, 302, new[] { 70, 70, 70, 60, 60, 60, 60, 60 }, 38, 19, "Blades", "Shields", "Parry"),
+            ["druid"] = new(47, 3, 9, 302, new[] { 60, 60, 70, 70, 60, 60, 70, 60 }, 38, 20, "Nurture", "Nature", "Regrowth"),
+            ["eldritch"] = new(40, 3, 11, 334, new[] { 40, 85, 50, 75, 80, 60, 60, 60 }, 32, 8, "Light", "Mana", "Void"),
         };
+
+        // Every other class comes from classes.json (gen_classes.py): armor, weapon and specs are worked out by prepare.
+        static TestSession()
+        {
+            string file = Path.Combine(AppContext.BaseDirectory, "classes.json");
+            if (!File.Exists(file))
+                return;
+            foreach (var (key, row) in System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, ClassRow>>(File.ReadAllText(file)))
+            {
+                if (!Presets.ContainsKey(key))
+                    Presets[key] = new ClassPreset(row.class_id, row.realm, row.race, row.model, row.stats, 0, 0) { Gender = row.gender };
+            }
+        }
 
         readonly TestConfig _config;
         readonly NavMesh _nav;
@@ -68,10 +89,11 @@ namespace OfflineDaoc.TestClient
         readonly List<CharacterChoice> _characters = new();
         readonly System.Collections.Generic.Dictionary<int, Dictionary> _inventory = new();
         readonly List<Dictionary> _skills = new();
+        readonly SortedDictionary<int, Dictionary> _spellLines = new();
         readonly long _started = Environment.TickCount64;
 
         volatile bool _running = true;
-        long _seq;
+        long _seq, _delivered;
         bool _loggedIn, _realmKnown, _inWorld;
         int _charactersSeen;
         string _failure;
@@ -99,6 +121,12 @@ namespace OfflineDaoc.TestClient
         public bool IsConnected => _client.IsOpen;
         public bool InWorld => _inWorld;
         public long LastSeq => Interlocked.Read(ref _seq);
+
+        // Everything since the last tool call: an AI thinks for seconds between calls, and what lands then still counts.
+        public List<GameEvent> TakeEvents()
+        {
+            return EventsSince(Interlocked.Exchange(ref _delivered, LastSeq));
+        }
         public bool Walking
         {
             get
@@ -132,6 +160,7 @@ namespace OfflineDaoc.TestClient
 
         public void LogIn(string name, string className)
         {
+            _config.EnsureAccount(Account);
             _config.GrantCommands(Account);
             if (!_client.Open(_config.Host))
                 throw new InvalidOperationException(_failure ?? "could not connect");
@@ -154,18 +183,15 @@ namespace OfflineDaoc.TestClient
                     $"The server refused the character {name} (names are letters only and must be unused)");
             }
 
+            if (_config.PlaceIfNowhere(choice.Name))    // (the server holds the row it loaded: reconnect to read the new one)
+            {
+                _client.Close();
+                throw new InvalidOperationException(Retry);
+            }
+
             AskCharacters(choice.Realm);                // (the server enters from the realm last asked)
             _client.EnterWorld(choice.Realm, choice.Slot, choice.Name);
             Require(() => _inWorld, 60000, "the character never reached the world");
-        }
-
-        // A first login makes the account. The server reads the row at login, so it has to exist before it can be flagged.
-        public void Register()
-        {
-            if (!_client.Open(_config.Host))
-                throw new InvalidOperationException(_failure ?? "could not connect");
-            _client.Login(Account, _config.PasswordFor(Account));
-            Require(() => _loggedIn, 15000, "the server did not grant the login");
         }
 
         void AskCharacters(int realm)
@@ -203,7 +229,7 @@ namespace OfflineDaoc.TestClient
             _client.CreateCharacter(new Dictionary
             {
                 ["realm"] = preset.Realm, ["slot"] = slot, ["name"] = name, ["face"] = face, ["class_id"] = preset.ClassId,
-                ["race"] = preset.Race, ["gender"] = 0, ["model"] = preset.Model, ["stats"] = stats,
+                ["race"] = preset.Race, ["gender"] = preset.Gender, ["model"] = preset.Model, ["stats"] = stats,
             });
             WaitUntil(() => Volatile.Read(ref _charactersSeen) > seen, 3000);
             AskCharacters(preset.Realm);
@@ -318,6 +344,7 @@ namespace OfflineDaoc.TestClient
         {
             float x, y, z, speed;
             int heading, zone;
+            bool swimming;
             lock (_lock)
             {
                 x = (float)X;
@@ -326,9 +353,10 @@ namespace OfflineDaoc.TestClient
                 speed = _speedNow;
                 heading = Heading;
                 zone = CurrentZone?.Id ?? 0;
+                swimming = Swimming;
             }
             // TARGET_IN_VIEW 0x30: left out, every update would clear the server's TargetInView (zone_viewer.gd)
-            _client.Position(x, y, z, speed, 0, zone, 0, true, heading, TargetOid != 0 ? 0x30 : 0, HealthPercent, Oid);
+            _client.Position(x, y, z, speed, 0, zone, swimming ? StateSwimming : 0, !swimming, heading, TargetOid != 0 ? 0x30 : 0, HealthPercent, Oid);
         }
 
         int HeadingTo(double x, double y)
@@ -336,6 +364,9 @@ namespace OfflineDaoc.TestClient
             return (int)(Math.Atan2(-(x - X), y - Y) * 651.8986469) & 0xFFF;  // GameObject.GetHeading
         }
 
+        // Most Atlantis zones have no WaterLevel in the world, so a test says when it is in the sea (the swim tool).
+        public bool InSea { get; set; }
+        public bool Swimming => InSea || (CurrentZone is { WaterLevel: > 0 } zone && Z < zone.WaterLevel);
         public ZoneInfo CurrentZone => _config.ZoneAt(Region, X, Y);
 
         // ---------------------------------------------------------------- what the server sends
@@ -435,6 +466,10 @@ namespace OfflineDaoc.TestClient
                     break;
                 case "status":
                     Status = d;
+                    if ((int)d["health_pct"] == 0)          // (a self kill sends no death packet of your own)
+                        Dead = true;
+                    else if (d.ContainsKey("health") && (int)d["health"] > 0)
+                        Dead = false;
                     break;
                 case "character":
                     Character = d;
@@ -462,6 +497,10 @@ namespace OfflineDaoc.TestClient
                     if (_entities.TryGetValue((int)d["defender"], out Entity hit))
                         hit.Health = (int)d["health"];
                     break;
+                case "model_change":
+                    if (_entities.TryGetValue((int)d["oid"], out Entity changed))
+                        changed.Model = (int)d["model"];
+                    break;
                 case "change_target":
                     SetTarget((int)d["oid"]);
                     break;
@@ -479,6 +518,10 @@ namespace OfflineDaoc.TestClient
                         else
                             _inventory.Remove((int)item["slot"]);
                     }
+                    break;
+                case "spell_line":                          // a list caster's spells: they aren't skill entries
+                    if (!(bool)d["done"])
+                        _spellLines[(int)d["line"]] = d;
                     break;
                 case "skills":
                     if ((int)d["first"] == 0)
@@ -549,8 +592,8 @@ namespace OfflineDaoc.TestClient
             r.FloatLE();
             r.FloatLE();
             int session = r.Short(), oid = r.Short();
-            r.Skip(10);
-            int health = r.Byte() & 0x7F;
+            r.Skip(11);                                 // zone, flags, seat, heading, action, RP flag, a zero
+            int health = r.Byte() & 0x7F;               // (0x80: in attack mode)
             lock (_lock)
             {
                 if (_entities.TryGetValue(oid, out Entity e))
@@ -644,6 +687,12 @@ namespace OfflineDaoc.TestClient
                 return _skills.ToList();
         }
 
+        public List<(int line, Dictionary data)> SpellLines()
+        {
+            lock (_lock)
+                return _spellLines.Select(l => (l.Key, l.Value)).ToList();
+        }
+
         public List<Dictionary> Inventory()
         {
             lock (_lock)
@@ -704,6 +753,11 @@ namespace OfflineDaoc.TestClient
         public void Interact(int oid)
         {
             _client.Interact(oid, (int)X, (int)Y);
+        }
+
+        public void CastFromLine(int level, int line)
+        {
+            _client.UseSpell((float)X, (float)Y, (float)Z, _speedNow, Heading, true, level, line);
         }
 
         public void UseAbility(int index)

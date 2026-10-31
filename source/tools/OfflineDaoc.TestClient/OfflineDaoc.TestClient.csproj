@@ -14,5 +14,6 @@
     <Compile Include="..\..\new-client\godot\game\net\DaocClient.cs" Link="DaocClient.cs" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
     <None Include="scenarios\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="classes.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

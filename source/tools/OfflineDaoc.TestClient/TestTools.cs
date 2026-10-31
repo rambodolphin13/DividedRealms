@@ -14,6 +14,8 @@ namespace OfflineDaoc.TestClient
         readonly NavMesh _nav;
         readonly System.Collections.Generic.Dictionary<string, TestSession> _sessions = new();
 
+        readonly System.Collections.Generic.Dictionary<string, FileStream> _claims = new();
+
         public List<Tool> All { get; } = new();
         public NavMesh Nav => _nav;
 
@@ -66,6 +68,13 @@ namespace OfflineDaoc.TestClient
                 ("who", "string", "Name or object id, instead of a point"), ("x", "number", ""), ("y", "number", ""), ("z", "number", ""),
                 ("stop_within", "number", "Default 50"), ("timeout_s", "number", "Default 120")));
             All.Add(Make("stop", "Stop walking and stop attacking.", Stop, none));
+            All.Add(Make("swim", "Say you are in the water, for the sea, boats and breath. Atlantis zones have no water level to detect it from.", Swim,
+                new[] { "on" }, ("on", "boolean", "True in the water, false on land")));
+            All.Add(Make("release", "Release a dead character and wait until it stands at its bind point. Don't send /release yourself: "
+                + "during the countdown it toggles auto-release off.", Release, none));
+            All.Add(Make("prepare", "Make a character fit for a test: level, trained specs, and the best armor and weapon the world has for its class. "
+                + "Without this a level 50 test character dies in seconds. Every class works: see the login tool.",
+                Prepare, new[] { "class" }, ("class", "string", "The character's class"), ("level", "integer", "Default 50")));
             All.Add(Make("fight", "Target a living, close to melee and fight until it dies, you die or the time runs out.", Fight, new[] { "who" },
                 ("who", "string", "Name, object id, or @mob for the nearest hostile mob"), ("timeout_s", "number", "Default 60")));
             All.Add(Make("abilities", "Specs, abilities, styles and spells, with the names cast and use_ability take.", Abilities, none));
@@ -83,6 +92,15 @@ namespace OfflineDaoc.TestClient
                 ("count", "integer", "Default 1"), ("menu", "integer", "Default 0")));
             All.Add(Make("answer_dialog", "Answer the open yes / no dialog.", AnswerDialog, none, ("response", "integer", "1 yes (default), 0 no")));
             All.Add(Make("wait", "Let time pass and return the events.", Wait, new[] { "seconds" }, ("seconds", "number", "")));
+            All.Add(Make("db_query", "Read the world database with one SELECT, to find what to test: Mob, Zones, ItemTemplate, Spell, DOLCharacters ...", DbQuery,
+                new[] { "sql" }, ("sql", "string", "Read only"), ("limit", "integer", "Default 200")));
+            All.Add(Make("report_finding", "Add to the log every tester shares, Claude and Codex alike. Quote the game's own text as evidence.", ReportFinding,
+                new[] { "what" }, ("what", "string", "What is wrong, or what you are claiming"),
+                ("kind", "string", "bug (default), works, claim (an area you are taking, so others stay out), note"),
+                ("severity", "string", "blocker, major, minor"), ("area", "string", "mobs, camps, areas, items, travel, artifacts ..."),
+                ("evidence", "string", "Game messages, ids, the steps to repeat it")));
+            All.Add(Make("read_findings", "Read the shared log, from a line onwards. Read it before you start and when you change area.", ReadFindings, none,
+                ("since", "integer", "Lines already read, default 0"), ("kind", "string", "Only this kind")));
         }
 
         // ---------------------------------------------------------------- arguments
@@ -138,20 +156,15 @@ namespace OfflineDaoc.TestClient
         object Login(JsonObject a)
         {
             string name = Text(a, "session") ?? "main";
+            if (!name.All(char.IsAsciiLetter))
+                throw new InvalidOperationException("Session names are letters only: they become account names.");
             lock (_sessions)
             {
                 if (_sessions.TryGetValue(name, out TestSession old) && old.IsConnected)
                     return Describe(old);
+                if (!_claims.ContainsKey(name))
+                    _claims[name] = _config.ClaimAccount(_config.AccountPrefix + name);
             }
-            if (!_config.MarkTester(_config.AccountPrefix + name))
-            {
-                using (var first = new TestSession(_config, _nav, name))
-                    first.Register();
-                Thread.Sleep(1500);                     // past the server's save of the closing account
-                if (!_config.MarkTester(_config.AccountPrefix + name))
-                    throw new InvalidOperationException("The new account could not be flagged as a tester.");
-            }
-
             // A client gone without quitting stays linkdead for 60 seconds, and the server refuses new logins meanwhile
             // (eLoginError.AccountAlreadyLoggedIn, or the connection closed).
             long end = Environment.TickCount64 + 75000;
@@ -166,7 +179,7 @@ namespace OfflineDaoc.TestClient
                     TestSession.WaitUntil(() => session.Character.Count > 0, 3000);
                     return Describe(session);
                 }
-                catch (InvalidOperationException e) when ((e.Message.Contains("closed the connection") || e.Message.EndsWith("eLoginError 17")) && Environment.TickCount64 < end)
+                catch (InvalidOperationException e) when ((e.Message == TestSession.Retry || e.Message.Contains("closed the connection") || e.Message.EndsWith("eLoginError 17")) && Environment.TickCount64 < end)
                 {
                     session.Dispose();
                     Thread.Sleep(5000);
@@ -195,6 +208,8 @@ namespace OfflineDaoc.TestClient
             TestSession session;
             lock (_sessions)
             {
+                if (_claims.Remove(name, out FileStream claim))
+                    claim.Dispose();
                 if (!_sessions.Remove(name, out session))
                     return;
             }
@@ -221,7 +236,7 @@ namespace OfflineDaoc.TestClient
                 health_pct = s.Status.GetValueOrDefault("health_pct"), mana_pct = s.Status.GetValueOrDefault("mana_pct"),
                 endurance_pct = s.Status.GetValueOrDefault("endurance_pct"), health = s.Status.GetValueOrDefault("health"),
                 max_health = s.Status.GetValueOrDefault("max_health"),
-                dead = s.Dead, walking = s.Walking, max_speed_pct = s.MaxSpeedPercent,
+                dead = s.Dead, walking = s.Walking, swimming = s.Swimming, max_speed_pct = s.MaxSpeedPercent,
                 target = target == null ? null : Show(s, target),
                 unknown_packets = UnknownPackets(s),
                 cursor = s.LastSeq,
@@ -237,7 +252,7 @@ namespace OfflineDaoc.TestClient
 
         static object Show(TestSession s, Entity e)
         {
-            return new { oid = e.Oid, kind = e.Kind, name = e.Name, level = e.Level, realm = e.Realm, health_pct = e.Health,
+            return new { oid = e.Oid, kind = e.Kind, name = e.Name, level = e.Level, realm = e.Realm, health_pct = e.Health, model = e.Model,
                 x = (int)e.X, y = (int)e.Y, z = (int)e.Z, distance = (int)s.Distance(e), guild = e.Guild };
         }
 
@@ -257,7 +272,7 @@ namespace OfflineDaoc.TestClient
         static object Collect(TestSession s, long since, int waitMs, object extra = null)
         {
             Thread.Sleep(waitMs);
-            return new { result = extra, cursor = s.LastSeq, events = s.EventsSince(since) };
+            return new { result = extra, cursor = s.LastSeq, events = s.TakeEvents() };
         }
 
         object Command(JsonObject a)
@@ -339,6 +354,121 @@ namespace OfflineDaoc.TestClient
             return Describe(s);
         }
 
+        object Swim(JsonObject a)
+        {
+            TestSession s = Session(a);
+            s.InSea = (bool)a["on"];
+            return Collect(s, s.LastSeq, 1500, new { swimming = s.Swimming });
+        }
+
+        object Release(JsonObject a)
+        {
+            TestSession s = Session(a);
+            if (!s.Dead)
+                return new { released = false, why = "not dead", you = Describe(s) };
+            long since = s.LastSeq;
+            s.Command("/release");
+            bool released = TestSession.WaitUntil(() => s.InWorld && !s.Dead, 30000);
+            return Collect(s, since, 500, new { released, you = Describe(s) });
+        }
+
+        object Prepare(JsonObject a)
+        {
+            TestSession s = Session(a);
+            string wanted = new string((Text(a, "class") ?? "").Where(char.IsAsciiLetter).ToArray());
+            if (!TestSession.Presets.TryGetValue(wanted, out ClassPreset preset))
+                throw new InvalidOperationException("Classes: " + string.Join(", ", TestSession.Presets.Keys));
+            long since = s.LastSeq;
+            s.Command($"/player level {Whole(a, "level", 50)}");
+            Thread.Sleep(1500);
+            ClassPreset kitFor = Kit(s, preset);
+            int line = 0;
+            foreach (string spec in kitFor.Specs)
+            {
+                int target = line++ switch { 0 => 50, 1 => 35, _ => 25 };
+                int points = SpecLevels(s);
+                for (int attempt = 0; attempt < 4 && SpecLevels(s) == points; attempt++)    // /train ignores a call too soon after the last
+                {
+                    s.Command($"/train {spec} {target}");
+                    TestSession.WaitUntil(() => SpecLevels(s) != points, 1500);
+                }
+            }
+            var specs = new List<object>();
+            specs.AddRange(s.Skills().Where(k => (int)k["page"] == 0 && (int)k["level"] > 1).Select(k => new { spec = k["name"], level = k["level"] }));
+
+            var kit = new List<object>();
+            foreach (int slot in new[] { 21, 22, 23, 25, 27, 28 })      // head, hands, feet, torso, legs, arms
+                kit.Add(Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.ArmorType}"));
+            int hand = 10;
+            foreach (int slot in new[] { 10, 12 })                      // one-handed, else two-handed (a staff)
+            {
+                object worn = Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.WeaponType}");
+                kit.Add(worn);
+                if (s.Inventory().Any(i => (int)i["slot"] == slot))
+                {
+                    hand = slot;
+                    break;
+                }
+            }
+            s.UseSlot(hand, 0);                                         // ready that weapon set
+            s.Command("/heal");                                         // levels raise max health, not health
+            return Collect(s, since, 500, new { specs, kit, you = Describe(s) });
+        }
+
+        // What the character can really use, for classes without a hand-tuned kit.
+        static readonly (string Name, int Type)[] Armors =
+            { ("Plate", 36), ("Scale", 38), ("Chain", 35), ("Reinforced", 37), ("Studded", 34), ("Leather", 33), ("Cloth", 32) };
+        static readonly (string Name, int Type)[] Weapons =
+        {
+            ("Hand to Hand", 25), ("Fist", 27), ("Mauler", 28), ("Scythe", 26), ("Celtic Spear", 23), ("Large Weapons", 22), ("Blades", 19), ("Blunt", 20),
+            ("Piercing", 21), ("Swords", 11), ("Hammers", 12), ("Axes", 13), ("Spears", 14), ("Flexible", 24), ("Polearm", 7), ("Two Handed", 6),
+            ("Slashing", 3), ("Crushing", 2), ("Thrusting", 4), ("Staves", 8),
+        };
+        static readonly HashSet<string> SupportLines = new(StringComparer.OrdinalIgnoreCase)
+            { "Parry", "Shield", "Shields", "Stealth", "Envenom", "Critical Strike", "Dual Wield", "Left Axe", "Celtic Dual", "Thrown Weapons", "Instruments" };
+
+        static ClassPreset Kit(TestSession s, ClassPreset preset)
+        {
+            if (preset.ArmorType != 0)
+                return preset;
+            var names = s.Skills().Where(k => (int)k["page"] == 1).Select(k => (string)k["name"]).ToList();
+            int armor = Armors.FirstOrDefault(a => names.Any(n => n.StartsWith("Armor") && n.Contains(a.Name, StringComparison.OrdinalIgnoreCase))).Type;
+            int weapon = Weapons.FirstOrDefault(w => names.Any(n => n.StartsWith("Weaponry") && n.Contains(w.Name, StringComparison.OrdinalIgnoreCase))).Type;
+            var lines = s.Skills().Where(k => (int)k["page"] == 0).Select(k => (string)k["name"]).ToList();
+            string[] specs = lines.Where(l => !SupportLines.Contains(l)).Concat(lines.Where(SupportLines.Contains)).Take(3).ToArray();
+            return preset with { ArmorType = armor == 0 ? 32 : armor, WeaponType = weapon == 0 ? 8 : weapon, Specs = specs };
+        }
+
+        static int SpecLevels(TestSession s)
+        {
+            return s.Skills().Where(k => (int)k["page"] == 0).Sum(k => (int)k["level"]);
+        }
+
+        // The best item the class can wear, created in the backpack and put on. Some are refused (a class's own item, a
+        // minimum level), so it works down a short list. Artifacts stay out: they are test subjects.
+        object Equip(TestSession s, int slot, ClassPreset preset, string what)
+        {
+            var rows = _config.Query($"select Id_nb, Name from ItemTemplate where {what} and Realm in (0, {preset.Realm}) and Level between 40 and 51 "
+                + $"and (AllowedClasses in ('', '0') or AllowedClasses is null or ';' || AllowedClasses || ';' like '%;{preset.ClassId};%') "
+                + "and Id_nb not in (select ItemID from ArtifactXItem) and Id_nb not like '% %' "
+                + "order by DPS_AF desc, Bonus1 + Bonus2 + Bonus3 + Bonus4 desc, Level desc limit 6", 6);
+            foreach (var row in rows)
+            {
+                int free = 40;
+                var used = s.Inventory().Select(i => (int)i["slot"]).ToHashSet();
+                while (used.Contains(free))
+                    free++;
+                s.Command("/item create " + row["Id_nb"]);
+                if (!TestSession.WaitUntil(() => s.Inventory().Any(i => (int)i["slot"] == free), 2000))
+                    continue;
+                object made = s.Inventory().First(i => (int)i["slot"] == free)["name"];
+                s.MoveItem(free, slot, 1);
+                if (TestSession.WaitUntil(() => s.Inventory().Any(i => (int)i["slot"] == slot && Equals(i["name"], made)), 1000))
+                    return new { slot, item = row["Name"], worn = true };
+            }
+            return new { slot, item = (string)null, worn = false };
+        }
+
         object Fight(JsonObject a)
         {
             TestSession s = Session(a);
@@ -385,25 +515,45 @@ namespace OfflineDaoc.TestClient
 
         object Abilities(JsonObject a)
         {
-            var skills = Session(a).Skills().Select(k => new { name = k["name"], level = k["level"], page = (int)k["page"] }).ToList();
+            TestSession s = Session(a);
+            var skills = s.Skills().Select(k => new { name = k["name"], level = k["level"], page = (int)k["page"] }).ToList();
             return new
             {
                 specs = skills.Where(k => k.page == 0),
                 abilities = skills.Where(k => k.page == 1),
                 styles = skills.Where(k => k.page == 2),
                 spells = skills.Where(k => k.page >= 3),
+                spell_lines = s.SpellLines().Select(l => new
+                {
+                    l.line,
+                    name = l.data.GetValueOrDefault("name"),
+                    spells = ((Godot.Collections.Array)l.data["spells"]).Cast<Dictionary>()
+                        .Select(p => new { name = p["name"], level = p["level"], kind = p["kind"] }),
+                }),
             };
         }
 
-        // On 1.127 spells are skill-list entries (page 3): GetAllUsableSkills, used by place after the specs like any other.
+        // Spells come two ways on 1.127: a list caster's in spell lines (UseSpell), the others' as skill entries, page 3.
         object Cast(JsonObject a)
         {
             TestSession s = Session(a);
             long since = s.LastSeq;
             if (Text(a, "who") is string who)
-                s.SetTarget(Living(s, who).Oid);
+                s.SetTarget(Equals(who, s.Character.GetValueOrDefault("name")) ? s.Oid : Living(s, who).Oid);
             Thread.Sleep(150);
-            return Use(s, since, Text(a, "spell"), k => (int)k["page"] == 3, Whole(a, "wait_ms", 3500));
+            string wanted = Text(a, "spell");
+            var fromLine = s.SpellLines()
+                .SelectMany(l => ((Godot.Collections.Array)l.data["spells"]).Cast<Dictionary>().Select(p => (l.line, spell: p)))
+                .Where(p => (string)p.spell["kind"] == "spell" && ((string)p.spell["name"]).Contains(wanted, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(p => ((string)p.spell["name"]).Equals(wanted, StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(p => (int)p.spell["level"])
+                .ToList();
+            if (fromLine.Count == 0)
+                return Use(s, since, wanted, k => (int)k["page"] >= 3, Whole(a, "wait_ms", 3500));   // (page 4 is songs)
+            if (s.TargetOid != 0 && s.Find(s.TargetOid.ToString()) is Entity target)
+                s.Face(target);
+            s.CastFromLine((int)fromLine[0].spell["level"], fromLine[0].line);
+            return Collect(s, since, Whole(a, "wait_ms", 3500), new { used = fromLine[0].spell["name"] });
         }
 
         object UseAbility(JsonObject a)
@@ -483,6 +633,39 @@ namespace OfflineDaoc.TestClient
             long since = s.LastSeq;
             s.AnswerDialog(Whole(a, "response", 1));
             return Collect(s, since, 800);
+        }
+
+        object DbQuery(JsonObject a)
+        {
+            return _config.Query(Text(a, "sql"), Whole(a, "limit", 200));
+        }
+
+        object ReportFinding(JsonObject a)
+        {
+            string name = Text(a, "session") ?? "main";
+            TestSession s;
+            lock (_sessions)
+                s = _sessions.GetValueOrDefault(name);
+            _config.AppendShared(new
+            {
+                at = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), by = _config.AccountPrefix + name,
+                kind = Text(a, "kind") ?? "bug", severity = Text(a, "severity"), area = Text(a, "area"),
+                what = Text(a, "what"), evidence = Text(a, "evidence"),
+                region = s?.Region, zone = s?.CurrentZone?.Name, x = (int?)s?.X, y = (int?)s?.Y, z = (int?)s?.Z,
+            });
+            return new { logged_to = _config.SharedLog };
+        }
+
+        object ReadFindings(JsonObject a)
+        {
+            List<string> lines = _config.ReadShared();
+            int since = Math.Min(Whole(a, "since", 0), lines.Count);
+            string kind = Text(a, "kind");
+            return new
+            {
+                lines = lines.Count,
+                findings = lines.Skip(since).Select(l => JsonNode.Parse(l)).Where(n => kind == null || (string)n["kind"] == kind),
+            };
         }
 
         object Wait(JsonObject a)

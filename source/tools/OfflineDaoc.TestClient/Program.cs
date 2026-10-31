@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 namespace OfflineDaoc.TestClient
 {
     // Plays Offline DAoC with no window: as MCP tools for Claude and Codex (the default), or a saved scenario.
-    //   OfflineDaoc.TestClient --runtime <folder> [--account aiclaude]
+    //   OfflineDaoc.TestClient --runtime <folder> [--account aiclaude] [--shared-log <file>]
     //   OfflineDaoc.TestClient --runtime <folder> --scenario <file.json> [--verbose]
 //   OfflineDaoc.TestClient --runtime <folder> --check      (no server needed)
     public static class Program
@@ -22,7 +22,7 @@ namespace OfflineDaoc.TestClient
                 Console.Error.WriteLine("Give --runtime <the install's runtime folder> or set DAOC_TEST_RUNTIME.");
                 return 2;
             }
-            var config = new TestConfig(runtime, Option(args, "--account") ?? "aitester");
+            var config = new TestConfig(runtime, Option(args, "--account") ?? "aitester", Option(args, "--shared-log"));
             var tools = new TestTools(config);
             if (args.Contains("--check"))
                 return Check(config, tools.Nav);

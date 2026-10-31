@@ -1,0 +1,21 @@
+{
+  "name": "ToA ready: kit, Oceanus, a real fight, artifact, death and release, djinn stone",
+  "steps": [
+    { "about": "server is listening", "tool": "server_status", "expect": ["\"listening\":true"], "required": true },
+    { "about": "log the Armsman in", "tool": "login", "args": { "session": "toaready", "name": "Toareadyarms", "class": "armsman" }, "expect": ["\"oid\":"], "required": true },
+    { "about": "level, specs and gear", "tool": "prepare", "args": { "session": "toaready", "class": "armsman" }, "expect": ["\"worn\":true", "Slash"], "forbid": ["\"worn\":false"], "required": true },
+    { "about": "ToA mobs are in the world", "tool": "db_query", "args": { "sql": "select count(*) n from Mob where Region = 73" }, "forbid": ["\"n\":0"] },
+    { "about": "wait out the PvP invulnerability timer", "tool": "wait", "args": { "session": "toaready", "seconds": 30 } },
+    { "about": "change region into Oceanus", "tool": "teleport", "args": { "session": "toaready", "x": 356829, "y": 507116, "z": 8346, "region": 73 }, "expect": ["\"arrived\":true", "Oceanus"], "required": true },
+    { "about": "let the area load", "tool": "wait", "args": { "session": "toaready", "seconds": 4 } },
+    { "about": "see ToA mobs", "tool": "nearby", "args": { "session": "toaready", "kind": "npc", "radius": 3000 }, "expect": ["\"oid\":"] },
+    { "about": "fight one for real", "tool": "fight", "args": { "session": "toaready", "who": "@mob", "timeout_s": 75 }, "expect": ["You attack"] },
+    { "about": "make an artifact", "tool": "command", "args": { "session": "toaready", "text": "/item create Shades_of_Mist", "wait_ms": 1200 }, "expect": ["Item created"] },
+    { "about": "die", "tool": "command", "args": { "session": "toaready", "text": "/player kill self", "wait_ms": 1500 } },
+    { "about": "release and stand up at the bind point", "tool": "release", "args": { "session": "toaready" }, "expect": ["\"released\":true"], "required": true },
+    { "about": "go to a djinn stone", "tool": "teleport", "args": { "session": "toaready", "x": 270957, "y": 540333, "z": 8344, "region": 73 }, "expect": ["\"arrived\":true"], "required": true },
+    { "about": "let the stone load", "tool": "wait", "args": { "session": "toaready", "seconds": 4 } },
+    { "about": "the stone is there", "tool": "nearby", "args": { "session": "toaready", "name": "Djinn Stone", "radius": 800 }, "expect": ["Djinn Stone"] },
+    { "about": "shared log works", "tool": "read_findings", "expect": ["\"lines\":"] }
+  ]
+}

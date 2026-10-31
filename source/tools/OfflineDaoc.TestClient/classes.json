@@ -1,0 +1,902 @@
+{
+ "animist": {
+  "class_id": 55,
+  "gender": 0,
+  "model": 302,
+  "name": "Animist",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   60,
+   70,
+   70,
+   60,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "armsman": {
+  "class_id": 2,
+  "gender": 0,
+  "model": 61,
+  "name": "Armsman",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   55,
+   70,
+   55,
+   70,
+   80,
+   60,
+   60,
+   60
+  ]
+ },
+ "bainshee": {
+  "class_id": 39,
+  "gender": 1,
+  "model": 310,
+  "name": "Bainshee",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   60,
+   70,
+   70,
+   60,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "bard": {
+  "class_id": 48,
+  "gender": 0,
+  "model": 302,
+  "name": "Bard",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   60,
+   60,
+   70,
+   60,
+   60,
+   60,
+   70,
+   70
+  ]
+ },
+ "berserker": {
+  "class_id": 31,
+  "gender": 0,
+  "model": 185,
+  "name": "Berserker",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   60,
+   90,
+   50,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "blademaster": {
+  "class_id": 43,
+  "gender": 0,
+  "model": 302,
+  "name": "Blademaster",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   70,
+   70,
+   60,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "bonedancer": {
+  "class_id": 30,
+  "gender": 0,
+  "model": 169,
+  "name": "Bonedancer",
+  "race": 8,
+  "realm": 2,
+  "stats": [
+   50,
+   80,
+   50,
+   80,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "cabalist": {
+  "class_id": 13,
+  "gender": 0,
+  "model": 61,
+  "name": "Cabalist",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   45,
+   70,
+   45,
+   80,
+   90,
+   60,
+   60,
+   60
+  ]
+ },
+ "champion": {
+  "class_id": 45,
+  "gender": 0,
+  "model": 302,
+  "name": "Champion",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   70,
+   60,
+   60,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "cleric": {
+  "class_id": 6,
+  "gender": 0,
+  "model": 61,
+  "name": "Cleric",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   55,
+   60,
+   55,
+   70,
+   80,
+   70,
+   60,
+   60
+  ]
+ },
+ "deathknight": {
+  "class_id": 66,
+  "gender": 0,
+  "model": 32,
+  "name": "Death Knight",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   60,
+   70,
+   60,
+   70,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "druid": {
+  "class_id": 47,
+  "gender": 0,
+  "model": 302,
+  "name": "Druid",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   60,
+   70,
+   60,
+   60,
+   60,
+   70,
+   60
+  ]
+ },
+ "eldritch": {
+  "class_id": 40,
+  "gender": 0,
+  "model": 334,
+  "name": "Eldritch",
+  "race": 11,
+  "realm": 3,
+  "stats": [
+   40,
+   85,
+   40,
+   85,
+   80,
+   60,
+   60,
+   60
+  ]
+ },
+ "enchanter": {
+  "class_id": 41,
+  "gender": 0,
+  "model": 334,
+  "name": "Enchanter",
+  "race": 11,
+  "realm": 3,
+  "stats": [
+   40,
+   85,
+   40,
+   85,
+   80,
+   60,
+   60,
+   60
+  ]
+ },
+ "friar": {
+  "class_id": 10,
+  "gender": 0,
+  "model": 32,
+  "name": "Friar",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   70,
+   60,
+   70,
+   60,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "healer": {
+  "class_id": 26,
+  "gender": 0,
+  "model": 185,
+  "name": "Healer",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   50,
+   90,
+   50,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "heretic": {
+  "class_id": 33,
+  "gender": 0,
+  "model": 1395,
+  "name": "Heretic",
+  "race": 19,
+  "realm": 1,
+  "stats": [
+   80,
+   60,
+   80,
+   40,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "hero": {
+  "class_id": 44,
+  "gender": 0,
+  "model": 302,
+  "name": "Hero",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   70,
+   70,
+   60,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "hunter": {
+  "class_id": 25,
+  "gender": 0,
+  "model": 185,
+  "name": "Hunter",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   60,
+   80,
+   60,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "infiltrator": {
+  "class_id": 9,
+  "gender": 0,
+  "model": 32,
+  "name": "Infiltrator",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   70,
+   70,
+   60,
+   70,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "mauleralb": {
+  "class_id": 60,
+  "gender": 0,
+  "model": 1395,
+  "name": "Mauler",
+  "race": 19,
+  "realm": 1,
+  "stats": [
+   90,
+   50,
+   80,
+   50,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "maulerhib": {
+  "class_id": 62,
+  "gender": 0,
+  "model": 1419,
+  "name": "Mauler",
+  "race": 21,
+  "realm": 3,
+  "stats": [
+   90,
+   50,
+   80,
+   50,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "maulermid": {
+  "class_id": 61,
+  "gender": 0,
+  "model": 1407,
+  "name": "Mauler",
+  "race": 20,
+  "realm": 2,
+  "stats": [
+   90,
+   50,
+   80,
+   50,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "mentalist": {
+  "class_id": 42,
+  "gender": 0,
+  "model": 302,
+  "name": "Mentalist",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   60,
+   70,
+   60,
+   70,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "mercenary": {
+  "class_id": 11,
+  "gender": 0,
+  "model": 61,
+  "name": "Mercenary",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   55,
+   70,
+   55,
+   70,
+   80,
+   60,
+   60,
+   60
+  ]
+ },
+ "minstrel": {
+  "class_id": 4,
+  "gender": 0,
+  "model": 32,
+  "name": "Minstrel",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   70,
+   70,
+   60,
+   60,
+   60,
+   60,
+   60,
+   70
+  ]
+ },
+ "necromancer": {
+  "class_id": 12,
+  "gender": 0,
+  "model": 32,
+  "name": "Necromancer",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   60,
+   70,
+   60,
+   70,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "nightshade": {
+  "class_id": 49,
+  "gender": 0,
+  "model": 334,
+  "name": "Nightshade",
+  "race": 11,
+  "realm": 3,
+  "stats": [
+   50,
+   85,
+   40,
+   85,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "paladin": {
+  "class_id": 1,
+  "gender": 0,
+  "model": 61,
+  "name": "Paladin",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   55,
+   60,
+   55,
+   70,
+   80,
+   70,
+   60,
+   60
+  ]
+ },
+ "pendragonsovereign": {
+  "class_id": 65,
+  "gender": 0,
+  "model": 32,
+  "name": "Pendragon Sovereign",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   70,
+   60,
+   70,
+   60,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "ranger": {
+  "class_id": 50,
+  "gender": 0,
+  "model": 302,
+  "name": "Ranger",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   70,
+   60,
+   70,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "reaver": {
+  "class_id": 19,
+  "gender": 0,
+  "model": 32,
+  "name": "Reaver",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   70,
+   70,
+   60,
+   60,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "runemaster": {
+  "class_id": 29,
+  "gender": 0,
+  "model": 185,
+  "name": "Runemaster",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   60,
+   60,
+   80,
+   60,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "scout": {
+  "class_id": 3,
+  "gender": 0,
+  "model": 32,
+  "name": "Scout",
+  "race": 1,
+  "realm": 1,
+  "stats": [
+   70,
+   70,
+   60,
+   70,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "shadowblade": {
+  "class_id": 23,
+  "gender": 0,
+  "model": 169,
+  "name": "Shadowblade",
+  "race": 8,
+  "realm": 2,
+  "stats": [
+   60,
+   80,
+   50,
+   80,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "shaman": {
+  "class_id": 28,
+  "gender": 0,
+  "model": 169,
+  "name": "Shaman",
+  "race": 8,
+  "realm": 2,
+  "stats": [
+   60,
+   70,
+   60,
+   70,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "skald": {
+  "class_id": 24,
+  "gender": 0,
+  "model": 185,
+  "name": "Skald",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   50,
+   90,
+   50,
+   60,
+   60,
+   60,
+   70
+  ]
+ },
+ "sorcerer": {
+  "class_id": 8,
+  "gender": 0,
+  "model": 61,
+  "name": "Sorcerer",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   45,
+   70,
+   45,
+   80,
+   90,
+   60,
+   60,
+   60
+  ]
+ },
+ "spiritmaster": {
+  "class_id": 27,
+  "gender": 0,
+  "model": 169,
+  "name": "Spiritmaster",
+  "race": 8,
+  "realm": 2,
+  "stats": [
+   50,
+   80,
+   50,
+   80,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "stormforged": {
+  "class_id": 64,
+  "gender": 0,
+  "model": 503,
+  "name": "Storm Sovereign",
+  "race": 5,
+  "realm": 2,
+  "stats": [
+   80,
+   50,
+   80,
+   50,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "thane": {
+  "class_id": 21,
+  "gender": 0,
+  "model": 185,
+  "name": "Thane",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   50,
+   90,
+   50,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "theurgist": {
+  "class_id": 5,
+  "gender": 0,
+  "model": 61,
+  "name": "Theurgist",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   45,
+   70,
+   45,
+   80,
+   90,
+   60,
+   60,
+   60
+  ]
+ },
+ "tuathasovereign": {
+  "class_id": 67,
+  "gender": 0,
+  "model": 302,
+  "name": "Tuatha Sovereign",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   60,
+   70,
+   60,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "valewalker": {
+  "class_id": 56,
+  "gender": 0,
+  "model": 302,
+  "name": "Valewalker",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   60,
+   70,
+   60,
+   70,
+   60,
+   60,
+   60
+  ]
+ },
+ "valkyrie": {
+  "class_id": 34,
+  "gender": 1,
+  "model": 193,
+  "name": "Valkyrie",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   60,
+   90,
+   50,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "vampiir": {
+  "class_id": 58,
+  "gender": 0,
+  "model": 302,
+  "name": "Vampiir",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   70,
+   70,
+   60,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "warden": {
+  "class_id": 46,
+  "gender": 0,
+  "model": 302,
+  "name": "Warden",
+  "race": 9,
+  "realm": 3,
+  "stats": [
+   70,
+   60,
+   70,
+   60,
+   60,
+   60,
+   70,
+   60
+  ]
+ },
+ "warlock": {
+  "class_id": 59,
+  "gender": 0,
+  "model": 169,
+  "name": "Warlock",
+  "race": 8,
+  "realm": 2,
+  "stats": [
+   50,
+   80,
+   60,
+   70,
+   60,
+   70,
+   60,
+   60
+  ]
+ },
+ "warrior": {
+  "class_id": 22,
+  "gender": 0,
+  "model": 185,
+  "name": "Warrior",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   60,
+   90,
+   50,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
+ "wizard": {
+  "class_id": 7,
+  "gender": 0,
+  "model": 61,
+  "name": "Wizard",
+  "race": 2,
+  "realm": 1,
+  "stats": [
+   45,
+   70,
+   45,
+   80,
+   90,
+   60,
+   60,
+   60
+  ]
+ }
+}
