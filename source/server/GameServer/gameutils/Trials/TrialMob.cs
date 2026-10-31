@@ -24,13 +24,20 @@ namespace DOL.GS.Trials
 
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
-            if (Spec.Objective || Immune || !Run.MayHurt(source))
+            if (Spec.Objective || Immune || !Run.MayHurt(source) || !Spec.Hurts.HasFlag(KindOf(source, damageType)))
                 return;
 
             base.TakeDamage(source, damageType, damageAmount, criticalAmount);
 
             if (Spec.Reflect > 0 && source is GameLiving attacker && attacker.IsAlive)
                 attacker.TakeDamage(this, damageType, (int)(damageAmount * Spec.Reflect), 0);
+        }
+
+        public static TrialDamageKind KindOf(GameObject source, eDamageType damageType)
+        {
+            if (damageType is not (eDamageType.Slash or eDamageType.Crush or eDamageType.Thrust))
+                return TrialDamageKind.Spell;
+            return source is GameLiving { ActiveWeaponSlot: eActiveWeaponSlot.Distance } ? TrialDamageKind.Ranged : TrialDamageKind.Melee;
         }
 
         public override void Die(GameObject killer)

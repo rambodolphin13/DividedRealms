@@ -27,6 +27,15 @@ namespace DOL.GS.Trials
         Aerus,
     }
 
+    [Flags]
+    public enum TrialDamageKind
+    {
+        Melee = 1,
+        Ranged = 2,
+        Spell = 4,
+        All = Melee | Ranged | Spell,
+    }
+
     public readonly record struct TrialPoint(int X, int Y, int Z, ushort Heading = 0);
 
     /// <summary>One monster type in a phase. Set either <see cref="At"/> or leave it spread around the anchor.</summary>
@@ -48,6 +57,8 @@ namespace DOL.GS.Trials
         public int AggroRange = 1500;
         /// <summary>Takes no damage until the run clears it (<see cref="TrialRun.SetImmune"/>).</summary>
         public bool Immune;
+        /// <summary>Damage this monster can be hurt by; the rest does nothing.</summary>
+        public TrialDamageKind Hurts = TrialDamageKind.All;
         /// <summary>Returns this share of damage taken to the attacker, 0 to 1.</summary>
         public double Reflect;
         /// <summary>False leaves this monster out of "kill them all".</summary>

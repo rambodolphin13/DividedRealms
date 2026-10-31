@@ -236,7 +236,7 @@ namespace DOL.GS.Trials
                 return _phaseElapsed >= phase.SurviveSeconds;
             if (phase.KillCount > 0)
                 return _phaseFinished >= phase.KillCount;
-            return !_mobs.Any(mob => mob.Spec.Required && !mob.Finished && mob.IsAlive);
+            return !_mobs.Any(mob => mob.Spec.Required && !mob.Finished && mob.IsAlive && mob.ObjectState == GameObject.eObjectState.Active);
         }
 
         private void NextPhase()
