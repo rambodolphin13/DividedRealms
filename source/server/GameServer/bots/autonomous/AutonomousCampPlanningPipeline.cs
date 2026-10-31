@@ -120,7 +120,8 @@ namespace DOL.GS
             var monsters = new List<CampMonster>();
             foreach (Region region in WorldMgr.GetAllRegions())
             {
-                if (region == null || !AutonomousCapnBryGoalCatalog.IsClassicOrShroudedIslesExpansion(region.Expansion)) continue;
+                if (region == null || !AutonomousCapnBryGoalCatalog.IsClassicOrShroudedIslesExpansion(region.Expansion) &&
+                    !AutonomousAtlantisPolicy.IsAtlantisRegion(region.ID)) continue;
                 foreach (GameObject actor in region.Objects)
                 {
                     if (actor is not GameNPC npc || npc.ObjectState != GameObject.eObjectState.Active ||

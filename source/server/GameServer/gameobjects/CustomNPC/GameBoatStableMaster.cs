@@ -9,7 +9,7 @@ namespace DOL.GS
 	/// <summary>
 	/// Stable master that sells and takes horse route tickes
 	/// </summary>
-	public class GameBoatStableMaster : GameMerchant
+	public class GameBoatStableMaster : GameStableMaster
 	{
 		// Some Atlantis dockmasters stand well back from the pier their boats leave from.
 		public const int MAX_ROUTE_START_DISTANCE = 6000;
@@ -137,6 +137,7 @@ namespace DOL.GS
 					else
 					{
                         player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameBoatStableMaster.ReceiveItem.UnknownWay", this.Name, destination), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						return false;
 					}
 				}
 			}

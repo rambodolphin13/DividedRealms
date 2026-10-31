@@ -3920,6 +3920,24 @@ namespace DOL.GS
                         cluster.Count(), representative.CurrentZone, false, true));
                 }
 
+                // Atlantis monsters: live land clusters, offered only to bots of that realm's copy and level.
+                foreach (var cluster in snapshot.Where(npc => AutonomousAtlantisPolicy.IsAtlantisRegion(npc.CurrentRegionID) &&
+                                                              npc.CurrentZone.IsDungeon != true &&
+                                                              AutonomousAtlantisPolicy.IsLandSpawn(npc.CurrentZone.ID, npc.Z) &&
+                                                              AutonomousAtlantisPolicy.IsProvenCamp(npc.CurrentZone.ID, npc.X, npc.Y))
+                             .GroupBy(npc => (npc.CurrentZone.ID, Name: npc.Name.Trim().ToLowerInvariant(),
+                                 CellX: npc.X / CampCellSize, CellY: npc.Y / CampCellSize))
+                             .Where(cluster => cluster.Count() >= AutonomousAtlantisPolicy.CampMinimumMembers))
+                {
+                    CampMonster representative = cluster.OrderBy(npc => npc.InternalId, StringComparer.Ordinal).First();
+                    cells.Add(new CampCatalogCell(
+                        $"atlantis-live:{cluster.Key.ID}:{cluster.Key.CellX}:{cluster.Key.CellY}:{cluster.Key.Name}",
+                        representative.Name, representative.CurrentZone.Description ?? $"region {representative.CurrentRegionID}",
+                        representative.CurrentRegionID, representative.X, representative.Y, representative.Z,
+                        cluster.Select(npc => npc.EffectiveLevel).OrderBy(level => level).ToArray(),
+                        cluster.Count(), representative.CurrentZone, false, false));
+                }
+
                 foreach (AutonomousCapnBryGoalCatalog.Entry entry in AutonomousCapnBryGoalCatalog.Entries)
                 {
                     if (AutonomousAuditedCampPolicy.UsesLiveAnchor(entry.RegionId, entry.Name)) continue;
@@ -4453,9 +4471,11 @@ namespace DOL.GS
                 _boardingProgressPosition = boardingActor;
                 _boardingProgressTick = GameLoop.GameLoopTime;
             }
-            else if (GameLoop.GameLoopTime - _boardingProgressTick >= 90_000)
+            // A bot already at the boarding point has nothing left to walk: pausing there to rest is not a stalled approach.
+            else if (GameLoop.GameLoopTime - _boardingProgressTick >= 90_000 &&
+                     !bot.IsWithinRadius(stable.BoardingPoint, AutonomousStableRoutePlanner.BoardingArrivalRadius))
             {
-                RejectPendingBoarding(bot, "No boarding-approach progress for ninety seconds; retaining the destination and trying another route");
+                RejectPendingBoarding(bot, $"No boarding-approach progress for ninety seconds, {Vector3.Distance(boardingActor, stable.BoardingPoint):F0} units short of {stable.BoardingPoint}; retaining the destination and trying another route");
                 ResetRouteOrderState();
                 return false;
             }
@@ -4743,6 +4763,13 @@ namespace DOL.GS
                     {
                         if (TryPlanCapitalTransit(bot, destination))
                             return HandleCapitalTransit(bot);
+                        // The Atlantis havens are cut off on the mesh: a stone is the way there, not a failure.
+                        if (AutonomousAtlantisPolicy.IsAtlantisRegion(bot.CurrentRegionID))
+                        {
+                            _nextTownPortPlanTick = 0;
+                            if (TryTownTeleport(bot, bot.CurrentRegionID, destination, AtlantisNoRouteSeconds))
+                                return true;
+                        }
                         // Four live-audited Hibernian source components have no
                         // safe seam despite valid destinations. Only those exact
                         // pockets may use a mesh-proven escape; everyone else
@@ -5573,10 +5600,15 @@ namespace DOL.GS
             npc is not GameTeleporter && npc is not GameHealer && npc is not CraftNPC &&
             !AutonomousNeutralTownPolicy.IsTownResident(npc);
 
+        private const double AtlantisNoRouteSeconds = 3_600;
+
+        private static bool IsBotRegion(eRealm realm, Region region) =>
+            AutonomousCapnBryGoalCatalog.IsClassicOrShroudedIslesExpansion(region.Expansion) ||
+            AutonomousAtlantisPolicy.IsOpenTo(realm, region.ID);
+
         private static bool IsZoneAccessible(eRealm realm, Zone zone)
         {
-            if (zone?.ZoneRegion == null ||
-                !AutonomousCapnBryGoalCatalog.IsClassicOrShroudedIslesExpansion(zone.ZoneRegion.Expansion))
+            if (zone?.ZoneRegion == null || !IsBotRegion(realm, zone.ZoneRegion))
                 return false;
             if (zone.IsDungeon && (!AutonomousDungeonPolicy.IsSupportedDungeonZone(zone.ID) ||
                                    !PathfindingProvider.Instance.HasNavmesh(zone)))
@@ -5596,7 +5628,7 @@ namespace DOL.GS
         private static bool IsRegionPointAccessible(eRealm realm, ushort regionId, int x, int y)
         {
             Region region = WorldMgr.GetRegion(regionId);
-            if (region == null || !AutonomousCapnBryGoalCatalog.IsClassicOrShroudedIslesExpansion(region.Expansion))
+            if (region == null || !IsBotRegion(realm, region))
                 return false;
             Zone zone = region.GetZone(x, y) ?? region.Zones.FirstOrDefault();
             return IsZoneAccessible(realm, zone);
@@ -5608,7 +5640,7 @@ namespace DOL.GS
         private static bool IsCrossingSourceAccessible(eRealm realm, ushort currentRegion, DbZonePoint point) =>
             AutonomousDarknessFallsPolicy.CanEvacuateThroughHomeExit(realm, currentRegion, point) ||
             point.SourceRegion == currentRegion && WorldMgr.GetRegion(currentRegion) is { } here &&
-                AutonomousCapnBryGoalCatalog.IsClassicOrShroudedIslesExpansion(here.Expansion) ||
+                IsBotRegion(realm, here) ||
             IsRegionPointAccessible(realm, point.SourceRegion, point.SourceX, point.SourceY);
 
         private bool RetireStaleDarknessFallsGoalAndEvacuate(GameBot bot)
@@ -5886,6 +5918,7 @@ namespace DOL.GS
             {
                 _zonePoints ??= DOLDB<DbZonePoint>.SelectAllObjects()
                     .Where(IsAuthoritativeZonePointEdge)
+                    .Concat(AutonomousAtlantisPolicy.GatewayEdges())
                     .ToArray();
                 return _zonePoints;
             }

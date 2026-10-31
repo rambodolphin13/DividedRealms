@@ -34,5 +34,7 @@ public static class AutonomousOrdinaryPveRealmPolicy
     public const int ShroudedIslesMinimumLevel = 10;
 
     public static bool CanAssignCamp(eRealm botRealm, ushort regionId, ushort zoneId, int planningLevel) =>
+        (!AutonomousAtlantisPolicy.IsAtlantisRegion(regionId) ||
+         AutonomousAtlantisPolicy.CanHuntHere(botRealm, regionId, planningLevel)) &&
         CanAssignCamp(botRealm, regionId, zoneId) && (planningLevel >= ShroudedIslesMinimumLevel || !IsShroudedIsles(regionId));
 }

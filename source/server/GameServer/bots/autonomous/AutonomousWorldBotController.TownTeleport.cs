@@ -23,7 +23,7 @@ namespace DOL.GS
         // quietly; only time spent actually trying counts toward the five-minute failure (run 14:
         // 152 of 165 failures were bots that respawned, planned, then rested past the deadline).
         private const long TownPortIdleDropMilliseconds = 30_000;
-        private readonly Dictionary<GameNPC, long> _failedTownPorters = new();
+        private readonly Dictionary<GameObject, long> _failedTownPorters = new();
         // Five minutes, or twice the planned trip when that is longer, as long as the bot keeps closing on the
         // teleporter; ninety seconds without getting closer ends it sooner (run 2026-10-13: 343 of 414 failures were
         // bots still walking in from a porter planned 250-300 seconds away).
@@ -87,7 +87,7 @@ namespace DOL.GS
             {
                 if (now < _nextTownPortPlanTick) return false;
                 _nextTownPortPlanTick = now + 20_000 + bot.ObjectID % 5_000;
-                foreach (GameNPC expired in _failedTownPorters.Where(pair => pair.Value <= now).Select(pair => pair.Key).ToArray())
+                foreach (GameObject expired in _failedTownPorters.Where(pair => pair.Value <= now).Select(pair => pair.Key).ToArray())
                     _failedTownPorters.Remove(expired);
                 AutonomousTownTeleporters.Plan plan = AutonomousTownTeleporters.TryPlan(bot, goalRegion, goal, walkSeconds, _failedTownPorters);
                 if (plan == null) return false;
