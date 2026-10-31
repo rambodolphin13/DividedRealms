@@ -839,6 +839,9 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("rates", "ml_xp_rate", "Master Level experience from level-50 kills. At 1.0 one Master Level takes the experience of one level 49 to 50; 2.0 is twice as fast. 0 turns ML experience off.", 1.0)]
 		public static double ML_XP_RATE;
 
+		[ServerProperty("rates", "ml_trials_enabled", "Places the Master Level trials in Atlantis. Finishing all of a level's trials raises the Master Level, beside the experience road. Set ml_xp_rate to 0 to make trials the only road.", true)]
+		public static bool ML_TRIALS_ENABLED;
+
 		/// <summary>
 		/// The Champion Level rate from realm points
 		/// </summary>
