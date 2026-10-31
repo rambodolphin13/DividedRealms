@@ -90,7 +90,7 @@ namespace DOL.GS.Trials
 
         public void Tell(string message)
         {
-            foreach (GamePlayer player in _players.Concat(Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct())
+            foreach (GamePlayer player in _players.Concat(Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct().Where(player => player.ObjectState == GameObject.eObjectState.Active))
                 player.Out.SendMessage(message, eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
         }
 
