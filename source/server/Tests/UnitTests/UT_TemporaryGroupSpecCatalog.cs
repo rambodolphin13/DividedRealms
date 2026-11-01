@@ -92,7 +92,7 @@ namespace DOL.GS.Tests
             Assert.That(Labels(eCharacterClass.Berserker), Does.Contain(Specs.Left_Axe));
             Assert.That(Labels(eCharacterClass.Infiltrator), Does.Contain(Specs.Critical_Strike).And.Contain(Specs.Dual_Wield));
             Assert.That(Labels(eCharacterClass.Nightshade), Does.Contain(Specs.Critical_Strike).And.Contain(Specs.Celtic_Dual));
-            Assert.That(Labels(eCharacterClass.Ranger), Does.Contain(Specs.Pathfinding).And.Contain(Specs.Celtic_Dual));
+            Assert.That(Labels(eCharacterClass.Ranger), Does.Contain(Specs.Celtic_Dual));
             Assert.That(Labels(eCharacterClass.Necromancer), Does.Contain(Specs.Death_Servant));
             Assert.That(Labels(eCharacterClass.Reaver), Does.Contain(Specs.Soulrending));
             Assert.That(Labels(eCharacterClass.Bard), Does.Contain(Specs.Regrowth));

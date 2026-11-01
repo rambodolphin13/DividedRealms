@@ -746,7 +746,6 @@ namespace DOL.GS
 				//---------------------------------------------------------------
 				//Load the skills
 				SkillBase.LoadSkills();
-                BotPoisonSupply.Load();
 				if (log.IsInfoEnabled)
 					log.Info("Loading skills: true");
 

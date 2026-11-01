@@ -228,7 +228,7 @@ namespace DOL.GS.Spells
 
 		public override int CalculateCastingTime()
 		{
-			return (eShotType) Spell.LifeDrainReturn is eShotType.Power ? 6000 : base.CalculateCastingTime();
+			return base.CalculateCastingTime();
 		}
 
 		public override int PowerCost(GameLiving target) { return 0; }

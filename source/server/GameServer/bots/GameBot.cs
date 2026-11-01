@@ -4102,8 +4102,8 @@ namespace DOL.GS
                 Skill skill = usableSkills[i].Item1;
 
                 // Live archery shots need a player's drawn bow (Archery.CheckBeginCast); bots keep the classic bow attack, so
-                // the shots' switches, Bola Shot and Eagle Eye are left out too. Assassin bots keep their poison items
-                // (BotPoisonSupply), so the live Envenom coatings are left out as well.
+                // the shots' switches, Bola Shot and Eagle Eye are left out too. Assassin bots cast their coatings outside combat
+                // (BotPoisonSupply), so the live Envenom coatings are left out of the combat list.
                 if (skill is Spell spell && spell.Level <= Level && spell.SpellType is not (eSpellType.Archery or eSpellType.SiegeArrow or
                         eSpellType.BolaShot or eSpellType.ArrowDamageTypes or eSpellType.ArcheryDamageBuff or eSpellType.TrackStealth or
                         eSpellType.PoisonCoating or eSpellType.ConsumeVenom))

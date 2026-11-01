@@ -7316,85 +7316,9 @@ namespace DOL.GS
         /// <returns>true if applied</returns>
         public bool ApplyPoison(DbInventoryItem poisonPotion, DbInventoryItem toItem)
         {
-            if (poisonPotion == null || toItem == null) return false;
-            int envenomSpec = GetModifiedSpecLevel(Specs.Envenom);
-            if (envenomSpec < 1)
-            {
-                Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantUsePoisons"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-            if (!GlobalConstants.IsWeapon(toItem.Object_Type))
-            {
-                Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.PoisonsAppliedWeapons"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-            if (!HasAbilityToUseItem(toItem.Template) || !CanPoisonWeapon(toItem.Object_Type))
-            {
-                Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantPoisonWeapon"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-            if (envenomSpec < poisonPotion.Level || Level < poisonPotion.Level)
-            {
-                Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantUsePoison"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-            if (InCombat)
-            {
-                Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantApplyRecentCombat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-            if (EffectListService.GetEffectOnTarget(this, eEffect.Mez) != null)
-            {
-                Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantApplyRecentCombat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-
-            //if (toItem.PoisonCharges > 0)
-            //{
-            //	Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GameObjects.GamePlayer.ApplyPoison.CantReapplyPoison"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-            //	return false;
-            //}
-
-            //if (toItem.PoisonSpellID != 0)
-            //{
-            //	bool canApply = false;
-            //	SpellLine poisonLine = SkillBase.GetSpellLine(GlobalSpellsLines.Mundane_Poisons);
-            //	if (poisonLine != null)
-            //	{
-            //		List<Spell> spells = SkillBase.GetSpellList(poisonLine.KeyName);
-            //		foreach (Spell spl in spells)
-            //		{
-            //			if (spl.ID == toItem.PoisonSpellID)
-            //			{
-            //				canApply = true;
-            //				break;
-            //			}
-            //		}
-            //	}
-            //	if (canApply == false)
-            //	{
-            //		Out.SendMessage(string.Format("You can't poison your {0}!", toItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-            //		return false;
-            //	}
-            //}
-
-            // Apply poison effect to weapon
-            if (poisonPotion.PoisonSpellID != 0)
-            {
-                toItem.PoisonCharges = poisonPotion.PoisonCharges;
-                toItem.PoisonMaxCharges = poisonPotion.PoisonMaxCharges;
-                toItem.PoisonSpellID = poisonPotion.PoisonSpellID;
-            }
-            else
-            {
-                toItem.PoisonCharges = poisonPotion.Template.PoisonCharges;
-                toItem.PoisonMaxCharges = poisonPotion.Template.PoisonMaxCharges;
-                toItem.PoisonSpellID = poisonPotion.Template.PoisonSpellID;
-            }
-            Inventory.RemoveCountFromStack(poisonPotion, 1);
-            InventoryLogging.LogInventoryAction(this, "(poison)", eInventoryActionType.Other, poisonPotion.Template);
-            Out.SendMessage(string.Format("You apply {0} to {1}.", poisonPotion.GetName(0, false), toItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-            return true;
+            // Item poisons left the game in 1.121: assassins coat their weapons from the Envenom line.
+            Out.SendMessage("Item poisons no longer work. Use your Envenom coatings.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return false;
         }
 
         #endregion
