@@ -99,6 +99,14 @@ namespace DOL.GS
             IsMaintainedOnOneTarget(spell) && (target == null || MaintainedTargetGone(target.IsAlive,
                 target.ObjectState == GameObject.eObjectState.Active, caster.IsWithinRadius(target, spell.CalculateEffectiveRange(caster))));
 
+        /// <summary>
+        /// A harmful chant replays its cast on every pulse. A focus spell was cast once and is being held: the replay restarted the
+        /// caster's cast animation and cast bar each pulse, and left the client mid-cast when the focus ended, since a held focus gets
+        /// no interrupt. The Heretic's ramping focus pulses every 1.5 s on a 2 s cast, so each replay also cut off the one before it.
+        /// </summary>
+        public static bool ReplaysCastOnPulse(Spell spell) =>
+            spell.IsHarmful && !spell.IsFocus && spell.SpellType is not eSpellType.SpeedDecrease;
+
         /// <summary>An ended effect has no business in the service; only a restart (Starting / Enabling) may bring one back.</summary>
         public static bool IsStaleEndedEffect(bool ended, bool starting, bool enabling) => ended && !starting && !enabling;
 
@@ -245,7 +253,7 @@ namespace DOL.GS
                     else
                         spellHandler.StartSpell(null);
 
-                    if (spell.IsHarmful && spell.SpellType is not eSpellType.SpeedDecrease)
+                    if (ReplaysCastOnPulse(spell))
                     {
                         if (!pulseEffect.Owner.IsCrowdControlled)
                             (spellHandler as SpellHandler).SendCastAnimation();
