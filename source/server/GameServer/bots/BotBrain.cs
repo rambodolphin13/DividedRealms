@@ -696,6 +696,7 @@ namespace DOL.AI.Brain
             FSM.Add(new BotState_Follow(this));
             FSM.Add(new BotState_Aggro(this));
             FSM.Add(new BotState_Passive(this));
+            FSM.Add(new BotState_WakingUp(this));
             FSM.SetCurrentState(eFSMStateType.IDLE);
         }
 
@@ -3009,6 +3010,23 @@ namespace DOL.AI.Brain
             public override void Enter() { }
             public override void Exit() { }
             public override void Think() { }
+        }
+
+        /// <summary>
+        /// Every MoveTo stops and restarts the brain, and ABrain.Stop leaves the FSM in WAKING_UP. Without this state the FSM
+        /// had no current state and FSM.Think did nothing until some other code set one (the empty fsm= in watchdog rescues).
+        /// </summary>
+        private class BotState_WakingUp : BotState
+        {
+            public BotState_WakingUp(BotBrain brain) : base(brain)
+            {
+                StateType = eFSMStateType.WAKING_UP;
+            }
+
+            public override void Think()
+            {
+                _brain.FSM.SetCurrentState(eFSMStateType.IDLE);
+            }
         }
 
         private class BotState_Idle : BotState
