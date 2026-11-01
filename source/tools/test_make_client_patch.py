@@ -2,6 +2,7 @@
 this machine has one (OFFLINE_DAOC_PRISTINE_1130, or the developer's OpenDAoC copy)."""
 import base64
 import hashlib
+import json
 import os
 import re
 import struct
@@ -39,6 +40,29 @@ def sections(table):
             key, value = line.split('=', 1)
             current[key.strip().lower()] = value.split(';')[0].strip()
     return found
+
+
+ZONE_OFFSETS = {0: (548864, 483328), 3: (483328, 368640), 206: (385024, 483328)}
+# The zones past each gate, unchanged from classic, and the two wall ends their bound.csv leaves open at the home zone's edge.
+GATE_NEIGHBOURS = {0: (11, 565248, 417792, [(583424, 483322), (586757, 483322)]),
+                   3: (12, 499712, 303104, [(512768, 368640), (518912, 368640)]),
+                   206: (210, 385024, 417792, [(419456, 483328), (423168, 483328)])}
+GATE_LINKS = Path(__file__).resolve().parents[1] / 'server/tools/navmesh_splice/modern-gate-links.json'
+
+
+def bound_polygons(bound):
+    polygons = []
+    for line in bound.decode('latin1').splitlines():
+        numbers = [int(n) for n in re.findall(r'-?\d+', line)]
+        if numbers:
+            polygons.append(list(zip(numbers[2::2], numbers[3::2])))
+    return polygons
+
+
+def crosses(a, b, c, d):
+    def side(p, q, r):
+        return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+    return side(a, b, c) * side(a, b, d) < 0 and side(c, d, a) * side(c, d, b) < 0
 
 
 STOCK_TABLE = b''.join(
@@ -97,6 +121,25 @@ class ClientPatchTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             m.apply(single_file_archive(b'a newer table'), entry)
 
+    def test_a_member_of_a_larger_archive_changes_alone(self):
+        stock = archive.write(b'dat000.mpk', [archive.Entry('a.csv', b'first', 1), archive.Entry('bound.csv', b'old wall', 2),
+                                              archive.Entry('z.csv', b'last' * 100, 3)])
+        patched = m.with_member(stock, b'a new wall', 'BOUND.csv')
+        name, entries = archive.read(patched)
+        self.assertEqual(name, b'dat000.mpk')
+        self.assertEqual([(e.name, e.data, e.timestamp) for e in entries],
+                         [('a.csv', b'first', 1), ('bound.csv', b'a new wall', 2), ('z.csv', b'last' * 100, 3)])
+        archive.verify_memory_image(patched)
+        self.assertEqual(m.member_of(patched, 'z.csv'), b'last' * 100)
+        with self.assertRaises(ValueError):
+            m.member_of(stock)
+        with self.assertRaises(ValueError):
+            m.with_member(stock, b'x', 'missing.csv')
+
+    def test_a_gate_wall_edit_refuses_another_wall(self):
+        with self.assertRaises(ValueError):
+            m.open_gate_walls(b'0, 2, 1, 2, 3, 4\r\n0, 2, 5, 6, 7, 8\r\n0, 2, 9, 9, 8, 8\r\n', 206)
+
     def test_the_zone_table_gets_the_server_regions_and_nothing_else(self):
         stock = single_file_archive(STOCK_TABLE)
         table = archive.read(m.apply(stock, m.zone_table_entry(stock)))[1][0].data
@@ -124,7 +167,10 @@ class ClientPatchTests(unittest.TestCase):
         self.assertEqual([f['Path'] for f in patch['Files']],
                          ['game.dll', 'pregame/character_creation.xml', 'pregame/splash.mpk', 'zones/zones.mpk',
                           'zones/zone253/ter253.mpk', 'zones/zone253/lod253.mpk',
-                          'zones/zone276/dat276.mpk', 'zones/zone276/sounds.dat'])
+                          'zones/zone276/dat276.mpk', 'zones/zone276/sounds.dat',
+                          'zones/zone000/dat000.mpk', 'zones/zone000/csv000.mpk',
+                          'zones/zone003/dat003.mpk', 'zones/zone003/csv003.mpk',
+                          'zones/zone206/dat206.mpk', 'zones/zone206/csv206.mpk'])
         game = patch['Files'][0]
         self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '39d82bb0'))
         # The stock 1.130 loading screen in, the Divided Realms splash out, in one edit.
@@ -144,13 +190,51 @@ class ClientPatchTests(unittest.TestCase):
             self.assertLess(sum(len(base64.b64decode(e['Insert'])) for e in terrain['Edits']), 64)
             m.apply((PRISTINE / terrain['From']).read_bytes(), terrain)
         # Marfach's map is the classic client's, unchanged, and is the only retail data the patch adds.
-        for marfach in patch['Files'][6:]:
+        for marfach in patch['Files'][6:8]:
             self.assertEqual(m.apply((PRISTINE / marfach['From']).read_bytes(), marfach), (CLASSIC / marfach['Path']).read_bytes())
-        self.assertLess(sum(f['OutputSize'] for f in patch['Files'][6:]), 25000)
+        self.assertLess(sum(f['OutputSize'] for f in patch['Files'][6:8]), 25000)
         if MODERN_TEST.is_dir():
             # The test client keeps its hand-installed classic zone table until it is set up from this patch.
-            for f in [f for f in patch['Files'] if f['Path'] != 'zones/zones.mpk']:
+            for f in [f for f in patch['Files'] if f['Path'] != 'zones/zones.mpk' and f.get('Member') != m.BOUND]:
                 self.assertEqual(hashlib.sha256((MODERN_TEST / f['Path']).read_bytes()).hexdigest(), f['OutputSha256'], f['Path'])
+
+    def test_the_real_gates_open_and_nothing_else_moves(self):
+        if not (PRISTINE / 'game.dll').is_file():
+            self.skipTest('No pristine 1.130 client on this machine')
+        links = json.loads(GATE_LINKS.read_text(encoding='utf-8'))['zones']
+        for zone, (ox, oy) in ZONE_OFFSETS.items():
+            neighbour, nx, ny, wall_ends = GATE_NEIGHBOURS[zone]
+            beyond = m.member_of((PRISTINE / f'zones/zone{neighbour:03}/dat{neighbour:03}.mpk').read_bytes(), m.BOUND)
+            ends = {(x + nx, y + ny) for polygon in bound_polygons(beyond) for x, y in (polygon[0], polygon[-1])}
+            self.assertLessEqual(set(wall_ends), ends)
+            for template in m.GATE_ARCHIVES:
+                path = template.format(zone)
+                stock = (PRISTINE / path).read_bytes()
+                entry = m.gate_wall_entry(PRISTINE, path, zone)
+                patched = m.apply(stock, entry)
+                archive.verify_memory_image(patched)
+                # Only bound.csv changes, and only our numbers ship.
+                self.assertLess(sum(len(base64.b64decode(e['Insert'])) for e in entry['Edits']), 150)
+                before, after = archive.read(stock)[1], archive.read(patched)[1]
+                self.assertEqual([e.name for e in before], [e.name for e in after])
+                self.assertEqual([e.data for e in before if e.name != m.BOUND], [e.data for e in after if e.name != m.BOUND])
+                old, new = bound_polygons(m.member_of(stock, m.BOUND)), bound_polygons(m.member_of(patched, m.BOUND))
+                self.assertEqual(len(old), len(new))
+                touched = {wall[1] for wall in m.GATE_WALLS if wall[0] == zone}
+                self.assertEqual([p for i, p in enumerate(old) if i not in touched], [p for i, p in enumerate(new) if i not in touched])
+                for i in touched:
+                    line = m.member_of(patched, m.BOUND).split(b'\r\n')[i].split(b', ')
+                    self.assertEqual(int(line[1]), len(new[i]))
+                # The ends of the patched walls meet the walls of the zone beyond (Forest Sauvage's sit 6 units short).
+                loose = {(x + ox, y + oy) for i in touched for x, y in (new[i][0], new[i][-1])}
+                for end in wall_ends:
+                    self.assertTrue(any(abs(end[0] - x) <= 8 and abs(end[1] - y) <= 8 for x, y in loose), end)
+                # Every walk link through the gate is clear of every wall.
+                walls = [(p[i], p[i + 1]) for p in new for i in range(len(p) - 1)]
+                for link in links[f'{zone:03}']['links']:
+                    a, b = [tuple(float(v) for v in end.split(',')[:2]) for end in link.split(':')[:2]]
+                    a, b = (a[0] - ox, a[1] - oy), (b[0] - ox, b[1] - oy)
+                    self.assertFalse([w for w in walls if crosses(a, b, *w)], link)
 
 
 if __name__ == '__main__':

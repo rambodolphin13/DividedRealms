@@ -20,6 +20,11 @@ a byte edit of the archive would ship Mythic's whole table. Instead an entry wit
 single-file archive and the launcher rebuilds the archive with stored zlib blocks, which Python and .NET write byte for
 byte alike. Only our added sections and changed values ship.
 
+Live walled off the frontier gates of Castle Sauvage, Snowdonia Fortress and Druim Cain: each zone's bound.csv, which the
+client enforces, closes the gate and the way out of the zone, so the gate opens and the player still can't walk through
+(issue #2, a bound wall exactly where the 2026-10-28 walk links cross). Those zones' dat and csv archives get Member
+edits that swap the closing walls for the classic client's, whose ends meet the neighbouring zones' unchanged walls.
+
 An entry with From makes a new file from another stock file: Abermenai's terrain is Thidranki's with the archive renamed
 (add_abermenai_terrain.py).
 
@@ -44,9 +49,22 @@ import add_abermenai_terrain  # noqa: E402
 FORMAT = 1
 CLIENT_VERSION = '1.130'
 MERGE_GAP = 32  # in-place changes this close together are kept in one edit
+ROW_SIZE = 284  # one directory row of an MPAK archive
 SPLASH = Path(__file__).resolve().parent / 'OfflineDaoc.Launcher/Assets/divided-realms-client-splash.mpk'
 STORED_BLOCK = 65535  # the most one stored zlib block holds
 
+# (zone, polygon of bound.csv, the live points to replace, the points that replace them): see the docstring.
+GATE_WALLS = [
+    (0, 1, [(33024, 6272), (32384, 4544), (30976, 2048), (30208, 1280), (30208, 256), (31488, 0), (34560, 0), (37893, 0)], [(37893, 0)]),
+    (0, 2, [(33408, 2304), (35072, 2304), (37632, 2304)], [(33600, 1600), (34304, 1280), (34560, 0)]),
+    (3, 1, [(32256, 1600), (34014, 3409), (35712, 5056)], [(31104, 1792), (30336, 1024), (29568, 640), (29440, 0)]),
+    (3, 2, [(31168, 2752), (31104, 1792), (32512, 832), (33984, 1472), (36480, 4096)],
+     [(35584, 0), (35584, 768), (36352, 1536), (36608, 2304), (36608, 3584), (36480, 4096)]),
+    (206, 1, [(35757, 1726)], [(38144, 0)]),
+    (206, 2, [(35791, 1720)], [(34304, 896), (34432, 0)]),
+]
+GATE_ARCHIVES = ['zones/zone{0:03}/dat{0:03}.mpk', 'zones/zone{0:03}/csv{0:03}.mpk']
+BOUND = 'bound.csv'
 # The stock zones the server uses under other regions: (zone, stock region, server region, the name to show).
 ZONE_REGIONS = [(250, 166, 250, b'Caledonia'), (251, 167, 251, b'Murdaigean'), (252, 168, 252, b'Thidranki')]
 # (new file, the stock file its edit replaces): the classic client's files, see the docstring.
@@ -171,23 +189,50 @@ def stored_zlib(data: bytes) -> bytes:
     return bytes(out + struct.pack('>I', zlib.adler32(data)))
 
 
-def member_of(archive: bytes) -> bytes:
-    """The file inside a single-file MPAK v2 archive."""
+def archive_parts(archive: bytes):
+    """(name size, directory rows, data start) of an MPAK v2 archive."""
     _, directory_size, name_size, count = struct.unpack('<4I', bytes(v ^ i for i, v in enumerate(archive[5:21])))
-    if archive[:5] != b'MPAK\x02' or count != 1:
-        raise ValueError('not a single-file MPAK v2 archive')
-    return zlib.decompress(archive[21 + name_size + directory_size:])
+    if archive[:5] != b'MPAK\x02':
+        raise ValueError('not an MPAK v2 archive')
+    directory = zlib.decompress(archive[21 + name_size:21 + name_size + directory_size])
+    rows = [bytearray(directory[at:at + ROW_SIZE]) for at in range(0, count * ROW_SIZE, ROW_SIZE)]
+    return name_size, rows, 21 + name_size + directory_size
 
 
-def with_member(archive: bytes, data: bytes) -> bytes:
-    """The single-file archive with its file replaced, written with stored blocks; name and timestamp are kept."""
-    _, directory_size, name_size, _ = struct.unpack('<4I', bytes(v ^ i for i, v in enumerate(archive[5:21])))
-    row = bytearray(zlib.decompress(archive[21 + name_size:21 + name_size + directory_size]))
-    payload = stored_zlib(data)
-    struct.pack_into('<4I', row, 268, len(data), 0, len(payload), zlib.crc32(payload))
-    directory = stored_zlib(bytes(row))
-    header = struct.pack('<4I', zlib.crc32(directory), len(directory), name_size, 1)
-    return archive[:5] + bytes(v ^ i for i, v in enumerate(header)) + archive[21:21 + name_size] + directory + payload
+def row_of(rows: list, member: str | None) -> bytearray:
+    """The named file's directory row; with no name, the only one."""
+    found = [row for row in rows if member is None or row[:256].split(b'\0')[0].decode('latin1').lower() == member.lower()]
+    if len(found) != 1:
+        raise ValueError(f'no single {member or "file"} in the MPAK v2 archive')
+    return found[0]
+
+
+def member_of(archive: bytes, member: str | None = None) -> bytes:
+    """A file inside an MPAK v2 archive; with no name, the file of a single-file archive."""
+    _, rows, start = archive_parts(archive)
+    offset, packed = struct.unpack_from('<2I', row_of(rows, member), 272)
+    return zlib.decompress(archive[start + offset:start + offset + packed])
+
+
+def with_member(archive: bytes, data: bytes, member: str | None = None) -> bytes:
+    """The archive with one file replaced, written with stored blocks; every name, timestamp and other file is kept."""
+    name_size, rows, start = archive_parts(archive)
+    target = row_of(rows, member)
+    payloads, position, memory = [], 0, 0
+    for row in rows:
+        size, offset, packed, crc = struct.unpack_from('<4I', row, 268)
+        payload = archive[start + offset:start + offset + packed]
+        if row is target:
+            payload = stored_zlib(data)
+            size, crc = len(data), zlib.crc32(payload)
+        struct.pack_into('<5I', row, 264, memory, size, position, len(payload), crc)
+        payloads.append(payload)
+        position += len(payload)
+        memory += size
+    directory = stored_zlib(b''.join(rows))
+    header = struct.pack('<4I', zlib.crc32(directory), len(directory), name_size, len(rows))
+    return (archive[:5] + bytes(v ^ i for i, v in enumerate(header)) + archive[21:21 + name_size] + directory +
+            b''.join(payloads))
 
 
 def apply(original: bytes, entry: dict) -> bytes:
@@ -195,7 +240,7 @@ def apply(original: bytes, entry: dict) -> bytes:
     if sha(original) != entry['InputSha256']:
         raise ValueError(f"{entry.get('From', entry['Path'])}: not the pristine {CLIENT_VERSION} file")
     member = entry.get('Member')
-    source = member_of(original) if member else original
+    source = member_of(original, member) if member else original
     out, position = bytearray(), 0
     for edit in entry['Edits']:
         out += source[position:edit['At']]
@@ -203,7 +248,7 @@ def apply(original: bytes, entry: dict) -> bytes:
         position = edit['At'] + edit['Remove']
     out += source[position:]
     if member:
-        out = with_member(original, bytes(out))
+        out = with_member(original, bytes(out), member)
     if len(out) != entry['OutputSize'] or sha(bytes(out)) != entry['OutputSha256']:
         raise ValueError(f"{entry['Path']}: the patched file doesn't match")
     return bytes(out)
@@ -278,6 +323,33 @@ def marfach_entry(client: Path, classic: Path, path: str, stock_path: str) -> di
     return entry
 
 
+def open_gate_walls(bound: bytes, zone: int) -> bytes:
+    """A zone's bound.csv with the walls of GATE_WALLS swapped; anything but the expected live points is refused."""
+    lines = bound.split(b'\r\n')
+    for wall_zone, polygon, old, new in GATE_WALLS:
+        if wall_zone != zone:
+            continue
+        flag, _, *points = lines[polygon].rstrip(b', ').split(b', ')
+        run = [point for pair in old for point in (b'%d' % pair[0], b'%d' % pair[1])]
+        ends = [at for at in range(0, len(points), 2) if points[at:at + len(run)] == run]
+        if len(ends) != 1:
+            raise ValueError(f'zone{zone}: polygon {polygon} is not the wall this patch knows')
+        points[ends[0]:ends[0] + len(run)] = [point for pair in new for point in (b'%d' % pair[0], b'%d' % pair[1])]
+        lines[polygon] = b', '.join([flag, b'%d' % (len(points) // 2), *points])
+    return b'\r\n'.join(lines)
+
+
+def gate_wall_entry(client: Path, path: str, zone: int) -> dict:
+    stock = (client / path).read_bytes()
+    bound = member_of(stock, BOUND)
+    patched_bound = open_gate_walls(bound, zone)
+    patched = with_member(stock, patched_bound, BOUND)
+    entry = dict(Path=path, Member=BOUND, InputSha256=sha(stock), OutputSha256=sha(patched), OutputSize=len(patched),
+                 Edits=encoded(edits(bound, patched_bound)))
+    assert apply(stock, entry) == patched
+    return entry
+
+
 def build(client: Path, classic: Path, splash: Path = SPLASH) -> dict:
     game = (client / 'game.dll').read_bytes()
     layout = (client / 'pregame/character_creation.xml').read_bytes()
@@ -297,6 +369,8 @@ def build(client: Path, classic: Path, splash: Path = SPLASH) -> dict:
     files.append(zone_table_entry((client / 'zones/zones.mpk').read_bytes()))
     files.extend(abermenai_entry(client, kind) for kind in add_abermenai_terrain.KINDS)
     files.extend(marfach_entry(client, classic, path, stock_path) for path, stock_path in MARFACH_FILES)
+    files.extend(gate_wall_entry(client, path.format(zone), zone) for zone in sorted({wall[0] for wall in GATE_WALLS})
+                 for path in GATE_ARCHIVES)
     return dict(Format=FORMAT, ClientVersion=CLIENT_VERSION, Files=files)
 
 

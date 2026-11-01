@@ -1018,6 +1018,7 @@ namespace DOL.GS
             }
 
             base.ProcessDeath(killer);
+            ShowDeadToViewers(killer);
             if (IsAutonomousWorldBot)
             {
                 AutonomousBotStatusPersistence.Queue(this);
@@ -1238,10 +1239,35 @@ namespace DOL.GS
             {
                 if (viewer.Client?.ClientState is not GameClient.eClientState.Playing || !viewer.CanDetect(this))
                     continue;
-                viewer.Out.SendObjectRemove(this);
-                ClientService.CreateObjectForPlayer(viewer, this);
-                viewer.Out.SendLivingEquipmentUpdate(this);
+                RecreateFor(viewer);
             }
+        }
+
+        /// <summary>
+        /// A health of 0 doesn't fell a bot: its corpse stays in the world, so the removal that fells a dead mob never comes
+        /// (issue #1, standing dead on 1.130). A viewer who sees it as a player gets the player's death packet, and any other
+        /// viewer gets it created dead, which a client keeps lying down.
+        /// </summary>
+        private void ShowDeadToViewers(GameObject killer)
+        {
+            if (ObjectState != eObjectState.Active)
+                return;
+            foreach (GamePlayer viewer in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+            {
+                if (viewer.Client?.ClientState is not GameClient.eClientState.Playing || !viewer.CanDetect(this))
+                    continue;
+                if (BotPlayerPresentation.TryGetSession(viewer.Client, this, out _))
+                    viewer.Out.SendPlayerDied(this, killer);
+                else
+                    RecreateFor(viewer);
+            }
+        }
+
+        private void RecreateFor(GamePlayer viewer)
+        {
+            viewer.Out.SendObjectRemove(this);
+            ClientService.CreateObjectForPlayer(viewer, this);
+            viewer.Out.SendLivingEquipmentUpdate(this);
         }
 
         private Point3D? FindNearestBindPoint()
@@ -1258,6 +1284,7 @@ namespace DOL.GS
 
         public void OnResurrectedBy(GameLiving caster)
         {
+            ShowStandingToViewers();
             AutonomousRealmRaid.ClearCorpseWait(this);
             _deathRecoveryTimer?.Stop();
             _deathRecoveryTimer = null;

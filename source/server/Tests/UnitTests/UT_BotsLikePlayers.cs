@@ -57,6 +57,24 @@ namespace DOL.UnitTests
             GameServer.LoadTestDouble(_previousServer);
         }
 
+        [Test]
+        public void DeathPacket_TakesABotAsWellAsAPlayer()
+        {
+            var parameter = typeof(DOL.GS.PacketHandler.IPacketLib).GetMethod(nameof(DOL.GS.PacketHandler.IPacketLib.SendPlayerDied)).GetParameters()[0];
+            Assert.That(parameter.ParameterType, Is.EqualTo(typeof(GameLiving)));
+            Assert.That(typeof(GameBot).GetMethod("ShowDeadToViewers", BindingFlags.Instance | BindingFlags.NonPublic), Is.Not.Null);
+        }
+
+        // gamedata.mpk monsters.csv: the rows exist under these ids in the 1.127 and 1.130 tables alike.
+        [Test]
+        public void FrenzyModels_AreTheOnesBothClientTablesShare()
+        {
+            Assert.That(BerserkECSGameEffect.VendoModel, Is.EqualTo(582));
+            Assert.That(BerserkECSGameEffect.DwarfVendoModel, Is.EqualTo(2032));
+            Assert.That(StagECSGameEffect.StagModel, Is.EqualTo(583));
+            Assert.That(StagECSGameEffect.LurikeenStagModel, Is.EqualTo(859));
+        }
+
         [TestCase("lfg 30 cleric", true)]
         [TestCase("LFG", true)]
         [TestCase("looking for a group", true)]

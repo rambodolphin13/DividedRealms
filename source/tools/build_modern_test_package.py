@@ -57,6 +57,7 @@ CONNECTOR = 'connect-local1130.exe'
 # world-updates is written from the repository's chain (the install may have an older one).
 RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', 'server-backups', 'herald', 'world-updates'}
 WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
+DARKNESS_FALLS_PROOFS = Path(__file__).resolve().parents[1] / 'server/GameServer/bots/autonomous/data/darkness_falls_navigation_proofs.json'
 # host-for-friends.json and the firewall script are the developer's Host for Friends state (friends' addresses, local paths).
 RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json',
                       'host-for-friends.json', 'host-for-friends-firewall.cmd', 'serverconfig.before-host-for-friends.xml'}
@@ -179,6 +180,9 @@ def check_package(out: Path, pristine: Path):
                  'world-updates/world-updates.json', 'OfflineDAoC.exe', 'client-patch.json', 'modern-client.json'):
         assert (runtime / name).is_file(), f'required file missing: {name}'
     assert not (runtime / 'data/opendaoc.sqlite3.db').exists(), 'a played-world file would ship and overwrite saves when copied over'
+    # Any other mesh shuts Darkness Falls to bots at the first stairs (issue #3): the certificate holds only for its own.
+    proofs = json.loads(DARKNESS_FALLS_PROOFS.read_text(encoding='utf-8'))
+    assert sha(runtime / 'server/navmesh/zone249.nav').lower() == proofs['NavSha256'].lower(), 'zone249.nav is not the certified Darkness Falls mesh'
     retail = {sha(pristine / name) for name in ('game.dll', 'camelot.exe', 'pregame/character_creation.xml')}
     shipped = [p for p in out.rglob('*') if p.is_file() and p.stat().st_size in {(pristine / n).stat().st_size for n in
                ('game.dll', 'camelot.exe', 'pregame/character_creation.xml')}]

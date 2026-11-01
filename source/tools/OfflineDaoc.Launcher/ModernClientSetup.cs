@@ -8,7 +8,7 @@ namespace OfflineDaoc.Launcher;
 /// The modern test package ships no retail file (only Marfach Caverns' small map, which 1.130 lacks): on first use the player picks their own DAoC 1.130 folder, it is
 /// copied into the package (their install is never touched) and runtime/client-patch.json is applied to the copy
 /// (made by source/tools/make_client_patch.py). Only the pristine 1.130 inputs are accepted. An entry with From makes a new
-/// file from that stock file; one with Member edits the file inside a single-file archive and rebuilds the archive.
+/// file from that stock file; one with Member edits that file inside an archive and rebuilds the archive.
 /// </summary>
 public static class ModernClientSetup
 {
@@ -132,7 +132,7 @@ public static class ModernClientSetup
     {
         if (!Convert.ToHexString(SHA256.HashData(input)).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"{file.InputPath} isn't the pristine client file.");
-        byte[] result = file.Member == null ? Splice(input, file) : WithMember(input, Splice(MemberOf(input), file));
+        byte[] result = file.Member == null ? Splice(input, file) : WithMember(input, Splice(MemberOf(input, file.Member), file), file.Member);
         if (result.Length != file.OutputSize ||
             !Convert.ToHexString(SHA256.HashData(result)).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Patching {file.Path} didn't give the expected file.");
@@ -155,9 +155,9 @@ public static class ModernClientSetup
         return output.ToArray();
     }
 
-    // A single-file MPAK v2 archive: "MPAK", version, a header of four XOR-masked integers (directory CRC, directory size,
-    // name size, file count), then the zlib-compressed name, directory row and file. make_client_patch.py mirrors these.
-    private const int ArchiveHeader = 21, RowSizeField = 268;
+    // An MPAK v2 archive: "MPAK", version, a header of four XOR-masked integers (directory CRC, directory size, name size,
+    // file count), then the zlib-compressed name, directory rows and files. make_client_patch.py mirrors these.
+    private const int ArchiveHeader = 21, RowSize = 284, RowSizeField = 268;
 
     private static uint HeaderField(byte[] archive, int index)
     {
@@ -175,33 +175,71 @@ public static class ModernClientSetup
         return output.ToArray();
     }
 
-    private static byte[] MemberOf(byte[] archive)
+    private static byte[] DirectoryOf(byte[] archive)
     {
-        if (archive.Length < ArchiveHeader || !archive.AsSpan(0, 5).SequenceEqual("MPAK\x02"u8) || HeaderField(archive, 3) != 1)
-            throw new InvalidDataException("That archive isn't a single-file MPAK.");
-        int start = ArchiveHeader + (int)HeaderField(archive, 2) + (int)HeaderField(archive, 1);
-        return Inflate(archive, start, archive.Length - start);
+        if (archive.Length < ArchiveHeader || !archive.AsSpan(0, 5).SequenceEqual("MPAK\x02"u8))
+            throw new InvalidDataException("That archive isn't an MPAK v2 archive.");
+        return Inflate(archive, ArchiveHeader + (int)HeaderField(archive, 2), (int)HeaderField(archive, 1));
     }
 
-    /// <summary>The single-file archive with its file replaced, written with stored blocks; name and timestamp are kept.</summary>
-    private static byte[] WithMember(byte[] archive, byte[] data)
+    private static int DataStart(byte[] archive) => ArchiveHeader + (int)HeaderField(archive, 2) + (int)HeaderField(archive, 1);
+
+    private static string RowName(byte[] directory, int row)
     {
-        int nameSize = (int)HeaderField(archive, 2);
-        byte[] row = Inflate(archive, ArchiveHeader + nameSize, (int)HeaderField(archive, 1));
-        byte[] payload = StoredZlib(data);
-        BitConverter.TryWriteBytes(row.AsSpan(RowSizeField), data.Length);
-        BitConverter.TryWriteBytes(row.AsSpan(RowSizeField + 4), 0);
-        BitConverter.TryWriteBytes(row.AsSpan(RowSizeField + 8), payload.Length);
-        BitConverter.TryWriteBytes(row.AsSpan(RowSizeField + 12), Crc32(payload));
-        byte[] directory = StoredZlib(row);
+        var name = directory.AsSpan(row * RowSize, 256);
+        int end = name.IndexOf((byte)0);
+        return System.Text.Encoding.Latin1.GetString(end < 0 ? name : name[..end]);
+    }
+
+    private static int RowOf(byte[] directory, int count, string member)
+    {
+        int[] found = Enumerable.Range(0, count).Where(row => RowName(directory, row).Equals(member, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (found.Length != 1)
+            throw new InvalidDataException($"That archive has no single {member}.");
+        return found[0];
+    }
+
+    private static byte[] MemberOf(byte[] archive, string member)
+    {
+        byte[] directory = DirectoryOf(archive);
+        int row = RowOf(directory, (int)HeaderField(archive, 3), member) * RowSize + RowSizeField;
+        int offset = BitConverter.ToInt32(directory, row + 4), packed = BitConverter.ToInt32(directory, row + 8);
+        return Inflate(archive, DataStart(archive) + offset, packed);
+    }
+
+    /// <summary>The archive with one file replaced, written with stored blocks; every name, timestamp and other file is kept.</summary>
+    private static byte[] WithMember(byte[] archive, byte[] data, string member)
+    {
+        int nameSize = (int)HeaderField(archive, 2), count = (int)HeaderField(archive, 3), start = DataStart(archive);
+        byte[] rows = DirectoryOf(archive);
+        int target = RowOf(rows, count, member), memory = 0;
+        using var files = new MemoryStream();
+        for (int index = 0; index < count; index++)
+        {
+            int row = index * RowSize + RowSizeField;
+            int offset = BitConverter.ToInt32(rows, row + 4), packed = BitConverter.ToInt32(rows, row + 8);
+            byte[] payload = archive[(start + offset)..(start + offset + packed)];
+            if (index == target)
+            {
+                payload = StoredZlib(data);
+                BitConverter.TryWriteBytes(rows.AsSpan(row), data.Length);
+                BitConverter.TryWriteBytes(rows.AsSpan(row + 12), Crc32(payload));
+            }
+            BitConverter.TryWriteBytes(rows.AsSpan(row - 4), memory);
+            BitConverter.TryWriteBytes(rows.AsSpan(row + 4), (int)files.Position);
+            BitConverter.TryWriteBytes(rows.AsSpan(row + 8), payload.Length);
+            memory += BitConverter.ToInt32(rows, row);
+            files.Write(payload);
+        }
+        byte[] directory = StoredZlib(rows);
         using var output = new MemoryStream();
         output.Write(archive, 0, 5);
-        uint[] header = [Crc32(directory), (uint)directory.Length, (uint)nameSize, 1];
+        uint[] header = [Crc32(directory), (uint)directory.Length, (uint)nameSize, (uint)count];
         for (int index = 0; index < 16; index++)
             output.WriteByte((byte)((header[index / 4] >> (index % 4 * 8)) ^ index));
         output.Write(archive, ArchiveHeader, nameSize);
         output.Write(directory);
-        output.Write(payload);
+        files.WriteTo(output);
         return output.ToArray();
     }
 

@@ -229,7 +229,28 @@ Classic and Stormforged editions.
   the Black Mtns. North / Snowdonia ridge (544160, 368704). One Hibernian trip that worked before now fails the way it
   does in classic (Valley of Bri Leith to Cruachan Gorge, bouncing at Lough Derg / Connacht). No other trip got worse.
   Not yet seen in game.
-- **Players:** not affected. The navmesh guides bots only, and the gates in the world are unchanged.
+- **Players:** the note here used to say they were not affected. That was wrong: see the next section.
+
+**Border-keep gates walled for players (issue #2, found 2026-11-01):**
+- **Symptom:** a Heretic opened the north gate of Castle Sauvage and could see through it, but an invisible barrier stopped them.
+- **Cause:** the gates were never baked shut by a door. Live's `bound.csv` in zones 0, 3 and 206 closes each gate and the way
+  out of the zone, and the client enforces it. All 11 walk links cross such a wall on stock 1.130; none does on classic. The
+  mesh builder treats those walls as geometry, which is what left the 30-unit gaps above. Bots crossed on the links because the
+  server moves them; players can't. This also holds Snowdonia Fortress and Druim Cain, which nobody had reported.
+- **Fix:** `make_client_patch.py` `GATE_WALLS` swaps the closing walls for the classic client's, in each zone's dat and csv
+  archive. The zones beyond (11, 12, 210) are the same in both clients and their walls end where the patched ones do.
+- **Open:** checked against the client's data only. Enforcement of the patched table has not been seen in a real client.
+
+**Frenzy models (reported 2026-11-01):** model ids 3, 4, 12 and 13 are the classic table's own copies of Vendo Man, Stag Man and
+their small forms. On 1.130 they are "empty" and coconut figures, so a Berserker played the frenzy and never morphed. Both
+tables have the same forms at 582, 583, 859 and 2032, which the effects now use.
+
+**Darkness Falls mesh (issue #3, found 2026-11-01):** the 1.130 rebuild of `zone249.nav` dropped the entrance falls and climb
+pads, so it stopped matching `darkness_falls_navigation_proofs.json` and the certificate closed: gamebots got no Darkness Falls
+goals and no route down the first steps. 7,897 of 7,941 tiles are identical to the classic mesh, every Darkness Falls mob and
+exit row still matches the certificate, and `UT_DarknessFallsMeshProbe` completes 4,101 of 4,101 routes on the classic mesh and
+0 on the rebuilt one. The certified mesh `41f1489c` belongs in the modern world too, and `build_modern_test_package.py` now
+refuses a package without it.
 
 **Not migrated:** saved player and gamebot positions. A bot standing in a changed spot is handled by the
 stuck watchdog and the pockets file. Not yet tested in game.
