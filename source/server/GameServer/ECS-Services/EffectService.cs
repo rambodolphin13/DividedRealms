@@ -79,6 +79,26 @@ namespace DOL.GS
             ownerIsNpc && ownerState == GameObject.eObjectState.Deleted ||
             isPulse && casterIsNpc && casterState == GameObject.eObjectState.Deleted;
 
+        /// <summary>
+        /// A harmful pulse held on one chosen target, like the Vampiir's Voice of Shock and Diminish Senses. Focus spells, charm and
+        /// flute mez, and point blank auras have their own rules.
+        /// </summary>
+        public static bool IsMaintainedOnOneTarget(Spell spell) =>
+            spell.IsPulsing && !spell.IsFocus && spell.Target is eSpellTarget.ENEMY && spell.Radius == 0 && spell.Range > 0 &&
+            spell.SpellType is not (eSpellType.Charm or eSpellType.Mesmerize);
+
+        /// <summary>
+        /// A maintained pulse ends with its target. Nothing else ended it: the handler's checks are in OnSpellPulse, which this service
+        /// never calls, and StartSpell only asks whether the target may be attacked, at any range and from any region. So the pulse stayed
+        /// on the kill, woke when the monster respawned, and each pulse put the caster back in combat. The bot's world controller yields to
+        /// combat, so the bot stood still: 2026-11-01 night, 384 fifteen-minute rescues of 29 Vampiirs, 88,381 landings from 648 casts.
+        /// </summary>
+        public static bool MaintainedTargetGone(bool targetAlive, bool targetActive, bool inRange) => !targetAlive || !targetActive || !inRange;
+
+        private static bool LostMaintainedTarget(Spell spell, GameLiving caster, GameLiving target) =>
+            IsMaintainedOnOneTarget(spell) && (target == null || MaintainedTargetGone(target.IsAlive,
+                target.ObjectState == GameObject.eObjectState.Active, caster.IsWithinRadius(target, spell.CalculateEffectiveRange(caster))));
+
         /// <summary>An ended effect has no business in the service; only a restart (Starting / Enabling) may bring one back.</summary>
         public static bool IsStaleEndedEffect(bool ended, bool starting, bool enabling) => ended && !starting && !enabling;
 
@@ -198,6 +218,14 @@ namespace DOL.GS
                 // Accurate 1.65 behavior.
                 if (!caster.IsCrowdControlled)
                 {
+                    if (LostMaintainedTarget(spell, caster, spellHandler.Target))
+                    {
+                        if (caster is not GameBot)
+                            (spellHandler as SpellHandler).MessageToCaster("Your spell was cancelled.", eChatType.CT_SpellExpires);
+                        pulseEffect.End();
+                        return;
+                    }
+
                     if (spell.PulsePower != 0)
                     {
                         int pulsePower = BotSpellPower.PulseCost(caster, spell);
