@@ -4559,6 +4559,9 @@ namespace DOL.AI.Brain
             if (BotSpellPower.BlocksAttackerRotation(BotBody, spell)) return "cast: focus root blocks the caster rotation";
             if (spell.SpellType == eSpellType.MaulerGift && !ModernMauler.GiftReady(Body, spell))
                 return "cast: Mauler gift needs an aura and its Mauler Staff";
+            if (ModernMauler.IsPlayer(Body) && !MaulerBotCombatPolicy.AllowsCast(spell,
+                    Body.IsWithinRadius(target, Body.MeleeAttackRange + 35), Body.EndurancePercent))
+                return "cast: Mauler swings instead";
             if (!NeedsOffensiveSpellApplication(target, spell)) return "cast: target already has it";
             if (Body.GetSkillDisabledDuration(spell) > 0) return "cast: on cooldown";
             if (Body.Mana < BotBody.PowerCost(spell)) return "cast: not enough power";

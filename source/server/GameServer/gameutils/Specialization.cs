@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using DOL.Database;
+using DOL.GS.Spells;
 using DOL.GS.Styles;
 
 namespace DOL.GS
@@ -107,6 +108,23 @@ namespace DOL.GS
 		#region Getters
 		
 		/// <summary>
+		/// The specialization lines a class gets from a spec's lines. A line hinted for the class replaces the
+		/// neutral line (Infiltrator Envenom replaces Mundane Poisons), except for Maulers: their realm gift lines
+		/// are added to Aura Manipulation. Replacing it took the auras, the better Discipline of Laresh ranks,
+		/// Strength of the Forge and every other gift from all three Maulers, and a gift needs an aura.
+		/// </summary>
+		public static IEnumerable<Tuple<SpellLine, int>> SpecLinesForClass(IEnumerable<Tuple<SpellLine, int>> lines, int classId)
+		{
+			List<Tuple<SpellLine, int>> own = lines.Where(item => !item.Item1.IsBaseLine && item.Item2 == classId).ToList();
+			IEnumerable<Tuple<SpellLine, int>> neutral = lines.Where(item => !item.Item1.IsBaseLine && item.Item2 == 0);
+
+			if (own.Count == 0)
+				return neutral;
+
+			return ModernMauler.IsMauler(classId) ? neutral.Concat(own) : own;
+		}
+		
+		/// <summary>
 		/// Default getter for SpellLines
 		/// Retrieve spell line depending on advanced class and class hint
 		/// Order by Baseline
@@ -176,22 +194,10 @@ namespace DOL.GS
 				}
 				
 				// try spec with class hint
-				var specline = tmp.Where(item => !item.Item1.IsBaseLine && item.Item2 == spellClassId);
-				if (specline.Any())
+				foreach (Tuple<SpellLine, int> ls in SpecLinesForClass(tmp, spellClassId))
 				{
-					foreach (Tuple<SpellLine, int> ls in specline)
-					{
-						ls.Item1.Level = level;
-						list.Add(ls.Item1);
-					}
-				}
-				else
-				{
-					foreach (Tuple<SpellLine, int> ls in tmp.Where(item => !item.Item1.IsBaseLine && item.Item2 == 0))
-					{
-						ls.Item1.Level = level;
-						list.Add(ls.Item1);
-					}
+					ls.Item1.Level = level;
+					list.Add(ls.Item1);
 				}
 				
 			}
@@ -225,22 +231,10 @@ namespace DOL.GS
 					}
 				}
 
-				var specline = spsl.Where(item => !item.Item1.IsBaseLine && item.Item2 == classId);
-				if (specline.Any())
+				foreach (var ls in SpecLinesForClass(spsl, classId))
 				{
-					foreach (var ls in specline)
-					{
-						ls.Item1.Level = spellSpecLevel;
-						list.Add(ls.Item1);
-					}
-				}
-				else
-				{
-					foreach (var ls in spsl.Where(item => !item.Item1.IsBaseLine && item.Item2 == 0))
-					{
-						ls.Item1.Level = spellSpecLevel;
-						list.Add(ls.Item1);
-					}
+					ls.Item1.Level = spellSpecLevel;
+					list.Add(ls.Item1);
 				}
 			}
 			else
