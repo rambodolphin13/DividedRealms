@@ -48,6 +48,16 @@ namespace DOL.GS
         public const int StrongPartyMinimumLevel = 45;
         public const int StrongPartyMaximumLevelsAbove = 12;
         public const int StrongPartyEasyRedPack = 2;
+        // Overnight run 2026-10-31: a level 50's purple starts 11 levels up (ConLevels), so "under 12 above" left a single level,
+        // 61, and none of the 11 purple decisions of level 45+ parties fell in it: they were 13 to 16 above. 170 of 171 such parties
+        // were strong, so that was never the gate. A way around also came first, which took 9 of the 11. Yet a Hero and three bots
+        // killed a level 63 pair in 46 seconds with no deaths, and a party of five beat a 64 and 60 pair, while a dense 62 and 65
+        // camp wiped that same party. So a strong party pulls one or two purples up to 14 above, rather than walking around them,
+        // and three or more stay off limits. The mob lessons have the last word (provenDeadly).
+        public const int StrongPartyPurplePack = 2;
+        public const int StrongPartyPurpleLevelsAbove = 15;
+        /// <summary>How far around a purple a party counts its camp: the 1,800-unit scan around the leader stops short of a monster far down the route.</summary>
+        public const int CampCountRadius = 1_100;
         /// <summary>A monster this hurt is nearly dead: running now only throws the fight away.</summary>
         public const int BreakOffFoeHealthPercent = 40;
         public const int BreakOffMinimumParty = 3;
@@ -55,6 +65,14 @@ namespace DOL.GS
         /// <summary>A party that can fight well above its level: four or more at level with a healer. Pure.</summary>
         public static bool IsStrongParty(int members, bool hasHealer, int averageLevel) =>
             members >= StrongPartyMinimumMembers && hasHealer && averageLevel >= StrongPartyMinimumLevel;
+
+        /// <summary>
+        /// A purple a strong party takes on: one or two, none far above it, and not one the party's lessons say keeps killing
+        /// parties. <paramref name="hardestLevelsAbove"/> is the highest of the pack, not the one on the route. Pure.
+        /// </summary>
+        public static bool IsStrongPartyPurple(ConColor con, bool strongParty, int packSize, int hardestLevelsAbove, bool provenDeadly) =>
+            strongParty && !provenDeadly && con == ConColor.PURPLE && packSize <= StrongPartyPurplePack &&
+            hardestLevelsAbove < StrongPartyPurpleLevelsAbove;
 
         /// <summary>
         /// Half the party down, or the healer gone against an orange or worse, and the monster far from finished. A lost
@@ -83,7 +101,7 @@ namespace DOL.GS
         public static RouteThreatAction Decide(ConColor con, bool grouped, int packSize, bool bossLike,
             bool detourAvailable, int detoursSoFar, bool mayRetarget, bool cautious = false, bool mayAbandonHopeless = false,
             int levelsAboveReference = 0, bool mayForceRetarget = false, bool strongParty = false, bool highLevelSolo = false,
-            bool denseWorld = false)
+            bool denseWorld = false, int hardestLevelsAbove = int.MinValue, bool provenDeadly = false)
         {
             // A grey monster is no threat (and in DAoC rarely aggroes); lower cons are fought in
             // bigger packs. Run 7 (2026-10-06): 14% of give-ups were greys 6+ levels below the
@@ -119,7 +137,8 @@ namespace DOL.GS
             int manageablePack = grouped ? con <= ConColor.BLUE ? 6 : 4
                 : con <= ConColor.GREEN ? 5 : con <= ConColor.BLUE ? 3 : 2;
             bool easy = !bossLike && (grouped
-                ? con <= ConColor.ORANGE && packSize <= easyPack || strongParty && con == ConColor.RED && packSize <= StrongPartyEasyRedPack
+                ? con <= ConColor.ORANGE && packSize <= easyPack || strongParty && con == ConColor.RED && packSize <= StrongPartyEasyRedPack ||
+                  IsStrongPartyPurple(con, strongParty, packSize, Math.Max(levelsAboveReference, hardestLevelsAbove), provenDeadly)
                 : con <= ConColor.YELLOW && packSize <= easyPack);
             if (easy)
                 return RouteThreatAction.Pull;
@@ -127,8 +146,7 @@ namespace DOL.GS
                 return RouteThreatAction.Detour;
             int levelsAllowed = strongParty ? StrongPartyMaximumLevelsAbove : GroupMaximumLevelsAbove;
             bool manageable = !bossLike && (grouped
-                ? con <= ConColor.RED && packSize <= manageablePack && levelsAboveReference < levelsAllowed ||
-                  strongParty && con == ConColor.PURPLE && packSize == 1 && levelsAboveReference < levelsAllowed
+                ? con <= ConColor.RED && packSize <= manageablePack && levelsAboveReference < levelsAllowed
                 : con <= ConColor.ORANGE && packSize <= manageablePack);
             if (manageable)
                 return RouteThreatAction.Pull;

@@ -41,6 +41,20 @@ public static class AutonomousMobLessons
 
     public static string Key(string monster, bool grouped) => $"{monster}|{(grouped ? "group" : "solo")}";
 
+    /// <summary>Enough fights, and too many of them lost. Pure.</summary>
+    public static bool IsDeadly(int wins, int deaths)
+    {
+        int fights = wins + deaths;
+        return fights >= MinimumFights && deaths / (double)fights >= DeadlyDeathShare;
+    }
+
+    /// <summary>
+    /// For a purple the colour cannot say so: it is the top of the scale, so <see cref="Felt(ConColor, int, int, bool)"/> leaves it
+    /// where it is, and without this a party would go on pulling one that keeps killing parties.
+    /// </summary>
+    public static bool IsDeadly(string monster, bool grouped) =>
+        Enabled && Lessons.TryGet(Key(monster, grouped), out OfflineMobLessonRecord row) && IsDeadly(row.Wins, row.Deaths);
+
     /// <summary>
     /// How strong a monster feels after what bots have learned. Pure. A lone bot never learns that a purple is less than a
     /// red, however often others have managed it, and learning never makes a monster feel easier than yellow.
@@ -50,10 +64,9 @@ public static class AutonomousMobLessons
         int fights = wins + deaths;
         if (fights < MinimumFights)
             return con;
-        double share = deaths / (double)fights;
-        if (share >= DeadlyDeathShare)
+        if (IsDeadly(wins, deaths))
             return con >= ConColor.PURPLE ? con : con + 1;
-        if (share > EasyDeathShare || con <= ConColor.YELLOW)
+        if (deaths / (double)fights > EasyDeathShare || con <= ConColor.YELLOW)
             return con;
         return !grouped && con == ConColor.PURPLE ? ConColor.RED : con - 1;
     }

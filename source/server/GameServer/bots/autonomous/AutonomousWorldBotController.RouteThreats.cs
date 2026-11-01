@@ -144,21 +144,30 @@ namespace DOL.GS
             int levelsAbove = blocker.EffectiveLevel - (grouped ? _groupDirective.AverageLevel : bot.Level);
             bool mayForceRetarget = _camp != null &&
                                     now - _lastRouteThreatRetargetTick >= AutonomousRouteThreatPolicy.ForcedRetargetCooldownMilliseconds;
+            bool strongParty = grouped && AutonomousRouteThreatPolicy.IsStrongParty(bot.Group?.MemberCount ?? 0,
+                bot.Group?.GetMembersInTheGroup().OfType<GameBot>().Any(member => member.CharacterClass != null &&
+                    BotPartyRoles.IsHealingClass((eCharacterClass)member.CharacterClass.ID)) == true, _groupDirective.AverageLevel);
+            int hardestAbove = levelsAbove;
+            if (strongParty && con == ConColor.PURPLE)
+            {
+                (int campSize, int campTopLevel) = PurpleCampAround(bot, blocker);
+                pack = Math.Max(pack, campSize);
+                hardestAbove = Math.Max(campTopLevel, packMembers.Max(member => member.EffectiveLevel)) - _groupDirective.AverageLevel;
+            }
             RouteThreatAction action = AutonomousRouteThreatPolicy.Decide(con, grouped, pack, bossLike,
                 detour.HasValue, detours, mayRetarget, cautious: !grouped && now < _routeCautionUntilTick,
                 mayAbandonHopeless: _camp != null, levelsAboveReference: levelsAbove, mayForceRetarget: mayForceRetarget,
-                strongParty: grouped && AutonomousRouteThreatPolicy.IsStrongParty(bot.Group?.MemberCount ?? 0,
-                    bot.Group?.GetMembersInTheGroup().OfType<GameBot>().Any(member => member.CharacterClass != null &&
-                        BotPartyRoles.IsHealingClass((eCharacterClass)member.CharacterClass.ID)) == true, _groupDirective.AverageLevel),
+                strongParty: strongParty,
                 highLevelSolo: !grouped && bot.Level >= AutonomousRouteThreatPolicy.HighLevelSoloMinimum,
-                denseWorld: AutonomousAtlantisPolicy.IsAtlantisRegion(bot.CurrentRegionID));
+                denseWorld: AutonomousAtlantisPolicy.IsAtlantisRegion(bot.CurrentRegionID),
+                hardestLevelsAbove: hardestAbove, provenDeadly: AutonomousMobLessons.IsDeadly(blocker.Name, grouped));
             if (action == RouteThreatAction.Ignore)
                 return false;
 
             Log.Info($"AUTONOMOUS_ROUTE_THREAT bot={bot.Name} id={bot.DatabaseID} class=\"{bot.ClassName}\" level={bot.Level} " +
                      $"group={(grouped ? _groupDirective.GroupId : "solo")} action={action} target=\"{blocker.Name}\" " +
                      $"targetLevel={blocker.Level} con={con} seen={seen} pack={pack} aggro={blockerBrain.AggroRange} along={first:0} " +
-                     $"detours={detours} levelsAbove={levelsAbove} zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
+                     $"detours={detours} levelsAbove={levelsAbove} strong={strongParty} zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
 
             switch (action)
             {
@@ -269,6 +278,26 @@ namespace DOL.GS
                         blocker.Name, _camp?.ZoneName ?? string.Empty);
                     return true;
             }
+        }
+
+        /// <summary>
+        /// Who stands around a purple, counted from the monster and not from the leader: the pack above comes from a scan around
+        /// the leader, so one 1,500 units down the route looks alone with its camp behind it. On 2026-11-01 one griffolich in
+        /// Iarnwood read as 1 or 2 together, and the next one, 1,090 units off, as 6. Anything yellow or above to the leader counts,
+        /// aggressive or not: friends get called in. Only a strong party that may pull this purple pays for the search.
+        /// </summary>
+        private static (int Size, int TopLevel) PurpleCampAround(GameBot bot, GameNPC blocker)
+        {
+            int size = 1, top = blocker.EffectiveLevel;
+            foreach (GameNPC npc in blocker.GetNPCsInRadius((ushort)AutonomousRouteThreatPolicy.CampCountRadius))
+            {
+                if (npc == blocker || !npc.IsAlive || !IsExperienceMonster(npc) || Math.Abs(npc.Z - blocker.Z) > 160 ||
+                    ConLevels.GetConColor(bot.GetConLevel(npc)) < ConColor.YELLOW)
+                    continue;
+                size++;
+                top = Math.Max(top, npc.EffectiveLevel);
+            }
+            return (size, top);
         }
 
         /// <summary>
