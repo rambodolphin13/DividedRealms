@@ -1178,6 +1178,19 @@ public static partial class AutonomousRvrEventLayer
         }
     }
 
+    /// <summary>
+    /// Takes a force out of every event and hands it its release, as the end of an event does: the group coordinator
+    /// finishes a warband's task, and a solo bot's controller picks up its release on the next check.
+    /// </summary>
+    public static void ReleaseForce(string forceId, string reason)
+    {
+        lock (Sync)
+        {
+            RemoveForce(forceId);
+            ReleasedForces[forceId] = reason;
+        }
+    }
+
     public static void RemoveForce(string forceId)
     {
         lock (Sync)

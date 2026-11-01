@@ -363,6 +363,7 @@ namespace DOL.GS
                     bot.TempProperties.RemoveProperty("RvrSupplying");
                     _frontierPorter = null;
                     _nextPorterSearch = 0;
+                    _frontierPorterWaitSince = 0;
                     _soloRvrBorderStaged = false;
                     _soloRvrStagingPoint = null;
                     _soloRvrBorderKeep = null;
@@ -2323,19 +2324,20 @@ namespace DOL.GS
 
         private bool TravelRvrObjective(GameBot bot, CampDestination destination)
         {
-            if (TryFrontierTransport(bot, destination)) return true;
+            if (TryFrontierTransport(bot, destination))
+            {
+                _frontierPorterWaitSince = 0;
+                return true;
+            }
             if (bot.CurrentRegionID != destination.RegionId &&
                 FindNextCrossing(bot, destination.RegionId, destination.X, destination.Y) == null)
             {
-                // Only a porter reaches that frontier and it is not available yet (search cooling down, or no
-                // ticket). Wait here and let the next review choose again rather than abandoning a PvE camp.
-                _rvrFrontierCommittedUntil = 0;
-                _nextRvrPlanReview = Math.Min(_nextRvrPlanReview, GameLoop.GameLoopTime + 20_000);
-                bot.StopMovingOnPath();
-                SetRvrStatus(bot, "Waiting for a frontier teleporter", destination.MonsterName,
-                    $"{destination.ZoneName} is reached by porter, not on foot through the frontier dungeons");
-                return true;
+                // Only a porter reaches that frontier. Outside the three frontier regions the first leg is the walk
+                // to the realm's own porter; otherwise it is not available yet (search cooling down, no ticket, no
+                // room or coin for one), and the wait is bounded.
+                return TravelToHomeFrontierForPorter(bot, destination) || WaitForFrontierTeleporter(bot, destination);
             }
+            _frontierPorterWaitSince = 0;
             if (bot.CurrentRegionID != destination.RegionId)
             {
                 CampDestination previous = _camp;
@@ -3223,11 +3225,17 @@ namespace DOL.GS
                 CampDestination previous = _camp;
                 _camp = new($"rvr-stage-{bot.Realm}", keep.Name, keep.Name, keep.RegionId,
                     (int)destination.X, (int)destination.Y, (int)destination.Z, 0, false, false);
-                bool moving = TravelAcrossRegions(bot);
+                TravelAcrossRegions(bot);
+                bool abandoned = _camp == null;
                 _camp = previous;
+                // No route to the keep: leave the bot to the objective's own bounded route handling.
+                if (abandoned) return true;
                 SetRvrStatus(bot, $"Traveling to {keep.Name}", "Stage safely before frontier roaming",
                     "Using the normal collision-safe cross-region route to the realm border keep");
-                return moving;
+                // Still on the way, so the turn ends here as it does for the walk inside the region below. This returned
+                // TravelAcrossRegions' "handled" (nearly always true), which told ExecuteRvr the bot had staged: a siege
+                // objective in another frontier then stopped the path just issued, every turn (overnight 2026-10-31).
+                return false;
             }
 
             if (!TryBeginFasterStableRoute(bot, destination, keep.Name))
