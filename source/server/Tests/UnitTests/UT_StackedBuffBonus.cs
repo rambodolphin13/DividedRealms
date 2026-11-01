@@ -176,6 +176,7 @@ namespace DOL.UnitTests
         [TestCase("HealthRegenBuff", 1118, 39, 60, 6, "Minstrel")]
         public void TwoCompanionsPulsingTheSameChantInOneTickLeaveNoBonusOnceBothStop(string type, int id, int value, int frequency, int duration, string casterClass)
         {
+            int baseStanding = EnduranceRegen(false), baseSitting = EnduranceRegen(true);
             Spell chant = Chant(type, id, value, frequency, duration);
             Companion a = NewCompanion("Ranerishelm", casterClass), b = NewCompanion("Ranenbert", casterClass);
             SpellHandler ha = NewHandler(type, a, chant), hb = NewHandler(type, b, chant);
@@ -225,8 +226,8 @@ namespace DOL.UnitTests
                 Assert.That(bOwnsIcon, Is.True, "B's child keeps the icon");
                 Assert.That(afterBoth, Is.EqualTo(0), "once every chanter stops, no bonus is left on the player");
                 Assert.That(listed, Is.EqualTo(0));
-                Assert.That(standing, Is.EqualTo(1), "standing with no buff regenerates the base 1 endurance a tick");
-                Assert.That(sitting, Is.EqualTo(4), "sitting with no buff regenerates the base 4 endurance a tick");
+                Assert.That(standing, Is.EqualTo(baseStanding), "standing with no buff regenerates the base endurance");
+                Assert.That(sitting, Is.EqualTo(baseSitting), "sitting with no buff regenerates the base endurance");
                 Assert.That(_log.Lines.Count(l => l.EndsWith($"EffectiveValue: {value}")), Is.EqualTo(1), "/combatstats: the bonus is added once");
                 Assert.That(_log.Lines.Count(l => l.EndsWith($"EffectiveValue: {-value}")), Is.EqualTo(1), "/combatstats: the bonus is removed once");
             });
