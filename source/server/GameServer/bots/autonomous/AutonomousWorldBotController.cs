@@ -3494,13 +3494,16 @@ namespace DOL.GS
                 _recentFailedSoloTargets.Remove(name);
             rejectedDungeons.UnionWith(_rejectedDungeonCamps.Keys);
             Dictionary<string, CampDestination> destinations = new(StringComparer.OrdinalIgnoreCase);
-            Dictionary<string, (eRealm Wing, float Distance)> darknessFallsRoutes = new(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, (eRealm Wing, float Distance, float Gap)> darknessFallsRoutes = new(StringComparer.OrdinalIgnoreCase);
             List<AutonomousBotDecisionEngine.Camp> camps = new();
             // Levelling solo bots weigh travel time (AutonomousBotDecisionEngine.TravelWeightPercent).
             bool weighTravel = !sharedGroup && bot.Level < 50;
             DateTime dangerUtc = DateTime.UtcNow;
             var ownDeathSpots = sharedGroup ? [] : AutonomousRepeatDeathSpots.AllSpots(bot.DatabaseID, dangerUtc);
             var travelCrossings = new Dictionary<(eRealm Realm, ushort Region), DbZonePoint>();
+            eDarknessFallsGoal darknessFallsGoal = AutonomousDarknessFallsPolicy.RollGoal(planningLevel,
+                AutonomousDungeonPopulationPolicy.Population(AutonomousDarknessFallsPolicy.RegionId), Random.Shared.Next(100));
+            bool soloDarknessFallsHunt = !sharedGroup && darknessFallsGoal == eDarknessFallsGoal.Pvp && _deathDifficultySteps == 0;
 
             // The live world used to be regrouped by every individual bot.
             // With a large roster that meant thousands of full region/object
@@ -3538,8 +3541,10 @@ namespace DOL.GS
                 foreach (int candidateLevel in cell.Levels)
                     if (IsValidCampLevel(candidateLevel))
                         _campLevelScratch[validCount++] = candidateLevel;
+                // A Darkness Falls camp lists one level per room, so the level 50 spawn count below could never pass there.
                 if (validCount == 0 ||
-                    !sharedGroup && !AutonomousSoloCampFloor.CampQualifies(bot.Level, validCount, cell.Levels.Length))
+                    !sharedGroup && cell.RegionId != AutonomousDarknessFallsPolicy.RegionId &&
+                    !AutonomousSoloCampFloor.CampQualifies(bot.Level, validCount, cell.Levels.Length))
                     continue;
                 // No camp beside a spot where a monster far above this bot killed one recently (stefanrows' boss danger).
                 if (AutonomousPveBossDanger.IsNear(cell.RegionId, cell.X, cell.Y, planningLevel, dangerUtc))
@@ -3560,7 +3565,9 @@ namespace DOL.GS
                         // catalog. The requested death ceiling is applied below,
                         // allowing a safe fallback when that ceiling has no
                         // XP-bearing creature at this level.
-                        return con >= ConColor.GREEN && con <= naturalMaximumTargetCon &&
+                        ConColor highestCon = soloDarknessFallsHunt && cell.RegionId == AutonomousDarknessFallsPolicy.RegionId
+                            ? AutonomousDarknessFallsPolicy.SoloPvpMaximumCon : naturalMaximumTargetCon;
+                        return con >= ConColor.GREEN && con <= highestCon &&
                             AutonomousSoloCampFloor.Allows(bot.Level, level);
                     }
 
@@ -3572,7 +3579,8 @@ namespace DOL.GS
                     if (bot.Level < AutonomousDarknessFallsPolicy.SoloMinimumLevel)
                         continue;
                     validLevels = validLevels.Where(level => ConLevels.GetConColor(
-                        ConLevels.GetConLevel(bot.EffectiveLevel, level)) <= AutonomousDarknessFallsPolicy.SoloMaximumCon).ToArray();
+                        ConLevels.GetConLevel(bot.EffectiveLevel, level)) <= (soloDarknessFallsHunt
+                            ? AutonomousDarknessFallsPolicy.SoloPvpMaximumCon : AutonomousDarknessFallsPolicy.SoloMaximumCon)).ToArray();
                     if (validLevels.Length == 0)
                         continue;
                 }
@@ -3591,7 +3599,9 @@ namespace DOL.GS
                     if (!AutonomousDarknessFallsNavigation.CanUseOrdinaryCamp(bot.Realm,
                             cell.DarknessFallsWing, validLevels.Min(), entryDistance,
                             nearestEntranceDistance)) continue;
-                    darknessFallsRoutes[cell.Id] = (cell.DarknessFallsWing, entryDistance);
+                    darknessFallsRoutes[cell.Id] = (cell.DarknessFallsWing, entryDistance,
+                        AutonomousDarknessFallsPolicy.EntranceGap(cell.DarknessFallsAlbionDistance,
+                            cell.DarknessFallsMidgardDistance, cell.DarknessFallsHiberniaDistance));
                 }
 
                 ConColor[] cons = validLevels
@@ -3636,6 +3646,22 @@ namespace DOL.GS
             IEnumerable<AutonomousBotDecisionEngine.Camp> legal = camps.Where(camp =>
                 camp.Reachable && camp.Realm == bot.Realm && camp.LiveMobCount > 0);
             AutonomousBotDecisionEngine.PveEnvironment environment;
+            // A Darkness Falls goal narrows the draw to its camps. With none that fit, the pick stays ordinary.
+            IEnumerable<AutonomousBotDecisionEngine.Camp> ApplyDarknessFallsGoal(IEnumerable<AutonomousBotDecisionEngine.Camp> candidates)
+            {
+                if (darknessFallsGoal == eDarknessFallsGoal.None)
+                    return candidates;
+                AutonomousBotDecisionEngine.Camp[] all = candidates.ToArray();
+                AutonomousBotDecisionEngine.Camp[] fitting = all.Where(camp =>
+                    camp.RegionId == AutonomousDarknessFallsPolicy.RegionId &&
+                    (darknessFallsGoal == eDarknessFallsGoal.Pve ||
+                     darknessFallsRoutes[camp.Id].Gap <= AutonomousDarknessFallsPolicy.MeetingRoomGap)).ToArray();
+                if (fitting.Length > 0)
+                    return fitting;
+                darknessFallsGoal = eDarknessFallsGoal.None;
+                return all;
+            }
+
             if (sharedGroup)
             {
                 // A party already inside Darkness Falls chooses its next camp
@@ -3650,6 +3676,7 @@ namespace DOL.GS
                     if (inside.Length > 0)
                         legal = inside;
                 }
+                legal = ApplyDarknessFallsGoal(legal);
                 // Pick dungeon versus outdoor while every valid group level is
                 // still present. Selecting the exact level first could remove
                 // every dungeon candidate before the preference was rolled.
@@ -3674,12 +3701,16 @@ namespace DOL.GS
             }
             else
             {
-                legal = legal.Where(camp => camp.LowestCon >= minimumTargetCon && camp.TypicalCon <= maximumTargetCon);
+                legal = legal.Where(camp => camp.LowestCon >= minimumTargetCon && (camp.TypicalCon <= maximumTargetCon ||
+                    soloDarknessFallsHunt && camp.RegionId == AutonomousDarknessFallsPolicy.RegionId &&
+                    darknessFallsRoutes[camp.Id].Gap <= AutonomousDarknessFallsPolicy.MeetingRoomGap));
                 // A bot grinding while it waits for group matchmaking stays
                 // outdoors: recruitment needs it in an overworld region, and a
                 // dungeon camp would only be abandoned when the party forms.
                 if (AutonomousObjectiveAssignments.IsAwaitingGroupMatchmaking(bot))
                     legal = legal.Where(camp => !camp.IsDungeon);
+                else
+                    legal = ApplyDarknessFallsGoal(legal);
                 legal = AutonomousDeathRecoveryPolicy.PreferFreshTargets(
                     legal, _recentFailedSoloTargets, GameLoop.GameLoopTime);
                 AutonomousBotDecisionEngine.Camp[] categoryCandidates = legal.ToArray();
@@ -3690,7 +3721,14 @@ namespace DOL.GS
                     ? camp.IsDungeon : !camp.IsDungeon);
             }
             AutonomousBotDecisionEngine.Camp[] legalCells = legal.ToArray();
-            if (darknessFallsRoutes.Count > 0 &&
+            if (darknessFallsGoal == eDarknessFallsGoal.Pvp &&
+                legalCells.All(camp => camp.RegionId == AutonomousDarknessFallsPolicy.RegionId))
+            {
+                // Every realm ranks the same rooms by the same gap, so enemies of a level end up in the same place.
+                legalCells = legalCells.OrderBy(camp => darknessFallsRoutes[camp.Id].Gap)
+                    .Take(AutonomousDarknessFallsPolicy.MeetingRoomChoices).ToArray();
+            }
+            else if (darknessFallsRoutes.Count > 0 &&
                 legalCells.Any(camp => camp.RegionId == AutonomousDarknessFallsPolicy.RegionId))
             {
                 // Only DF changes its camp weighting: first keep own-wing
@@ -3760,7 +3798,8 @@ namespace DOL.GS
             // the safest available yellow instead, permit that same con here
             // for this camp only; never silently reject it as an empty camp.
             _camp = sharedGroup ? selected with { TargetLevel = chosen.AverageMobLevel }
-                : usedDeathFallback ? selected with { FallbackMaximumCon = chosen.TypicalCon } : selected;
+                : usedDeathFallback || soloDarknessFallsHunt && darknessFallsGoal == eDarknessFallsGoal.Pvp
+                    ? selected with { FallbackMaximumCon = chosen.TypicalCon } : selected;
             BeginCampDiagnostics(bot);
             _lastFailedCampId = string.Empty;
             _lastFailedTargetName = string.Empty;
@@ -5588,6 +5627,8 @@ namespace DOL.GS
             ? _groupDirective.SharedGoal
             : _camp == null
             ? AutonomousObjectiveAssignments.NoCampGoal
+            : _camp.RegionId == AutonomousDarknessFallsPolicy.RegionId && AutonomousDarknessFallsNavigation.IsMeetingRoomCamp(_camp.Id)
+            ? $"Hunt enemies and {_camp.MonsterName} in {_camp.ZoneName}"
             : $"Grind {_camp.MonsterName} in {_camp.ZoneName}";
 
         // Level 0 creatures are real XP targets (5 XP each; blue to a level 1

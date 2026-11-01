@@ -508,6 +508,14 @@ public static class AutonomousDarknessFallsNavigation
     public static float DistanceFromEntrance(SpawnProof proof, eRealm realm) =>
         proof?.Routes?.FirstOrDefault(route => route.Realm == realm)?.DistanceFromEntrance ?? float.PositiveInfinity;
 
+    /// <summary>A room two realms reach about equally. Worked from the proof, so a group's members and a bot
+    /// reloaded at its saved camp all know it.</summary>
+    public static bool IsMeetingRoomCamp(string campId) =>
+        AutonomousDarknessFallsRoutePlan.TryGetCampMobId(campId, out string mobId) &&
+        TryGetProof(mobId, out SpawnProof proof) &&
+        AutonomousDarknessFallsPolicy.IsMeetingRoom(DistanceFromEntrance(proof, eRealm.Albion),
+            DistanceFromEntrance(proof, eRealm.Midgard), DistanceFromEntrance(proof, eRealm.Hibernia));
+
     public static bool IsInAssignedRoom(Vector3 camp, Vector3 monster) =>
         Math.Abs(camp.Z - monster.Z) <= 220 &&
         Vector2.DistanceSquared(new(camp.X, camp.Y), new(monster.X, monster.Y)) <= 1200 * 1200;
