@@ -2597,7 +2597,7 @@ namespace DOL.GS
         {
             if (bot.PersistentRecord != null)
                 bot.PersistentRecord.ObjectivePhase = activity;
-            SetStatus(bot, activity, "Active frontier RvR", detail, target, _rvrDestination?.ZoneName ?? string.Empty, true);
+            SetStatus(bot, activity, AutonomousObjectiveAssignments.RvrGoal, detail, target, _rvrDestination?.ZoneName ?? string.Empty, true);
         }
 
         private void BeginSavageMeleePull(GameBot bot, GameNPC target)
@@ -5559,6 +5559,7 @@ namespace DOL.GS
             if (record == null)
                 return;
 
+            goal = AutonomousObjectiveAssignments.GoalFor(AutonomousObjectiveAssignments.KindFor(bot), goal);
             bool durableChanged = record.Activity != activity || record.CurrentGoal != goal ||
                                   record.TargetName != target || record.TravelDestination != destination;
             bool progressChanged = record.ObjectiveProgress != progress;
@@ -5586,7 +5587,7 @@ namespace DOL.GS
             AutonomousBotGroupCoordinator.IsAssemblyPhase(_groupDirective.Phase)
             ? _groupDirective.SharedGoal
             : _camp == null
-            ? "Find a reachable level-appropriate XP camp"
+            ? AutonomousObjectiveAssignments.NoCampGoal
             : $"Grind {_camp.MonsterName} in {_camp.ZoneName}";
 
         // Level 0 creatures are real XP targets (5 XP each; blue to a level 1
