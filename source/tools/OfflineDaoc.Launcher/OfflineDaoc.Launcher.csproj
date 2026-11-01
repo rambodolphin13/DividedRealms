@@ -23,6 +23,11 @@
     <!-- Living Server: 2003-style bot names, the same mix as the server's own bots. -->
     <Compile Include="../../server/GameServer/bots/autonomous/EraBotNames.cs" Link="SocialExpansion/EraBotNames.cs" />
     <Compile Include="../../server/GameServer/bots/autonomous/EraBotNameWords.cs" Link="SocialExpansion/EraBotNameWords.cs" />
+    <!-- Taking a character to a friend's world, by the same rules as the server's Passport Desk. -->
+    <Compile Include="../OfflineDaoc.Passport/PassportDatabase.cs" Link="Friends/PassportDatabase.cs" />
+    <Compile Include="../OfflineDaoc.Passport/PassportEngine.cs" Link="Friends/PassportEngine.cs" />
+    <Compile Include="../OfflineDaoc.Passport/PassportFile.cs" Link="Friends/PassportFile.cs" />
+    <Compile Include="../OfflineDaoc.Passport/PassportTravel.cs" Link="Friends/PassportTravel.cs" />
     <!-- The patcher's world update, so the launcher brings a modern test world up to its release by the same rules. -->
     <Compile Include="../OfflineDaoc.Patcher/WorldUpdate.cs" Link="Updates/WorldUpdate.cs" />
   </ItemGroup>

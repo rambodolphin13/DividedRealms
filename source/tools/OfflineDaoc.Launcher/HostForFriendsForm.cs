@@ -88,7 +88,7 @@ internal sealed class HostForFriendsForm : Form
         layout.Controls.Add(_state, 0, 1);
         layout.Controls.Add(Note(
             "Press START HOSTING, then send friends the invite code and the password. They paste the code into JOIN FRIEND and " +
-            "pick an account name; their characters are saved in YOUR world."), 0, 2);
+            "pick an account name. They can make a character in your world or bring one of their own, which goes home again."), 0, 2);
 
         var passwordField = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent, Padding = new Padding(2, 2, 2, 3) };
         passwordField.Controls.Add(new Label
@@ -304,11 +304,11 @@ internal sealed class HostForFriendsForm : Form
     {
         try
         {
-            foreach (string protocol in new[] { "TCP", "UDP" })
+            foreach (string rule in HostForFriends.FirewallRuleNames(_current))
             {
                 using Process? process = Process.Start(new ProcessStartInfo("netsh")
                 {
-                    ArgumentList = { "advfirewall", "firewall", "show", "rule", $"name={HostForFriends.FirewallRuleName(_current, protocol)}" },
+                    ArgumentList = { "advfirewall", "firewall", "show", "rule", $"name={rule}" },
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,

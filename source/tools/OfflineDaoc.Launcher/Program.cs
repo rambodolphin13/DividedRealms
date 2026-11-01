@@ -79,7 +79,7 @@ internal static class Program
         };
         if (args.Length == 1 && args[0] == "--join")
         {
-            // Join Friend.cmd: client only. No dashboard, no local server, no local save.
+            // Join Friend.cmd: client only. No dashboard and no local server; the local save is touched only to send a character on a trip.
             try
             {
                 string root = MainForm.ServerRootFor(AppContext.BaseDirectory);

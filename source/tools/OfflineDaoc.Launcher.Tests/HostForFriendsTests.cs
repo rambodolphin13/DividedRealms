@@ -47,6 +47,16 @@ public sealed class HostForFriendsTests
     private string Value(string name) => XDocument.Load(Config).Root!.Element("Server")!.Element(name)!.Value;
 
     [Test]
+    public void FirewallAlsoOpensThePassportDesk()
+    {
+        var state = HostForFriends.Read(_runtime);
+        Assert.That(state.DeskPort, Is.EqualTo(10310));
+        Assert.That(HostForFriends.FirewallRuleNames(state), Is.EqualTo(new[]
+            { "Divided Realms friends TCP 10300", "Divided Realms friends TCP 10310", "Divided Realms friends UDP 10400" }));
+        Assert.That(HostForFriends.FirewallScript(_runtime, state, add: true), Does.Contain("protocol=TCP localport=10310"));
+    }
+
+    [Test]
     public void ShippedConfigIsNotHosting()
     {
         var state = HostForFriends.Read(_runtime);
@@ -103,7 +113,7 @@ public sealed class HostForFriendsTests
         Assert.That(add, Does.Contain("protocol=TCP localport=10300 remoteip=100.64.0.0/10,LocalSubnet"));
         Assert.That(add, Does.Contain("protocol=UDP localport=10400 remoteip=100.64.0.0/10,LocalSubnet"));
         Assert.That(add, Does.Contain($"program=\"{program}\""));
-        Assert.That(add.Split('\n').Count(line => line.Contains("add rule")), Is.EqualTo(2));
+        Assert.That(add.Split('\n').Count(line => line.Contains("add rule")), Is.EqualTo(3));
 
         string remove = HostForFriends.FirewallScript(_runtime, state, add: false);
         Assert.That(remove, Does.Not.Contain("add rule"));

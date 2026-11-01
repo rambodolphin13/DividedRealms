@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
+using OfflineDaoc.Passport;
 
 namespace OfflineDaoc.Launcher;
 
@@ -22,6 +23,9 @@ namespace OfflineDaoc.Launcher;
 /// internet address as PublicIP and gives it only to clients connecting from the internet. The firewall rules then
 /// admit any address, because friends join with an invite code and nobody lists them. So internet mode needs a host
 /// password: without it the server (HostPassword) would make an account for anyone who finds the port.
+///
+/// While hosting, the server's Passport Desk listens on the login port + PassportDeskClient.PortOffset, so friends can
+/// bring characters along. That port gets the same firewall rule and router mapping, and the invite code needs no change.
 /// </summary>
 public static class HostForFriends
 {
@@ -35,7 +39,10 @@ public static class HostForFriends
     private const string HostPasswordHashSetting = "HostPasswordHash";
     private const string HostPasswordSalt = "DividedRealmsHost:";
 
-    public sealed record State(bool Hosting, int LoginPort, int UdpPort, bool AutoAccountCreation, bool Internet = false, bool PasswordSet = false);
+    public sealed record State(bool Hosting, int LoginPort, int UdpPort, bool AutoAccountCreation, bool Internet = false, bool PasswordSet = false)
+    {
+        public int DeskPort => LoginPort + PassportDeskClient.PortOffset;
+    }
 
     /// <summary>What the firewall rules were last made for.</summary>
     public sealed class Settings
@@ -204,7 +211,7 @@ public static class HostForFriends
                     $"Your router's internet address is {external}: your provider shares addresses between customers (CGNAT), " +
                     "or another router sits in front of yours. Friends can't reach you this way; use Tailscale.");
             return new RouterCheck(true, external,
-                $"Router OK (UPnP). Friends join at  {external}. The server opens TCP {state.LoginPort} and UDP {state.UdpPort} " +
+                $"Router OK (UPnP). Friends join at  {external}. The server opens TCP {state.LoginPort} and {state.DeskPort} and UDP {state.UdpPort} " +
                 $"on the router while it runs, to {nat.LocalAddress}.");
         }
         catch (Exception exception) when (exception is SocketException or WebException or IOException or
@@ -216,7 +223,7 @@ public static class HostForFriends
 
     private static string NoUpnp(State state) =>
         "Your router did not answer UPnP (it may be off in the router's settings). Turn UPnP on, or forward " +
-        $"TCP {state.LoginPort} and UDP {state.UdpPort} to this PC by hand and set PublicIP in server\\config\\serverconfig.xml " +
+        $"TCP {state.LoginPort} and {state.DeskPort} and UDP {state.UdpPort} to this PC by hand and set PublicIP in server\\config\\serverconfig.xml " +
         "to your internet address.";
 
     /// <summary>This PC's Tailscale IPv4 addresses (100.64.0.0/10) on interfaces that are up.</summary>
@@ -266,8 +273,13 @@ public static class HostForFriends
         return b[0] == 100 && b[1] is >= 64 and <= 127;
     }
 
-    public static string FirewallRuleName(State state, string protocol) =>
-        $"Divided Realms friends {protocol} {(protocol == "TCP" ? state.LoginPort : state.UdpPort)}";
+    public static string FirewallRuleName(string protocol, int port) => $"Divided Realms friends {protocol} {port}";
+
+    private static (string Protocol, int Port)[] FirewallPorts(State state) =>
+        [("TCP", state.LoginPort), ("TCP", state.DeskPort), ("UDP", state.UdpPort)];
+
+    public static IReadOnlyList<string> FirewallRuleNames(State state) =>
+        FirewallPorts(state).Select(port => FirewallRuleName(port.Protocol, port.Port)).ToList();
 
     /// <summary>
     /// The netsh lines that admit friends. Rules are tied to this install's CoreServer.exe, so Windows does not
@@ -282,9 +294,9 @@ public static class HostForFriends
         script.AppendLine(add
             ? "rem Divided Realms: let friends reach the game server."
             : "rem Divided Realms: remove the Host for Friends firewall rules.");
-        foreach (var (protocol, port) in new[] { ("TCP", state.LoginPort), ("UDP", state.UdpPort) })
+        foreach (var (protocol, port) in FirewallPorts(state))
         {
-            string name = FirewallRuleName(state, protocol);
+            string name = FirewallRuleName(protocol, port);
             script.AppendLine($"netsh advfirewall firewall delete rule name=\"{name}\" >nul 2>&1");
             if (add)
                 script.AppendLine($"netsh advfirewall firewall add rule name=\"{name}\" dir=in action=allow protocol={protocol} " +

@@ -558,6 +558,7 @@ namespace DOL.GS
 						log.Info("Game WebAPI open for connections.");
 				}
 
+				PassportDesk.Start(Configuration);
 				GetPatchNotes();
 
 				if (log.IsInfoEnabled)

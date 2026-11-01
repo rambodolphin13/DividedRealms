@@ -7,9 +7,31 @@ needs installing, and no outside service is involved: the code simply holds the 
 You all need the same game: Classic with Classic, Stormforged with Stormforged, the modern 1.130 test with the modern
 test. A code made for another game is refused. Join Friend does not support the new (Godot) client yet.
 
-**Characters stay in the host's world.** A friend makes a new character on your server, and it is saved in your
-world, not theirs. Taking your own character along and back is the next step:
-[CHARACTER-PASSPORT.md](CHARACTER-PASSPORT.md).
+**A friend can make a new character in your world, or bring their own.** A new character stays in the host's world.
+A brought character is locked in its owner's save while it visits, and goes home with what it earned. See
+[Bringing your own character](#bringing-your-own-character).
+
+## Bringing your own character
+
+You need your own copy of the same game, with your own server stopped.
+
+1. In **JOIN FRIEND**, fill in the code, your account and password as usual.
+2. Choose a character under **Bring a character from your own save**.
+3. Press **JOIN FRIEND**. The character goes to your friend's world with all its gear and the coin in that realm's
+   wallet, and the game starts. Pick it on the character screen.
+4. To go back, close the game, wait a moment, and press **COME HOME** with that character chosen. It returns with what it
+   earned, and its coin.
+
+A character can only be in one world at a time, so nothing can be duplicated. While it is away you can't play or delete
+it at home.
+
+- **What stays behind:** your house, guild, shared account vault and companion bots, and anything for sale on the Realm
+  Exchange or in a house. Your other characters in that realm keep nothing from the wallet while the coin is away.
+- **In your friend's world** a visitor can't buy a house. Before coming home it must take back anything it has for sale
+  there and collect its sale money.
+- **Name taken?** Type another in **Visiting name**. Your character gets its own name back at home.
+- **RECALL** is for a world that has gone for good. The character comes back as it left, with the coin it carried, and
+  everything it earned on that trip is lost.
 
 ## Hosting
 

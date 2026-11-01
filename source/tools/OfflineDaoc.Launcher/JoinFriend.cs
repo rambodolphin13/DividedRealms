@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using OfflineDaoc.Passport;
 
 namespace OfflineDaoc.Launcher;
 
@@ -105,6 +106,28 @@ public static class JoinFriend
         }
         return null;
     }
+
+    /// <summary>The local player's characters, for Bring a Character. A join-only install has none.</summary>
+    public static IReadOnlyList<LocalCharacter> HomeCharacters(string runtime)
+    {
+        if (!File.Exists(Path.Combine(runtime, "account.txt")) || !File.Exists(Path.Combine(runtime, "data", "opendaoc.sqlite3.db")))
+            return [];
+        return PassportEngine.Characters(runtime, PortableCredentials.ReadOrCreate(runtime).Account);
+    }
+
+    public static string DescribeCharacter(LocalCharacter character)
+    {
+        string realm = character.Realm switch { 1 => "Albion", 2 => "Midgard", 3 => "Hibernia", _ => "no realm" };
+        string line = $"{character.Name}, level {character.Level}, {realm}";
+        return character.AwayAt == null ? line : $"{line} (away at {character.AwayAt})";
+    }
+
+    public static string TravelMessage(PassportException refusal) => refusal.Code switch
+    {
+        "server_running" => "Stop your own server first: a character's move changes your save. Nothing was changed.",
+        "name_taken" => refusal.Message + " Type one in the visiting name box.",
+        _ => refusal.Message,
+    };
 
     public static bool IsValidAccount(string account) =>
         account.Length is >= 1 and <= 20 && account.All(char.IsAsciiLetterOrDigit);

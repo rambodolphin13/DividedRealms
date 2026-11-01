@@ -19,6 +19,9 @@ namespace DOL.Network
         [ThreadStatic]
         private static Encoder _encoder;
 
+        /// <summary>A hosted world's Passport Desk listens this far above the login port, so an invite code needs no second number.</summary>
+        public const int PASSPORT_DESK_PORT_OFFSET = 10;
+
         private const int UDP_RECEIVE_BUFFER_SIZE = 8192;
         private const int UDP_RECEIVE_BUFFER_CHUNK_SIZE = 64; // This should be increased if someday clients send UDP packets larger than this.
 
@@ -78,10 +81,12 @@ namespace DOL.Network
                     IPAddress localAddress = Configuration.IP.Equals(IPAddress.Any) ? nat.LocalAddress : Configuration.IP;
                     nat.ForwardPort(Configuration.UDPPort, Configuration.UDPPort, ProtocolType.Udp, $"Divided Realms UDP {Configuration.UDPPort}", localAddress);
                     nat.ForwardPort(Configuration.Port, Configuration.Port, ProtocolType.Tcp, $"Divided Realms TCP {Configuration.Port}", localAddress);
+                    int deskPort = Configuration.Port + PASSPORT_DESK_PORT_OFFSET;
+                    nat.ForwardPort(deskPort, deskPort, ProtocolType.Tcp, $"Divided Realms TCP {deskPort}", localAddress);
                     _upnp = nat;
 
                     if (log.IsInfoEnabled)
-                        log.Info($"[UPNP] Router forwards TCP {Configuration.Port} and UDP {Configuration.UDPPort} to {localAddress}");
+                        log.Info($"[UPNP] Router forwards TCP {Configuration.Port} and {deskPort} and UDP {Configuration.UDPPort} to {localAddress}");
 
                     if (Configuration.DetectRegionIP)
                     {
@@ -347,6 +352,7 @@ namespace DOL.Network
                 try
                 {
                     _upnp.DeleteForwardingRule(Configuration.Port, ProtocolType.Tcp);
+                    _upnp.DeleteForwardingRule(Configuration.Port + PASSPORT_DESK_PORT_OFFSET, ProtocolType.Tcp);
                     _upnp.DeleteForwardingRule(Configuration.UDPPort, ProtocolType.Udp);
                 }
                 catch (Exception e)
