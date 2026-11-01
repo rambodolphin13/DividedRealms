@@ -187,7 +187,7 @@ namespace DOL.GS.Spells
 
 		public override void FinishSpellCast(GameLiving target)
 		{
-			if (target == null && Spell.Target != eSpellTarget.AREA)
+			if (target == null && Spell.Target is not (eSpellTarget.AREA or eSpellTarget.CONE))
 				return;
 
 			if (Caster == null)
@@ -209,7 +209,7 @@ namespace DOL.GS.Spells
 					}
 				}
 			}
-			else
+			else if (target != null)
 			{
 				if (target.Realm == 0 || Caster.Realm == 0)
 				{
