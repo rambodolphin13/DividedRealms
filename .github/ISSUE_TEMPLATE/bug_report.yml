@@ -1,0 +1,66 @@
+name: Bug report
+description: Something broke or looked wrong in Divided Realms
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing! One problem per report, please. Don't attach your database, `account.txt` or anything with a password in it.
+  - type: input
+    id: build
+    attributes:
+      label: Build
+      description: The launcher shows it. For example 0.38-dev7.
+      placeholder: 0.38-dev7
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: What is it about?
+      options:
+        - My character (class, spells, styles, items)
+        - Bots (gamebots, companions, raids, sieges, chat)
+        - Monsters, NPCs or quests
+        - Mounts or flying
+        - World or map (zones, doors, teleports, battlegrounds)
+        - Launcher, install or updating
+        - Playing with friends (Join Friend / Host for Friends)
+        - World Workshop editor
+        - Client crash or display problem
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: character
+    attributes:
+      label: Class, level and realm
+      description: Yours, or the bot's if it's about a bot.
+      placeholder: Level 34 Valkyrie, Midgard
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: Zone, and the spot if you know it (/loc).
+      placeholder: Thidranki, near the Midgard portal keep
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: repeat
+    attributes:
+      label: Does it happen again?
+      options:
+        - Every time
+        - Sometimes
+        - Only once so far
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots and logs
+      description: |
+        Drag screenshots here. Logs help a lot: the newest files in `runtime\server\logs`, and for bot spell problems the `/bottester` output or `runtime\server\logs\bot-tester`.
