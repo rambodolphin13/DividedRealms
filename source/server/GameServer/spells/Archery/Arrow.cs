@@ -297,7 +297,9 @@ namespace DOL.GS.Spells
 					{
 						subspell.Level = m_handler.Spell.Level;
 						ISpellHandler spellhandler = ScriptMgr.CreateSpellHandler(m_handler.Caster, subspell, SkillBase.GetSpellLine(GlobalSpellsLines.Combat_Styles_Effect));
-						if (spellhandler != null)
+						if (m_handler.Spell.LifeDrainReturn == (int)Archery.eShotType.PointBlank)
+							PointBlankEffects.Start(m_handler.Caster, subspell);
+						else if (spellhandler != null)
 						{
 							spellhandler.StartSpell(target);
 						}

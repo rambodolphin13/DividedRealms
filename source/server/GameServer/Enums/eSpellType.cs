@@ -58,6 +58,7 @@ namespace DOL.GS
         Heal,
         Stun,
         AblativeArmor,
+        GroupAblativeHalfOnCaster,
         TurretPBAoE,
         SummonAnimistFnF,
         TurretsRelease,
