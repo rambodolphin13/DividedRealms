@@ -30,6 +30,12 @@ namespace DOL.GS.Spells
 			if (!base.CheckBeginCast(selectedTarget))
 				return false;
 
+			if (Spell.Name.Contains("Solo Shot") && Caster.Group != null)
+			{
+				MessageToCaster("You can't use this shot while in a group.", eChatType.CT_System);
+				return false;
+			}
+
 			// Is Shield Disarm ?
 			ShieldTripDisarmEffect shieldDisarm = Caster.EffectList.GetOfType<ShieldTripDisarmEffect>();
 			if (shieldDisarm != null)
@@ -175,7 +181,8 @@ namespace DOL.GS.Spells
 		/// <returns></returns>
 		public override eDamageType DetermineSpellDamageType()
 		{
-			return ArrowDamageTypes.For(Caster);
+			// Elemental shots keep their element; plain shots follow the arrow switch.
+			return Spell.DamageType is >= eDamageType.Body and <= eDamageType.Spirit ? Spell.DamageType : ArrowDamageTypes.For(Caster);
 		}
 
 		public override void FinishSpellCast(GameLiving target)

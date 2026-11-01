@@ -158,7 +158,8 @@ namespace DOL.GS.Spells
 
 				bool arrowBlock = false;
 
-				if (target is GamePlayer && !target.IsCrowdControlled && !target.IsSitting && m_handler.Spell.LifeDrainReturn != (int)Archery.eShotType.Critical)
+				if (target is GamePlayer && !target.IsCrowdControlled && !target.IsSitting &&
+					m_handler.Spell.LifeDrainReturn is not ((int)Archery.eShotType.Critical or (int)Archery.eShotType.Power or (int)Archery.eShotType.PointBlank))
 				{
 					GamePlayer player = (GamePlayer)target;
 					DbInventoryItem lefthand = player.ActiveLeftWeapon;
