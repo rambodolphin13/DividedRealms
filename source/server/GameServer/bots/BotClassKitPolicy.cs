@@ -72,6 +72,18 @@ namespace DOL.GS
             eSpellType.DeathKnightRegenerate or eSpellType.PowerTransfer or eSpellType.BothAblativeArmor ||
             spell?.SpellType == eSpellType.StormSovereignAbility && !spell.IsHarmful || ModernMauler.IsNethuniGift(spell);
 
+        /// <summary>
+        /// A Sovereign's Decree lasts 10 seconds on a 30 second timer, so one spent walking to a pull is gone by
+        /// contact. Three of them also took the three turns of the aggro window, and the pull expired untouched
+        /// (2,608 Stormforged pull timeouts in the 2026-11-01 overnight run).
+        /// </summary>
+        public static bool WaitsForContact(Spell spell, bool inCombat) => !inCombat &&
+            spell?.SpellType == eSpellType.StormSovereignAbility && PendragonRules.IsRoyalRank(spell.ID) &&
+            SovereignGroupBuffs.Contains(StormSovereignAbilities.Key(spell.ID));
+
+        /// <summary>A cast-time kit spell owns the turn. An instant one goes out and the bot still attacks.</summary>
+        public static bool OwnsTurn(Spell spell) => spell?.IsInstantCast == false;
+
         /// <summary>Bonedancer commands: the commander must be alive and within its order's range of the target.</summary>
         public static bool CommanderCanAct(GameBot bot, Spell command, GameLiving target)
         {

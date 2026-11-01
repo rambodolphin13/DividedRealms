@@ -5023,7 +5023,8 @@ namespace DOL.AI.Brain
         {
             foreach (Spell spell in (Body.InstantMiscSpells ?? []).Concat(Body.MiscSpells ?? []))
             {
-                if (!BotClassKitPolicy.IsCombatSupport(spell) || !CanCastDefensiveSpell(spell))
+                if (!BotClassKitPolicy.IsCombatSupport(spell) || BotClassKitPolicy.WaitsForContact(spell, Body.InCombat) ||
+                    !CanCastDefensiveSpell(spell))
                     continue;
                 GameLiving target = BotClassKitPolicy.UpkeepTarget(BotBody, spell);
                 if (target == null)
@@ -5034,7 +5035,7 @@ namespace DOL.AI.Brain
                 if (!cast || spell.IsInstantCast)
                     Body.TargetObject = oldTarget;
                 if (cast)
-                    return true;
+                    return BotClassKitPolicy.OwnsTurn(spell);
             }
             return false;
         }
