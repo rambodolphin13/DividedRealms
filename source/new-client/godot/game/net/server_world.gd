@@ -556,11 +556,16 @@ func _move(d: Dictionary) -> void:
 	# the mount and its rider jump; it eases back instead, unless it is really lost (two seconds' travel)
 	var snap := maxf(SNAP_M, float(int(d.speed)) * 0.025 * 2.0) if ridden else SNAP_M
 	var drawn_before := st.pos                                    # (the death log: where it was drawn before this update)
-	if st.pos.distance_to(p) > snap or float(d.speed) == 0.0:
+	# a seated rider stays in the saddle (_seat_riders puts it there every frame; its own update - the horse's server
+	# place - only feeds the ride check); moved here it showed a frame off the horse at each update
+	var seated := _riders.has(int(d.oid)) and st.ride_clip != ""
+	if seated:
+		pass
+	elif st.pos.distance_to(p) > snap or float(d.speed) == 0.0:
 		st.pos = p
 	else:
 		st.pos = st.pos.lerp(p, 0.25 if ridden else 0.5)       # close: ease into the server's place
-	if not (ridden and String(st.info.get("figure", "")).to_lower() in FLIER_FIGURES):
+	if not seated and not (ridden and String(st.info.get("figure", "")).to_lower() in FLIER_FIGURES):
 		_ground(st)
 	if not ridden:
 		st.yaw = Server.yaw_of(int(d.heading))
@@ -851,6 +856,8 @@ func _physics_body(delta: float) -> void:
 			s.mode = NpcState.Mode.FIGHT if int(mv.target) != 0 or now_ms < s.combat_until else NpcState.Mode.IDLE
 			s.running = false
 			s.fighting = int(mv.target) != 0 or now_ms < s.combat_until
+			if int(mv.target) != 0:
+				_face_target(s, int(mv.target), delta)
 			continue
 		var step := speed * 0.025 * delta
 		var dest = mv.dest
@@ -873,6 +880,27 @@ func _physics_body(delta: float) -> void:
 		s.running = speed >= RUN_UNITS
 		s.fighting = int(mv.target) != 0 or now_ms < s.combat_until   # chasing its target: weapons stay drawn
 	_seat_riders()
+
+
+## A living standing in a fight turns to its target, as the original client turned fighters itself (server chat
+## 2026-10-31: the server turns an NPC once when its attack starts; a gamebot that then steps to a flank / behind spot
+## kept its walk-in heading - owner: "bots are facing away from their targets and meleeing"). Within 30 m, turned
+## smoothly; the server's own heading still comes with every update.
+func _face_target(s: NpcState, target: int, delta: float) -> void:
+	var tp := Vector3.INF
+	var tst: NpcState = by_oid.get(target)
+	if tst:
+		tp = tst.pos
+	elif target == Server.me_oid and viewer and viewer.player:
+		tp = viewer.player.global_position
+	if tp == Vector3.INF:
+		return
+	var to := tp - s.pos
+	to.y = 0.0
+	var d := to.length()
+	if d < 0.2 or d > 30.0:
+		return
+	s.yaw = lerp_angle(s.yaw, atan2(to.x, to.z), minf(1.0, delta * 8.0))
 
 
 ## A ridden steed between the server's updates (owner 2026-10-17: stable horses jittered beside their riders, flights
@@ -1628,6 +1656,35 @@ func _add_object(d: Dictionary) -> void:
 	objects[oid] = holder
 
 
+## You crossed a zone border (seamless zones: the new zone moves to the origin, everything by -d). NpcManager moves the
+## livings; the server's ground objects and the movers' server places / destinations were left where they were, so
+## after a crossing every object already in view - loot bags, dropped gear, server props - hung off by the whole zone
+## offset, in the air or in the ground (owner 2026-10-31: floating bags, a shield and banners in Salisbury Plains and
+## Campacorentin, "everytime ive seen these floating objects ive been on a horse ride").
+func rebase(d: Vector3) -> void:
+	super.rebase(d)
+	for oid in objects:
+		var o = objects[oid]
+		if o is Node3D and is_instance_valid(o):
+			(o as Node3D).position -= d
+	for st in _mover:
+		var mv: Dictionary = _mover[st]
+		for k in ["srv_pos", "dest"]:
+			if mv.get(k) is Vector3:
+				mv[k] = (mv[k] as Vector3) - d
+		if mv.has("sy"):
+			mv["sy"] = float(mv.sy) - d.y
+	for oid in _parked:                                         # (out of view, kept to come back: off by d too)
+		var pk: Array = _parked[oid]
+		if pk.size() >= 8 and pk[7] is NpcState:
+			var ps := pk[7] as NpcState
+			ps.pos -= d
+			ps.home -= d
+			ps.walk_to -= d
+		if pk.size() > 0 and pk[0] is Node3D and is_instance_valid(pk[0]):
+			(pk[0] as Node3D).position -= d
+
+
 var target_object := 0                       # the targeted ground object's id (loot, a gravestone, a relic)
 
 
@@ -1938,6 +1995,7 @@ func _riding(d: Dictionary) -> void:
 	var rider: NpcState = by_oid.get(int(d.rider))
 	if int(d.mount) == 0:
 		_riders.erase(int(d.rider))
+		_ride_apart.erase(int(d.rider))
 		if rider:
 			rider.ride_clip = ""
 		return
@@ -1973,16 +2031,51 @@ func _seat_riders() -> void:
 			continue
 		if rider.ride_clip == "":
 			rider.ride_clip = "ride_horse"
-		var rm: Dictionary = _mover.get(rider, {})
-		if rm.get("srv_pos") is Vector3 and now - int(rm.get("srv_at", 0)) < 3000 				and Vector2((rm.srv_pos as Vector3).x - steed.pos.x, (rm.srv_pos as Vector3).z - steed.pos.z).length() > RIDE_LOST_M:
+		if _ride_lost(r, rider, steed, now):
 			rider.ride_clip = ""
-			rider.pos = rm.srv_pos
+			rider.pos = (_mover.get(rider, {}) as Dictionary).get("srv_pos", rider.pos)
 			_riders.erase(r)
+			_ride_since.erase(r)
+			_ride_apart.erase(r)
 			_ground(rider)
 			continue
 		rider.pos = seat_of(steed)
 		rider.yaw = steed.yaw
 		rider.mode = NpcState.Mode.IDLE
+
+
+## Whether a rider's ride is really over though no dismount came: the rider's own server place and its STEED'S server
+## place (not where the steed is drawn - a ridden steed eases up to two seconds' travel behind its updates, so a rider
+## whose updates carry the horse's exact place was "lost" at every bend and dropped behind it: gamebots on stable
+## routes, owner 2026-10-31 "teleporting behind the horse as it moves") more than RIDE_LOST_M apart, allowing for the
+## time between their two updates, for RIDE_APART_MS; or the steed's updates stopped while the rider's go on.
+const RIDE_APART_MS := 3000
+var _ride_apart := {}                         # rider object id -> msec it was first seen apart from its steed
+
+
+func _ride_lost(r: int, rider: NpcState, steed: NpcState, now: int) -> bool:
+	var rm: Dictionary = _mover.get(rider, {})
+	var sm: Dictionary = _mover.get(steed, {})
+	if not (rm.get("srv_pos") is Vector3) or now - int(rm.get("srv_at", 0)) > 3000:
+		_ride_apart.erase(r)
+		return false                                            # (no fresh word on the rider: it stays seated)
+	var apart: bool
+	if not (sm.get("srv_pos") is Vector3) or now - int(sm.get("srv_at", 0)) > 6000:
+		# the steed has gone quiet (its updates stopped at a zone edge) while the rider's still come
+		var sp: Vector3 = steed.pos
+		apart = Vector2((rm.srv_pos as Vector3).x - sp.x, (rm.srv_pos as Vector3).z - sp.z).length() > RIDE_LOST_M
+	else:
+		var gap := absf(float(int(rm.srv_at) - int(sm.srv_at))) / 1000.0
+		var room := RIDE_LOST_M + float(sm.get("speed", 0.0)) * 0.025 * minf(gap, 2.0)
+		var d := Vector2((rm.srv_pos as Vector3).x - (sm.srv_pos as Vector3).x,
+				(rm.srv_pos as Vector3).z - (sm.srv_pos as Vector3).z).length()
+		apart = d > room
+	if not apart:
+		_ride_apart.erase(r)
+		return false
+	if not _ride_apart.has(r):
+		_ride_apart[r] = now
+	return now - int(_ride_apart[r]) >= RIDE_APART_MS
 
 
 ## A steed's saddle: its model's saddle node, else 1.3 m up its back.

@@ -53,6 +53,12 @@ namespace DOL.GS
         public byte GenderId { get; set; }
         public long DatabaseID { get; set; }
         public bool IsAutonomousWorldBot { get; private set; }
+        /// <summary>
+        /// The NPC Size that draws like a player of that height (1 Short, 2 Average, 3 Tall): 48 / 50 / 52, the new client's
+        /// player scale. No bot is drawn bigger than a Tall player (owner 2026-10-31).
+        /// </summary>
+        public static byte SizeForHeight(int height) => height switch { 1 => 48, 3 => 52, _ => 50 };
+
         public bool IsTemporaryGroupHelper { get; private set; }
         /// <summary>
         /// A member of a realm's Epic Special Forces (AutonomousEpicSpecialForces): a level-50 gamebot made for one raid
@@ -63,6 +69,12 @@ namespace DOL.GS
         public bool IsEndgameCompanion => TemporaryCompanionBalance.IsEndgame(IsTemporaryGroupHelper || IsEpicSpecialForce, Level);
         /// <summary>Equipment is generated from the companion endgame kit (temporary helpers and the Special Forces).</summary>
         public bool UsesCompanionKit => IsTemporaryGroupHelper || IsEpicSpecialForce;
+
+        /// <summary>
+        /// A player's own companion (a /spawn helper, never a world bot with goals): the companion follow, buff, song,
+        /// stealth and PvP rules apply to it.
+        /// </summary>
+        public bool IsPlayerCompanion => IsTemporaryGroupHelper && !IsAutonomousWorldBot;
         private bool _endgameCompanionEquipped;
         public bool SuppressLootAndProgress => IsTemporaryGroupHelper;
         internal int EquipmentLevelFloor { get; private set; }
@@ -316,6 +328,30 @@ namespace DOL.GS
                 if (oldPercent != EndurancePercent)
                     Group?.UpdateMember(this, false, false);
             }
+        }
+
+        #endregion
+
+        #region Resting seated (visual)
+
+        // Bots sit down to rest, visibly (owner 2026-10-31). The NPC packets carry no sit state, so a seated bot is shown by
+        // emote 0xF0 (sit down, then sit-idle) and stood up by 0xF1, sent on each change to the players who see it and
+        // again by SendNPCCreate to a player who first sees it seated. Visual only: recovery and its timing are unchanged.
+        internal const eEmote SitEmote = (eEmote)0xF0;
+        internal const eEmote StandEmote = (eEmote)0xF1;
+        private bool _seatedForClients;
+
+        public bool IsSeatedForClients => _seatedForClients;
+
+        private void SetSeatedForClients(bool seated)
+        {
+            if (_seatedForClients == seated)
+                return;
+            _seatedForClients = seated;
+            if (ObjectState != eObjectState.Active)
+                return;
+            foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                player.Out.SendEmoteAnimation(this, seated ? SitEmote : StandEmote);
         }
 
         #endregion
@@ -998,6 +1034,7 @@ namespace DOL.GS
         {
             // Before the death bookkeeping below overwrites the activity and target.
             BotTesterLog.Died(this, killer);
+            SetSeatedForClients(false);
             AutonomousPetSupport.CancelPendingCharm(this);
             _deathTick = GameLoop.GameLoopTime;
             _deathRegionId = CurrentRegionID;
@@ -1602,15 +1639,59 @@ namespace DOL.GS
 
         #region IGamePlayer — Equipment / Armor
 
+        // Bot armor works exactly like a player's (owner 2026-10-31, major): the piece that is hit is chosen with the
+        // player's odds (or the style's fixed location), its AF is capped by level and armor type, quality and condition
+        // count, and its absorb comes from the armor type. Before this a bot defended like a monster of its level and
+        // its worn armor did nothing. Copies of GamePlayer.CalculateArmorHitLocation / GetArmorFactorCap / GetArmorAF /
+        // GetArmorAbsorb.
         public virtual eArmorSlot CalculateArmorHitLocation(AttackData ad)
         {
-            int random = Util.Random(99);
-            if (random < 35) return eArmorSlot.TORSO;
-            if (random < 55) return eArmorSlot.LEGS;
-            if (random < 70) return eArmorSlot.ARMS;
-            if (random < 82) return eArmorSlot.HEAD;
-            if (random < 91) return eArmorSlot.HAND;
+            if (ad?.Style != null && ad.Style.ArmorHitLocation != eArmorSlot.NOTSET)
+                return ad.Style.ArmorHitLocation;
+            int chance = Util.Random(1, 100);
+            if (chance <= 40) return eArmorSlot.TORSO;
+            if (chance <= 65) return eArmorSlot.LEGS;
+            if (chance <= 80) return eArmorSlot.ARMS;
+            if (chance <= 90) return eArmorSlot.HEAD;
+            if (chance <= 95) return eArmorSlot.HAND;
             return eArmorSlot.FEET;
+        }
+
+        public int GetArmorFactorCap(eObjectType type, out int itemArmorFactorCap)
+        {
+            int modifiedCharacterLevel = Level;
+            if (RealmLevel > 39)
+                modifiedCharacterLevel++;
+            int playerArmorFactorCap = modifiedCharacterLevel * 2;
+            itemArmorFactorCap = type is eObjectType.Cloth ? modifiedCharacterLevel : playerArmorFactorCap;
+            return playerArmorFactorCap;
+        }
+
+        public override double GetArmorAF(eArmorSlot slot)
+        {
+            if (slot is eArmorSlot.NOTSET)
+                return 0;
+            DbInventoryItem item = Inventory?.GetItem((eInventorySlot)slot);
+            if (item == null || !GlobalConstants.IsArmor(item.Object_Type))
+                return 0;
+            int armorFactorCap = GetArmorFactorCap((eObjectType)item.Object_Type, out int itemArmorFactorCap);
+            double armorFactor = Math.Min(item.DPS_AF, itemArmorFactorCap);
+            armorFactor += BaseBuffBonusCategory[eProperty.ArmorFactor] / 5.0;
+            armorFactor *= item.Quality * 0.01 * item.ConditionPercent * 0.01;
+            armorFactor = Math.Min(armorFactor, armorFactorCap);
+            armorFactor += GetModified(eProperty.ArmorFactor) / 5.0;
+            return Math.Max(0, armorFactor);
+        }
+
+        public override double GetArmorAbsorb(eArmorSlot slot)
+        {
+            if (slot is eArmorSlot.NOTSET)
+                return 0;
+            DbInventoryItem item = Inventory?.GetItem((eInventorySlot)slot);
+            if (item == null)
+                return 0;
+            double absorb = item.SPD_ABS * 0.01 * (1 + GetModified(eProperty.ArmorAbsorption) * 0.01);
+            return Math.Clamp(absorb, 0, 1);
         }
 
         public double WeaponDamageWithoutQualityAndCondition(DbInventoryItem weapon)
@@ -2768,7 +2849,12 @@ namespace DOL.GS
                 return false;
 
             if (_recoveryRestLocked)
+            {
+                // stood up for a song while resting: sits back down once it's done
+                if (!_seatedForClients && !IsCasting && !IsMoving && !InCombat)
+                    SetSeatedForClients(true);
                 return true;
+            }
 
             // Harmless mobile songs are allowed to continue during logical
             // recovery. Ordinary casts are cancelled so recovery still owns
@@ -2782,8 +2868,7 @@ namespace DOL.GS
             StopMovingOnPath();
             StopMoving();
             _recoveryRestLocked = true;
-            // GameBots remain standing NPC actors. Recovery has no IsSitting,
-            // emote, player packet, model swap, or client-facing stance state.
+            SetSeatedForClients(true);      // sits down for the rest, visibly (0xF0)
             UpdateHealthManaEndu();
             StartEnhancedRecoveryTimers();
             return true;
@@ -2803,6 +2888,7 @@ namespace DOL.GS
         public void WakeRecoveryRest()
         {
             _recoveryRestLocked = false;
+            SetSeatedForClients(false);     // stands up before it moves, casts or fights (0xF1)
         }
 
         /// <summary>
@@ -2875,6 +2961,9 @@ namespace DOL.GS
             if (IsRecoveryResting && !IsTemporaryGroupHelper &&
                 !BotSongTwistPolicy.IsMobileSong(this, spell))
                 WakeRecoveryRest();
+            // a seated bot stands to cast, as a player does (a song keeps the rest; it sits again after)
+            if (_seatedForClients)
+                SetSeatedForClients(false);
             bool started = base.CastSpell(spell, line, spellCastingAbilityHandler, checkLos);
             CabalistRestDiagnostics.Attempt(this, spell, started);
             if (started)
@@ -2997,6 +3086,7 @@ namespace DOL.GS
         {
             if (RefuseCorpseMove("MoveTo", regionID, x, y, z))
                 return false;
+            SetSeatedForClients(false);     // never arrives seated
             // Owner 2026-10-07: travelling the old frontiers, the pets of the player's /spawn and /raid companions died
             // on every move (the move removes the bot from the world, which released its pet) and their pet classes kept
             // re-summoning. Within a region a companion's pet now comes along and is placed behind it, as a player's pet
@@ -3229,7 +3319,9 @@ namespace DOL.GS
                 }
             }
 
-            Size = (byte)Util.Random(45, 60);
+            // A player's height, Short / Average / Tall, never bigger than a real player model (owner 2026-10-31: a
+            // companion Bard stood far above its player; it was a random 45-60).
+            Size = SizeForHeight(Util.Random(1, 3));
         }
 
         #endregion

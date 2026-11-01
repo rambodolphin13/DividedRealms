@@ -1145,6 +1145,18 @@ namespace DOL.GS
 
         public static bool HasSharedSupport(GameBot bot) => GetView(bot?.Group) != null || RealmWarbandSupport.Get(bot) != null;
 
+        /// <summary>
+        /// The high-end raid encounters whose loot a player in the encounter shares (owner 2026-10-31): the named epic
+        /// encounters, and each raid's own boss (the dragon) or final dungeon bosses. Trash on the way is not one.
+        /// </summary>
+        public static bool IsHighEndRaidEncounter(GameNPC victim)
+        {
+            if (victim is IGameEpicNpc) return true;
+            lock (Sync)
+                return CompletedLoot.ContainsKey(victim) || Raids.Values.Any(r => ReferenceEquals(r.Boss, victim) ||
+                    r.DungeonRoute?.FinalBosses.Contains(victim) == true);
+        }
+
         public static IGameStaticItemOwner LootOwner(GameNPC victim, IEnumerable<GameBot> contributors) =>
             LootOwner(victim, contributors.Where(b => b != null).Distinct().ToDictionary(b => b, _ => 1.0));
 
