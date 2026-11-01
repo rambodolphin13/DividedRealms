@@ -122,10 +122,13 @@ public sealed class HostForFriendsTests
         Assert.Throws<InvalidOperationException>(() => HostForFriends.EnableInternet(_runtime));
 
         HostForFriends.Enable(_runtime);
+        Assert.Throws<InvalidOperationException>(() => HostForFriends.EnableInternet(_runtime));
+
+        HostForFriends.SetHostPassword(_runtime, "swordfish");
         HostForFriends.EnableInternet(_runtime);
 
         var state = HostForFriends.Read(_runtime);
-        Assert.That(state.Hosting && state.Internet, Is.True);
+        Assert.That(state.Hosting && state.Internet && state.PasswordSet, Is.True);
         Assert.That(Value("EnableUPnP"), Is.EqualTo("True"));
         Assert.That(Value("DetectRegionIP"), Is.EqualTo("False"));
         Assert.That(Value("RegionIP"), Is.EqualTo("127.0.0.1"));
@@ -133,14 +136,15 @@ public sealed class HostForFriendsTests
     }
 
     [Test]
-    public void TurningHostingOffAlsoClosesTheRouter()
+    public void TurningHostingOffAlsoClosesTheRouterAndClearsThePassword()
     {
         HostForFriends.Enable(_runtime);
+        HostForFriends.SetHostPassword(_runtime, "swordfish");
         HostForFriends.EnableInternet(_runtime);
         HostForFriends.Disable(_runtime);
 
         var state = HostForFriends.Read(_runtime);
-        Assert.That(state.Hosting || state.Internet, Is.False);
+        Assert.That(state.Hosting || state.Internet || state.PasswordSet, Is.False);
         Assert.That(Value("EnableUPnP"), Is.EqualTo("False"));
     }
 
@@ -148,6 +152,7 @@ public sealed class HostForFriendsTests
     public void InternetModeOffKeepsHosting()
     {
         HostForFriends.Enable(_runtime);
+        HostForFriends.SetHostPassword(_runtime, "swordfish");
         HostForFriends.EnableInternet(_runtime);
         HostForFriends.DisableInternet(_runtime);
 
@@ -164,41 +169,72 @@ public sealed class HostForFriendsTests
         document.Root!.Element("Server")!.Add(new XElement("PublicIP", "203.0.113.7"));
         document.Save(Config);
 
+        HostForFriends.SetHostPassword(_runtime, "swordfish");
         HostForFriends.EnableInternet(_runtime);
         Assert.That(Value("PublicIP"), Is.EqualTo("203.0.113.7"));
+        Assert.That(HostForFriends.ManualPublicAddress(_runtime), Is.EqualTo(IPAddress.Parse("203.0.113.7")));
     }
 
     [Test]
-    public void FriendAddressesMustBeInternetAddresses()
+    public void AutomaticPublicAddressIsNotAnAddress()
     {
-        Assert.That(HostForFriends.TryParseFriendAddresses("203.0.113.25, 198.51.100.4\n203.0.113.25", out var friends, out _), Is.True);
-        Assert.That(friends, Is.EqualTo(new[] { "203.0.113.25", "198.51.100.4" }));
-        Assert.That(HostForFriends.TryParseFriendAddresses("", out friends, out _), Is.True);
-        Assert.That(friends, Is.Empty);
-
-        Assert.That(HostForFriends.TryParseFriendAddresses("192.168.1.5", out _, out string error), Is.False);
-        Assert.That(error, Does.Contain("not an internet address"));
-        Assert.That(HostForFriends.TryParseFriendAddresses("my friend", out _, out _), Is.False);
-        Assert.That(HostForFriends.TryParseFriendAddresses("203.0.113.0/24", out _, out _), Is.False);
+        HostForFriends.Enable(_runtime);
+        HostForFriends.SetHostPassword(_runtime, "swordfish");
+        HostForFriends.EnableInternet(_runtime);
+        Assert.That(HostForFriends.ManualPublicAddress(_runtime), Is.Null);
     }
 
     [Test]
-    public void FirewallAdmitsListedInternetFriendsOnly()
+    public void InternetFirewallAdmitsAnyAddress()
     {
         var state = HostForFriends.Read(_runtime);
-        string add = HostForFriends.FirewallScript(_runtime, state, add: true, ["203.0.113.25", "198.51.100.4"]);
-        Assert.That(add, Does.Contain("remoteip=100.64.0.0/10,LocalSubnet,203.0.113.25,198.51.100.4 "));
+        string add = HostForFriends.FirewallScript(_runtime, state, add: true, openToInternet: true);
+        Assert.That(add, Does.Contain("protocol=TCP localport=10300 remoteip=any "));
+        Assert.That(add, Does.Contain("protocol=UDP localport=10400 remoteip=any "));
     }
 
     [Test]
-    public void FriendListRoundTrips()
+    public void FirewallSettingRoundTrips()
     {
-        HostForFriends.SaveSettings(_runtime, new HostForFriends.Settings { FriendAddresses = ["203.0.113.25"], FirewallAppliedFor = ["203.0.113.25"] });
-        var loaded = HostForFriends.LoadSettings(_runtime);
-        Assert.That(loaded.FriendAddresses, Is.EqualTo(new[] { "203.0.113.25" }));
-        Assert.That(loaded.FirewallAppliedFor, Is.EqualTo(new[] { "203.0.113.25" }));
+        HostForFriends.SaveSettings(_runtime, new HostForFriends.Settings { FirewallOpenToInternet = true });
+        Assert.That(HostForFriends.LoadSettings(_runtime).FirewallOpenToInternet, Is.True);
 
         File.WriteAllText(HostForFriends.SettingsPath(_runtime), "{ broken");
-        Assert.That(HostForFriends.LoadSettings(_runtime).FriendAddresses, Is.Empty);
+        Assert.That(HostForFriends.LoadSettings(_runtime).FirewallOpenToInternet, Is.False);
     }
+
+    [Test]
+    public void OldSettingsFileLoadsWithTheFirewallNotOpen()
+    {
+        File.WriteAllText(HostForFriends.SettingsPath(_runtime), "{\"FriendAddresses\":[\"203.0.113.25\"],\"FirewallAppliedFor\":[\"203.0.113.25\"]}");
+        Assert.That(HostForFriends.LoadSettings(_runtime).FirewallOpenToInternet, Is.False);
+    }
+
+    [Test]
+    public void HostPasswordIsStoredOnlyAsAHash()
+    {
+        HostForFriends.Enable(_runtime);
+        HostForFriends.SetHostPassword(_runtime, "swordfish");
+
+        Assert.That(Value("HostPasswordHash"), Is.EqualTo(HostForFriends.HashHostPassword("swordfish")));
+        Assert.That(File.ReadAllText(Config), Does.Not.Contain("swordfish"));
+
+        HostForFriends.SetHostPassword(_runtime, "");
+        Assert.That(HostForFriends.Read(_runtime).PasswordSet, Is.False);
+    }
+
+    // The server's HostPassword.Hash has this same value in UT_HostPassword.
+    [Test]
+    public void HostPasswordHashMatchesTheServer() =>
+        Assert.That(HostForFriends.HashHostPassword("swordfish"), Is.EqualTo("4a9e1d7e2bb770e3f89110ee8d09517a3a4dbd6f4165881d3a79c6d3ef9d0273"));
+
+    [TestCase("", false, true)]
+    [TestCase("", true, false)]
+    [TestCase("short", true, false)]
+    [TestCase("short", false, false)]
+    [TestCase("swordfish", true, true)]
+    [TestCase("abcdefghijklmnopqrstu", true, false)]
+    [TestCase("sw\u00f6rdfish", true, false)]
+    public void HostPasswordRules(string password, bool internet, bool valid) =>
+        Assert.That(HostForFriends.TryCheckHostPassword(password, internet, out _), Is.EqualTo(valid));
 }

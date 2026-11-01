@@ -5,6 +5,9 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 (not released yet)
 
+- Playing with friends is simpler. HOST FOR FRIENDS is one button and a password, and gives you an invite code to send.
+  Friends paste it into JOIN FRIEND; nobody types addresses or lists friends' addresses any more. Internet hosting needs
+  a password, which a friend's new account must use.
 - Bot armor works like a player's. The piece that is hit is chosen with the player odds, and its armor value, quality,
   condition, absorb, resists, to-hit bonus and procs all count. Bots with little or no armor are much softer than before.
 - Loot tables work as written: each row of a monster's loot list rolls once and reads the table it names. Artifact keys

@@ -437,7 +437,7 @@ internal sealed partial class MainForm : Form
 
     private void OpenHostForFriends()
     {
-        using var form = new HostForFriendsForm(_root, IsServerRunning);
+        using var form = new HostForFriendsForm(_root, IsServerRunning, StartServer);
         form.ShowDialog(this);
     }
 

@@ -69,6 +69,43 @@ public static class JoinFriend
         return true;
     }
 
+    /// <summary>What the guest typed: an invite code, or a host address as before. The hosts come in the order to try them.</summary>
+    public static bool TryParseTarget(string text, int clientPort, out IReadOnlyList<IPAddress> hosts, out string error)
+    {
+        hosts = [];
+        if (text.Contains('.'))
+        {
+            bool parsed = TryParseHost(text, out IPAddress address, out error);
+            if (parsed)
+                hosts = [address];
+            return parsed;
+        }
+        if (!InviteCode.TryParse(text, out InviteCode.Invite invite))
+        {
+            error = "That invite code isn't right. Copy the whole code from your friend, starting with DR.";
+            return false;
+        }
+        if (invite.Port != clientPort)
+        {
+            error = $"This code is for a different game (login port {invite.Port}; this one uses {clientPort}). You both need the same game.";
+            return false;
+        }
+        hosts = invite.Addresses.Where(IsAllowedHost).ToList();
+        error = hosts.Count == 0 ? "That invite code has no address this PC can use." : string.Empty;
+        return hosts.Count > 0;
+    }
+
+    /// <summary>The first host that answers on the login port.</summary>
+    public static async Task<IPAddress?> FindReachableAsync(IReadOnlyList<IPAddress> hosts, int port, TimeSpan timeoutEach)
+    {
+        foreach (IPAddress host in hosts)
+        {
+            if (await CanReachAsync(host, port, timeoutEach))
+                return host;
+        }
+        return null;
+    }
+
     public static bool IsValidAccount(string account) =>
         account.Length is >= 1 and <= 20 && account.All(char.IsAsciiLetterOrDigit);
 

@@ -70,8 +70,8 @@ siege whether or not you log in. Bring friends along if you like: one of you hos
   XP, and you train their specs ([details](docs/ACCOUNT-COMPANIONS.md)).
 
 ### Tools
-- **Play with friends:** *Host for Friends* opens your world to friends over Tailscale, your home network or the
-  internet, and *Join Friend* plays on theirs ([guide](docs/PLAY-WITH-FRIENDS.md)).
+- **Play with friends:** *Host for Friends* opens your world to friends and gives you an invite code, and *Join Friend*
+  plays on theirs ([guide](docs/PLAY-WITH-FRIENDS.md)).
 - **World Workshop:** an editor in your browser for NPCs and their paths, items with 3D previews, merchants, loot,
   spells, quests and server settings. Every save is backed up and can be undone.
 - **Updates keep your characters:** extract a new build over the old one, and your world is brought up to date in

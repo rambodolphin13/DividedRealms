@@ -5,46 +5,63 @@ using System.Net;
 namespace OfflineDaoc.Launcher;
 
 /// <summary>
-/// The host's side of playing together: open this server to friends (Tailscale and the home network, and with
-/// internet mode friends' internet addresses through the router), and the firewall rules for it.
+/// The host's side of playing together: one button that opens this server to friends, a password, and the invite
+/// code to send them. Starting asks Windows once for the firewall rules and starts the server if it is stopped.
 /// </summary>
 internal sealed class HostForFriendsForm : Form
 {
     private readonly string _runtime;
     private readonly Func<bool> _serverRunning;
+    private readonly Action _startServer;
     private readonly Label _state = Line(13f, FontStyle.Bold, DaocTheme.GoldLight);
-    private readonly Label _address = Line(9.5f, FontStyle.Bold, DaocTheme.Text);
-    private readonly Label _internetState = Line(10f, FontStyle.Bold, DaocTheme.GoldLight);
-    private readonly Label _router = Line(8.5f, FontStyle.Regular, DaocTheme.Parchment);
-    private readonly TextBox _friends = new()
+    private readonly TextBox _password = new()
     {
-        Dock = DockStyle.Fill,
+        Dock = DockStyle.Bottom,
         BackColor = DaocTheme.PanelAlt,
         ForeColor = DaocTheme.Text,
         BorderStyle = BorderStyle.FixedSingle,
         Font = new Font("Georgia", 9f),
+        MaxLength = HostForFriends.MaxHostPasswordLength,
+        UseSystemPasswordChar = true,
+    };
+    private readonly CheckBox _internet = new()
+    {
+        Text = "Friends outside my home can join over the internet (needs a password)",
+        Checked = true,
+        Dock = DockStyle.Fill,
+        ForeColor = DaocTheme.Parchment,
+        Font = new Font("Georgia", 8.5f),
+        BackColor = Color.Transparent,
+    };
+    private readonly Label _router = Line(8.5f, FontStyle.Regular, DaocTheme.Parchment);
+    private readonly TextBox _code = new()
+    {
+        Dock = DockStyle.Fill,
+        ReadOnly = true,
+        BackColor = DaocTheme.PanelAlt,
+        ForeColor = DaocTheme.GoldLight,
+        BorderStyle = BorderStyle.FixedSingle,
+        Font = new Font("Consolas", 12f, FontStyle.Bold),
+        TextAlign = HorizontalAlignment.Center,
         Margin = new Padding(0, 3, 0, 0),
     };
-    private readonly Label _firewall = Line(9f, FontStyle.Regular, DaocTheme.Parchment);
     private readonly Label _status = Line(8.5f, FontStyle.Regular, DaocTheme.GoldLight);
-    private readonly Button _toggle = Action("TURN ON", Color.FromArgb(110, 128, 70));
-    private readonly Button _internetToggle = Action("INTERNET: TURN ON", Color.FromArgb(150, 112, 52));
-    private readonly Button _firewallButton = Action("ADD FIREWALL RULES", Color.FromArgb(65, 94, 145));
-    private readonly Button _copy = Action("COPY ADDRESS", Color.FromArgb(92, 84, 128));
+    private readonly Button _toggle = Action("START HOSTING", Color.FromArgb(110, 128, 70));
+    private readonly Button _copy = Action("COPY CODE", Color.FromArgb(92, 84, 128));
     private readonly Button _close = Action("CLOSE", DaocTheme.Iron);
     private HostForFriends.State _current = new(false, 10300, 10400, true);
     private HostForFriends.Settings _settings = new();
-    private HostForFriends.RouterCheck? _routerCheck;
-    private bool _rulesPresent;
+    private bool _busy;
 
-    public HostForFriendsForm(string runtime, Func<bool> serverRunning)
+    public HostForFriendsForm(string runtime, Func<bool> serverRunning, Action startServer)
     {
         _runtime = runtime;
         _serverRunning = serverRunning;
+        _startServer = startServer;
 
         Text = "Host for Friends — Divided Realms";
-        ClientSize = new Size(700, 640);
-        MinimumSize = new Size(660, 620);
+        ClientSize = new Size(640, 470);
+        MinimumSize = new Size(600, 450);
         StartPosition = FormStartPosition.CenterParent;
         BackColor = DaocTheme.Void;
         ForeColor = DaocTheme.Text;
@@ -53,12 +70,11 @@ internal sealed class HostForFriendsForm : Form
 
         var frame = new StoneSurface { Dock = DockStyle.Fill, Padding = new Padding(14) };
         Controls.Add(frame);
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 12, BackColor = Color.Transparent, Padding = new Padding(4) };
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 10, BackColor = Color.Transparent, Padding = new Padding(4) };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        foreach (float height in new[] { 38f, 28f, 40f, 72f, 26f, 48f, 22f, 26f, 40f })
+        foreach (float height in new[] { 38f, 28f, 44f, 56f, 26f, 44f, 22f, 36f })
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 43));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 43));
 
         layout.Controls.Add(new Label
@@ -70,40 +86,48 @@ internal sealed class HostForFriendsForm : Form
             TextAlign = ContentAlignment.MiddleLeft,
         }, 0, 0);
         layout.Controls.Add(_state, 0, 1);
-        layout.Controls.Add(_address, 0, 2);
         layout.Controls.Add(Note(
-            "Turn hosting on, add the firewall rules (Windows asks for permission), then start the server. Friends open " +
-            "JOIN FRIEND with your address and pick an account name and password for your server; their characters are " +
-            "saved in YOUR world. With Tailscale (both install it) or in your house, that's all."), 0, 3);
-        layout.Controls.Add(_internetState, 0, 4);
-        layout.Controls.Add(_router, 0, 5);
-        layout.Controls.Add(Note("Friends' internet addresses (they search \"what is my IP\"), separated by commas:", bold: true), 0, 6);
-        layout.Controls.Add(_friends, 0, 7);
-        layout.Controls.Add(_firewall, 0, 8);
-        layout.Controls.Add(_status, 0, 9);
+            "Press START HOSTING, then send friends the invite code and the password. They paste the code into JOIN FRIEND and " +
+            "pick an account name; their characters are saved in YOUR world."), 0, 2);
 
-        var row1 = Buttons();
-        row1.Controls.Add(_firewallButton);
-        row1.Controls.Add(_internetToggle);
-        row1.Controls.Add(_toggle);
-        layout.Controls.Add(row1, 0, 10);
-        var row2 = Buttons();
-        row2.Controls.Add(_close);
-        row2.Controls.Add(_copy);
-        layout.Controls.Add(row2, 0, 11);
+        var passwordField = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent, Padding = new Padding(2, 2, 2, 3) };
+        passwordField.Controls.Add(new Label
+        {
+            Text = $"Password for new friends ({HostForFriends.MinHostPasswordLength}-{HostForFriends.MaxHostPasswordLength} characters; home network only: may be empty)",
+            Dock = DockStyle.Top,
+            Height = 22,
+            ForeColor = DaocTheme.Parchment,
+            Font = new Font("Georgia", 8f, FontStyle.Bold),
+            TextAlign = ContentAlignment.MiddleLeft,
+        });
+        passwordField.Controls.Add(_password);
+        layout.Controls.Add(passwordField, 0, 3);
+        layout.Controls.Add(_internet, 0, 4);
+        layout.Controls.Add(_router, 0, 5);
+        layout.Controls.Add(Note("Invite code:", bold: true), 0, 6);
+        layout.Controls.Add(_code, 0, 7);
+        layout.Controls.Add(_status, 0, 8);
+
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = false,
+            BackColor = Color.Transparent,
+        };
+        buttons.Controls.Add(_close);
+        buttons.Controls.Add(_copy);
+        buttons.Controls.Add(_toggle);
+        layout.Controls.Add(buttons, 0, 9);
         frame.Controls.Add(layout);
 
-        _toggle.Click += (_, _) => Toggle();
-        _internetToggle.Click += (_, _) => ToggleInternet();
-        _firewallButton.Click += async (_, _) => await ChangeFirewallAsync();
-        _copy.Click += (_, _) => CopyAddress();
+        _toggle.Click += async (_, _) => await ToggleAsync();
+        _copy.Click += (_, _) => CopyCode();
         _close.Click += (_, _) => Close();
-        _friends.TextChanged += (_, _) => ShowFirewallState();
         CancelButton = _close;
         Shown += async (_, _) =>
         {
             _settings = HostForFriends.LoadSettings(_runtime);
-            _friends.Text = string.Join(", ", _settings.FriendAddresses);
             await RefreshStateAsync();
         };
     }
@@ -117,117 +141,96 @@ internal sealed class HostForFriendsForm : Form
         catch (Exception exception)
         {
             SetStatus($"Could not read serverconfig.xml: {exception.Message}", DaocTheme.Danger);
-            _toggle.Enabled = _internetToggle.Enabled = _firewallButton.Enabled = false;
+            _toggle.Enabled = false;
             return;
         }
-        _state.Text = _current.Hosting ? "Hosting is ON: friends can join while your server runs." : "Hosting is OFF: only this PC can join your server.";
+        _state.Text = _current.Hosting ? "You are hosting: friends can join while your server runs." : "Not hosting: only this PC can join your server.";
         _state.ForeColor = _current.Hosting ? DaocTheme.Success : DaocTheme.GoldLight;
-        _toggle.Text = _current.Hosting ? "TURN OFF" : "TURN ON";
-
-        var tailscale = HostForFriends.TailscaleAddresses();
-        _address.Text = tailscale.Count > 0
-            ? $"Tailscale friends join at  {string.Join("  or  ", tailscale)}   (login port {_current.LoginPort})"
-            : "Tailscale is not running on this PC. Friends in your house can use this PC's home-network address, others the internet mode below.";
-        _address.ForeColor = tailscale.Count > 0 ? DaocTheme.Text : DaocTheme.Muted;
-
-        _internetToggle.Enabled = _current.Hosting;
-        _internetToggle.Text = _current.Internet ? "INTERNET: TURN OFF" : "INTERNET: TURN ON";
-        _internetState.Text = _current.Internet
-            ? "Internet (no Tailscale) is ON: your router lets in the friends listed below."
-            : "Internet (no Tailscale) is OFF.";
-        _internetState.ForeColor = _current.Internet ? DaocTheme.Success : DaocTheme.GoldLight;
-        _friends.Enabled = _current.Internet;
-        _router.Text = _current.Internet ? "Asking your router…" : "Turn hosting on, then INTERNET to open your router (UPnP) for friends who don't use Tailscale.";
+        _toggle.Text = _current.Hosting ? "STOP HOSTING" : "START HOSTING";
+        _password.Enabled = _internet.Enabled = !_current.Hosting;
+        if (_current.Hosting)
+            _internet.Checked = _current.Internet;
+        _code.Text = string.Empty;
+        _copy.Enabled = false;
         _router.ForeColor = DaocTheme.Parchment;
-        _routerCheck = null;
-        UpdateCopyButton();
-
-        _rulesPresent = await RulesPresentAsync();
-        if (IsDisposed)
+        _router.Text = _current.Hosting ? string.Empty : "The code is the way in: only send it to people you want in your world.";
+        if (!_current.Hosting)
             return;
-        ShowFirewallState();
 
+        IPAddress? internet = null;
         if (_current.Internet)
         {
+            _router.Text = "Asking your router…";
             HostForFriends.State asked = _current;
             HostForFriends.RouterCheck check = await Task.Run(() => HostForFriends.CheckRouter(asked));
             if (IsDisposed)
                 return;
-            _routerCheck = check;
-            _router.Text = check.Message;
-            _router.ForeColor = check.Usable ? DaocTheme.Success : DaocTheme.Danger;
-            UpdateCopyButton();
+            internet = check.Usable ? check.InternetAddress : HostForFriends.ManualPublicAddress(_runtime);
+            _router.Text = internet != null && !check.Usable ? $"Using your own PublicIP setting: {internet}." : check.Message;
+            _router.ForeColor = internet != null ? DaocTheme.Success : DaocTheme.Danger;
         }
-    }
 
-    private void ShowFirewallState()
-    {
-        bool friendsValid = HostForFriends.TryParseFriendAddresses(_friends.Text, out List<string> friends, out string error);
-        List<string> wanted = _current.Internet ? friends : [];
-        bool upToDate = _rulesPresent && wanted.Order().SequenceEqual(_settings.FirewallAppliedFor.Order());
-
-        if (!friendsValid && _current.Internet)
+        IReadOnlyList<IPAddress> addresses = HostForFriends.InviteAddresses(internet);
+        if (addresses.Count == 0)
         {
-            _firewall.Text = error;
-            _firewall.ForeColor = DaocTheme.Danger;
-            _firewallButton.Enabled = false;
+            SetStatus("This PC has no network address friends can use.", DaocTheme.Danger);
             return;
         }
-        _firewallButton.Enabled = true;
-        if (!_rulesPresent)
-        {
-            _firewall.Text = $"Firewall: no rules yet. Friends cannot connect until you add them (TCP {_current.LoginPort}, UDP {_current.UdpPort}).";
-            _firewall.ForeColor = DaocTheme.Parchment;
-            _firewallButton.Text = "ADD FIREWALL RULES";
-        }
-        else if (!upToDate)
-        {
-            _firewall.Text = "Firewall: the rules don't match the friends listed. Press UPDATE FIREWALL RULES.";
-            _firewall.ForeColor = DaocTheme.Danger;
-            _firewallButton.Text = "UPDATE FIREWALL RULES";
-        }
-        else
-        {
-            string who = wanted.Count == 0 ? "Tailscale and home network only" : $"Tailscale, home network and {string.Join(", ", wanted)}";
-            _firewall.Text = $"Firewall: rules in place (TCP {_current.LoginPort}, UDP {_current.UdpPort}; {who}).";
-            _firewall.ForeColor = DaocTheme.Success;
-            _firewallButton.Text = "REMOVE FIREWALL RULES";
-        }
-        if (_current.Internet && friends.Count == 0)
-        {
-            _firewall.Text += " Add a friend's internet address so they can get in.";
-            _firewall.ForeColor = DaocTheme.GoldLight;
-        }
+        _code.Text = InviteCode.Create(addresses, _current.LoginPort);
+        _copy.Enabled = true;
     }
 
-    private void Toggle()
+    private async Task ToggleAsync()
     {
+        if (_busy)
+            return;
+        _busy = true;
+        _toggle.Enabled = false;
         try
         {
             if (_current.Hosting)
-                HostForFriends.Disable(_runtime);
+                StopHosting();
             else
-                HostForFriends.Enable(_runtime);
+                await StartHostingAsync();
+            await RefreshStateAsync();
+        }
+        finally
+        {
+            _busy = false;
+            _toggle.Enabled = true;
+        }
+    }
+
+    private void StopHosting()
+    {
+        try
+        {
+            HostForFriends.Disable(_runtime);
+            SetStatus("Hosting stopped: the server listens on this PC only." + RestartNote(), DaocTheme.Success);
         }
         catch (Exception exception)
         {
             SetStatus($"Could not change serverconfig.xml: {exception.Message}", DaocTheme.Danger);
-            return;
         }
-        bool nowHosting = !_current.Hosting;
-        SetStatus((nowHosting
-            ? $"Hosting turned on. The previous settings are saved as server\\config\\{HostForFriends.BackupFileName}."
-            : "Hosting turned off: the server listens on this PC only again.") + RestartNote(), DaocTheme.Success);
-        _ = RefreshStateAsync();
     }
 
-    private void ToggleInternet()
+    private async Task StartHostingAsync()
     {
+        bool internet = _internet.Checked;
+        string password = _password.Text;
+        if (!HostForFriends.TryCheckHostPassword(password, internet, out string error))
+        {
+            SetStatus(error, DaocTheme.Danger);
+            return;
+        }
+
+        if (!await EnsureFirewallAsync(internet))
+            return;
         try
         {
-            if (_current.Internet)
-                HostForFriends.DisableInternet(_runtime);
-            else
+            HostForFriends.Enable(_runtime);
+            HostForFriends.SetHostPassword(_runtime, password);
+            if (internet)
                 HostForFriends.EnableInternet(_runtime);
         }
         catch (Exception exception)
@@ -235,28 +238,29 @@ internal sealed class HostForFriendsForm : Form
             SetStatus($"Could not change serverconfig.xml: {exception.Message}", DaocTheme.Danger);
             return;
         }
-        SetStatus((_current.Internet
-            ? "Internet mode turned off: the server no longer opens your router."
-            : "Internet mode turned on: the server opens your router while it runs and closes it when it stops. " +
-              "List your friends' internet addresses and update the firewall rules.") + RestartNote(), DaocTheme.Success);
-        _ = RefreshStateAsync();
+        _password.Clear();
+
+        if (_serverRunning())
+        {
+            SetStatus("Stop and start the server for hosting to take effect.", DaocTheme.GoldLight);
+            return;
+        }
+        _startServer();
+        SetStatus("Hosting is on and your server is starting. Friends can join once it has finished loading.", DaocTheme.Success);
     }
 
     private string RestartNote() => _serverRunning() ? " Stop and start the server for it to take effect." : string.Empty;
 
-    private async Task ChangeFirewallAsync()
+    private async Task<bool> EnsureFirewallAsync(bool internet)
     {
-        if (!HostForFriends.TryParseFriendAddresses(_friends.Text, out List<string> friends, out string error))
-        {
-            SetStatus(error, DaocTheme.Danger);
-            return;
-        }
-        List<string> wanted = _current.Internet ? friends : [];
-        bool remove = _rulesPresent && wanted.Order().SequenceEqual(_settings.FirewallAppliedFor.Order());
+        if (await RulesPresentAsync() && _settings.FirewallOpenToInternet == internet)
+            return true;
+
         string script = Path.Combine(_runtime, "host-for-friends-firewall.cmd");
+        SetStatus("Windows will ask for permission to let friends through the firewall…", DaocTheme.GoldLight);
         try
         {
-            File.WriteAllText(script, HostForFriends.FirewallScript(_runtime, _current, add: !remove, wanted));
+            File.WriteAllText(script, HostForFriends.FirewallScript(_runtime, _current, add: true, internet));
             using Process? process = Process.Start(new ProcessStartInfo("cmd.exe")
             {
                 ArgumentList = { "/c", script },
@@ -269,35 +273,31 @@ internal sealed class HostForFriendsForm : Form
         }
         catch (Win32Exception exception) when (exception.NativeErrorCode == 1223)
         {
-            SetStatus("Windows permission was declined; the firewall was not changed.", DaocTheme.Danger);
-            return;
+            SetStatus("Windows permission was declined, so hosting did not start.", DaocTheme.Danger);
+            return false;
         }
         catch (Exception exception)
         {
             SetStatus($"Could not change the firewall: {exception.Message}", DaocTheme.Danger);
-            return;
+            return false;
         }
 
-        bool present = await RulesPresentAsync();
-        if (present == !remove)
-        {
-            _settings.FriendAddresses = friends;
-            _settings.FirewallAppliedFor = remove ? [] : wanted;
-            try
-            {
-                HostForFriends.SaveSettings(_runtime, _settings);
-            }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-            {
-                SetStatus($"The firewall changed, but the friend list could not be saved: {exception.Message}", DaocTheme.Danger);
-            }
-            SetStatus(remove ? "Firewall rules removed." : "Firewall rules saved.", DaocTheme.Success);
-        }
-        else
+        if (!await RulesPresentAsync())
         {
             SetStatus($"The firewall did not change. You can run {script} as administrator yourself.", DaocTheme.Danger);
+            return false;
         }
-        await RefreshStateAsync();
+        _settings.FirewallOpenToInternet = internet;
+        try
+        {
+            HostForFriends.SaveSettings(_runtime, _settings);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // Only costs one more permission prompt next time.
+            SetStatus($"The firewall changed, but the setting could not be saved: {exception.Message}", DaocTheme.GoldLight);
+        }
+        return true;
     }
 
     private async Task<bool> RulesPresentAsync()
@@ -328,24 +328,12 @@ internal sealed class HostForFriendsForm : Form
         }
     }
 
-    // Internet mode with a working router: the internet address; otherwise this PC's Tailscale address.
-    private IPAddress? AddressToShare()
+    private void CopyCode()
     {
-        if (_current.Internet && _routerCheck is { Usable: true, InternetAddress: { } internet })
-            return internet;
-        var tailscale = HostForFriends.TailscaleAddresses();
-        return tailscale.Count > 0 ? tailscale[0] : null;
-    }
-
-    private void UpdateCopyButton() => _copy.Enabled = AddressToShare() != null;
-
-    private void CopyAddress()
-    {
-        IPAddress? address = AddressToShare();
-        if (address == null)
+        if (_code.Text.Length == 0)
             return;
-        Clipboard.SetText(address.ToString());
-        SetStatus($"Copied {address}. Send it to your friend for JOIN FRIEND.", DaocTheme.Success);
+        Clipboard.SetText(_code.Text);
+        SetStatus("Copied. Send the code and the password to your friend for JOIN FRIEND.", DaocTheme.Success);
     }
 
     private void SetStatus(string text, Color color)
@@ -375,17 +363,9 @@ internal sealed class HostForFriendsForm : Form
     private static Button Action(string text, Color accent) => new RuneButton
     {
         Text = text,
-        Width = 210,
+        Width = 170,
         Height = 34,
         Accent = accent,
         Margin = new Padding(4),
-    };
-
-    private static FlowLayoutPanel Buttons() => new()
-    {
-        Dock = DockStyle.Fill,
-        FlowDirection = FlowDirection.RightToLeft,
-        WrapContents = false,
-        BackColor = Color.Transparent,
     };
 }

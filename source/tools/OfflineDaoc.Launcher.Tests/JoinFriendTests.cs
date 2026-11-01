@@ -78,6 +78,93 @@ public sealed class JoinFriendTests
         Assert.That(error, accepted ? Is.Empty : Is.Not.Empty);
     }
 
+    [Test]
+    public void InviteCodeRoundTripsAddressesInOrder()
+    {
+        IPAddress[] addresses = [IPAddress.Parse("100.90.12.34"), IPAddress.Parse("203.0.113.25"), IPAddress.Parse("192.168.1.20")];
+        string code = InviteCode.Create(addresses, 10330);
+
+        Assert.That(code, Does.StartWith("DR-"));
+        Assert.That(InviteCode.TryParse(code, out InviteCode.Invite invite), Is.True);
+        Assert.That(invite.Addresses, Is.EqualTo(addresses));
+        Assert.That(invite.Port, Is.EqualTo(10330));
+    }
+
+    [Test]
+    public void InviteCodeSurvivesCopyingMistakes()
+    {
+        string code = InviteCode.Create([IPAddress.Parse("203.0.113.25")], 10330);
+
+        Assert.That(InviteCode.TryParse("  " + code.ToLowerInvariant() + "\r\n", out _), Is.True);
+        Assert.That(InviteCode.TryParse(code.Replace("-", " "), out _), Is.True);
+        Assert.That(InviteCode.TryParse(code.Replace('0', 'O').Replace('1', 'I'), out _), Is.True);
+    }
+
+    [Test]
+    public void DamagedInviteCodeIsRefused()
+    {
+        string code = InviteCode.Create([IPAddress.Parse("203.0.113.25")], 10330);
+
+        Assert.That(InviteCode.TryParse(code[..^1], out _), Is.False);
+        Assert.That(InviteCode.TryParse("", out _), Is.False);
+        Assert.That(InviteCode.TryParse("hello friend", out _), Is.False);
+        for (int index = 3; index < code.Length; index++)
+        {
+            if (code[index] == '-')
+                continue;
+            string changed = code[..index] + (code[index] == '2' ? '3' : '2') + code[(index + 1)..];
+            Assert.That(InviteCode.TryParse(changed, out _), Is.False, changed);
+        }
+    }
+
+    [Test]
+    public void TargetIsACodeOrAnAddress()
+    {
+        string code = InviteCode.Create([IPAddress.Parse("100.90.12.34"), IPAddress.Parse("203.0.113.25")], 10330);
+
+        Assert.That(JoinFriend.TryParseTarget(code, 10330, out var hosts, out _), Is.True);
+        Assert.That(hosts, Is.EqualTo(new[] { IPAddress.Parse("100.90.12.34"), IPAddress.Parse("203.0.113.25") }));
+        Assert.That(JoinFriend.TryParseTarget("203.0.113.25", 10330, out hosts, out _), Is.True);
+        Assert.That(hosts, Is.EqualTo(new[] { IPAddress.Parse("203.0.113.25") }));
+        Assert.That(JoinFriend.TryParseTarget("127.0.0.1", 10330, out _, out _), Is.False);
+        Assert.That(JoinFriend.TryParseTarget("not a code", 10330, out _, out _), Is.False);
+    }
+
+    [Test]
+    public void CodeForAnotherGameIsRefused()
+    {
+        string code = InviteCode.Create([IPAddress.Parse("203.0.113.25")], 10300);
+
+        Assert.That(JoinFriend.TryParseTarget(code, 10330, out _, out string error), Is.False);
+        Assert.That(error, Does.Contain("different game"));
+    }
+
+    [Test]
+    public void CodeHoldingOnlyThisPcIsRefused()
+    {
+        string code = InviteCode.Create([IPAddress.Loopback], 10330);
+
+        Assert.That(JoinFriend.TryParseTarget(code, 10330, out _, out _), Is.False);
+    }
+
+    [Test]
+    public async Task ReachableHostIsFoundAfterADeadOne()
+    {
+        var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        int port = ((IPEndPoint) listener.LocalEndpoint).Port;
+        IPAddress dead = IPAddress.Parse("127.0.0.2");
+        try
+        {
+            IPAddress? found = await JoinFriend.FindReachableAsync([dead, IPAddress.Loopback], port, TimeSpan.FromSeconds(2));
+            Assert.That(found, Is.EqualTo(IPAddress.Loopback));
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
     [TestCase("Aaron", true)]
     [TestCase("guest2", true)]
     [TestCase("", false)]

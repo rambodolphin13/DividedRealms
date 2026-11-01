@@ -4,14 +4,14 @@ using System.Net;
 namespace OfflineDaoc.Launcher;
 
 /// <summary>
-/// Client-only mode: start this game's client against a friend's server over Tailscale or the home network.
+/// Client-only mode: start this game's client against a friend's server, from their invite code or address.
 /// It never starts the local server or opens the local save. Ported from stefanrows/OfflineDAoC (Join Friend).
 /// </summary>
 internal sealed class JoinFriendForm : Form
 {
     private readonly string _logsDirectory;
     private readonly JoinClient _client;
-    private readonly TextBox _hostAddress = InputBox(15);
+    private readonly TextBox _hostAddress = InputBox(64);
     private readonly TextBox _guestAccount = InputBox(20);
     private readonly TextBox _password = InputBox(20, password: true);
     private readonly CheckBox _rememberPassword = new()
@@ -92,16 +92,16 @@ internal sealed class JoinFriendForm : Form
         }, 0, 0);
         layout.Controls.Add(new Label
         {
-            Text = "Plays in your friend's world with an account on their server, over Tailscale, your home network or the internet. " +
+            Text = "Plays in your friend's world with an account on their server. " +
                    "Your own server and save are not touched.",
             Dock = DockStyle.Fill,
             ForeColor = DaocTheme.Parchment,
             Font = new Font("Georgia", 9f),
             TextAlign = ContentAlignment.MiddleLeft,
         }, 0, 1);
-        layout.Controls.Add(Field("Host address (their Tailscale, home-network or internet address)", _hostAddress), 0, 2);
+        layout.Controls.Add(Field("Invite code from your friend (or their address)", _hostAddress), 0, 2);
         layout.Controls.Add(Field("Your account on the host (made on your first login there)", _guestAccount), 0, 3);
-        layout.Controls.Add(Field("Your password on the host", _password), 0, 4);
+        layout.Controls.Add(Field("Your password there (first time: the password your friend gave you, if any)", _password), 0, 4);
         layout.Controls.Add(_rememberPassword, 0, 5);
 
         var connectionNote = new TableLayoutPanel
@@ -117,7 +117,7 @@ internal sealed class JoinFriendForm : Form
         connectionNote.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
         connectionNote.Controls.Add(new Label
         {
-            Text = $"The host turns on HOST FOR FRIENDS in their launcher and starts their server. You both need the same game " +
+            Text = $"The host presses START HOSTING in HOST FOR FRIENDS. You both need the same game " +
                    $"(Classic, Stormforged or the modern test). This client logs in on port {_client.LoginPort}.",
             Dock = DockStyle.Fill,
             ForeColor = DaocTheme.Muted,
@@ -144,7 +144,7 @@ internal sealed class JoinFriendForm : Form
         _closeButton.Click += (_, _) => Close();
         AcceptButton = _joinButton;
         CancelButton = _closeButton;
-        _status.Text = "Enter your friend's address and your account on their server.";
+        _status.Text = "Paste your friend's invite code and choose an account name.";
         LoadSavedProfile();
     }
 
@@ -161,11 +161,11 @@ internal sealed class JoinFriendForm : Form
                 : "Saved details loaded. Enter your password to connect.";
     }
 
-    private void SaveProfile(IPAddress hostAddress, string guestAccount, string password)
+    private void SaveProfile(string target, string guestAccount, string password)
     {
         try
         {
-            JoinFriendProfile.Save(JoinFriendProfile.DefaultPath, hostAddress.ToString(), guestAccount, password, _rememberPassword.Checked);
+            JoinFriendProfile.Save(JoinFriendProfile.DefaultPath, target, guestAccount, password, _rememberPassword.Checked);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
@@ -175,7 +175,7 @@ internal sealed class JoinFriendForm : Form
 
     private async Task JoinAsync()
     {
-        if (!JoinFriend.TryParseHost(_hostAddress.Text, out IPAddress hostAddress, out string error))
+        if (!JoinFriend.TryParseTarget(_hostAddress.Text, _client.LoginPort, out IReadOnlyList<IPAddress> hosts, out string error))
         {
             SetStatus(error, DaocTheme.Danger);
             return;
@@ -201,15 +201,15 @@ internal sealed class JoinFriendForm : Form
         }
 
         _joinButton.Enabled = false;
-        SetStatus("Checking the host's login port…", DaocTheme.GoldLight);
-        bool reachable = await JoinFriend.CanReachAsync(hostAddress, _client.LoginPort, TimeSpan.FromSeconds(5));
+        SetStatus("Looking for your friend's server…", DaocTheme.GoldLight);
+        IPAddress? hostAddress = await JoinFriend.FindReachableAsync(hosts, _client.LoginPort, TimeSpan.FromSeconds(4));
         if (IsDisposed || Disposing)
             return;
-        if (!reachable)
+        if (hostAddress == null)
         {
             SetStatus(
-                $"Cannot reach {hostAddress}:{_client.LoginPort}. Check the host's server is running with HOST FOR FRIENDS on and their firewall " +
-                "rules added; over Tailscale that it is on for both of you, over the internet that INTERNET is on and your address is in their list.",
+                "Cannot reach your friend's server. Check it has finished starting and they are hosting, and ask for a new code " +
+                "if their internet address may have changed.",
                 DaocTheme.Danger);
             _joinButton.Enabled = true;
             return;
@@ -230,7 +230,7 @@ internal sealed class JoinFriendForm : Form
             }
 
             ClientSessionDiagnostics.Start(client, _client.ClientDirectory, _logsDirectory, hostAddress);
-            SaveProfile(hostAddress, guestAccount, password);
+            SaveProfile(_hostAddress.Text.Trim(), guestAccount, password);
             _password.Clear();
             _hostAddress.Enabled = false;
             _guestAccount.Enabled = false;

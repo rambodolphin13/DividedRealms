@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
@@ -14,12 +15,13 @@ namespace OfflineDaoc.Launcher;
 /// 0.0.0.0) so this PC's own client keeps using 127.0.0.1 and friends reach it on the Tailscale address.
 /// RegionIP stays 127.0.0.1: the server then sends each client the address that client connected to
 /// (RegionAddress.ForClient in the server's packet libraries).
-/// Windows Firewall rules (made by the host with administrator approval) only admit Tailscale and the local subnet.
+/// Windows Firewall rules (made by the host with administrator approval) admit Tailscale and the local subnet.
 ///
 /// Internet mode (no Tailscale) adds router port forwarding: the server asks the router over UPnP at start
 /// (EnableUPnP) and removes the mapping when it stops. DetectRegionIP stays off; the server keeps the router's
 /// internet address as PublicIP and gives it only to clients connecting from the internet. The firewall rules then
-/// also admit the friends' internet addresses listed by the host, and no other internet address.
+/// admit any address, because friends join with an invite code and nobody lists them. So internet mode needs a host
+/// password: without it the server (HostPassword) would make an account for anyone who finds the port.
 /// </summary>
 public static class HostForFriends
 {
@@ -28,14 +30,17 @@ public static class HostForFriends
     public const string FriendRemoteAddresses = "100.64.0.0/10,LocalSubnet";
     public const string BackupFileName = "serverconfig.before-host-for-friends.xml";
     public const string SettingsFileName = "host-for-friends.json";
+    public const int MinHostPasswordLength = 6;
+    public const int MaxHostPasswordLength = 20;
+    private const string HostPasswordHashSetting = "HostPasswordHash";
+    private const string HostPasswordSalt = "DividedRealmsHost:";
 
-    public sealed record State(bool Hosting, int LoginPort, int UdpPort, bool AutoAccountCreation, bool Internet = false);
+    public sealed record State(bool Hosting, int LoginPort, int UdpPort, bool AutoAccountCreation, bool Internet = false, bool PasswordSet = false);
 
-    /// <summary>The host's list of friends' internet addresses, and the list the firewall rules were last made for.</summary>
+    /// <summary>What the firewall rules were last made for.</summary>
     public sealed class Settings
     {
-        public List<string> FriendAddresses { get; set; } = [];
-        public List<string> FirewallAppliedFor { get; set; } = [];
+        public bool FirewallOpenToInternet { get; set; }
     }
 
     public static string ConfigPath(string runtime) => Path.Combine(runtime, "server", "config", "serverconfig.xml");
@@ -52,7 +57,8 @@ public static class HostForFriends
             UdpPort: int.TryParse(Value(server, "UdpPort"), out int udp) ? udp : 10400,
             AutoAccountCreation: !string.Equals(Value(server, "AutoAccountCreation"), "False", StringComparison.OrdinalIgnoreCase),
             Internet: Value(server, "IP") == AllInterfaces &&
-                      string.Equals(Value(server, "EnableUPnP"), "True", StringComparison.OrdinalIgnoreCase));
+                      string.Equals(Value(server, "EnableUPnP"), "True", StringComparison.OrdinalIgnoreCase),
+            PasswordSet: !string.IsNullOrEmpty(Value(server, HostPasswordHashSetting)));
     }
 
     public static void Enable(string runtime)
@@ -78,16 +84,19 @@ public static class HostForFriends
         Set(server, "IP", Loopback);
         Set(server, "UdpIP", Loopback);
         Set(server, "EnableUPnP", "False");
+        Set(server, HostPasswordHashSetting, string.Empty);
         Save(document, path);
     }
 
-    /// <summary>Internet mode: the server opens its ports on the router (UPnP) while it runs. Needs hosting on.</summary>
+    /// <summary>Internet mode: the server opens its ports on the router (UPnP) while it runs. Needs hosting and a host password.</summary>
     public static void EnableInternet(string runtime)
     {
         string path = ConfigPath(runtime);
         XElement server = LoadServer(path, out XDocument document);
         if (Value(server, "IP") != AllInterfaces)
             throw new InvalidOperationException("Turn hosting on first.");
+        if (string.IsNullOrEmpty(Value(server, HostPasswordHashSetting)))
+            throw new InvalidOperationException("Set a host password first.");
         Set(server, "EnableUPnP", "True");
         Set(server, "DetectRegionIP", "False");
         if (server.Element("PublicIP") == null)
@@ -101,6 +110,52 @@ public static class HostForFriends
         XElement server = LoadServer(path, out XDocument document);
         Set(server, "EnableUPnP", "False");
         Save(document, path);
+    }
+
+    /// <summary>The password a new friend's account must use; empty for none. Only its hash is stored.</summary>
+    public static void SetHostPassword(string runtime, string password)
+    {
+        string path = ConfigPath(runtime);
+        XElement server = LoadServer(path, out XDocument document);
+        Set(server, HostPasswordHashSetting, password.Length == 0 ? string.Empty : HashHostPassword(password));
+        Save(document, path);
+    }
+
+    /// <summary>The same hash as the server's HostPassword.Hash.</summary>
+    public static string HashHostPassword(string password) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(HostPasswordSalt + password))).ToLowerInvariant();
+
+    public static bool TryCheckHostPassword(string password, bool internet, out string error)
+    {
+        error = string.Empty;
+        if (password.Length == 0 && !internet)
+            return true;
+        if (password.Length is >= MinHostPasswordLength and <= MaxHostPasswordLength && JoinFriend.IsValidPassword(password))
+            return true;
+        error = password.Length == 0
+            ? "Hosting over the internet needs a password, or anyone who finds your server could make an account."
+            : $"The password must be {MinHostPasswordLength}-{MaxHostPasswordLength} printable ASCII characters.";
+        return false;
+    }
+
+    /// <summary>A PublicIP typed into serverconfig.xml, for a router that was forwarded by hand.</summary>
+    public static IPAddress? ManualPublicAddress(string runtime)
+    {
+        string? value = Value(LoadServer(ConfigPath(runtime), out _), "PublicIP");
+        return IPAddress.TryParse(value, out IPAddress? address) && IsInternet(address) ? address : null;
+    }
+
+    /// <summary>
+    /// The addresses an invite code carries, in the order a friend tries them. Tailscale and internet addresses go
+    /// before the home network one, which could be some other device on the friend's own network.
+    /// </summary>
+    public static IReadOnlyList<IPAddress> InviteAddresses(IPAddress? internet)
+    {
+        var addresses = new List<IPAddress>(TailscaleAddresses().Take(1));
+        if (internet != null)
+            addresses.Add(internet);
+        addresses.AddRange(HomeAddresses().Take(1));
+        return addresses;
     }
 
     public static string SettingsPath(string runtime) => Path.Combine(runtime, SettingsFileName);
@@ -120,30 +175,6 @@ public static class HostForFriends
 
     public static void SaveSettings(string runtime, Settings settings) =>
         File.WriteAllText(SettingsPath(runtime), JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true }));
-
-    /// <summary>Friends' internet addresses: IPv4 addresses separated by commas, spaces or new lines.</summary>
-    public static bool TryParseFriendAddresses(string text, out List<string> addresses, out string error)
-    {
-        addresses = [];
-        foreach (string part in text.Split([',', ';', ' ', '\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries))
-        {
-            if (!IPAddress.TryParse(part, out IPAddress? address) || address.AddressFamily != AddressFamily.InterNetwork ||
-                address.ToString() != part)
-            {
-                error = $"\"{part}\" is not an IPv4 address such as 203.0.113.25.";
-                return false;
-            }
-            if (!IsInternet(address))
-            {
-                error = $"{part} is not an internet address. Friends on Tailscale or your home network are already allowed.";
-                return false;
-            }
-            if (!addresses.Contains(part))
-                addresses.Add(part);
-        }
-        error = string.Empty;
-        return true;
-    }
 
     /// <summary>True for a public internet address; false for loopback, private, link-local and shared (CGNAT, Tailscale) ones.</summary>
     public static bool IsInternet(IPAddress address)
@@ -207,6 +238,26 @@ public static class HostForFriends
         }
     }
 
+    /// <summary>This PC's addresses on the networks with a gateway, so not virtual adapters (WSL, Hyper-V).</summary>
+    public static IReadOnlyList<IPAddress> HomeAddresses()
+    {
+        try
+        {
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .Where(network => network.OperationalStatus == OperationalStatus.Up && network.GetIPProperties().GatewayAddresses.Count > 0)
+                .SelectMany(network => network.GetIPProperties().UnicastAddresses)
+                .Select(unicast => unicast.Address)
+                .Where(address => address.AddressFamily == AddressFamily.InterNetwork && !IsInternet(address) && !IsTailscale(address) &&
+                                  !IPAddress.IsLoopback(address) && JoinFriend.IsAllowedHost(address))
+                .Distinct()
+                .ToList();
+        }
+        catch (NetworkInformationException)
+        {
+            return [];
+        }
+    }
+
     public static bool IsTailscale(IPAddress address)
     {
         if (address.AddressFamily != AddressFamily.InterNetwork)
@@ -222,14 +273,14 @@ public static class HostForFriends
     /// The netsh lines that admit friends. Rules are tied to this install's CoreServer.exe, so Windows does not
     /// show its own (unrestricted) "allow access" prompt when the server first listens on the network.
     /// </summary>
-    public static string FirewallScript(string runtime, State state, bool add, IReadOnlyCollection<string>? internetFriends = null)
+    public static string FirewallScript(string runtime, State state, bool add, bool openToInternet = false)
     {
-        string remote = FriendRemoteAddresses + string.Concat((internetFriends ?? []).Select(address => "," + address));
+        string remote = openToInternet ? "any" : FriendRemoteAddresses;
         string program = Path.Combine(runtime, "server", "CoreServer.exe");
         var script = new StringBuilder();
         script.AppendLine("@echo off");
         script.AppendLine(add
-            ? "rem Divided Realms: let friends on Tailscale or this home network reach the game server."
+            ? "rem Divided Realms: let friends reach the game server."
             : "rem Divided Realms: remove the Host for Friends firewall rules.");
         foreach (var (protocol, port) in new[] { ("TCP", state.LoginPort), ("UDP", state.UdpPort) })
         {
