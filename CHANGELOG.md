@@ -5,6 +5,17 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 (not released yet)
 
+- Bot armor works like a player's. The piece that is hit is chosen with the player odds, and its armor value, quality,
+  condition, absorb, resists, to-hit bonus and procs all count. Bots with little or no armor are much softer than before.
+- Loot tables work as written: each row of a monster's loot list rolls once and reads the table it names. Artifact keys
+  can drop, and some monsters no longer drop their items twice.
+- Solo bots pick up their own coin and items again, and bots turn to face what they hit and sit down to rest.
+- Bot relic raids can take a relic home. Players in a high-end raid encounter get a quarter of its loot.
+- Bots no longer cast harmful spells through walls at targets that are not players, and pets, and monsters in a
+  battleground, lose a target that goes into stealth.
+- A chant passed between casters no longer leaves endurance or armor factor wrong until you relog.
+- Quests: a bot's kill credits the player leading its group, a kill counts once, a held quest can be handed in above its
+  maximum level, whispers to an NPC are not delayed, and a journal with more than 25 quests keeps them all.
 - World Workshop can move, turn and scale the client's own buildings and scenery in outdoor zones, from the Zone tab.
   Server doors near a building can move with it. The change stays in this client, navmeshes do not follow it, and it can
   be undone from the Custom looks list.
