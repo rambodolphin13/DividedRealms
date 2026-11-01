@@ -119,7 +119,8 @@ namespace DOL.GS
 
 		public virtual bool CanTrain(GamePlayer player)
 		{
-			return player.CharacterClass.ID == (int)TrainedClass || TrainedClass == eCharacterClass.Unknown;
+			return player.CharacterClass.ID == (int)TrainedClass || TrainedClass == eCharacterClass.Unknown
+				|| ScriptMgr.FindCharacterBaseClass(player.CharacterClass.ID)?.ID == (int)TrainedClass; // Every class starts at level 1 now, often beside only its base class trainer.
 		}
 
 		/// <summary>
@@ -403,7 +404,7 @@ namespace DOL.GS
 		/// <param name="player"></param>
 		protected virtual void CheckChampionTraining(GamePlayer player)
 		{
-			if (CanTrainChampionLevels(player) == false)
+			if (CanTrainChampionLevels(player) == false && CanTrain(player) == false)
 			{
 				// Check for ambient trigger messages for the NPC in the 'MobXAmbientBehaviour' table
 				var triggers = GameServer.Instance.NpcManager.AmbientBehaviour[base.Name];
