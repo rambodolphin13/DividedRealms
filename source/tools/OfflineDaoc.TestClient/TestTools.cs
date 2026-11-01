@@ -329,25 +329,16 @@ namespace OfflineDaoc.TestClient
         {
             long end = Environment.TickCount64 + (long)(timeoutS * 1000);
             onMesh = true;
-            float best = float.MaxValue;
-            long bestAt = Environment.TickCount64;
+            var watch = new WalkWatch(s.Position, Environment.TickCount64);
             while (Environment.TickCount64 < end && !s.Dead)
             {
-                float left = Vector3.Distance(s.Position, goal());
-                if (left <= within)
+                if (Vector3.Distance(s.Position, goal()) <= within)
                 {
                     s.Halt();
                     return true;
                 }
-                if (left < best - 10)
-                {
-                    best = left;
-                    bestAt = Environment.TickCount64;
-                }
-                else if (Environment.TickCount64 - bestAt > 8000)
-                {
-                    break;                              // no closer in 8 seconds: stuck, rooted or out of mesh
-                }
+                if (watch.Stalled(s.Position, Environment.TickCount64))
+                    break;
                 onMesh &= s.Walk(goal());
                 Thread.Sleep(1000);
             }
@@ -407,13 +398,12 @@ namespace OfflineDaoc.TestClient
 
             var kit = new List<object>();
             foreach (int slot in new[] { 21, 22, 23, 25, 27, 28 })      // head, hands, feet, torso, legs, arms
-                kit.Add(Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.ArmorType}"));
+                kit.Add(Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.ArmorType}", out _));
             int hand = 10;
             foreach (int slot in new[] { 10, 12 })                      // one-handed, else two-handed (a staff)
             {
-                object worn = Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.WeaponType}");
-                kit.Add(worn);
-                if (s.Inventory().Any(i => (int)i["slot"] == slot))
+                kit.Add(Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.WeaponType}", out bool worn));
+                if (worn)                                               // slot 10 is never empty: the starter weapon sits there
                 {
                     hand = slot;
                     break;
@@ -442,9 +432,11 @@ namespace OfflineDaoc.TestClient
                 return preset;
             var names = s.Skills().Where(k => (int)k["page"] == 1).Select(k => (string)k["name"]).ToList();
             int armor = Armors.FirstOrDefault(a => names.Any(n => n.StartsWith("Armor") && n.Contains(a.Name, StringComparison.OrdinalIgnoreCase))).Type;
-            int weapon = Weapons.FirstOrDefault(w => names.Any(n => n.StartsWith("Weaponry") && n.Contains(w.Name, StringComparison.OrdinalIgnoreCase))).Type;
             var lines = s.Skills().Where(k => (int)k["page"] == 0).Select(k => (string)k["name"]).ToList();
             string[] specs = lines.Where(l => !SupportLines.Contains(l)).Concat(lines.Where(SupportLines.Contains)).Take(3).ToArray();
+            int weapon = KitRules.WeaponForSpecs(specs);
+            if (weapon == 0)
+                weapon = Weapons.FirstOrDefault(w => names.Any(n => n.StartsWith("Weaponry") && n.Contains(w.Name, StringComparison.OrdinalIgnoreCase))).Type;
             return preset with { ArmorType = armor == 0 ? 32 : armor, WeaponType = weapon == 0 ? 8 : weapon, Specs = specs };
         }
 
@@ -455,8 +447,9 @@ namespace OfflineDaoc.TestClient
 
         // The best item the class can wear, created in the backpack and put on. Some are refused (a class's own item, a
         // minimum level), so it works down a short list. Artifacts stay out: they are test subjects.
-        object Equip(TestSession s, int slot, ClassPreset preset, string what)
+        object Equip(TestSession s, int slot, ClassPreset preset, string what, out bool worn)
         {
+            worn = false;
             var rows = _config.Query($"select Id_nb, Name from ItemTemplate where {what} and Realm in (0, {preset.Realm}) and Level between 40 and 51 "
                 + $"and (AllowedClasses in ('', '0') or AllowedClasses is null or ';' || AllowedClasses || ';' like '%;{preset.ClassId};%') "
                 + "and Id_nb not in (select ItemID from ArtifactXItem) and Id_nb not like '% %' "
@@ -473,7 +466,10 @@ namespace OfflineDaoc.TestClient
                 object made = s.Inventory().First(i => (int)i["slot"] == free)["name"];
                 s.MoveItem(free, slot, 1);
                 if (TestSession.WaitUntil(() => s.Inventory().Any(i => (int)i["slot"] == slot && Equals(i["name"], made)), 1000))
+                {
+                    worn = true;
                     return new { slot, item = row["Name"], worn = true };
+                }
             }
             return new { slot, item = (string)null, worn = false };
         }

@@ -35,6 +35,9 @@ public static class AutonomousObjectiveAssignments
     public static readonly TimeSpan MaximumPveTenure = TimeSpan.FromMinutes(120);
     public static readonly TimeSpan GroupMatchmakingTimeout = TimeSpan.FromMinutes(20);
     private const string BetweenTasksPrefix = "between-pve-services-";
+    public const string NoCampGoal = "Find a reachable level-appropriate XP camp";
+    public const string RvrGoal = "Active frontier RvR";
+    public const string BattlegroundGoal = "Battleground tour";
     public const string PveCompletionRequired = "awaiting-completed-pve-task";
     public static readonly TimeSpan MaximumBetweenTaskDuration = TimeSpan.FromMinutes(30);
     private static readonly object Sync = new();
@@ -57,6 +60,23 @@ public static class AutonomousObjectiveAssignments
         Enum.TryParse(value, true, out eAutonomousObjectiveKind result) ? result : eAutonomousObjectiveKind.SoloPve;
 
     public static bool Is(GameBot bot, eAutonomousObjectiveKind kind) => KindFor(bot) == kind;
+
+    /// <summary>
+    /// The status code shared with PvE (combat, route threats, replans) names a camp goal, and a frontier bot has no
+    /// camp: of 1,276 RvR deaths in the last log of the night of 2026-10-31, 1,246 reported "Find a reachable
+    /// level-appropriate XP camp" and 25 an old "Grind ..." goal, for bots whose objective was RvR. Any other goal text
+    /// is kept as it is.
+    /// </summary>
+    public static string GoalFor(eAutonomousObjectiveKind kind, string goal)
+    {
+        bool campGoal = goal == NoCampGoal || goal?.StartsWith("Grind ", StringComparison.Ordinal) == true;
+        return !campGoal ? goal : kind switch
+        {
+            eAutonomousObjectiveKind.RvR => RvrGoal,
+            eAutonomousObjectiveKind.Battleground => BattlegroundGoal,
+            _ => goal,
+        };
+    }
 
     public static TimeSpan RollRvrTenure(Random random = null)
     {
