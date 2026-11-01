@@ -252,6 +252,16 @@ exit row still matches the certificate, and `UT_DarknessFallsMeshProbe` complete
 0 on the rebuilt one. The certified mesh `41f1489c` belongs in the modern world too, and `build_modern_test_package.py` now
 refuses a package without it.
 
+**Bots stuck in the Darkness Falls drops (issue #3 follow-up, 2026-11-01):** a server owner reported that `41f1489c` let some
+`/spawn` bots down the steps while others stuck. The "steps" are nine one-way drops of 130-200 units, three per realm. Around 40-60%
+of the way down, no mesh is in Detour's reach (`UT_DarknessFallsMeshProbe.ProbeInsideDrops`: 10 of 99 points), so a re-plan there
+returns `NoPathFound`, every retry fails the same way, and floor repair cannot help because the floor is too far down. Only
+autonomous bots had the protected fall, and it gave way as soon as the destination moved 64 units, so followers and `/spawn` bots
+were re-planned in mid-drop whenever their leader kept moving. All bots now finish a certified fall before taking the next order, and
+a bot left hanging settles on the floor below (`TryFindFloorBelowDrop`, 10 of 10 points). A closed certificate now logs
+`DF_CERTIFICATE_CLOSED` with the reason; it used to be silent. Mesh coverage was not the problem: 13,842 of 13,862 floor points around
+the drops reach the bottom. The other 20 are one cut-off Hibernian pocket near 43270,38840.
+
 **Not migrated:** saved player and gamebot positions. A bot standing in a changed spot is handled by the
 stuck watchdog and the pockets file. Not yet tested in game.
 
