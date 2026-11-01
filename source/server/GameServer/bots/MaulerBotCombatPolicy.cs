@@ -16,7 +16,9 @@ namespace DOL.GS
         /// <summary>The bot's own casting range rules still apply; this only says whether the spell is worth a swing.</summary>
         public static bool AllowsCast(Spell spell, bool inMeleeReach, int endurancePercent)
         {
-            // A focus snare holds the bot still, and a Wildbull Perizor gift roots the monster the bot is about to hit.
+            // Unceasing Burden channels until the next spell is ready and the bot neither moves nor swings meanwhile: 243
+            // of 284 Mauler 15-minute stuck recoveries in that run were level 50 bots in a cast, with no attack running.
+            // A Wildbull Perizor gift roots the monster the bot is about to hit.
             if (spell.IsFocus || ModernMauler.IsPerizorGift(spell))
                 return false;
             // A snare or root on a monster already in reach stops nothing, and the next hit breaks a root.
