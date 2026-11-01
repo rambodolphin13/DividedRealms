@@ -9,8 +9,10 @@ namespace DOL.UnitTests
         private static RouteThreatAction Solo(ConColor con, int pack, bool highLevel = false, bool dense = false, bool mayRetarget = true) =>
             AutonomousRouteThreatPolicy.Decide(con, false, pack, false, false, 0, mayRetarget, highLevelSolo: highLevel, denseWorld: dense);
 
-        private static RouteThreatAction Party(ConColor con, int pack, bool strong, int above = 5, bool detour = false) =>
-            AutonomousRouteThreatPolicy.Decide(con, true, pack, false, detour, 0, true, levelsAboveReference: above, strongParty: strong);
+        private static RouteThreatAction Party(ConColor con, int pack, bool strong, int above = 5, bool detour = false, int hardest = int.MinValue,
+            bool deadly = false, bool boss = false) =>
+            AutonomousRouteThreatPolicy.Decide(con, true, pack, boss, detour, 0, true, levelsAboveReference: above, strongParty: strong,
+                hardestLevelsAbove: hardest, provenDeadly: deadly);
 
         [Test]
         public void AHighLevelSoloBotPullsASingleOrangeInsteadOfGivingUp()
@@ -46,12 +48,105 @@ namespace DOL.UnitTests
         }
 
         [Test]
-        public void OnlyASingleFarPurpleIsPulled()
+        public void AStrongPartyPullsOneOrTwoPurplesButNoCamp()
         {
             Assert.That(Party(ConColor.PURPLE, 1, strong: true, above: 11), Is.EqualTo(RouteThreatAction.Pull));
-            Assert.That(Party(ConColor.PURPLE, 2, strong: true, above: 11), Is.EqualTo(RouteThreatAction.Retarget), "a purple camp wiped a party");
+            Assert.That(Party(ConColor.PURPLE, 2, strong: true, above: 13), Is.EqualTo(RouteThreatAction.Pull), "the level 63 pair of the test");
+            Assert.That(Party(ConColor.PURPLE, 3, strong: true, above: 11), Is.EqualTo(RouteThreatAction.Retarget), "a purple camp wiped a party");
+            Assert.That(Party(ConColor.PURPLE, 6, strong: true, above: 13, detour: true), Is.EqualTo(RouteThreatAction.Detour), "griffolich, 6 together");
             Assert.That(Party(ConColor.PURPLE, 1, strong: true, above: 15), Is.EqualTo(RouteThreatAction.Retarget), "too far above");
             Assert.That(Party(ConColor.PURPLE, 1, strong: false, above: 11), Is.EqualTo(RouteThreatAction.Retarget));
+        }
+
+        [Test]
+        public void ALevelFiftyPartyHasRoomAboveThePurpleLine()
+        {
+            int firstPurple = 0;
+            for (int level = 51; firstPurple == 0; level++)
+                if (ConLevels.GetConColor(ConLevels.GetConLevel(50, level)) == ConColor.PURPLE)
+                    firstPurple = level;
+            Assert.That(firstPurple, Is.EqualTo(61));
+            Assert.That(AutonomousRouteThreatPolicy.StrongPartyPurpleLevelsAbove - (firstPurple - 50), Is.GreaterThanOrEqualTo(4),
+                "61 to 64: under 12 above left level 61 alone, and no purple was ever pulled");
+        }
+
+        [Test]
+        public void AStrongPartyPullsAPurpleItCouldWalkAround()
+        {
+            Assert.That(Party(ConColor.PURPLE, 1, strong: true, above: 13, detour: true), Is.EqualTo(RouteThreatAction.Pull), "9 of 11 went around");
+            Assert.That(Party(ConColor.PURPLE, 1, strong: false, above: 11, detour: true), Is.EqualTo(RouteThreatAction.Detour));
+            Assert.That(Party(ConColor.PURPLE, 1, strong: true, above: 15, detour: true), Is.EqualTo(RouteThreatAction.Detour), "too far above");
+        }
+
+        [Test]
+        public void APurplePairGoesByItsHardestMember()
+        {
+            Assert.That(Party(ConColor.PURPLE, 2, strong: true, above: 12, hardest: 14), Is.EqualTo(RouteThreatAction.Pull), "the 64 and 60 pair");
+            Assert.That(Party(ConColor.PURPLE, 2, strong: true, above: 12, hardest: 15), Is.EqualTo(RouteThreatAction.Retarget), "the 62 and 65 that wiped a party");
+        }
+
+        [Test]
+        public void ABossStaysOffLimitsHoweverStrongTheParty()
+        {
+            Assert.That(Party(ConColor.PURPLE, 1, strong: true, above: 11, boss: true), Is.EqualTo(RouteThreatAction.Retarget));
+        }
+
+        [Test]
+        public void APurpleThatKeepsKillingPartiesIsLeftAlone()
+        {
+            Assert.That(AutonomousMobLessons.Felt(ConColor.PURPLE, 4, 10, true), Is.EqualTo(ConColor.PURPLE), "the colour cannot rise past purple");
+            Assert.That(AutonomousMobLessons.IsDeadly(4, 10), Is.True);
+            Assert.That(Party(ConColor.PURPLE, 1, strong: true, above: 11, deadly: true), Is.EqualTo(RouteThreatAction.Retarget));
+            Assert.That(Party(ConColor.PURPLE, 1, strong: true, above: 11, detour: true, deadly: true), Is.EqualTo(RouteThreatAction.Detour));
+        }
+
+        [Test]
+        public void ARedThatFeelsPurpleIsNotPulledAsAPurple()
+        {
+            ConColor felt = AutonomousMobLessons.Felt(ConColor.RED, 4, 10, true);
+            Assert.That(felt, Is.EqualTo(ConColor.PURPLE));
+            Assert.That(Party(felt, 1, strong: true, above: 8, deadly: AutonomousMobLessons.IsDeadly(4, 10)), Is.EqualTo(RouteThreatAction.Retarget));
+        }
+
+        [Test]
+        public void AFewDeathsMakeNoPurpleDeadly()
+        {
+            Assert.That(AutonomousMobLessons.IsDeadly(1, 10), Is.False, "too few fights: one wipe is not a lesson");
+            Assert.That(AutonomousMobLessons.IsDeadly(8, 4), Is.False, "a third of fights lost, still worth trying");
+            Assert.That(AutonomousMobLessons.IsDeadly(7, 5), Is.True);
+        }
+
+        [Test]
+        public void ALonePurpleStaysOffLimitsSolo()
+        {
+            Assert.That(AutonomousRouteThreatPolicy.Decide(ConColor.PURPLE, false, 1, false, false, 0, true, levelsAboveReference: 11,
+                strongParty: true, highLevelSolo: true), Is.EqualTo(RouteThreatAction.Retarget));
+        }
+
+        // One coordinator pulse of the between-pull rest, as AutonomousBotGroupCoordinator runs it for a party of one lowest member.
+        private static bool Pulse(bool recovering, bool combatObserved, int power)
+        {
+            bool ready = AutonomousBotGroupCoordinator.ReadyForGroupPull(100, power, 100, true);
+            return AutonomousBotGroupCoordinator.ReviewsBetweenPullRecovery(recovering, combatObserved, true, ready)
+                ? AutonomousBotGroupCoordinator.ShouldRecoverAfterGroupCombat(recovering, 100, power, 100, true)
+                : recovering;
+        }
+
+        [Test]
+        public void ARestStartedWithNoFightEndsOnceThePartyIsFull()
+        {
+            bool recovering = Pulse(false, false, 60);
+            Assert.That(recovering, Is.True, "below 80 power starts the rest");
+            Assert.That(recovering = Pulse(recovering, false, 90), Is.True, "ready to pull, but a rest runs to full");
+            Assert.That(Pulse(recovering, false, 100), Is.False, "this stayed true for the rest of the task");
+        }
+
+        [Test]
+        public void NoRestStartsForAPartyAlreadyReady()
+        {
+            Assert.That(AutonomousBotGroupCoordinator.ReviewsBetweenPullRecovery(false, false, true, true), Is.False);
+            Assert.That(AutonomousBotGroupCoordinator.ReviewsBetweenPullRecovery(false, false, false, false), Is.False, "no task yet");
+            Assert.That(AutonomousBotGroupCoordinator.ReviewsBetweenPullRecovery(false, true, true, true), Is.True, "after a fight it looks once");
         }
 
         [Test]
