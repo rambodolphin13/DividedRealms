@@ -336,6 +336,37 @@ namespace DOL.UnitTests
             }
         }
 
+        [Test]
+        public void ABotCastersFocusStaffCountsExactlyLikeAPlayers()
+        {
+            // Owner 2026-11-01: FocusLevelCalculator answered 0 for everything that was not a GamePlayer, so a bot carried
+            // no focus whatever staff it held and BotSpellPower.Cost charged it the focus-free 120% on every cast.
+            Bot bot = MakeBot(typeof(ClassWizard), 50);
+            FocusLevelCalculator calculator = new();
+            var line = new SpellLine("test", "test", "Fire Magic", true);
+
+            Assert.That(calculator.CalcValue(bot, eProperty.Focus_Fire), Is.Zero, "empty hands, no focus");
+
+            bot.ItemBonus[eProperty.Focus_Fire] = 40;
+            Assert.That(calculator.CalcValue(bot, eProperty.Focus_Fire), Is.EqualTo(40), "a per-line focus staff");
+
+            bot.ItemBonus[eProperty.AllFocusLevels] = 50;
+            Assert.That(calculator.CalcValue(bot, eProperty.Focus_Fire), Is.EqualTo(50), "a fifty-level focus staff");
+
+            bot.ItemBonus[eProperty.AllFocusLevels] = 0;
+            bot.ItemBonus[eProperty.Focus_Fire] = 80;
+            Assert.That(calculator.CalcValue(bot, eProperty.Focus_Fire), Is.EqualTo(50), "item focus is capped at fifty");
+
+            bot.ItemBonus[eProperty.Focus_Fire] = 0;
+            Spell spell = S(30, 3, 50);
+            bot.Focus = 0;
+            Assert.That(BotSpellPower.Cost(bot, spell, line), Is.EqualTo(36), "no focus: 120% of the spell power");
+            bot.Focus = 50;
+            // 1.2 - 0.4 is 0.7999999999999999 in a double, and both the player path and this one truncate with (int):
+            // eighty percent of thirty is twenty-three, not twenty-four. Parity with a player is the point.
+            Assert.That(BotSpellPower.Cost(bot, spell, line), Is.EqualTo(23), "fifty levels of focus: 80%, truncated");
+        }
+
         [Test] public void LowRankNukeCostsItsNativeAbsolutePower()
         {
             Bot bot = MakeBot(typeof(ClassSpiritmaster), 1);

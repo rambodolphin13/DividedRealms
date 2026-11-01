@@ -4402,6 +4402,8 @@ namespace DOL.GS
                 BotStarterInstruments.Ensure(this);
                 if (UsesCompanionKit)
                     EnsureTemporaryHelperWeapon();
+                // Owner 2026-11-01: a level-50 caster fights with a focus staff, fifty levels on the lines it can use.
+                BotEquipment.EnsureCasterFocusStaff(this, characterLevel);
                 Level = equipmentLevel;
                 SetArmor();
                 SetJewelry();
