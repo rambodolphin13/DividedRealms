@@ -3021,7 +3021,38 @@ namespace DOL.GS
                 (TargetObject == target || rangeAttackComponent.AutoFireTarget == target))
                 return;
 
+            if (ActiveWeaponSlot == eActiveWeaponSlot.Distance && target is GameLiving shotTarget && TryFireArcheryShot(shotTarget))
+                return;
+
             base.StartAttack(target);
+        }
+
+        /// <summary>The live shots this bot knows (BotArcheryShots), rebuilt with its spells.</summary>
+        internal List<Spell> ArcheryShots { get; private set; } = new();
+
+        /// <summary>True while a shot owns the bow, so the classic attack must not start. False leaves the classic bow to it.</summary>
+        private bool TryFireArcheryShot(GameLiving target)
+        {
+            if (ArcheryShots.Count == 0 || CharacterClass == null ||
+                !BotRangedCombat.IsDedicatedArcher((eCharacterClass)CharacterClass.ID) ||
+                ActiveWeapon == null || !GlobalConstants.IsBowWeapon((eObjectType)ActiveWeapon.Object_Type))
+                return false;
+
+            if (IsCasting || castingComponent.HasPendingSkillRequests)
+                return true;
+
+            Spell shot = BotArcheryShots.Choose(ArcheryShots, GetDistanceTo(target), Group != null, EndurancePercent,
+                spell => spell.CalculateEffectiveRange(this), spell => GetSkillDisabledDuration(spell) <= 0);
+            if (shot == null)
+                return false;
+
+            TargetObject = target;
+            if (!CastSpell(shot, ResolvePowerSpellLine(shot, null)))
+                return false;
+
+            if (attackComponent.AttackState)
+                StopAttack();
+            return true;
         }
 
         public override bool AddToWorld()
@@ -4128,6 +4159,7 @@ namespace DOL.GS
         private void SetBotSpells()
         {
             _powerSpellLines = new Dictionary<int, SpellLine>();
+            ArcheryShots = new List<Spell>();
             if (CharacterClass == null)
                 return;
 
@@ -4198,9 +4230,15 @@ namespace DOL.GS
             {
                 Skill skill = usableSkills[i].Item1;
 
-                // Live archery shots need a player's drawn bow (Archery.CheckBeginCast); bots keep the classic bow attack, so
-                // the shots' switches, Bola Shot and Eagle Eye are left out too. Assassin bots cast their coatings outside combat
-                // (BotPoisonSupply), so the live Envenom coatings are left out of the combat list.
+                // Live archery shots have their own list: they replace the bow attack rather than join the spell rotation
+                // (TryFireArcheryShot). The shots' switches, Bola Shot and Eagle Eye stay out. Assassin bots cast their coatings
+                // outside combat (BotPoisonSupply), so the live Envenom coatings are left out of the combat list.
+                if (skill is Spell shot && shot.Level <= Level && BotArcheryShots.IsBotShot(shot) && usableSkills[i].Item2 is SpellLine shotLine)
+                {
+                    ArcheryShots.Add(shot);
+                    _powerSpellLines.TryAdd(shot.ID, shotLine);
+                }
+
                 if (skill is Spell spell && spell.Level <= Level && spell.SpellType is not (eSpellType.Archery or eSpellType.SiegeArrow or
                         eSpellType.BolaShot or eSpellType.ArrowDamageTypes or eSpellType.ArcheryDamageBuff or eSpellType.TrackStealth or
                         eSpellType.PoisonCoating or eSpellType.ConsumeVenom))

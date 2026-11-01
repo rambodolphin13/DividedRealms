@@ -44,7 +44,7 @@ namespace DOL.GS.Spells
 				return false;
 			}
 
-			if (Caster is GamePlayer && Caster.ActiveWeapon != null && GlobalConstants.IsBowWeapon((eObjectType) Caster.ActiveWeapon.Object_Type))
+			if (Caster is GamePlayer or GameBot && Caster.ActiveWeapon != null && GlobalConstants.IsBowWeapon((eObjectType) Caster.ActiveWeapon.Object_Type))
 			{
 				if (Spell.LifeDrainReturn == (int) eShotType.Critical && !Caster.IsStealthed)
 				{
