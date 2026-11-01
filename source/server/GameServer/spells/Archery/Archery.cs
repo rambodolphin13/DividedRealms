@@ -93,7 +93,7 @@ namespace DOL.GS.Spells
 		public override double AdjustDamageForHitChance(double damage, double hitChance)
 		{
 			if (hitChance < 85)
-				damage *= (hitChance - 85) * 0.038;
+				damage *= Math.Max(0, 1 + (hitChance - 85) * 0.038);
 
 			return damage;
 		}
