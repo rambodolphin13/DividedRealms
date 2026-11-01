@@ -2825,6 +2825,9 @@ namespace DOL.GS
         public override bool CastSpell(Spell spell, SpellLine line, ISpellCastingAbilityHandler spellCastingAbilityHandler = null, bool checkLos = true)
         {
             if (CompanionFollowPolicy.DeferBuff(this, spell)) return false;
+            // Death Knight and Warlock pet fears only work on an enemy pet; a bot on anything else was refused every time.
+            if (spell?.SpellType == eSpellType.WarlockPetFear && (TargetObject is not GameLiving fearTarget || !DOL.GS.Spells.WarlockPetFearHandler.IsEnemyPet(this, fearTarget)))
+                return false;
             if (BuffRecastBlocked(spell, TargetObject as GameLiving)) return false;
             if (BotBrain.IsMaintainableClassBuff(spell) && BotBuffRules.LeavesNoEffect(spell.IsConcentration, spell.IsPulsing, spell.Duration)) return false;
             // A cast reveals the caster: a companion hidden with its player casts only heals until a fight starts.
