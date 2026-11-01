@@ -29,6 +29,7 @@ never reached a log. It is now a warning.
 - **NPC health above 100:** `GameObject.HealthPercent` clamps to 0-100 here, and whether that covers his
   1.127 capture is unknown. It does not affect play.
 - **Grass density masks:** the new client already scatters ground clutter.
+- **Frontier keep textures (his W3b):** the new client never loads the models he describes. See below.
 
 ## Left alone
 
@@ -41,7 +42,25 @@ never reached a log. It is now a warning.
 - **RSA key transport for 1.130:** his route needs a client patched with a new key, and ours already runs
   without encryption.
 
-## Open
+## Frontier keep textures
 
-Frontier keep shapes name their textures with `!` tokens such as `!main_wall`. The client picks the file by
-realm and keep level (`alb_mainwall_lvl2.dds` and so on). Our new client pipeline has no such table.
+Checked 2026-10-31, and no change was needed. New Frontiers keep models such as `1MainKeep.NIF` have no
+texturing properties. Their shapes carry `!` tokens such as `!main_wall`, which the original client turns into
+a file by realm and keep level (`alb_mainwall_lvl2.dds` and so on). Our pipeline has no such table, but nothing
+it builds uses these models:
+
+- The 98 zones in `build_world.py` place 643 models, all from `zones/Nifs`. None holds a token, including
+  `!corona`.
+- Those frontier keeps are classic fixtures with their own textures: `bfrontkeep1`, `nfrontkeep1`, `hfrontkeep`
+  and the relic keeps. Every Keep row in regions 1, 100, 200 and 250-253 has one within 600 units. Region 165
+  has them too, but its zone is not in `build_world.py`.
+- `KeepComponent` is empty in every world checked, so the server sends no component keeps. The new client also
+  does not decode `0x69` or `0x6C`, so it would draw nothing rather than the wrong skin.
+
+One keep per realm went through `nif_static.convert` and a software render of the base textures. Albion,
+Midgard and Hibernia all drew proper walls, and every texture resolved. `1MainKeep` as a control drew plain
+white. This was not checked in the real client, because this machine has no Godot and no converted content.
+
+Keep level and realm do not change the look of these fixtures, as on the classic frontier. Component keeps would
+need three things: the New Frontiers zones, decoding for the keep packets, and the token table. The client's
+`frontiers/NIFS` names suit that table (`alb_`, `mid_` and `hib_mainwall_lvl2` to `lvl4`, `universal_mainwall_lvl1`).
