@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using DOL.Database;
@@ -48,6 +49,25 @@ namespace DOL.UnitTests
         {
             var gift = new Spell(new DbSpell { SpellID = 67410, Type = "MaulerGift", Target = "Enemy", Range = 1500 }, 5);
             Assert.That(ModernMauler.GiftReady(new Actor(), gift), Is.False);
+        }
+
+        private static Tuple<SpellLine, int> Line(string key, int classHint) => new(new SpellLine(key, key, "Aura Manipulation", false), classHint);
+
+        // 2026-11-01 overnight run: none of the 164 Mauler bots knew an aura, so their gifts were skipped 6 million times,
+        // and they also lacked Strength of the Forge and every Discipline of Laresh rank above 12%.
+        [TestCase(60, "Mauler Albion Gifts")] [TestCase(61, "Mauler Midgard Gifts")] [TestCase(62, "Mauler Hibernia Gifts")]
+        public void RealmGiftLinesAreAddedToAuraManipulation(int classId, string gifts)
+        {
+            var lines = new[] { Line("Aura Manipulation", 0), Line("Mauler Albion Gifts", 60), Line("Mauler Midgard Gifts", 61), Line("Mauler Hibernia Gifts", 62) };
+            Assert.That(Specialization.SpecLinesForClass(lines, classId).Select(line => line.Item1.KeyName), Is.EqualTo(new[] { "Aura Manipulation", gifts }));
+        }
+
+        [Test]
+        public void OtherClassLinesStillReplaceTheNeutralLine()
+        {
+            var lines = new[] { Line("Mundane Poisons", 0), Line("Infiltrator Envenom", 9), Line("Shadowblade Envenom", 23) };
+            Assert.That(Specialization.SpecLinesForClass(lines, 9).Select(line => line.Item1.KeyName), Is.EqualTo(new[] { "Infiltrator Envenom" }));
+            Assert.That(Specialization.SpecLinesForClass(lines, 1).Select(line => line.Item1.KeyName), Is.EqualTo(new[] { "Mundane Poisons" }));
         }
 
         [TestCase(150, 40, 40)] [TestCase(50, 100, 50)] [TestCase(50, 0, 0)] [TestCase(-1, 100, 0)]
