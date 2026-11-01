@@ -44,7 +44,7 @@ namespace DOL.GS.Spells
 				return false;
 			}
 
-			if (Caster is GamePlayer && Caster.ActiveWeapon != null && GlobalConstants.IsBowWeapon((eObjectType) Caster.ActiveWeapon.Object_Type))
+			if (Caster is GamePlayer or GameBot && Caster.ActiveWeapon != null && GlobalConstants.IsBowWeapon((eObjectType) Caster.ActiveWeapon.Object_Type))
 			{
 				if (Spell.LifeDrainReturn == (int) eShotType.Critical && !Caster.IsStealthed)
 				{
@@ -93,7 +93,7 @@ namespace DOL.GS.Spells
 		public override double AdjustDamageForHitChance(double damage, double hitChance)
 		{
 			if (hitChance < 85)
-				damage *= (hitChance - 85) * 0.038;
+				damage *= Math.Max(0, 1 + (hitChance - 85) * 0.038);
 
 			return damage;
 		}

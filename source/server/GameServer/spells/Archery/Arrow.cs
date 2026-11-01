@@ -79,6 +79,14 @@ namespace DOL.GS.Spells
 		#endregion
 
 		/// <summary>
+		/// Rolls a shot's miss chance. Util.Chance(double) takes a 0-1 fraction, so a percent must be scaled down.
+		/// </summary>
+		public static bool RollsMiss(double missPercent)
+		{
+			return Util.Chance(missPercent / 100.0);
+		}
+
+		/// <summary>
 		/// Delayed action when arrow reach the target
 		/// </summary>
 		protected class ArrowOnTargetAction : ECSGameTimerWrapperBase
@@ -138,7 +146,7 @@ namespace DOL.GS.Spells
 					return 0;
 				}
 
-				if (Util.Chance(missrate))
+				if (RollsMiss(missrate))
 				{
 					ad.AttackResult = eAttackResult.Missed;
 					m_handler.MessageToCaster("You miss!", eChatType.CT_YouHit);
