@@ -2963,7 +2963,7 @@ namespace DOL.AI.Brain
             eSpellType.BodySpiritEnergyBuff or eSpellType.HeatColdMatterBuff or
             eSpellType.SpiritResistBuff or eSpellType.EnergyResistBuff or eSpellType.HeatResistBuff or
             eSpellType.ColdResistBuff or eSpellType.BodyResistBuff or eSpellType.MatterResistBuff or
-            eSpellType.AllMagicResistBuff or eSpellType.EnduranceRegenBuff or eSpellType.PowerRegenBuff or
+            eSpellType.AllMagicResistBuff or eSpellType.AllMagicResistsBuff or eSpellType.EnduranceRegenBuff or eSpellType.PowerRegenBuff or
             eSpellType.AblativeArmor or eSpellType.AcuityBuff or eSpellType.AFHitsBuff or
             eSpellType.ArmorAbsorptionBuff or eSpellType.BaseArmorFactorBuff or eSpellType.SpecArmorFactorBuff or
             eSpellType.PaladinArmorFactorBuff or eSpellType.Buff or eSpellType.CelerityBuff or
@@ -4910,6 +4910,7 @@ namespace DOL.AI.Brain
                 case eSpellType.BodyResistBuff:
                 case eSpellType.MatterResistBuff:
                 case eSpellType.AllMagicResistBuff:
+                case eSpellType.AllMagicResistsBuff:
                 case eSpellType.EnduranceRegenBuff:
                 case eSpellType.PowerRegenBuff:
                 case eSpellType.AblativeArmor:
