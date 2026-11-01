@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using DOL.Database;
 using DOL.Logging;
 
 namespace DOL.GS.PacketHandler.Client.v168
@@ -23,39 +22,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 
         public static byte[] Load(GamePlayer player)
         {
-            DbCoreCharacterXCustomParam param = Select(player);
-
-            if (param == null)
-                return new byte[Length];
-
-            try
-            {
-                byte[] settings = Convert.FromHexString(param.Value);
-                return IsValid(settings) ? settings : new byte[Length];
-            }
-            catch (FormatException)
-            {
-                return new byte[Length];
-            }
+            return WindowSettingsParam.Load(player, KeyName, Length, IsValid);
         }
 
         public static void Save(GamePlayer player, byte[] settings)
         {
-            DbCoreCharacterXCustomParam param = Select(player);
-            string value = Convert.ToHexString(settings);
-
-            if (param == null)
-                GameServer.Database.AddObject(new DbCoreCharacterXCustomParam(player.ObjectId, KeyName, value));
-            else if (param.Value != value)
-            {
-                param.Value = value;
-                GameServer.Database.SaveObject(param);
-            }
-        }
-
-        private static DbCoreCharacterXCustomParam Select(GamePlayer player)
-        {
-            return DOLDB<DbCoreCharacterXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId").IsEqualTo(player.ObjectId).And(DB.Column("KeyName").IsEqualTo(KeyName)));
+            WindowSettingsParam.Save(player, KeyName, settings);
         }
     }
 

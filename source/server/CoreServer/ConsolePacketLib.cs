@@ -214,6 +214,7 @@ namespace DOL.GameServerConsole
 		public void SendVampireEffect(GameLiving living, bool show) { }
 		public void SendXFireInfo(byte flag) { }
 		public void SendGroupFinderSettings(byte[] settings) { }
+		public void SendGroupOptions(byte[] settings) { }
 		public void SendMarketExplorerWindow() { }
 		public void SendMarketExplorerWindow(IList<DbInventoryItem> items, byte page, byte maxpage) { }
 		public void SendConsignmentMerchantMoney(long money) { }

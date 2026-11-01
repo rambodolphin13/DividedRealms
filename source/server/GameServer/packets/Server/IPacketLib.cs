@@ -36,6 +36,7 @@ namespace DOL.GS.PacketHandler
         CharacterInitFinished = 0x2B,
         LoginDenied = 0x2C,
         GroupFinderSettings = 0xE7,
+        GroupOptions = 0xB4,
         GameOpenReply = 0x2D,
         UDPInitReply = 0x2F,
         MinotaurRelicMapRemove = 0x45,
@@ -211,6 +212,8 @@ namespace DOL.GS.PacketHandler
         WorldInitRequest = 0xD4,             // 0x7C ^ 168
         GroupFinderSave = 0xE6,              // 0x4E ^ 168
         GroupFinderRequest = 0xE7,           // 0x4F ^ 168
+        GroupOptionsSave = 0xB3,             // 0x1B ^ 168
+        GroupOptionsRequest = 0xB4,          // 0x1C ^ 168
     }
 
     /// <summary>
@@ -787,6 +790,7 @@ namespace DOL.GS.PacketHandler
         void SendVampireEffect(GameLiving living, bool show);
         void SendXFireInfo(byte flag);
         void SendGroupFinderSettings(byte[] settings);
+        void SendGroupOptions(byte[] settings);
         void SendMinotaurRelicMapRemove(uint id);
         void SendMinotaurRelicMapUpdate(uint id, ushort region, int x, int y, int z);
         void SendMinotaurRelicWindow(GamePlayer player, int spell, bool flag);

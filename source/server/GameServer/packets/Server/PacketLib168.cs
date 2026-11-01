@@ -3266,6 +3266,16 @@ namespace DOL.GS.PacketHandler
 			}
 		}
 
+		// Only send this in reply to the client's GroupOptionsRequest, for the same reason as SendGroupFinderSettings.
+		public virtual void SendGroupOptions(byte[] settings)
+		{
+			using (var pak = GameLoop.GetObjectForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.GroupOptions)))
+			{
+				pak.Write(settings, 0, settings.Length);
+				SendTCP(pak);
+			}
+		}
+
 		public virtual void SendWarmapDetailUpdate(List<List<byte>> fights, List<List<byte>> groups)
 		{
 		}
