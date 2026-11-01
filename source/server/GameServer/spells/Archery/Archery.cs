@@ -114,8 +114,11 @@ namespace DOL.GS.Spells
 					}
 					case (int)eShotType.Power:
 					{
-						player = target as GamePlayer;
-						player.Out.SendMessage("A shot penetrated your magic barrier!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+						if (target is GamePlayer)
+						{
+							player = target as GamePlayer;
+							player.Out.SendMessage("A shot penetrated your magic barrier!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+						}
 						ad.AttackResult = eAttackResult.HitUnstyled;
 						bladeturn.End();
 						break;

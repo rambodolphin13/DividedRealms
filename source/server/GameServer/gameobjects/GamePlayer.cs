@@ -5654,9 +5654,7 @@ namespace DOL.GS
             armorFactor = Math.Min(armorFactor, armorFactorCap);
             armorFactor += GetModified(eProperty.ArmorFactor) / 5.0; // Don't call base here.
 
-            /*GameSpellEffect effect = SpellHandler.FindEffectOnTarget(this, typeof(VampiirArmorDebuff));
-            if (effect != null && slot == (effect.SpellHandler as VampiirArmorDebuff).Slot)
-                armorFactor -= (int) (effect.SpellHandler as VampiirArmorDebuff).Spell.Value;*/
+            armorFactor -= VampiirArmorDebuff.AfPenalty(this, slot);
 
             armorFactor *= HealthArmorChantSpellHandler.Scale(this); // Champion / Thane armor chants.
             return Math.Max(0, armorFactor);
@@ -5677,7 +5675,7 @@ namespace DOL.GS
 
             // Debuffs can't lower absorb below 0%: https://darkageofcamelot.com/article/friday-grab-bag-08302019
             // ABS debuffs can either be multiplicative (if appended with a minus sign) or flat. In 1.65, all debuffs are believed to be multiplicative.
-            double absorb = item.SPD_ABS * 0.01 * (1 + GetModified(eProperty.ArmorAbsorption) * 0.01);
+            double absorb = Math.Max(0, item.SPD_ABS - VampiirArmorDebuff.AbsorbPenalty(this, slot)) * 0.01 * (1 + GetModified(eProperty.ArmorAbsorption) * 0.01);
             return Math.Clamp(absorb, 0, 1);
         }
 

@@ -162,6 +162,7 @@ namespace DOL.GS;
                 !BotWeaponStats.HasFunctionalMeleeStats(item) ||
                 (BotWeaponStats.IsMeleeWeapon((eObjectType)item.Object_Type) &&
                  !BotWeaponStats.IsConfiguredMeleeWeapon(bot, item.Template)) ||
+                ((eObjectType)item.Object_Type == eObjectType.Shield && !BotWeaponStats.ShieldFitsBuild(bot)) ||
                 !GameServer.ServerRules.CheckAbilityToUseItem(bot, item.Template))
                 return null;
 
@@ -225,6 +226,7 @@ namespace DOL.GS;
                  (!BotWeaponStats.IsConfiguredMeleeWeapon(bot, item.Template) ||
                   !BotWeaponStats.HasConfiguredWeaponProficiency(bot, item.Template))) ||
                 (BotRangedCombat.IsRangedWeaponType((eObjectType)item.Object_Type) && !BotRangedCombat.IsUsableWeapon(item)) ||
+                ((eObjectType)item.Object_Type == eObjectType.Shield && !BotWeaponStats.ShieldFitsBuild(bot)) ||
                 (!BotWeaponStats.IsMeleeWeapon((eObjectType)item.Object_Type) &&
                  !GameServer.ServerRules.CheckAbilityToUseItem(bot, item.Template)))
                 return false;
