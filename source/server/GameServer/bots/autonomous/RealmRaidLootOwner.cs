@@ -23,6 +23,8 @@ namespace DOL.GS
 
         /// <summary>The real players in the encounter (set by the kill that drops the loot).</summary>
         internal GamePlayer[] Players { get; set; } = [];
+        /// <summary>The players this kill's share gave an item (a dragon owes the others one of its own).</summary>
+        internal HashSet<GamePlayer> PlayersGivenItems { get; } = [];
         private readonly GameBot[] _members;
         private readonly Ledger _ledger;
         internal IReadOnlyList<GameBot> Members => _members;
@@ -42,6 +44,7 @@ namespace DOL.GS
                         if (player.TryPickUpItem(player, item) == TryPickUpResult.Success)
                         {
                             _ledger.ItemsToPlayers++;
+                            PlayersGivenItems.Add(player);
                             return TryPickUpResult.Success;
                         }
                 // the other three in four: the gamebots that took part, at random among those with the fewest so far
