@@ -2923,6 +2923,9 @@ namespace DOL.GS
 		{
 			Spell spell = null;
 
+			if (spellID == 0)
+				return null;
+
 			if (line != null)
 			{
 				List<Spell> spells = GetSpellList(line.KeyName);
