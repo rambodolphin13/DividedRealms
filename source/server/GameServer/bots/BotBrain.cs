@@ -3852,6 +3852,10 @@ namespace DOL.AI.Brain
         {
             if (spell == null || !spell.IsHarmful || !BotCasterPriority.IsDamage(spell))
                 return false;
+            // A Warlock's Dread, Anguish and Agony are steps of one chain, not stronger copies of each other: each step needs
+            // the ones before it on the target, so only a higher spell of the same step replaces one. Overnight run 2026-11-02:
+            // Lesser Agony outclassed Lesser Anguish and was refused 5,600 times without its chain.
+            bool chain = spell.SpellType == eSpellType.WarlockChainDot;
             int best = 0;
             foreach (Spell other in known)
             {
@@ -3859,13 +3863,25 @@ namespace DOL.AI.Brain
                     !BotCasterPriority.IsDamage(other))
                     continue;
                 best = Math.Max(best, other.Level);
+                if (chain)
+                {
+                    if (other.SpellType == eSpellType.WarlockChainDot && other.Level > spell.Level &&
+                        ModernWarlock.ChainStage(other) == ModernWarlock.ChainStage(spell))
+                        return true;
+                    continue;
+                }
                 if (other.Level > spell.Level && other.SpellType == spell.SpellType &&
                     other.Target == spell.Target && (other.Radius > 0) == (spell.Radius > 0) &&
                     (other.CastTime <= 0) == (spell.CastTime <= 0) && other.IsPBAoE == spell.IsPBAoE)
                     return true;
             }
-            return best - spell.Level >= 5 && spell.Level * 2 < best;
+            return !chain && best - spell.Level >= 5 && spell.Level * 2 < best;
         }
+
+        /// <summary>A Warlock chain step whose earlier steps are not on the target from this caster: the handler refuses it.</summary>
+        public static bool WarlockChainNotReady(Spell spell, GameLiving target, GameLiving caster) =>
+            spell?.SpellType == eSpellType.WarlockChainDot && !ModernWarlock.ChainReady(ModernWarlock.ChainStage(spell),
+                ModernWarlock.HasStage(target, caster, 1), ModernWarlock.HasStage(target, caster, 2), ModernWarlock.HasStage(target, caster, 3));
 
         private bool IsOutclassedDamageSpell(Spell spell) =>
             Body?.Spells != null && IsOutclassedDamageSpell(spell, Body.Spells, Body.Level);
@@ -4596,6 +4612,8 @@ namespace DOL.AI.Brain
             eSpellType.MeleeDamageDebuff or eSpellType.AllStatsPercentDebuff or eSpellType.CrushSlashThrustDebuff or
             eSpellType.EffectivenessDebuff or eSpellType.Disease or eSpellType.Stun or eSpellType.Mez or
             eSpellType.Mesmerize or
+            // A Warlock's Dread opens its Witchcraft chain and is instant.
+            eSpellType.WarlockChainDot or
             // Sovereign strikes, storms and Hammerfall: harmful royal abilities, reuse-gated.
             eSpellType.StormSovereignAbility;
 
@@ -4639,6 +4657,7 @@ namespace DOL.AI.Brain
                     Body.IsWithinRadius(target, Body.MeleeAttackRange + 35), Body.EndurancePercent))
                 return "cast: Mauler swings instead";
             if (!NeedsOffensiveSpellApplication(target, spell)) return "cast: target already has it";
+            if (WarlockChainNotReady(spell, target, Body)) return "cast: earlier Witchcraft steps not on the target";
             if (Body.GetSkillDisabledDuration(spell) > 0) return "cast: on cooldown";
             if (Body.Mana < BotBody.PowerCost(spell)) return "cast: not enough power";
             if (spell.CastTime > 0 && spell.Target is eSpellTarget.ENEMY or eSpellTarget.AREA or eSpellTarget.CONE)
@@ -4796,6 +4815,8 @@ namespace DOL.AI.Brain
                 BotTesterLog.Skipped(Body, spell, "instant: area spell would wake or pull another monster");
             else if (LivingHasEffect((GameLiving)Body.TargetObject, spell))
                 BotTesterLog.Skipped(Body, spell, "instant: target already has it");
+            else if (WarlockChainNotReady(spell, Body.TargetObject as GameLiving, Body))
+                BotTesterLog.Skipped(Body, spell, "instant: earlier Witchcraft steps not on the target");
             else if (!Body.IsWithinRadius(Body.TargetObject, spell.Range))
                 BotTesterLog.Skipped(Body, spell, "instant: target out of range");
             else

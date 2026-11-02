@@ -94,7 +94,8 @@ namespace DOL.GS
             int margin = ranged ? AutonomousRouteThreatPolicy.RangedMargin : AutonomousRouteThreatPolicy.MeleeMargin;
 
             GameNPC[] threats = bot.GetNPCsInRadius((ushort)AutonomousRouteThreatPolicy.ScanRadius)
-                .Where(npc => IsExperienceMonster(npc) && npc.IsAlive && !npc.InCombat &&
+                .Where(npc => IsExperienceMonster(npc) && npc.IsAlive &&
+                              (!npc.InCombat || AutonomousRouteThreatPolicy.WatchesBusyMonster(ConLevels.GetConColor(bot.GetConLevel(npc)))) &&
                               npc.Brain is StandardMobBrain mob && mob.AggroRange > 0 && mob.CanAggroTarget(bot))
                 .OrderBy(npc => bot.GetDistanceTo(npc)).Take(24).ToArray();
             GameNPC blocker = null;
@@ -161,13 +162,16 @@ namespace DOL.GS
                 highLevelSolo: !grouped && bot.Level >= AutonomousRouteThreatPolicy.HighLevelSoloMinimum,
                 denseWorld: AutonomousAtlantisPolicy.IsAtlantisRegion(bot.CurrentRegionID),
                 hardestLevelsAbove: hardestAbove, provenDeadly: AutonomousMobLessons.IsDeadly(blocker.Name, grouped));
+            if (blocker.InCombat)
+                action = AutonomousRouteThreatPolicy.ForBusyMonster(action,
+                    detour.HasValue && detours < AutonomousRouteThreatPolicy.MaxDetoursPerThreat, _camp != null);
             if (action == RouteThreatAction.Ignore)
                 return false;
 
             Log.Info($"AUTONOMOUS_ROUTE_THREAT bot={bot.Name} id={bot.DatabaseID} class=\"{bot.ClassName}\" level={bot.Level} " +
                      $"group={(grouped ? _groupDirective.GroupId : "solo")} action={action} target=\"{blocker.Name}\" " +
                      $"targetLevel={blocker.Level} con={con} seen={seen} pack={pack} aggro={blockerBrain.AggroRange} along={first:0} " +
-                     $"detours={detours} levelsAbove={levelsAbove} strong={strongParty} zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
+                     $"detours={detours} levelsAbove={levelsAbove} strong={strongParty} busy={blocker.InCombat} zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
 
             switch (action)
             {

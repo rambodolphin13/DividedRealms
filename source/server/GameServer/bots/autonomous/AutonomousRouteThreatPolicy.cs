@@ -160,6 +160,23 @@ namespace DOL.GS
             bossLike || con >= ConColor.PURPLE || levelsAboveReference >= GroupMaximumLevelsAbove;
 
         /// <summary>
+        /// A monster already fighting someone else still counts as a route threat when it cons orange or harder: it turns on
+        /// the next bot as soon as its fight ends. The route scan used to skip every monster in combat, and on the 2026-11-02
+        /// overnight run 878 of 1,515 bots under level 10 killed by a purple before reaching camp died to a monster of the
+        /// same name that had killed another bot within three minutes and 1,500 units. Pure.
+        /// </summary>
+        public static bool WatchesBusyMonster(ConColor seen) => seen >= ConColor.ORANGE;
+
+        /// <summary>
+        /// A busy monster is never pulled (that joins someone else's fight against a hard monster): go around it, else give up
+        /// the camp. With no camp to give up the bot walks on, as it did before. Pure.
+        /// </summary>
+        public static RouteThreatAction ForBusyMonster(RouteThreatAction action, bool canDetour, bool hasCamp) =>
+            action != RouteThreatAction.Pull ? action
+            : canDetour ? RouteThreatAction.Detour
+            : hasCamp ? RouteThreatAction.Retarget : RouteThreatAction.Ignore;
+
+        /// <summary>
         /// How far past a monster's aggro range a bot that gave up its camp because of it backs off. A bot used to stop
         /// where it gave up and stand there for the 30-second replan wait, often inside the monster's aggro: on 2026-10-29
         /// 935 of 1,594 solo deaths to a red or purple before reaching camp were to the monster the bot had just given
