@@ -264,7 +264,8 @@ namespace DOL.GS
             eRealm DarknessFallsWing = eRealm.None,
             float DarknessFallsAlbionDistance = float.PositiveInfinity,
             float DarknessFallsMidgardDistance = float.PositiveInfinity,
-            float DarknessFallsHiberniaDistance = float.PositiveInfinity);
+            float DarknessFallsHiberniaDistance = float.PositiveInfinity,
+            bool NewbieShore = false);
 
         private static CampCatalogCell[] _campCatalog = [];
 
@@ -3504,6 +3505,15 @@ namespace DOL.GS
             eDarknessFallsGoal darknessFallsGoal = AutonomousDarknessFallsPolicy.RollGoal(planningLevel,
                 AutonomousDungeonPopulationPolicy.Population(AutonomousDarknessFallsPolicy.RegionId), Random.Shared.Next(100));
             bool soloDarknessFallsHunt = !sharedGroup && darknessFallsGoal == eDarknessFallsGoal.Pvp && _deathDifficultySteps == 0;
+            // Orange and harder camps are drawn now and then (AutonomousCampConStretch), never right after a defeat.
+            bool mayStretch = !sharedGroup && groupSize == 1 && _deathDifficultySteps == 0 &&
+                              GameLoop.GameLoopTime >= _routeCautionUntilTick;
+            int stretchRoll = Random.Shared.Next(100);
+            HashSet<string> stretchedCamps = new(StringComparer.OrdinalIgnoreCase);
+            (int Low, int High) groupBand = sharedGroup
+                ? AutonomousCampConStretch.GroupBand(_groupDirective.PreferredLevelBonus, _groupDirective.WipePenalty,
+                    planningLevel, Random.Shared.Next(100))
+                : default;
 
             // The live world used to be regrouped by every individual bot.
             // With a large roster that meant thousands of full region/object
@@ -3530,7 +3540,7 @@ namespace DOL.GS
                                         (sharedGroup || !AutonomousCampDangerBench.IsBenched(cell.Id, cell.RegionId, cell.MonsterName)) &&
                                         IsZoneAccessible(bot.Realm, cell.Zone, bot.CurrentRegionID) &&
                                         AutonomousOrdinaryPveRealmPolicy.CanAssignCamp(bot.Realm, cell.RegionId,
-                                            cell.Zone?.ID ?? 0, planningLevel) &&
+                                            cell.Zone?.ID ?? 0, planningLevel, cell.NewbieShore) &&
                                         AutonomousAuditedCampPolicy.CanAssignToParty(cell.Id, groupSize)))
             {
                 // Filled into a reused buffer; only a camp that qualifies gets its own array (this per-cell
@@ -3546,6 +3556,9 @@ namespace DOL.GS
                     !sharedGroup && cell.RegionId != AutonomousDarknessFallsPolicy.RegionId &&
                     !AutonomousSoloCampFloor.CampQualifies(bot.Level, validCount, cell.Levels.Length))
                     continue;
+                // A party stays away from a monster that keeps killing parties, whatever its level band.
+                if (sharedGroup && AutonomousMobLessons.IsDeadly(cell.MonsterName, true))
+                    continue;
                 // No camp beside a spot where a monster far above this bot killed one recently (stefanrows' boss danger).
                 if (AutonomousPveBossDanger.IsNear(cell.RegionId, cell.X, cell.Y, planningLevel, dangerUtc))
                     continue;
@@ -3557,8 +3570,8 @@ namespace DOL.GS
                 bool IsValidCampLevel(int level)
                     {
                         if (sharedGroup)
-                            return level >= planningLevel + 3 &&
-                                level <= planningLevel + _groupDirective.PreferredLevelBonus &&
+                            return level >= planningLevel + groupBand.Low &&
+                                level <= planningLevel + groupBand.High &&
                                 ConLevels.GetConColor(ConLevels.GetConLevel(highestMemberLevel, level)) > ConColor.GREY;
                         ConColor con = ConLevels.GetConColor(ConLevels.GetConLevel(bot.EffectiveLevel, level));
                         // Retain every naturally valid non-grey option in the
@@ -3567,6 +3580,12 @@ namespace DOL.GS
                         // XP-bearing creature at this level.
                         ConColor highestCon = soloDarknessFallsHunt && cell.RegionId == AutonomousDarknessFallsPolicy.RegionId
                             ? AutonomousDarknessFallsPolicy.SoloPvpMaximumCon : naturalMaximumTargetCon;
+                        if (mayStretch && con > highestCon &&
+                            AutonomousCampConStretch.SoloMayTry(con, cell.MonsterName, bot.Level, stretchRoll))
+                        {
+                            stretchedCamps.Add(cell.Id);
+                            highestCon = con;
+                        }
                         return con >= ConColor.GREEN && con <= highestCon &&
                             AutonomousSoloCampFloor.Allows(bot.Level, level);
                     }
@@ -3609,8 +3628,8 @@ namespace DOL.GS
                     .OrderBy(con => con)
                     .ToArray();
                 int averageLevel = sharedGroup
-                    ? AutonomousGroupTargetPolicy.SelectFixedEightManLevel(validLevels, planningLevel,
-                        _groupDirective.PreferredLevelBonus)
+                    ? AutonomousGroupTargetPolicy.SelectBandLevel(validLevels, planningLevel + groupBand.Low,
+                        planningLevel + groupBand.High)
                     : (int)Math.Round(validLevels.Average());
 
                 destinations[cell.Id] = new(cell.Id, cell.MonsterName, cell.ZoneName, cell.RegionId,
@@ -3694,14 +3713,15 @@ namespace DOL.GS
                     region: camp => camp.RegionId,
                     position: camp => new Vector3(destinations[camp.Id].X,
                         destinations[camp.Id].Y, destinations[camp.Id].Z));
-                int selectedLevel = AutonomousGroupTargetPolicy.SelectFixedEightManLevel(
-                    legal.Select(camp => camp.AverageMobLevel), planningLevel,
-                    _groupDirective.PreferredLevelBonus);
+                int selectedLevel = AutonomousGroupTargetPolicy.SelectBandLevel(
+                    legal.Select(camp => camp.AverageMobLevel), planningLevel + groupBand.Low,
+                    planningLevel + groupBand.High);
                 legal = legal.Where(camp => camp.AverageMobLevel == selectedLevel);
             }
             else
             {
                 legal = legal.Where(camp => camp.LowestCon >= minimumTargetCon && (camp.TypicalCon <= maximumTargetCon ||
+                    stretchedCamps.Contains(camp.Id) ||
                     soloDarknessFallsHunt && camp.RegionId == AutonomousDarknessFallsPolicy.RegionId &&
                     darknessFallsRoutes[camp.Id].Gap <= AutonomousDarknessFallsPolicy.MeetingRoomGap));
                 // A bot grinding while it waits for group matchmaking stays
@@ -3800,6 +3820,9 @@ namespace DOL.GS
             _camp = sharedGroup ? selected with { TargetLevel = chosen.AverageMobLevel }
                 : usedDeathFallback || soloDarknessFallsHunt && darknessFallsGoal == eDarknessFallsGoal.Pvp
                     ? selected with { FallbackMaximumCon = chosen.TypicalCon } : selected;
+            if (!sharedGroup && chosen.TypicalCon > naturalMaximumTargetCon)
+                Log.Info($"AUTONOMOUS_CAMP_STRETCH bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
+                         $"con={chosen.TypicalCon} target=\"{chosen.MonsterName}\" camp={chosen.Id}");
             BeginCampDiagnostics(bot);
             _lastFailedCampId = string.Empty;
             _lastFailedTargetName = string.Empty;
@@ -4066,7 +4089,23 @@ namespace DOL.GS
 
                 AddStarterCamps(cells, snapshot);
                 AddVerifiedDungeonCamps(cells, liveByZoneAndName);
+                MarkNewbieShoreCamps(cells);
                 return cells.ToArray();
+        }
+
+        private static void MarkNewbieShoreCamps(List<CampCatalogCell> cells)
+        {
+            ILookup<ushort, (int X, int Y, int Level)> aggressors = _shroudedIslesAggressors
+                .ToLookup(spawn => spawn.RegionId, spawn => (spawn.X, spawn.Y, spawn.Level));
+            for (int i = 0; i < cells.Count; i++)
+            {
+                CampCatalogCell cell = cells[i];
+                if (AutonomousOrdinaryPveRealmPolicy.IsShroudedIsles(cell.RegionId) && !cell.IsDungeon &&
+                    AutonomousOrdinaryPveRealmPolicy.IsNewbieShoreCamp(cell.RegionId, cell.X, cell.Y, cell.Levels, aggressors[cell.RegionId]))
+                    cells[i] = cell with { NewbieShore = true };
+            }
+            Log.Info($"camp catalog: home shore camps {string.Join(", ", cells.Where(cell => cell.NewbieShore)
+                .GroupBy(cell => cell.RegionId).OrderBy(group => group.Key).Select(group => $"region {group.Key}={group.Count()}"))}");
         }
 
         private static bool IsSourceEmptyCamp(string campId) =>
