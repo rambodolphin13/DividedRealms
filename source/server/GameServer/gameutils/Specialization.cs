@@ -204,13 +204,12 @@ namespace DOL.GS
 			else if (living is GameBot bot && bot.CharacterClass != null)
 			{
 				int classId = bot.CharacterClass.ID;
-				// /spawn Bonedancers have a real, point-funded build. The generic
-				// NPC 75% estimate hid their first subordinate summon even with
-				// 15+ points trained. Leave all other bots on their existing path.
-				int spellSpecLevel = bot.IsTemporaryGroupHelper && !bot.IsAutonomousWorldBot &&
-					classId == (int)eCharacterClass.Bonedancer
-					? Math.Clamp(level, 1, Math.Max(1, (int)living.Level))
-					: Math.Max(1, living.Level - (living.Level >> 2));
+				// Owner 2026-11-02: a companion or an autonomous bot has a real, point-funded build, so its spell lines are
+				// read at the trained specialization level. The old three-quarter NPC estimate (38 at level 50) silently
+				// dropped every rank above it - a Minstrel with Instruments 50 was left with the 189% speed song instead of
+				// the 204% one, and the same ceiling hid the top of every other line. Mobs keep the estimate.
+				bool trainsRealSpecs = bot.IsTemporaryGroupHelper || bot.IsAutonomousWorldBot;
+				int spellSpecLevel = BotSpellLineLevel.For(trainsRealSpecs, level, living.Level);
 
 				// Apply the same class-based filtering as GamePlayer
 				var baseline = spsl.Where(item => item.Item1.IsBaseLine && item.Item2 == classId);
