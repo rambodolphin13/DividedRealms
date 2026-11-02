@@ -81,6 +81,12 @@ namespace DOL.GS
         internal int EquipmentLevelCap { get; private set; }
         public OfflineWorldBotRecord PersistentRecord { get; private set; }
         internal AutonomousGoalAttempt GoalDiagnosticAttempt;
+        /// <summary>
+        /// The last activity that was not a fight, and when it was last set: a death line otherwise only says "Fighting x",
+        /// not the walk that led there (2026-11-02, 376 of 483 low level purple deaths before camp read that way).
+        /// </summary>
+        internal string ActivityBeforeFight = string.Empty;
+        internal long ActivityBeforeFightTick;
         private byte _lastAutonomousTrainedLevel = 1;
         public bool HasPendingAutonomousTraining => IsAutonomousWorldBot && _lastAutonomousTrainedLevel < Level;
         /// <summary>Levels behind on training at which a bot goes to its trainer whatever its task.</summary>

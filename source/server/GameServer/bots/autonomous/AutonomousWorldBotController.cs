@@ -5637,6 +5637,11 @@ namespace DOL.GS
             if (record == null)
                 return;
 
+            if (!activity.StartsWith("Fighting", StringComparison.Ordinal) && !activity.StartsWith("Defeated", StringComparison.Ordinal))
+            {
+                bot.ActivityBeforeFight = activity;
+                bot.ActivityBeforeFightTick = GameLoop.GameLoopTime;
+            }
             goal = AutonomousObjectiveAssignments.GoalFor(AutonomousObjectiveAssignments.KindFor(bot), goal);
             bool durableChanged = record.Activity != activity || record.CurrentGoal != goal ||
                                   record.TargetName != target || record.TravelDestination != destination;

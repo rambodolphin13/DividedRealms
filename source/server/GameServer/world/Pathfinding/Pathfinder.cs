@@ -57,6 +57,22 @@ namespace DOL.GS
             ForceReplot = true;
         }
 
+        /// <summary>
+        /// The path being walked now, whatever it was planned to, read-only. The route threat scan asked for the path to
+        /// the camp, but the bot walks to an approach point, a zone seam or a sidestep, so on 2026-11-02 most scans got
+        /// nothing and checked a straight line to a camp up to 30,000 units off: 406 of 907 low level red and purple
+        /// sightings were made inside the monster's aggro range.
+        /// </summary>
+        public int CopyActivePath(Span<Vector3> destination)
+        {
+            if (ForceReplot)
+                return 0;
+            int count = Math.Min(destination.Length, _activePath.Nodes.Count);
+            for (int i = 0; i < count; i++)
+                destination[i] = _activePath.Nodes.Peek(i).Position;
+            return count;
+        }
+
         /// <summary>Read-only lookahead for dungeon safety. Does not replot,
         /// advance nodes, alter movement, or allocate a second route.</summary>
         public int CopyUpcomingPath(Vector3 target, Span<Vector3> destination)

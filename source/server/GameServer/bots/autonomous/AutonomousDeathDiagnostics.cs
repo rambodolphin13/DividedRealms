@@ -51,7 +51,9 @@ namespace DOL.GS
                          $"realm={GlobalConstants.RealmToName(bot.Realm)} group={(bot.Group?.MemberCount ?? 1)} " +
                          $"killer=\"{killer?.Name}\" killerKind={KillerKind(killer)} killerLevel={living?.Level ?? 0} con={con} " +
                          $"attackers={attackers} armorPieces={armor} maxHealth={bot.MaxHealth} arrivedAtCamp={arrived} " +
-                         $"activity=\"{activityBefore}\" goal=\"{goal}\" " +
+                         $"activity=\"{activityBefore}\" before=\"{bot.ActivityBeforeFight}\" " +
+                         $"beforeAgo={(bot.ActivityBeforeFightTick == 0 ? -1 : (GameLoop.GameLoopTime - bot.ActivityBeforeFightTick) / 1000)} " +
+                         $"goal=\"{goal}\" " +
                          $"region={bot.CurrentRegionID} zone=\"{bot.CurrentZone?.Description}\" at={bot.X},{bot.Y},{bot.Z}");
             }
             catch (Exception exception)

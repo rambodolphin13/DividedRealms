@@ -149,6 +149,7 @@ namespace DOL.GS
         public new GameNPC Owner { get; }
         public int CopyUpcomingPath(Vector3 target, Span<Vector3> destination) =>
             _pathfinder.CopyUpcomingPath(target, destination);
+        public int CopyActivePath(Span<Vector3> destination) => _pathfinder.CopyActivePath(destination);
         public ref Vector3 Velocity => ref _velocity;
         public ref Vector3 Destination => ref _destination;
         public GameLiving FollowTarget { get; private set; }

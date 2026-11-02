@@ -9,6 +9,11 @@ namespace DOL.GS
     public sealed partial class AutonomousWorldBotController
     {
         private long _nextRouteThreatScanTick;
+        // The previous scan, for the ROUTE_THREAT line: on 2026-11-02 406 of 907 low level red and purple sightings came with
+        // the bot already inside the monster's aggro range, after minutes of walking.
+        private long _lastRouteScanTick;
+        private Vector2 _lastRouteScanAt;
+        private float _lastRouteScanLength;
         // A solo bot that died recently treats a yellow on its route like an orange (AutonomousRouteThreatPolicy.Decide).
         private long _routeCautionUntilTick;
         public const long RouteCautionAfterDeathMilliseconds = 30 * 60_000;
@@ -74,6 +79,15 @@ namespace DOL.GS
             Span<Vector3> route = stackalloc Vector3[257];
             route[0] = new(bot.X, bot.Y, bot.Z);
             int count = bot.movementComponent.CopyUpcomingPath(scanTarget, route[1..]) + 1;
+            string pathSource = "target";
+            // The path the bot walks (to an approach point, a seam or a sidestep) when it was not planned to scanTarget.
+            if (count < 2 && bot.IsMoving)
+            {
+                count = bot.movementComponent.CopyActivePath(route[1..]) + 1;
+                pathSource = "active";
+            }
+            if (count < 2)
+                pathSource = "straight";
             if (count < 2)
             {
                 // Before the first path exists: the straight leg toward the target.
@@ -81,6 +95,14 @@ namespace DOL.GS
                 count = 2;
             }
             ReadOnlySpan<Vector3> corridor = route[..count];
+            long previousScanTick = _lastRouteScanTick;
+            Vector2 previousScanAt = _lastRouteScanAt;
+            float previousScanLength = _lastRouteScanLength;
+            _lastRouteScanTick = now;
+            _lastRouteScanAt = new(bot.X, bot.Y);
+            _lastRouteScanLength = 0;
+            for (int i = 1; i < count && _lastRouteScanLength < AutonomousRouteThreatPolicy.LookAhead; i++)
+                _lastRouteScanLength += Vector3.Distance(route[i - 1], route[i]);
 
             // A solo bot bends around monsters far above it, remembered death spots and its own repeat-death spots
             // before the one-monster rules below (stefanrows' route bends; AutonomousPveDangerBypass). Level 50s too
@@ -171,7 +193,10 @@ namespace DOL.GS
             Log.Info($"AUTONOMOUS_ROUTE_THREAT bot={bot.Name} id={bot.DatabaseID} class=\"{bot.ClassName}\" level={bot.Level} " +
                      $"group={(grouped ? _groupDirective.GroupId : "solo")} action={action} target=\"{blocker.Name}\" " +
                      $"targetLevel={blocker.Level} con={con} seen={seen} pack={pack} aggro={blockerBrain.AggroRange} along={first:0} " +
-                     $"detours={detours} levelsAbove={levelsAbove} strong={strongParty} busy={blocker.InCombat} zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
+                     $"detours={detours} levelsAbove={levelsAbove} strong={strongParty} busy={blocker.InCombat} " +
+                     $"dist={bot.GetDistanceTo(blocker)} scanGap={(previousScanTick == 0 ? -1 : now - previousScanTick)} moved={Vector2.Distance(previousScanAt, new(bot.X, bot.Y)):0} " +
+                     $"lastScanned={previousScanLength:0} scanned={_lastRouteScanLength:0} points={count} path={pathSource} detouring={detouring} " +
+                     $"zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
 
             switch (action)
             {
