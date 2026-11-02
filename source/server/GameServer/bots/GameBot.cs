@@ -1890,7 +1890,10 @@ namespace DOL.GS
         {
             base.EnemyKilled(enemy);
             if (IsAutonomousWorldBot)
+            {
                 AutonomousLivingServer.OnBotKilled(this, enemy);
+                AutonomousBotQuests.OnKilled(this, enemy);
+            }
         }
 
         public override void GainExperience(GainedExperienceEventArgs arguments, bool notify = true)

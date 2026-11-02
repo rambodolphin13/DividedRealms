@@ -145,18 +145,17 @@ namespace DOL.GS;
         if (bot?.Inventory == null || bot.DatabaseID <= 0)
             return null;
 
-        bool hasCraft = !string.IsNullOrWhiteSpace(bot.PersistentRecord?.SerializedCraftingSkills);
         // Appraise matching goods before limiting results. Cheap unusable bot
         // wares must not hide a useful player listing beyond the first 48 rows.
         return FindAffordableExchangeItems(bot, int.MaxValue)
-            .Select(item => ScorePurchase(bot, item, hasCraft))
+            .Select(item => ScorePurchase(bot, item))
             .Where(candidate => candidate != null && candidate.Utility > 0)
             .OrderByDescending(candidate => candidate.Utility)
             .ThenBy(candidate => candidate.Item.SellPrice)
             .FirstOrDefault();
     }
 
-        private static PurchaseCandidate ScorePurchase(GameBot bot, DbInventoryItem item, bool hasCraft)
+        private static PurchaseCandidate ScorePurchase(GameBot bot, DbInventoryItem item)
         {
             if (item == null || item.Template == null || item.LevelRequirement > bot.Level ||
                 !BotWeaponStats.HasFunctionalMeleeStats(item) ||
@@ -189,10 +188,9 @@ namespace DOL.GS;
                 return new PurchaseCandidate(item, 1_000 + improvement + playerPreference, equipSlot, true, isPlayerListing);
         }
 
-        // Stackable world goods are the server's practical crafting-material
-        // signal. Only trained crafters buy them, and they remain real backpack
-        // inventory until an actual recipe consumes them.
-        if (hasCraft && item.IsStackable && item.Count > 0)
+        // Only trained crafters buy materials, only those of their own crafts, and
+        // they remain real backpack inventory until an actual recipe consumes them.
+        if (item.Count > 0 && AutonomousBotCrafting.IsMaterialFor(bot, item))
             return new PurchaseCandidate(item, 300 + Math.Min(150, item.Count * 3) + playerPreference, eInventorySlot.Invalid, false, isPlayerListing);
 
         return null;
@@ -558,10 +556,13 @@ namespace DOL.GS;
                            item.OwnerLot == 0 && item.SlotPosition >= (int)eInventorySlot.FirstBackpack &&
                            item.SlotPosition <= (int)eInventorySlot.LastBackpack &&
                            !operationalLoadout.Contains(item) &&
+                           !AutonomousBotQuests.IsHeldForQuest(bot, item) &&
                            !TryGetEquipmentUpgrade(bot, item, out _))
             .Select(item => new ListingCandidate(item, RecommendListingPrice(item)))
-            .Where(candidate => candidate.PriceCopper >= Math.Max(50, candidate.Item.Level * candidate.Item.Level * 4))
-            .OrderByDescending(candidate => candidate.PriceCopper)
+            .Where(candidate => WorthListing(candidate.Item, candidate.PriceCopper))
+            // A craft trip ends by posting what it made, not the dearest loot in the bag.
+            .OrderByDescending(candidate => AutonomousObjectiveAssignments.WantsBetweenTaskCraft(bot) && AutonomousBotCrafting.IsOwnWork(bot, candidate.Item))
+            .ThenByDescending(candidate => candidate.PriceCopper)
             .FirstOrDefault();
         }
 
@@ -570,21 +571,20 @@ namespace DOL.GS;
             if (bot?.Inventory == null)
                 return null;
 
-            bool trainedCrafter = !string.IsNullOrWhiteSpace(bot.PersistentRecord?.SerializedCraftingSkills);
             bool canList = HasListingSpace(bot);
             HashSet<DbInventoryItem> operationalLoadout = FindOperationalLoadoutItems(bot);
             return bot.Inventory.AllItems
                 .Where(item => item != null && item.IsDropable && item.OwnerLot == 0 &&
                                item.SlotPosition >= (int)eInventorySlot.FirstBackpack &&
                                item.SlotPosition <= (int)eInventorySlot.LastBackpack)
-                .Where(item => !IsProtectedFromVendor(bot, item, trainedCrafter, canList, operationalLoadout))
+                .Where(item => !IsProtectedFromVendor(bot, item, canList, operationalLoadout))
                 .Where(item => CalculateStandardVendorSaleCopper(item) > 0)
                 .OrderBy(item => EquipmentValue(item))
                 .ThenBy(item => item.Price)
                 .FirstOrDefault();
         }
 
-        private static bool IsProtectedFromVendor(GameBot bot, DbInventoryItem item, bool trainedCrafter,
+        private static bool IsProtectedFromVendor(GameBot bot, DbInventoryItem item,
             bool canList, HashSet<DbInventoryItem> operationalLoadout)
         {
             if (item is GameInventoryRelic || BotSiegeRuntime.IsSupply(item.Id_nb) ||
@@ -592,13 +592,22 @@ namespace DOL.GS;
                 return true;
             if (TryGetEquipmentUpgrade(bot, item, out _))
                 return true;
-            if (trainedCrafter && item.IsStackable && item.Count > 0)
+            if (item.Count > 0 && AutonomousBotCrafting.IsMaterialFor(bot, item))
+                return true;
+            if (AutonomousBotQuests.IsHeldForQuest(bot, item))
+                return true;
+            // The bot's own work waits for a free Realm Exchange post; only a nearly full bag sends it to a vendor.
+            if (AutonomousBotCrafting.IsOwnWork(bot, item) && !IsBackpackNearlyFull(bot))
                 return true;
             // If the bot's single listing slot is occupied, unwanted gear can
             // still be sold normally. Never vendor an equippable upgrade.
-            return canList && item.IsTradable &&
-                RecommendListingPrice(item) >= Math.Max(50, item.Level * item.Level * 4);
+            return canList && item.IsTradable && WorthListing(item, RecommendListingPrice(item));
         }
+
+        /// <summary>Worth a Realm Exchange post: dear enough for its level, or the bot's own work, which it sells there
+        /// whatever a low-level piece fetches.</summary>
+        public static bool WorthListing(DbInventoryItem item, int priceCopper) =>
+            item.IsCrafted && !item.IsStackable || priceCopper >= Math.Max(50, item.Level * item.Level * 4);
 
         /// <summary>
         /// Performs the same appraisal and range checks as a real merchant, removes the exact
@@ -616,8 +625,7 @@ namespace DOL.GS;
                 !merchant.IsWithinRadius(bot, GS.ServerProperties.Properties.WORLD_PICKUP_DISTANCE))
                 return false;
 
-            bool trainedCrafter = !string.IsNullOrWhiteSpace(bot.PersistentRecord?.SerializedCraftingSkills);
-            if (IsProtectedFromVendor(bot, item, trainedCrafter, HasListingSpace(bot),
+            if (IsProtectedFromVendor(bot, item, HasListingSpace(bot),
                     FindOperationalLoadoutItems(bot)))
                 return false;
 

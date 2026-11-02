@@ -5,6 +5,12 @@ The newest version is first. For the full detail of every earlier update, see
 
 ## 0.38 (not released yet)
 
+- Gamebots do classic quests while they level: they take a quest in their level and realm from its giver, walk the steps,
+  fight and collect what it asks for, and hand in for its real experience, coin and items. A quest monster opens only to
+  the bot on that step, and never while a real player online is on a step that wants it. `bot_quests` switches it off.
+- Gamebots craft. At a task break a bot joins an order at a craft master, buys materials from a merchant with its own
+  coin, works at a real forge or lathe and gains skill by the player tables. What it makes it wears if that is an upgrade,
+  or posts on the Realm Exchange. `bot_crafting` switches it off.
 - Playing with friends is simpler. HOST FOR FRIENDS is one button and a password, and gives you an invite code to send.
   Friends paste it into JOIN FRIEND; nobody types addresses or lists friends' addresses any more. Internet hosting needs
   a password, which a friend's new account must use.

@@ -662,6 +662,9 @@ public static class AutonomousObjectiveAssignments
     public static bool WantsBetweenTaskDowntime(GameBot bot) =>
         HasBetweenTaskFlag(bot?.PersistentRecord, 'D');
 
+    public static bool WantsBetweenTaskCraft(GameBot bot) =>
+        HasBetweenTaskFlag(bot?.PersistentRecord, 'C');
+
     /// <summary>
     /// Closes a maintenance assignment as soon as the work it actually
     /// requested is complete.  The old path waited for the next global
@@ -678,7 +681,8 @@ public static class AutonomousObjectiveAssignments
         bool trainingComplete = !WantsBetweenTaskTraining(bot) ||
             (!bot.HasSpendableAutonomousTrainingPoints && !bot.HasPendingAutonomousTraining);
         bool inventoryComplete = !WantsBetweenTaskInventory(bot) || AutonomousBotEconomy.GetNeededService(bot) == null;
-        if (!trainingComplete || !inventoryComplete)
+        bool craftComplete = !WantsBetweenTaskCraft(bot) || AutonomousBotCrafting.TripDone(bot);
+        if (!trainingComplete || !inventoryComplete || !craftComplete)
             return false;
 
         CompleteBetweenTaskServices(bot);
@@ -726,10 +730,13 @@ public static class AutonomousObjectiveAssignments
             AutonomousBotEconomy.IsBackpackNearlyFull(bot), Random.Shared.NextDouble(), Random.Shared.NextDouble(),
             bot.IsAutonomousTrainingOverdue);
         bool downtime = AutonomousBotPersonality.RollTownBreak(bot, Random.Shared.NextDouble());
-        if (!plan.Train && !plan.Unload && !downtime) return false;
+        bool craft = AutonomousBotCrafting.WantsTrip(AutonomousBotCrafting.IsTrained(bot), bot.Level,
+            AutonomousBotCrafting.MaterialStacks(bot), Random.Shared.NextDouble());
+        if (!plan.Train && !plan.Unload && !downtime && !craft) return false;
         OfflineWorldBotRecord record = bot.PersistentRecord;
         record.ObjectiveKind = eAutonomousObjectiveKind.SoloPve.ToString();
-        record.ObjectiveAssignmentId = BetweenTasksPrefix + (plan.Train ? "T" : "") + (plan.Unload ? "I" : "") + (downtime ? "D" : "") +
+        // A craft trip ends at the usual inventory stop: what it made goes to the Realm Exchange there.
+        record.ObjectiveAssignmentId = BetweenTasksPrefix + (plan.Train ? "T" : "") + (craft ? "C" : "") + (plan.Unload || craft ? "I" : "") + (downtime ? "D" : "") +
             "-" + bot.DatabaseID + "-" + GameLoop.GameLoopTime;
         record.ObjectiveAssignedUtc = DateTime.UtcNow.ToString("O");
         // A failed service route cannot trap the bot forever either. Existing
@@ -742,7 +749,7 @@ public static class AutonomousObjectiveAssignments
         record.TargetName = string.Empty;
         record.TravelDestination = string.Empty;
         record.ObjectiveProgress = "Task complete; " + (plan.Train ? "train earned specialization points; " : "") +
-            (plan.Unload ? "unload backpack; " : "") + (downtime ? "15-30 minute town break if reachable within the maintenance budget; " : "") + "then choose the next task";
+            (craft ? "make a trip to craft; " : "") + (plan.Unload ? "unload backpack; " : "") + (downtime ? "15-30 minute town break if reachable within the maintenance budget; " : "") + "then choose the next task";
         AutonomousBotEconomy.MarkInventoryChanged(bot);
         bot.MarkAutonomousStateDirty();
         AutonomousBotStatusPersistence.Queue(bot);
