@@ -1554,6 +1554,9 @@ namespace DOL.GS
                     return true;
                 }
 
+                // Not scanned (tried 2026-11-02 on a private copy): a member that backed off and waited for the way to clear
+                // died while waiting (24) and fell behind, then caught up alone in formation travel, which no scan covers
+                // (15 -> 64 deaths); under-10 red and purple deaths before camp went from 136 to 187.
                 if (!IssuePath(bot, approach, preciseArrival: true))
                 {
                     AutonomousBotGroupCoordinator.ReportUnreachableRendezvous(
@@ -4569,6 +4572,17 @@ namespace DOL.GS
                     return false;
                 }
                 GuardExpeditionDanger(bot, stable.BoardingPoint);
+                // The walk to the horse is scanned like any route; a monster too strong to pass makes the bot back off
+                // and take another way (on foot, where camp travel scans as usual).
+                if (GuardLoneWalk(bot, stable.BoardingPoint, out bool turnedBack))
+                {
+                    if (turnedBack)
+                    {
+                        RejectPendingBoarding(bot, "A monster too strong to pass stands on the way to this horse; choosing another way");
+                        ResetRouteOrderState();
+                    }
+                    return true;
+                }
                 // Boarding uses a narrow 3-D check, tighter than ordinary
                 // travel arrival (48 horizontal / 96 vertical). Finish the
                 // validated approach instead of stopping outside boarding range. A bot already walking elsewhere turns

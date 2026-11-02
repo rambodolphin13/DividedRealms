@@ -51,18 +51,39 @@ namespace DOL.GS
         /// the bot is holding, or the camp was given up); false lets the walk continue, with a
         /// detour waypoint set when the bot is going around a monster.
         /// </summary>
-        private bool GuardOpenWorldTravel(GameBot bot, Vector3 destination)
+        private bool GuardOpenWorldTravel(GameBot bot, Vector3 destination) =>
+            GuardRoute(bot, destination, alone: false, out _);
+
+        /// <summary>When a lone walk last turned back from a monster; the walk holds until then.</summary>
+        private long _loneWalkHoldUntilTick;
+        public const long LoneWalkHoldMilliseconds = 20_000;
+
+        /// <summary>
+        /// The route scan for a walk a bot makes on its own, even inside a party: to a stablemaster's horse. Only camp travel
+        /// and zone-seam walks were scanned, and on a 2026-11-02 private copy run "Approaching x's horse" was behind 24 of
+        /// 136 low level deaths to red and purple monsters before camp (none once scanned). The walk has no camp to give up:
+        /// where a solo bot would, it backs out of the monster's reach instead (<paramref name="turnedBack"/>) and holds for
+        /// <see cref="LoneWalkHoldMilliseconds"/>. The walk to a party's meeting point is not scanned: see HandleGroupRendezvous.
+        /// </summary>
+        private bool GuardLoneWalk(GameBot bot, Vector3 destination, out bool turnedBack) =>
+            GuardRoute(bot, destination, alone: true, out turnedBack);
+
+        private bool GuardRoute(GameBot bot, Vector3 destination, bool alone, out bool turnedBack)
         {
+            turnedBack = false;
             if (!AutonomousRouteThreatPolicy.Enabled || bot.Brain is not BotBrain brain ||
                 bot.CurrentZone == null || bot.CurrentZone.IsDungeon || bot.CurrentRegion?.IsDungeon == true ||
                 bot.IsOnStableMasterRoute || bot.IsPlayerLedGroup || brain.HasAggro || bot.InCombat || bot.IsAttacking ||
                 AutonomousObjectiveAssignments.Is(bot, eAutonomousObjectiveKind.RvR) ||
                 AutonomousRealmRaid.GetView(bot.Group) != null)
                 return false;
-            bool grouped = _groupDirective?.IsDynamic == true;
+            bool grouped = !alone && _groupDirective?.IsDynamic == true;
             if (grouped && _groupDirective.Leader != bot)
                 return false;
             long now = GameLoop.GameLoopTime;
+            // Still backing off from the last monster: the turn is spent, the reaction was already taken.
+            if (alone && now < _loneWalkHoldUntilTick)
+                return true;
             if (now < _nextRouteThreatScanTick)
                 return false;
             // Keep looking while walking a detour: the way to the sidestep is scanned too, and a
@@ -161,7 +182,8 @@ namespace DOL.GS
             Vector3? detour = detouring ? null : FindRouteThreatDetour(nav, zone, corridor, blocker,
                 blockerBrain.AggroRange, margin, destination, threats);
             int detours = _routeThreatDetours.GetValueOrDefault(blocker);
-            bool mayRetarget = _camp != null &&
+            // A lone walk turns back instead of giving up a camp, so no cooldown applies to it.
+            bool mayRetarget = alone || _camp != null &&
                                now - _lastRouteThreatRetargetTick >= AutonomousRouteThreatPolicy.RetargetCooldownMilliseconds;
             // A party is measured by its average level (a leader of 38 may walk with members of 23), a lone bot by its own.
             int levelsAbove = blocker.EffectiveLevel - (grouped ? _groupDirective.AverageLevel : bot.Level);
@@ -179,19 +201,19 @@ namespace DOL.GS
             }
             RouteThreatAction action = AutonomousRouteThreatPolicy.Decide(con, grouped, pack, bossLike,
                 detour.HasValue, detours, mayRetarget, cautious: !grouped && now < _routeCautionUntilTick,
-                mayAbandonHopeless: _camp != null, levelsAboveReference: levelsAbove, mayForceRetarget: mayForceRetarget,
+                mayAbandonHopeless: alone || _camp != null, levelsAboveReference: levelsAbove, mayForceRetarget: mayForceRetarget,
                 strongParty: strongParty,
                 highLevelSolo: !grouped && bot.Level >= AutonomousRouteThreatPolicy.HighLevelSoloMinimum,
                 denseWorld: AutonomousAtlantisPolicy.IsAtlantisRegion(bot.CurrentRegionID),
                 hardestLevelsAbove: hardestAbove, provenDeadly: AutonomousMobLessons.IsDeadly(blocker.Name, grouped));
             if (blocker.InCombat)
                 action = AutonomousRouteThreatPolicy.ForBusyMonster(action,
-                    detour.HasValue && detours < AutonomousRouteThreatPolicy.MaxDetoursPerThreat, _camp != null);
+                    detour.HasValue && detours < AutonomousRouteThreatPolicy.MaxDetoursPerThreat, alone || _camp != null);
             if (action == RouteThreatAction.Ignore)
                 return false;
 
             Log.Info($"AUTONOMOUS_ROUTE_THREAT bot={bot.Name} id={bot.DatabaseID} class=\"{bot.ClassName}\" level={bot.Level} " +
-                     $"group={(grouped ? _groupDirective.GroupId : "solo")} action={action} target=\"{blocker.Name}\" " +
+                     $"group={(grouped ? _groupDirective.GroupId : alone ? "alone" : "solo")} action={action} target=\"{blocker.Name}\" " +
                      $"targetLevel={blocker.Level} con={con} seen={seen} pack={pack} aggro={blockerBrain.AggroRange} along={first:0} " +
                      $"detours={detours} levelsAbove={levelsAbove} strong={strongParty} busy={blocker.InCombat} " +
                      $"dist={bot.GetDistanceTo(blocker)} scanGap={(previousScanTick == 0 ? -1 : now - previousScanTick)} moved={Vector2.Distance(previousScanAt, new(bot.X, bot.Y)):0} " +
@@ -210,6 +232,14 @@ namespace DOL.GS
                         $"Taking a way around the {(pack > 1 ? $"pack of {pack}" : "monster")} on the route instead of walking into its aggro",
                         blocker.Name, _camp?.ZoneName ?? string.Empty);
                     return false;
+
+                case RouteThreatAction.Retarget when alone:
+                    turnedBack = true;
+                    _loneWalkHoldUntilTick = now + LoneWalkHoldMilliseconds;
+                    bot.StopMovingOnPath();
+                    bot.StopMoving();
+                    BackAwayFrom(bot, nav, zone, blocker, packMembers, margin, threats);
+                    return true;
 
                 case RouteThreatAction.Retarget:
                     _lastRouteThreatRetargetTick = now;
