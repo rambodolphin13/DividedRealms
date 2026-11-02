@@ -48,6 +48,29 @@ namespace DOL.GS
                     return false;
                 run = AutonomousBotQuests.Begin(bot, plan);
             }
+            else
+            {
+                // A quest set aside waits while the bot does its other work; back on it, the bot first finishes the camp it is at.
+                if (AutonomousBotQuests.Parked(bot, run, DateTime.UtcNow))
+                {
+                    LeaveQuestCamp(bot);
+                    return false;
+                }
+                if (_camp != null && !IsQuestCamp(_camp))
+                    return false;
+            }
+
+            switch (run.Step > 0 ? run.Current?.Action : null)
+            {
+                case eBotQuestAction.FinishQuests:
+                    return HandleNestedQuestStep(bot, run);
+                case eBotQuestAction.Grouped:
+                    // Grouped bots never reach here: the step is done in OnGrouped. Alone, the quest waits for a party.
+                    if (!AutonomousBotQuests.Park(bot, run, eBotQuestPark.Group, "Waiting for a group"))
+                        AutonomousBotQuests.Abandon(bot, run, "No group came");
+                    LeaveQuestCamp(bot);
+                    return false;
+            }
 
             if (AutonomousBotQuests.StepTimedOut(run, now))
             {
@@ -85,6 +108,28 @@ namespace DOL.GS
         }
 
         private static string QuestGoalText(AutonomousBotQuests.Run run) => $"Quest: {run.Plan.Name}";
+
+        /// <summary>The step waits on other quests: the bot takes the next of them, and comes back when it ends.</summary>
+        private bool HandleNestedQuestStep(GameBot bot, AutonomousBotQuests.Run run)
+        {
+            BotQuestStep step = run.Current;
+            if (AutonomousBotQuests.NestedDone(bot, step))
+            {
+                AutonomousBotQuests.CompleteStep(bot, run);
+                return true;
+            }
+            HashSet<ushort> reachable = ReachableRegions(bot.Realm, bot.CurrentRegionID);
+            BotQuestPlan nested = AutonomousBotQuests.PickNested(bot, step,
+                region => reachable.Contains(region) && region != AutonomousDarknessFallsPolicy.RegionId);
+            LeaveQuestCamp(bot);
+            if (nested == null)
+            {
+                AutonomousBotQuests.Abandon(bot, run, "No nested quest it can run");
+                return true;
+            }
+            AutonomousBotQuests.Begin(bot, nested, run.Plan.Id);
+            return true;
+        }
 
         private void AimQuestCamp(GameBot bot, AutonomousBotQuests.Run run, AutonomousBotQuests.Goal goal)
         {
@@ -164,6 +209,15 @@ namespace DOL.GS
                         run.WaitUntilTick = 0;
                         return true;
                     }
+                    break;
+                case eBotQuestAction.Say:
+                    if (step.NightOnly && bot.CurrentRegion?.IsNightTime == false)
+                    {
+                        AutonomousBotQuests.Park(bot, run, eBotQuestPark.Night, "The words work only at night");
+                        LeaveQuestCamp(bot);
+                        return true;
+                    }
+                    bot.Say(step.Words);
                     break;
                 case eBotQuestAction.Talk:
                 case eBotQuestAction.HandIn:

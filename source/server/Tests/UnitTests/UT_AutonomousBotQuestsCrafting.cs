@@ -210,7 +210,6 @@ namespace DOL.UnitTests
             Assert.That(step.HuntForItem(_ => 1), Is.Null);
         }
 
-        [TestCase("group", AutonomousBotQuestPlanner.SkipStepGroup)]
         [TestCase("die_to", AutonomousBotQuestPlanner.SkipStepDieTo)]
         [TestCase("quest", AutonomousBotQuestPlanner.SkipStepNestedQuest)]
         [TestCase("say", AutonomousBotQuestPlanner.SkipStepSay)]
@@ -219,6 +218,38 @@ namespace DOL.UnitTests
             var info = Info(new ClassicQuests.StepInfo { Custom = new ClassicQuests.CustomStep { Kind = kind } });
             Assert.That(AutonomousBotQuestPlanner.Build(Row("9", ""), info, out string skip), Is.Null);
             Assert.That(skip, Is.EqualTo(reason));
+        }
+
+        [Test]
+        public void GroupNestedAndSpokenStepsCompileToTheirActions()
+        {
+            var info = Info(
+                new ClassicQuests.StepInfo { Custom = new ClassicQuests.CustomStep { Kind = "group" } },
+                new ClassicQuests.StepInfo { Custom = new ClassicQuests.CustomStep { Kind = "quest", Quest = "First|Second|Third", Count = 2 } },
+                new ClassicQuests.StepInfo { Custom = new ClassicQuests.CustomStep { Kind = "say", Words = "Rise", NightOnly = true, Region = 1, X = 10, Y = 20, Radius = 400 } });
+            BotQuestPlan plan = AutonomousBotQuestPlanner.Build(Row("8|8|9", "||"), info, out string skip);
+
+            Assert.That(skip, Is.Null);
+            Assert.That(plan.Steps.Select(step => step.Action), Is.EqualTo(new[] { eBotQuestAction.Grouped, eBotQuestAction.FinishQuests, eBotQuestAction.Say }));
+            Assert.That(plan.Steps[1].NestedQuests, Is.EqualTo(new[] { "First", "Second", "Third" }));
+            Assert.That(plan.Steps[1].NestedCount, Is.EqualTo(2));
+            Assert.That(plan.Steps[2].Words, Is.EqualTo("Rise"));
+            Assert.That(plan.Steps[2].NightOnly, Is.True);
+            Assert.That(plan.Steps[2].Point, Is.EqualTo(new BotQuestPoint(1, 10, 20, 0)));
+        }
+
+        [Test]
+        public void ANestedStepNeedsEnoughQuestsBotsCanRun()
+        {
+            BotQuestPlan Outer(int id, int count) => new()
+            {
+                Id = id, Name = $"Outer {id}",
+                Steps = [new BotQuestStep { Number = 1, Action = eBotQuestAction.FinishQuests, NestedQuests = ["Inner", "Scripted"], NestedCount = count }],
+            };
+            List<BotQuestPlan> kept = AutonomousBotQuestPlanner.KeepRunnableChains([new BotQuestPlan { Id = 1, Name = "Inner" }, Outer(2, 1), Outer(3, 2)], out int removed);
+
+            Assert.That(kept.Select(plan => plan.Id), Is.EqualTo(new[] { 1, 2 }));
+            Assert.That(removed, Is.EqualTo(1), "Two quests asked, and bots can run only one");
         }
 
         [Test]
@@ -363,6 +394,128 @@ namespace DOL.UnitTests
             Assert.That(run.Record.Active, Is.False);
             Assert.That(run.Record.Abandoned, Is.EqualTo(1));
             Assert.That(run.Record.RetryUtc, Is.Not.Empty);
+        }
+
+        [TestCase("No live Zrit-Kla", eBotQuestPark.Respawn)]
+        [TestCase("Keeper was not there", eBotQuestPark.Respawn)]
+        [TestCase("Route blocked by bandit leader", eBotQuestPark.Route)]
+        [TestCase("Defeated on the way to wolf", eBotQuestPark.Defeat)]
+        [TestCase("No legal region route to 51", eBotQuestPark.None)]
+        [TestCase("The step ran past its time", eBotQuestPark.None)]
+        public void FailuresThatPassAreSetAsideAndTheRestCount(string reason, eBotQuestPark kind) =>
+            Assert.That(AutonomousBotQuests.Classify(reason), Is.EqualTo(kind));
+
+        [Test]
+        public void AMissingNamedMonsterSetsTheQuestAsideUntilItsRespawn()
+        {
+            TestBot bot = Bot();
+            AutonomousBotQuests.Run run = Accepted(bot, KillDeliverPlan());
+
+            AutonomousBotQuests.NoteStepFailure(bot, "No live wolf");
+
+            Assert.That(run.Record.Active, Is.True, "The bot keeps the quest");
+            Assert.That(run.Record.Parks, Is.EqualTo(1));
+            Assert.That(AutonomousBotQuests.Parked(bot, run, DateTime.UtcNow), Is.True);
+            Assert.That(AutonomousBotQuests.Parked(bot, run, DateTime.UtcNow.AddMinutes(13)), Is.False, "Back after the respawn time");
+            Assert.That(run.Record.ParkedUntilUtc, Is.Empty);
+            Assert.That(run.Record.Parks, Is.EqualTo(1), "Parks count until the step moves on");
+        }
+
+        [Test]
+        public void ADefeatWaitsForALevelOrTwoHours()
+        {
+            TestBot bot = Bot();
+            AutonomousBotQuests.Run run = Accepted(bot, KillDeliverPlan());
+
+            AutonomousBotQuests.NoteStepFailure(bot, "Defeated on the way to wolf");
+            Assert.That(AutonomousBotQuests.Parked(bot, run, DateTime.UtcNow.AddMinutes(30)), Is.True);
+            bot.Level++;
+            Assert.That(AutonomousBotQuests.Parked(bot, run, DateTime.UtcNow), Is.False, "A level stronger, the bot goes back");
+        }
+
+        [Test]
+        public void AQuestSetAsideTooOftenIsGivenUp()
+        {
+            TestBot bot = Bot();
+            AutonomousBotQuests.Run run = Accepted(bot, KillDeliverPlan());
+
+            for (int i = 0; i < AutonomousBotQuests.MaximumParks; i++)
+            {
+                AutonomousBotQuests.NoteStepFailure(bot, "No live wolf");
+                Assert.That(run.Record.Active, Is.True);
+                AutonomousBotQuests.Parked(bot, run, DateTime.UtcNow.AddHours(1));
+            }
+            AutonomousBotQuests.NoteStepFailure(bot, "No live wolf");
+
+            Assert.That(run.Record.Active, Is.False);
+            Assert.That(run.Record.LastReason, Is.EqualTo("No live wolf"));
+            Assert.That(AutonomousBotQuests.OutcomeOf(run.Plan.Id).Abandoned, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void NightWordsWaitWithoutCountingAgainstTheQuest()
+        {
+            TestBot bot = Bot();
+            AutonomousBotQuests.Run run = Accepted(bot, KillDeliverPlan());
+            for (int i = 0; i < AutonomousBotQuests.MaximumParks + 2; i++)
+                Assert.That(AutonomousBotQuests.Park(bot, run, eBotQuestPark.Night, "Night only"), Is.True);
+            Assert.That(run.Record.Parks, Is.Zero);
+        }
+
+        [Test]
+        public void QuestsEveryBotFailsAreTakenRarely()
+        {
+            Assert.That(AutonomousBotQuests.SuccessWeight(0, 0), Is.EqualTo(0.5));
+            Assert.That(AutonomousBotQuests.SuccessWeight(8, 0), Is.GreaterThan(0.85));
+            Assert.That(AutonomousBotQuests.SuccessWeight(1, 9), Is.LessThan(0.2));
+            Assert.That(AutonomousBotQuests.SuccessWeight(0, AutonomousBotQuests.FailingQuestAbandons), Is.EqualTo(AutonomousBotQuests.FailingQuestWeight));
+            Assert.That(AutonomousBotQuests.WeightedIndex([0.02, 0.9, 0.5], 1.42, 0.01), Is.EqualTo(0));
+            Assert.That(AutonomousBotQuests.WeightedIndex([0.02, 0.9, 0.5], 1.42, 0.5), Is.EqualTo(1));
+            Assert.That(AutonomousBotQuests.WeightedIndex([0.02, 0.9, 0.5], 1.42, 0.99), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void WhatBotsMadeOfAQuestSurvivesARestart()
+        {
+            AutonomousBotQuests.Load([
+                new OfflineBotQuestRecord { BotId = 1, QuestId = 5, Finished = 2 },
+                new OfflineBotQuestRecord { BotId = 2, QuestId = 5, Abandoned = 3, LastReason = "No live wolf" },
+            ]);
+            AutonomousBotQuests.Outcome outcome = AutonomousBotQuests.OutcomeOf(5);
+            Assert.That((outcome.Finished, outcome.Abandoned, outcome.LastReason), Is.EqualTo((2, 3, "No live wolf")));
+        }
+
+        [Test]
+        public void ANestedQuestRunsAndHandsTheBotBackToTheOuterQuest()
+        {
+            BotQuestPlan inner = AutonomousBotQuestPlanner.Build(Row("1", "wolf;0"), Info(new ClassicQuests.StepInfo()), out _);
+            inner = new BotQuestPlan { Id = 30, Name = "Inner", GiverName = "Giver", MinLevel = 1, MaxLevel = 50, Steps = inner.Steps };
+            var outer = new BotQuestPlan
+            {
+                Id = 31, Name = "Outer", GiverName = "Giver", MinLevel = 1, MaxLevel = 50,
+                Steps =
+                [
+                    new BotQuestStep { Number = 1, Action = eBotQuestAction.FinishQuests, NestedQuests = ["Inner"], NestedCount = 1 },
+                    new BotQuestStep { Number = 2, Action = eBotQuestAction.Talk, TargetName = "Giver", Finishes = true },
+                ],
+            };
+            AutonomousBotQuests.SetCatalogForTests([Entry(inner), Entry(outer)], [new("Giver", 1, 0, 0, 0, eRealm.Albion, 50, false), new("wolf", 1, 0, 0, 0, eRealm.None, 20, true)]);
+            TestBot bot = Bot();
+            AutonomousBotQuests.Run outerRun = Accepted(bot, outer);
+            Assert.That(AutonomousBotQuests.NestedDone(bot, outerRun.Current), Is.False);
+
+            BotQuestPlan picked = AutonomousBotQuests.PickNested(bot, outerRun.Current, _ => true);
+            Assert.That(picked, Is.SameAs(inner));
+            AutonomousBotQuests.Run innerRun = AutonomousBotQuests.Begin(bot, picked, outer.Id);
+            Assert.That(AutonomousBotQuests.Current(bot), Is.SameAs(innerRun));
+            AutonomousBotQuests.Accept(bot, innerRun);
+            AutonomousBotQuests.OnKilled(bot, Mob("wolf"));
+
+            Assert.That(innerRun.Record.Finished, Is.EqualTo(1));
+            AutonomousBotQuests.Run back = AutonomousBotQuests.Current(bot);
+            Assert.That(back.Plan, Is.SameAs(outer), "The outer quest is the bot's again");
+            Assert.That(AutonomousBotQuests.NestedDone(bot, back.Current), Is.True);
+            Assert.That(AutonomousBotQuests.PickNested(bot, back.Current, _ => true), Is.Null, "Nothing left to run");
         }
 
         [Test]

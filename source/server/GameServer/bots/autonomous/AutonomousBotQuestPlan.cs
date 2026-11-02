@@ -24,6 +24,12 @@ public enum eBotQuestAction
     Travel,
     /// <summary>Tell the step's character which reward it wants.</summary>
     Choose,
+    /// <summary>Finish other quests first (a nested quest); the bot runs them and comes back.</summary>
+    FinishQuests,
+    /// <summary>Be in a group of two or more.</summary>
+    Grouped,
+    /// <summary>Speak the step's words on its point, at night when the step says so.</summary>
+    Say,
 }
 
 public sealed record BotQuestPoint(ushort Region, int X, int Y, int Z);
@@ -61,6 +67,12 @@ public sealed class BotQuestStep
     public long RewardXp { get; init; }
     public long RewardRp { get; init; }
     public double XpShare { get; init; }
+    /// <summary>FinishQuests: the quest names, and how many of them must be finished.</summary>
+    public string[] NestedQuests { get; init; } = [];
+    public int NestedCount { get; init; }
+    /// <summary>Say: the words, and whether they work only at night.</summary>
+    public string Words { get; init; } = string.Empty;
+    public bool NightOnly { get; init; }
 
     /// <summary>The monsters of this step that drop what it needs; the bot hunts them until it has the item.</summary>
     public string HuntForItem(Func<string, int> carried)
@@ -96,6 +108,8 @@ public sealed class BotQuestPlan
 
     public IEnumerable<string> PlaceNames() =>
         Steps.Select(step => step.TargetName).Append(GiverName).Where(name => !string.IsNullOrEmpty(name));
+
+    public IEnumerable<string> NestedQuestNames() => Steps.SelectMany(step => step.NestedQuests);
 }
 
 /// <summary>
@@ -205,15 +219,40 @@ public static class AutonomousBotQuestPlanner
             string gaveAtEnd = stepItem;
             int gaveChance = 100;
             IReadOnlyDictionary<string, string> trades = null, choices = null;
+            string[] nested = [];
+            int nestedCount = 0;
+            string words = string.Empty;
+            bool nightOnly = false;
             BotQuestDrop[] drops = (custom?.Drops ?? []).Where(drop => !string.IsNullOrEmpty(drop.Item) && !string.IsNullOrEmpty(drop.Mob))
                 .Select(drop => new BotQuestDrop(drop.Mob, drop.Item, drop.Chance)).ToArray();
 
             switch (custom?.Kind)
             {
-                case "group": skip = SkipStepGroup; return null;
                 case "die_to": skip = SkipStepDieTo; return null;
-                case "quest": skip = SkipStepNestedQuest; return null;
-                case "say": skip = SkipStepSay; return null;
+                case "group":
+                    action = eBotQuestAction.Grouped;
+                    break;
+                case "quest":
+                    nested = (custom.Quest ?? string.Empty).Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    if (nested.Length == 0)
+                    {
+                        skip = SkipStepNestedQuest;
+                        return null;
+                    }
+                    action = eBotQuestAction.FinishQuests;
+                    nestedCount = custom.Count > 0 ? Math.Min(custom.Count, nested.Length) : nested.Length;
+                    break;
+                case "say":
+                    if (string.IsNullOrWhiteSpace(custom.Words))
+                    {
+                        skip = SkipStepSay;
+                        return null;
+                    }
+                    action = eBotQuestAction.Say;
+                    words = custom.Words;
+                    nightOnly = custom.NightOnly;
+                    (place, radius) = CustomPlace(custom, marker);
+                    break;
                 case "use_item":
                     action = eBotQuestAction.UseItem;
                     needed = custom.Item;
@@ -327,6 +366,10 @@ public static class AutonomousBotQuestPlanner
                 RewardXp = Reward(xp, index),
                 RewardRp = Reward(rp, index),
                 XpShare = info?.XpShares != null && index < info.XpShares.Count ? info.XpShares[index] : 0,
+                NestedQuests = nested,
+                NestedCount = nestedCount,
+                Words = words,
+                NightOnly = nightOnly,
             });
         }
         if (steps.Count == 0)
@@ -370,6 +413,10 @@ public static class AutonomousBotQuestPlanner
             if (!closes && !ids.Any(planIds.Contains))
                 return false;
         }
+        // A nested-quest step needs enough of its quests to be ones a bot can run.
+        foreach (BotQuestStep step in plan.Steps.Where(step => step.Action == eBotQuestAction.FinishQuests))
+            if (step.NestedQuests.Count(planNames.Contains) < step.NestedCount)
+                return false;
         return true;
     }
 

@@ -681,7 +681,10 @@ namespace DOL.GS
                 if (objectiveKind == eAutonomousObjectiveKind.Battleground && _groupDirective?.IsDynamic != true)
                     return ExecuteBattleground(brain, bot);
 
-                // Quests are solo work; a party's goal wins, and the quest waits for the bot to be alone again.
+                // Quests are solo work; a party's goal wins, and the quest waits for the bot to be alone again. Its
+                // kills still count for the quest, and a step that wants a group is done.
+                if (bot.Group != null)
+                    AutonomousBotQuests.OnGrouped(bot);
                 if (_groupDirective?.IsDynamic != true && bot.Group == null && objectiveKind is eAutonomousObjectiveKind.SoloPve or eAutonomousObjectiveKind.GroupPve &&
                     HandleQuestWork(bot))
                     return true;

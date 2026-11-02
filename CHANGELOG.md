@@ -8,6 +8,10 @@ The newest version is first. For the full detail of every earlier update, see
 - Gamebots do classic quests while they level: they take a quest in their level and realm from its giver, walk the steps,
   fight and collect what it asks for, and hand in for its real experience, coin and items. A quest monster opens only to
   the bot on that step, and never while a real player online is on a step that wants it. `bot_quests` switches it off.
+  A named monster that is not up, a blocked road or a defeat sets the quest aside to come back to later (after a defeat,
+  as soon as the bot gains a level); quests every bot keeps failing are taken rarely, and the server log names them every
+  half hour. Bots also run nested quests, steps that need a group, and words spoken at night; a grouped bot's quest counts
+  its party's kills.
 - Gamebots craft. At a task break a bot joins an order at a craft master, buys materials from a merchant with its own
   coin, works at a real forge or lathe and gains skill by the player tables. What it makes it wears if that is an upgrade,
   or posts on the Realm Exchange. `bot_crafting` switches it off.

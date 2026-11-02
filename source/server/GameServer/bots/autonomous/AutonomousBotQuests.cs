@@ -31,6 +31,32 @@ public sealed class OfflineBotQuestRecord : DataObject, ILivingServerRow
     /// <summary>A quest given up is not taken again before this time.</summary>
     [DataElement(AllowDbNull = false)] public string RetryUtc { get; set; } = string.Empty;
     [DataElement(AllowDbNull = false)] public string UpdatedUtc { get; set; } = string.Empty;
+    /// <summary>A parked quest is held but set aside until this time (a named monster's respawn, a blocked road).</summary>
+    [DataElement(AllowDbNull = false)] public string ParkedUntilUtc { get; set; } = string.Empty;
+    /// <summary>After a defeat the quest also waits for the bot to reach this level, whichever comes first.</summary>
+    [DataElement(AllowDbNull = false)] public int ResumeLevel { get; set; }
+    /// <summary>Times the quest was parked since its last step moved on.</summary>
+    [DataElement(AllowDbNull = false)] public int Parks { get; set; }
+    /// <summary>Why the bot last set the quest aside or gave it up.</summary>
+    [DataElement(AllowDbNull = false)] public string LastReason { get; set; } = string.Empty;
+    /// <summary>A nested quest: the quest whose step waits on this one.</summary>
+    [DataElement(AllowDbNull = false)] public int ParentQuestId { get; set; }
+}
+
+/// <summary>Why a quest is set aside instead of given up.</summary>
+public enum eBotQuestPark
+{
+    None,
+    /// <summary>The named monster or character was not up: come back after a respawn.</summary>
+    Respawn,
+    /// <summary>The road was blocked by monsters too strong for the bot.</summary>
+    Route,
+    /// <summary>The bot died on the step: come back a level stronger.</summary>
+    Defeat,
+    /// <summary>The step needs a group the bot does not have.</summary>
+    Group,
+    /// <summary>The step's words work only at night (does not count against the quest).</summary>
+    Night,
 }
 
 /// <summary>
@@ -59,6 +85,14 @@ public static class AutonomousBotQuests
     public static readonly TimeSpan RetryAfterAbandon = TimeSpan.FromHours(4);
     /// <summary>Free backpack slots a bot wants before taking a quest: its items must fit.</summary>
     public const int FreeSlotsToAccept = 4;
+    /// <summary>Times a quest is set aside on one step before the bot gives it up.</summary>
+    public const int MaximumParks = 3;
+    /// <summary>Kills within this range of a grouped bot count for its quest, as a party's do for a player.</summary>
+    public const int GroupCreditRange = 5000;
+    /// <summary>Quests every bot keeps failing are still tried, this rarely.</summary>
+    public const double FailingQuestWeight = 0.02;
+    public const int FailingQuestAbandons = 6;
+    private static readonly TimeSpan FailingReportInterval = TimeSpan.FromMinutes(30);
 
     internal static readonly LivingServerTable<(long BotId, int QuestId), OfflineBotQuestRecord> Quests =
         new("bot quest", row => (row.BotId, row.QuestId));
@@ -80,6 +114,15 @@ public static class AutonomousBotQuests
         public long WaitUntilTick;
         public bool Spawned;
         public string LastKillId;
+        public DateTime ParkedUntil;
+    }
+
+    /// <summary>What every bot together has made of one quest: the planner leans away from quests that keep failing.</summary>
+    public sealed class Outcome
+    {
+        public int Finished;
+        public int Abandoned;
+        public string LastReason = string.Empty;
     }
 
     /// <summary>Where the current step sends the bot.</summary>
@@ -98,6 +141,8 @@ public static class AutonomousBotQuests
     private static readonly ConcurrentDictionary<long, Run> Active = new();
     private static readonly ConcurrentDictionary<long, HashSet<int>> FinishedByBot = new();
     private static readonly ConcurrentDictionary<string, (bool Busy, long Until)> PlayerTargets = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<int, Outcome> Outcomes = new();
+    private static long _nextFailingReportTicks;
 
     public static int CatalogSize => _catalog?.Entries.Length ?? 0;
 
@@ -110,8 +155,17 @@ public static class AutonomousBotQuests
         Quests.Load(all);
         Active.Clear();
         FinishedByBot.Clear();
-        foreach (OfflineBotQuestRecord row in all.Where(row => row.Finished > 0))
-            FinishedByBot.GetOrAdd(row.BotId, _ => new HashSet<int>()).Add(row.QuestId);
+        Outcomes.Clear();
+        foreach (OfflineBotQuestRecord row in all)
+        {
+            if (row.Finished > 0)
+                FinishedByBot.GetOrAdd(row.BotId, _ => new HashSet<int>()).Add(row.QuestId);
+            Outcome outcome = Outcomes.GetOrAdd(row.QuestId, _ => new Outcome());
+            outcome.Finished += row.Finished;
+            outcome.Abandoned += row.Abandoned;
+            if (row.Abandoned > 0 && !string.IsNullOrEmpty(row.LastReason))
+                outcome.LastReason = row.LastReason;
+        }
     }
 
     [GameServerStartedEvent]
@@ -306,13 +360,16 @@ public static class AutonomousBotQuests
                 MayRetry(bot.DatabaseID, entry.Plan.Id, now) &&
                 PlaceReachable(catalog, entry.Plan, reachable))
             .ToList();
+        ReportFailing(now);
         if (fits.Count == 0)
             return null;
+        double[] weights = fits.Select(entry => Weight(entry.Plan.Id)).ToArray();
+        double totalWeight = weights.Sum();
         Entry best = null;
         double bestMinutes = double.MaxValue;
         for (int i = 0; i < 6; i++)
         {
-            Entry entry = fits[Random.Shared.Next(fits.Count)];
+            Entry entry = fits[WeightedIndex(weights, totalWeight, Random.Shared.NextDouble())];
             NpcSpot giver = NearestSpot(catalog, entry.Plan.GiverName, entry.Plan.GiverRegion, bot);
             double minutes = giver == null ? double.MaxValue : travelMinutes(giver.Region, giver.X, giver.Y);
             if (minutes < bestMinutes)
@@ -322,6 +379,61 @@ public static class AutonomousBotQuests
             }
         }
         return best?.Plan;
+    }
+
+    /// <summary>
+    /// How readily bots take a quest, from what every bot has made of it: finishes over tries, with one of each assumed so
+    /// a new quest starts at an even chance. A quest no bot has finished after many tries is still tried now and then, in
+    /// case the world has changed.
+    /// </summary>
+    public static double SuccessWeight(int finished, int abandoned) =>
+        finished == 0 && abandoned >= FailingQuestAbandons ? FailingQuestWeight : (finished + 1.0) / (finished + abandoned + 2.0);
+
+    private static double Weight(int questId) =>
+        Outcomes.TryGetValue(questId, out Outcome outcome) ? SuccessWeight(outcome.Finished, outcome.Abandoned) : SuccessWeight(0, 0);
+
+    public static int WeightedIndex(double[] weights, double total, double roll)
+    {
+        double target = roll * total;
+        for (int i = 0; i < weights.Length; i++)
+        {
+            target -= weights[i];
+            if (target < 0)
+                return i;
+        }
+        return weights.Length - 1;
+    }
+
+    public static Outcome OutcomeOf(int questId) => Outcomes.TryGetValue(questId, out Outcome outcome) ? outcome : new Outcome();
+
+    private static void Record(int questId, bool finished, string reason)
+    {
+        Outcome outcome = Outcomes.GetOrAdd(questId, _ => new Outcome());
+        lock (outcome)
+        {
+            if (finished)
+                outcome.Finished++;
+            else
+            {
+                outcome.Abandoned++;
+                outcome.LastReason = reason ?? string.Empty;
+            }
+        }
+    }
+
+    /// <summary>Every half hour, the quests bots fail most and why: what to look at in the world data.</summary>
+    private static void ReportFailing(DateTime now)
+    {
+        long next = Interlocked.Read(ref _nextFailingReportTicks);
+        if (now.Ticks < next || Interlocked.CompareExchange(ref _nextFailingReportTicks, now.Add(FailingReportInterval).Ticks, next) != next)
+            return;
+        if (next == 0 || !Log.IsInfoEnabled)
+            return; // the first call only starts the clock
+        Catalog catalog = _catalog;
+        foreach ((int id, Outcome outcome) in Outcomes.Where(pair => pair.Value.Abandoned > 0)
+                     .OrderByDescending(pair => pair.Value.Abandoned - pair.Value.Finished).Take(10).Select(pair => (pair.Key, pair.Value)))
+            Log.Info($"AUTONOMOUS_QUEST_FAILING quest={id} name=\"{(catalog != null && catalog.ById.TryGetValue(id, out Entry entry) ? entry.Plan.Name : string.Empty)}\" " +
+                     $"finished={outcome.Finished} abandoned={outcome.Abandoned} weight={SuccessWeight(outcome.Finished, outcome.Abandoned):F2} last=\"{outcome.LastReason}\"");
     }
 
     private static bool MayRetry(long botId, int questId, DateTime now) =>
@@ -382,20 +494,36 @@ public static class AutonomousBotQuests
         Catalog catalog = _catalog;
         if (catalog == null)
             return null;
-        OfflineBotQuestRecord row = Quests.Where(record => record.BotId == bot.DatabaseID && record.Active).FirstOrDefault();
+        // A nested quest runs before the quest that waits on it.
+        OfflineBotQuestRecord row = Quests.Where(record => record.BotId == bot.DatabaseID && record.Active)
+            .OrderByDescending(record => record.ParentQuestId != 0).FirstOrDefault();
         if (row == null)
             return null;
+        run = Restore(catalog, row);
+        return run == null ? null : Active.GetOrAdd(bot.DatabaseID, run);
+    }
+
+    private static Run Restore(Catalog catalog, OfflineBotQuestRecord row)
+    {
         if (!catalog.ById.TryGetValue(row.QuestId, out Entry entry))
         {
             Quests.Change((row.BotId, row.QuestId), () => row, saved => saved.Active = false);
             return null;
         }
-        run = new Run { Plan = entry.Plan, Record = row, StepStartedTick = GameLoop.GameLoopTime };
-        return Active.GetOrAdd(bot.DatabaseID, run);
+        return new Run
+        {
+            Plan = entry.Plan,
+            Record = row,
+            StepStartedTick = GameLoop.GameLoopTime,
+            ParkedUntil = ParseUtc(row.ParkedUntilUtc) ?? default,
+        };
     }
 
+    private static DateTime? ParseUtc(string text) =>
+        DateTime.TryParse(text, null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime value) ? value.ToUniversalTime() : null;
+
     /// <summary>The bot sets out for the giver; it holds the quest once it has spoken to them.</summary>
-    public static Run Begin(GameBot bot, BotQuestPlan plan)
+    public static Run Begin(GameBot bot, BotQuestPlan plan, int parentQuestId = 0)
     {
         OfflineBotQuestRecord row = Quests.Change((bot.DatabaseID, plan.Id),
             () => new OfflineBotQuestRecord { BotId = bot.DatabaseID, QuestId = plan.Id },
@@ -404,13 +532,164 @@ public static class AutonomousBotQuests
                 saved.Active = true;
                 saved.Step = 0;
                 saved.RetryUtc = string.Empty;
+                saved.ParkedUntilUtc = string.Empty;
+                saved.ResumeLevel = 0;
+                saved.Parks = 0;
+                saved.ParentQuestId = parentQuestId;
                 saved.UpdatedUtc = DateTime.UtcNow.ToString("O");
             });
         var run = new Run { Plan = plan, Record = row, StepStartedTick = GameLoop.GameLoopTime };
         Active[bot.DatabaseID] = run;
-        Log.Info($"AUTONOMOUS_QUEST_CHOSEN bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={plan.Id} name=\"{plan.Name}\" giver=\"{plan.GiverName}\"");
+        Log.Info($"AUTONOMOUS_QUEST_CHOSEN bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={plan.Id} name=\"{plan.Name}\" giver=\"{plan.GiverName}\"" +
+                 (parentQuestId != 0 ? $" for={parentQuestId}" : string.Empty));
         return run;
     }
+
+    #endregion
+
+    #region Nested quests
+
+    /// <summary>How many of a nested-quest step's quests this bot has finished.</summary>
+    public static int NestedFinished(GameBot bot, BotQuestStep step)
+    {
+        Catalog catalog = _catalog;
+        if (catalog == null || !FinishedByBot.TryGetValue(bot.DatabaseID, out HashSet<int> finished))
+            return 0;
+        var names = new HashSet<string>(step.NestedQuests, StringComparer.OrdinalIgnoreCase);
+        lock (finished)
+            return finished.Count(id => catalog.ById.TryGetValue(id, out Entry entry) && names.Contains(entry.Plan.Name));
+    }
+
+    public static bool NestedDone(GameBot bot, BotQuestStep step) => NestedFinished(bot, step) >= step.NestedCount;
+
+    /// <summary>
+    /// The next quest a nested-quest step needs that this bot may take: the level window does not apply (the outer quest
+    /// sent it), the rest of the offer rules do.
+    /// </summary>
+    public static BotQuestPlan PickNested(GameBot bot, BotQuestStep step, Func<ushort, bool> reachable)
+    {
+        Catalog catalog = _catalog;
+        if (catalog == null || bot?.PersistentRecord == null)
+            return null;
+        HashSet<int> finished = FinishedByBot.TryGetValue(bot.DatabaseID, out HashSet<int> done) ? new HashSet<int>(done) : new HashSet<int>();
+        var finishedNames = new HashSet<string>(finished.Where(catalog.ById.ContainsKey).Select(id => catalog.ById[id].Plan.Name),
+            StringComparer.OrdinalIgnoreCase);
+        DateTime now = DateTime.UtcNow;
+        foreach (string name in step.NestedQuests)
+        {
+            Entry entry = catalog.Entries.FirstOrDefault(candidate => QuestNames.Same(candidate.Plan.Name, name));
+            if (entry == null || finished.Contains(entry.Plan.Id) || !MayRetry(bot.DatabaseID, entry.Plan.Id, now) ||
+                !OffersNested(entry, bot.Realm, bot.Level, bot.CharacterClass?.ID ?? 0, bot.PersistentRecord.RaceId, finished, finishedNames) ||
+                !PlaceReachable(catalog, entry.Plan, reachable))
+                continue;
+            return entry.Plan;
+        }
+        return null;
+    }
+
+    public static bool OffersNested(Entry entry, eRealm realm, int level, int classId, int raceId, ICollection<int> finished, ICollection<string> finishedNames)
+    {
+        BotQuestPlan plan = entry.Plan;
+        return (entry.Realm == eRealm.None || entry.Realm == realm) &&
+            level >= plan.MinLevel && (plan.MaxLevel <= 0 || level <= plan.MaxLevel) &&
+            (plan.AllowedClasses.Count == 0 || plan.AllowedClasses.Contains(classId)) &&
+            ClassicQuests.RaceAllowed(plan.Info, raceId) &&
+            !finished.Contains(plan.Id) &&
+            QuestDependencies.AreMet(plan.Dependencies, finishedNames, finished, new HashSet<int>()) &&
+            CanFight(level, entry.HardestLevel);
+    }
+
+    /// <summary>The nested quest ended: the quest that waited on it is the bot's again.</summary>
+    private static void ResumeParent(GameBot bot, int parentQuestId)
+    {
+        Catalog catalog = _catalog;
+        if (parentQuestId == 0 || catalog == null || !Quests.TryGet((bot.DatabaseID, parentQuestId), out OfflineBotQuestRecord row) || !row.Active)
+            return;
+        if (Restore(catalog, row) is Run parent)
+            Active[bot.DatabaseID] = parent;
+    }
+
+    #endregion
+
+    #region Setting a quest aside
+
+    /// <summary>Which failures set a quest aside to come back to, rather than counting toward giving it up.</summary>
+    public static eBotQuestPark Classify(string reason)
+    {
+        if (string.IsNullOrEmpty(reason))
+            return eBotQuestPark.None;
+        if (reason.StartsWith("No live ", StringComparison.Ordinal) || reason.EndsWith(" was not there", StringComparison.Ordinal))
+            return eBotQuestPark.Respawn;
+        if (reason.StartsWith("Route blocked", StringComparison.Ordinal))
+            return eBotQuestPark.Route;
+        if (reason.StartsWith("Defeated", StringComparison.Ordinal))
+            return eBotQuestPark.Defeat;
+        return eBotQuestPark.None;
+    }
+
+    public static TimeSpan ParkTime(eBotQuestPark kind) => kind switch
+    {
+        eBotQuestPark.Respawn => TimeSpan.FromMinutes(12),
+        eBotQuestPark.Route => TimeSpan.FromMinutes(20),
+        eBotQuestPark.Defeat => TimeSpan.FromHours(2),
+        eBotQuestPark.Group => TimeSpan.FromMinutes(15),
+        eBotQuestPark.Night => TimeSpan.FromMinutes(4),
+        _ => TimeSpan.Zero,
+    };
+
+    /// <summary>
+    /// Sets the quest aside: the bot keeps it and goes back to its other work, and returns when the time is up (or, after
+    /// a defeat, sooner if it gains a level). False when the quest has been set aside too often on this step; the caller
+    /// then gives it up.
+    /// </summary>
+    public static bool Park(GameBot bot, Run run, eBotQuestPark kind, string reason)
+    {
+        bool counts = kind != eBotQuestPark.Night;
+        if (counts && run.Record.Parks >= MaximumParks)
+            return false;
+        DateTime until = DateTime.UtcNow.Add(ParkTime(kind));
+        Quests.Change((run.Record.BotId, run.Record.QuestId), () => run.Record, saved =>
+        {
+            saved.ParkedUntilUtc = until.ToString("O");
+            saved.ResumeLevel = kind == eBotQuestPark.Defeat ? bot.Level + 1 : 0;
+            if (counts)
+                saved.Parks++;
+            saved.LastReason = reason ?? string.Empty;
+            saved.UpdatedUtc = DateTime.UtcNow.ToString("O");
+        });
+        run.ParkedUntil = until;
+        run.Spawned = false;
+        run.WaitUntilTick = 0;
+        Log.Info($"AUTONOMOUS_QUEST_PARKED bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={run.Plan.Id} step={run.Step} " +
+                 $"kind={kind} parks={run.Record.Parks} minutes={ParkTime(kind).TotalMinutes:0} reason=\"{reason}\"");
+        bot.MarkAutonomousStateDirty();
+        return true;
+    }
+
+    /// <summary>True while the quest is set aside. When it comes off, the step's clock starts again.</summary>
+    public static bool Parked(GameBot bot, Run run, DateTime now)
+    {
+        if (run.ParkedUntil == default)
+            return false;
+        bool levelled = run.Record.ResumeLevel > 0 && bot.Level >= run.Record.ResumeLevel;
+        if (now < run.ParkedUntil && !levelled)
+            return true;
+        run.ParkedUntil = default;
+        run.StepStartedTick = GameLoop.GameLoopTime;
+        run.StepFailures = 0;
+        Quests.Change((run.Record.BotId, run.Record.QuestId), () => run.Record, saved =>
+        {
+            saved.ParkedUntilUtc = string.Empty;
+            saved.ResumeLevel = 0;
+            saved.UpdatedUtc = DateTime.UtcNow.ToString("O");
+        });
+        Log.Info($"AUTONOMOUS_QUEST_RESUMED bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={run.Plan.Id} step={run.Step}");
+        return false;
+    }
+
+    #endregion
+
+    #region Walking the steps
 
     /// <summary>Where the bot must go now, or null when the place cannot be found.</summary>
     public static Goal GoalFor(GameBot bot, Run run)
@@ -490,8 +769,12 @@ public static class AutonomousBotQuests
         Quests.Change((run.Record.BotId, run.Record.QuestId), () => run.Record, saved =>
         {
             saved.Step = number;
+            saved.Parks = 0;
+            saved.ParkedUntilUtc = string.Empty;
+            saved.ResumeLevel = 0;
             saved.UpdatedUtc = DateTime.UtcNow.ToString("O");
         });
+        run.ParkedUntil = default;
         run.StepStartedTick = GameLoop.GameLoopTime;
         run.StepFailures = 0;
         run.WaitUntilTick = 0;
@@ -623,46 +906,83 @@ public static class AutonomousBotQuests
         foreach (string reward in run.Plan.FinalRewards)
             GiveReward(bot, reward);
         ClearQuestItems(bot, run.Plan);
+        int parent = run.Record.ParentQuestId;
         Quests.Change((run.Record.BotId, run.Record.QuestId), () => run.Record, saved =>
         {
             saved.Active = false;
             saved.Step = 0;
             saved.Finished++;
+            saved.Parks = 0;
+            saved.ParkedUntilUtc = string.Empty;
+            saved.ParentQuestId = 0;
             saved.UpdatedUtc = DateTime.UtcNow.ToString("O");
         });
         HashSet<int> finished = FinishedByBot.GetOrAdd(bot.DatabaseID, _ => new HashSet<int>());
         lock (finished)
             finished.Add(run.Plan.Id);
+        Record(run.Plan.Id, true, null);
         Active.TryRemove(bot.DatabaseID, out _);
         Log.Info($"AUTONOMOUS_QUEST_DONE bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={run.Plan.Id} name=\"{run.Plan.Name}\" " +
                  $"xp={run.Plan.Steps.Sum(step => step.RewardXp)} copper={run.Plan.Steps.Sum(step => step.RewardMoney)} rewards={run.Plan.FinalRewards.Length}");
+        ResumeParent(bot, parent);
     }
 
     /// <summary>Gives the quest up: it is not taken again for a while, and its errand items go with it.</summary>
     public static void Abandon(GameBot bot, Run run, string reason)
     {
         int step = run.Step;
+        int parent = run.Record.ParentQuestId;
         Quests.Change((run.Record.BotId, run.Record.QuestId), () => run.Record, saved =>
         {
             saved.Active = false;
             saved.Step = 0;
             saved.Abandoned++;
+            saved.Parks = 0;
+            saved.ParkedUntilUtc = string.Empty;
+            saved.ResumeLevel = 0;
+            saved.ParentQuestId = 0;
+            saved.LastReason = reason ?? string.Empty;
             saved.RetryUtc = DateTime.UtcNow.Add(RetryAfterAbandon).ToString("O");
             saved.UpdatedUtc = DateTime.UtcNow.ToString("O");
         });
+        Record(run.Plan.Id, false, reason);
         Active.TryRemove(bot.DatabaseID, out _);
         ClearQuestItems(bot, run.Plan);
-        Log.Info($"AUTONOMOUS_QUEST_ABANDONED bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={run.Plan.Id} step={step} reason=\"{reason}\"");
+        Outcome outcome = OutcomeOf(run.Plan.Id);
+        Log.Info($"AUTONOMOUS_QUEST_ABANDONED bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={run.Plan.Id} step={step} " +
+                 $"reason=\"{reason}\" all_finished={outcome.Finished} all_abandoned={outcome.Abandoned}");
         bot.MarkAutonomousStateDirty();
+        // The outer quest tries another of its nested quests, or gives up when there is none.
+        ResumeParent(bot, parent);
     }
 
-    /// <summary>A trip to the step failed (a route, an empty spot, a death). Enough of them end the quest.</summary>
+    /// <summary>
+    /// A trip to the step failed. A monster that was not up, a blocked road or a defeat sets the quest aside to come back
+    /// to; anything else counts toward giving it up, and so does a quest set aside too often.
+    /// </summary>
     public static void NoteStepFailure(GameBot bot, string reason)
     {
         if (Current(bot) is not Run run)
             return;
+        eBotQuestPark kind = Classify(reason);
+        if (kind != eBotQuestPark.None)
+        {
+            if (!Park(bot, run, kind, reason))
+                Abandon(bot, run, reason);
+            return;
+        }
         if (++run.StepFailures >= MaximumStepFailures)
             Abandon(bot, run, reason);
+    }
+
+    /// <summary>A grouped bot on a step that wants a group has one.</summary>
+    public static void OnGrouped(GameBot bot)
+    {
+        if (bot?.Group == null || bot.Group.MemberCount < 2 || !Active.TryGetValue(bot.DatabaseID, out Run run) ||
+            run.Current?.Action != eBotQuestAction.Grouped)
+            return;
+        run.ParkedUntil = default;
+        CompleteStep(bot, run);
     }
 
     public static bool StepTimedOut(Run run, long now) => now - run.StepStartedTick >= StepTimeoutMilliseconds;
@@ -685,10 +1005,27 @@ public static class AutonomousBotQuests
         item != null && bot != null && Active.TryGetValue(bot.DatabaseID, out Run run) &&
         QuestItemIds(run.Plan).Any(id => string.Equals(id, item.Id_nb, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>The bot killed something: its Kill step ends, or a monster its step wants drops the item (one kill counts once).</summary>
+    /// <summary>
+    /// The bot killed something. It counts for the bot's own quest, and for the quest of every gamebot in its group close
+    /// by, as a party's kill does for each player in it.
+    /// </summary>
     public static void OnKilled(GameBot bot, GameLiving enemy)
     {
-        if (bot == null || enemy == null || !Active.TryGetValue(bot.DatabaseID, out Run run) || run.Current is not BotQuestStep step)
+        if (bot == null || enemy == null)
+            return;
+        Credit(bot, enemy);
+        if (bot.Group == null)
+            return;
+        foreach (GameBot member in bot.Group.GetMembersInTheGroup().OfType<GameBot>())
+            if (member != bot && member.IsAutonomousWorldBot && member.CurrentRegionID == enemy.CurrentRegionID &&
+                member.IsWithinRadius(enemy, GroupCreditRange))
+                Credit(member, enemy);
+    }
+
+    /// <summary>Its Kill step ends, or a monster its step wants drops the item (one kill counts once).</summary>
+    private static void Credit(GameBot bot, GameLiving enemy)
+    {
+        if (!Active.TryGetValue(bot.DatabaseID, out Run run) || run.Current is not BotQuestStep step)
             return;
         string killId = $"{enemy.ObjectID}:{enemy.InternalID}:{GameLoop.GameLoopTime / 1000}";
         lock (run)
