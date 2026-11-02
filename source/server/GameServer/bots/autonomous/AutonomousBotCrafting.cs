@@ -44,7 +44,9 @@ public static class AutonomousBotCrafting
 
     public sealed record Choice(Recipe Recipe, int Skill, int Make, int Gain);
 
-    public sealed record Session(Recipe Recipe, eCraftingSkill Skill, int Copies);
+    /// <summary>What one trip makes. <paramref name="OrderId"/> is set when the piece was commissioned by another bot
+    /// (<see cref="AutonomousBotCraftOrders"/>).</summary>
+    public sealed record Session(Recipe Recipe, eCraftingSkill Skill, int Copies, string OrderId = null);
 
     public sealed record Purchase(DbItemTemplate Material, int Packs, long Copper);
 
@@ -57,6 +59,7 @@ public static class AutonomousBotCrafting
         public List<CraftNPC> Masters = new();
         public List<GameStaticItem> Forges = new();
         public List<GameStaticItem> Lathes = new();
+        public bool AllOnSaleForTests;
     }
 
     private static volatile Catalog _catalog;
@@ -160,15 +163,24 @@ public static class AutonomousBotCrafting
         return true;
     }
 
+    /// <summary>Recipes whose expected points per attempt are within this share of the best count as a tie: an orange
+    /// recipe (84% to make, 55% to gain) and a red one (68%, 65%) teach about the same, so the harder one is taken.</summary>
+    public const double GainTieShare = 0.95;
+    /// <summary>A piece is useful to a wearer up to this many levels below the wearer's own level.</summary>
+    public const int UsefulLevelWindow = 10;
+
     /// <summary>
-    /// The recipe worth making at this skill: the best chance of a point per attempt that the bot can also pay for,
-    /// cheapest first among equals. Recipes come from the bot's own realm and the materials must be on sale.
+    /// The recipe worth making at this skill, by the player's own tables (ChanceToMakeAt and BaseChanceToGainAt): only
+    /// recipes that can still teach a point and be made, that the bot can pay for, from its own realm and with the
+    /// materials on sale. Among those that teach about the best (<see cref="GainTieShare"/>), a piece the bot or its
+    /// group could use comes first, then the hardest recipe, then the cheapest. Run of 2026-11-01: the cheapest-first
+    /// rule kept level 45 crafters on level 1 gear and the top skill at 12.
     /// </summary>
     public static Choice ChooseRecipe(IEnumerable<Recipe> recipes, AbstractCraftingSkill craft, string saved, eRealm realm,
-        long coin, Func<Recipe, bool> onSale)
+        long coin, Func<Recipe, bool> onSale, Func<Recipe, bool> useful = null)
     {
         int skill = SkillValue(saved, craft.eSkill);
-        Choice best = null;
+        var teaching = new List<Choice>();
         foreach (Recipe recipe in recipes)
         {
             if (recipe.Product.Realm != 0 && recipe.Product.Realm != (int)realm)
@@ -177,11 +189,55 @@ public static class AutonomousBotCrafting
             int gain = craft.BaseChanceToGainAt(skill, recipe.Level);
             if (make <= 0 || gain <= 0 || recipe.CostToCraft > coin || !MeetsSecondaryRequirement(craft, recipe, saved) || !onSale(recipe))
                 continue;
-            if (best == null || make * gain > best.Make * best.Gain ||
-                make * gain == best.Make * best.Gain && recipe.CostToCraft < best.Recipe.CostToCraft)
-                best = new Choice(recipe, skill, make, gain);
+            teaching.Add(new Choice(recipe, skill, make, gain));
         }
-        return best;
+        if (teaching.Count == 0)
+            return null;
+        int best = teaching.Max(choice => choice.Make * choice.Gain);
+        return teaching
+            .Where(choice => choice.Make * choice.Gain >= best * GainTieShare)
+            .OrderByDescending(choice => useful?.Invoke(choice.Recipe) == true)
+            .ThenByDescending(choice => choice.Recipe.Level)
+            .ThenBy(choice => choice.Recipe.CostToCraft)
+            .First();
+    }
+
+    /// <summary>A piece fits a wearer of this level: no higher than the level, and not more than the window below it.</summary>
+    public static bool FitsLevel(int productLevel, int wearerLevel) =>
+        productLevel <= wearerLevel && productLevel + UsefulLevelWindow >= wearerLevel;
+
+    /// <summary>
+    /// Whether a wearer could put this product on or wield it now: armor and weapons of its level window that its class
+    /// may use (a gamebot's melee weapons by its configured weapon skills, everything else by the server's item rules).
+    /// </summary>
+    public static bool CouldUse(GameLiving wearer, DbItemTemplate product)
+    {
+        if (wearer == null || product == null || product.IsStackable || !FitsLevel(product.Level, wearer.Level))
+            return false;
+        var type = (eObjectType)product.Object_Type;
+        bool armor = type is >= eObjectType._FirstArmor and <= eObjectType._LastArmor || type == eObjectType.Shield;
+        bool weapon = type is >= eObjectType._FirstWeapon and <= eObjectType._LastWeapon;
+        if (!armor && !weapon)
+            return false;
+        try
+        {
+            if (wearer is GameBot bot && BotWeaponStats.IsMeleeWeapon(type))
+                return BotWeaponStats.IsConfiguredMeleeWeapon(bot, product);
+            return GameServer.ServerRules.CheckAbilityToUseItem(wearer, product);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>The bot and its group members, the people a crafter's work is useful to.</summary>
+    public static Func<Recipe, bool> UsefulTo(GameBot bot)
+    {
+        GameLiving[] wearers = bot?.Group?.GetMembersInTheGroup().Where(member => member != null).ToArray() ?? [];
+        if (bot != null && !wearers.Contains(bot))
+            wearers = wearers.Append(bot).ToArray();
+        return recipe => wearers.Any(wearer => CouldUse(wearer, recipe.Product));
     }
 
     /// <summary>What must be bought for <paramref name="copies"/> of a recipe, given what the bot carries.</summary>
@@ -350,9 +406,19 @@ public static class AutonomousBotCrafting
     public static bool IsOwnWork(GameBot bot, DbInventoryItem item) =>
         item != null && item.IsCrafted && !item.IsStackable && item.Creator == bot?.Name;
 
-    /// <summary>Pieces of its own work the bot still carries, unsold.</summary>
+    /// <summary>Pieces of its own work the bot still carries, unsold (a commissioned piece waiting for its buyer is not).</summary>
     public static int UnsoldWork(GameBot bot) =>
-        bot?.Inventory == null ? 0 : bot.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack).Count(item => IsOwnWork(bot, item));
+        bot?.Inventory == null ? 0 : bot.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack)
+            .Count(item => IsOwnWork(bot, item) && !AutonomousBotCraftOrders.IsHeldForOrder(item));
+
+    /// <summary>Recipes of one craft in the catalog (empty while it loads).</summary>
+    public static IReadOnlyList<Recipe> RecipesOf(eCraftingSkill skill) =>
+        EnsureCatalog() is Catalog catalog && catalog.Recipes.TryGetValue(skill, out List<Recipe> recipes) ? recipes : [];
+
+    /// <summary>Whether every material of a recipe is sold for coin by a merchant of this realm.</summary>
+    public static bool OnSale(Recipe recipe, eRealm realm) =>
+        EnsureCatalog() is Catalog catalog && (catalog.AllOnSaleForTests || recipe.Ingredients.All(part => catalog.Sellers.TryGetValue(part.Material.Id_nb, out var sellers) &&
+            sellers.Any(merchant => merchant.Realm == eRealm.None || merchant.Realm == realm)));
 
     /// <summary>Material stacks the bot carries, for the decision to craft.</summary>
     public static int MaterialStacks(GameBot bot)
@@ -386,18 +452,23 @@ public static class AutonomousBotCrafting
     {
         Catalog catalog = EnsureCatalog();
         string saved = bot.PersistentRecord?.SerializedCraftingSkills;
-        // A session's worth still waiting for the Realm Exchange: selling it comes first.
-        if (catalog == null || string.IsNullOrWhiteSpace(saved) || UnsoldWork(bot) >= CraftsPerSession)
+        if (catalog == null || string.IsNullOrWhiteSpace(saved))
             return null;
         long coin = AutonomousBotEconomy.GetMoney(bot.DatabaseID);
-        bool OnSale(Recipe recipe) => recipe.Ingredients.All(part => catalog.Sellers.TryGetValue(part.Material.Id_nb, out var sellers) &&
-            sellers.Any(merchant => merchant.Realm == eRealm.None || merchant.Realm == bot.Realm));
+        // A piece another bot paid for is made first, with the crafter's own materials (AutonomousBotCraftOrders).
+        if (AutonomousBotCraftOrders.PlanOrder(bot, coin) is Session order)
+            return order;
+        // A session's worth still waiting for the Realm Exchange: selling it comes first.
+        if (UnsoldWork(bot) >= CraftsPerSession)
+            return null;
+        bool Sold(Recipe recipe) => OnSale(recipe, bot.Realm);
+        Func<Recipe, bool> useful = UsefulTo(bot);
         foreach (KeyValuePair<eCraftingSkill, int> skill in ParseSkills(saved))
         {
             if (CraftingMgr.getSkillbyEnum(skill.Key) is not AbstractCraftingSkill craft || !catalog.Recipes.TryGetValue(skill.Key, out List<Recipe> recipes))
                 continue;
             // A primary craft held back by its secondary skills finds no recipe here, and the next skill in the list trains them.
-            Choice choice = ChooseRecipe(recipes, craft, saved, bot.Realm, (long)(coin * ShareOfCoin), OnSale);
+            Choice choice = ChooseRecipe(recipes, craft, saved, bot.Realm, (long)(coin * ShareOfCoin), Sold, useful);
             if (choice == null)
                 continue;
             int copies = CopiesFor(choice.Recipe, coin);
@@ -474,7 +545,10 @@ public static class AutonomousBotCrafting
         bot.MarkAutonomousStateDirty();
         AutonomousBotStatusPersistence.Queue(bot, true);
         AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Crafting);
-        if (!item.IsStackable)
+        // A commissioned piece is the buyer's: it waits in the bag for delivery and is never worn by its maker.
+        if (session.OrderId != null && !item.IsStackable)
+            AutonomousBotCraftOrders.OnMade(bot, session.OrderId, item);
+        else if (!item.IsStackable)
             AutonomousBotEconomy.TryEquipOwnedUpgrade(bot, item, "crafted");
         return item;
     }
@@ -540,9 +614,9 @@ public static class AutonomousBotCrafting
     #endregion
 
     /// <summary>Tests only.</summary>
-    public static void SetCatalogForTests(IEnumerable<Recipe> recipes, eCraftingSkill skill)
+    public static void SetCatalogForTests(IEnumerable<Recipe> recipes, eCraftingSkill skill, bool allOnSale = false)
     {
-        var catalog = new Catalog();
+        var catalog = new Catalog { AllOnSaleForTests = allOnSale };
         Recipe[] all = recipes.ToArray();
         catalog.Recipes[skill] = all.ToList();
         catalog.MaterialsBySkill[skill] = new HashSet<string>(all.SelectMany(recipe => recipe.Ingredients).Select(part => part.Material.Id_nb), StringComparer.OrdinalIgnoreCase);

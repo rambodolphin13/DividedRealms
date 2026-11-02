@@ -1892,8 +1892,7 @@ namespace DOL.AI.Brain
             // the listing. The world controller routes to a vendor after this
             // slot is occupied and returns here for upgrades only after clearing.
             AutonomousBotEconomy.ListingCandidate candidate = AutonomousBotEconomy.FindValuableListingCandidate(bot);
-            if (candidate != null &&
-                AutonomousBotEconomy.FindFreeListingSlot(AutonomousBotEconomy.GetOwnerId(bot.DatabaseID)) >= 0)
+            if (candidate != null && AutonomousBotEconomy.CanListNow(bot, candidate.Item))
             {
                 int listingPrice = AutonomousBotEconomy.RollListingPrice(candidate.Item);
 
