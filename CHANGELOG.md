@@ -11,6 +11,13 @@ The newest version is first. For the full detail of every earlier update, see
 - Gamebots craft. At a task break a bot joins an order at a craft master, buys materials from a merchant with its own
   coin, works at a real forge or lathe and gains skill by the player tables. What it makes it wears if that is an upgrade,
   or posts on the Realm Exchange. `bot_crafting` switches it off.
+- Gamebot crafters train faster and make gear people use. They pick the hardest recipe that still teaches a point by the
+  player tables, not the cheapest, and among recipes that teach alike a piece they or their group can wear. A bot that
+  needs an armor or weapon upgrade can pay a crafter of its realm to make it; the coin is held by a saved order, the
+  crafter makes the piece with materials it buys, hands it into the buyer's bag at its next task break and takes the
+  coin, and an order not delivered in two hours is refunded. `bot_craft_orders` switches orders off. A crafter's own
+  work has 3 more Realm Exchange posts on top of the 3 every bot has, and every sale is logged with crafted=1 or 0 and
+  recorded in the sale history's new IsCrafted column.
 - Playing with friends is simpler. HOST FOR FRIENDS is one button and a password, and gives you an invite code to send.
   Friends paste it into JOIN FRIEND; nobody types addresses or lists friends' addresses any more. Internet hosting needs
   a password, which a friend's new account must use.

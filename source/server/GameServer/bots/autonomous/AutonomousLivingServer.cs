@@ -65,6 +65,7 @@ public static partial class AutonomousLivingServer
         Load("server firsts", () => Firsts.Load(GameServer.Database.SelectAllObjects<OfflineServerFirstRecord>()));
         Load("mob lessons", () => AutonomousMobLessons.Lessons.Load(GameServer.Database.SelectAllObjects<OfflineMobLessonRecord>()));
         Load("bot quests", () => AutonomousBotQuests.Load(GameServer.Database.SelectAllObjects<OfflineBotQuestRecord>()));
+        Load("craft orders", () => AutonomousBotCraftOrders.Load(GameServer.Database.SelectAllObjects<OfflineBotCraftOrderRecord>()));
         Load("server firsts reached before records began", () => SeedFirstsOnce(FirstsOn));
         // One-kill nemesis rows older than a week are forgotten, so the table stays small (review 2026-10-16).
         if (NemesisOn)
@@ -79,6 +80,7 @@ public static partial class AutonomousLivingServer
         _flushTimer = new Timer(_ =>
         {
             PruneOldNemesesIfDue();
+            AutonomousBotCraftOrders.Pulse();
             FlushAll();
         }, null, FlushIntervalMs, FlushIntervalMs);
         if (Log.IsInfoEnabled)
@@ -126,6 +128,7 @@ public static partial class AutonomousLivingServer
         Firsts.Flush(wait);
         AutonomousMobLessons.Lessons.Flush(wait);
         AutonomousBotQuests.Quests.Flush(wait);
+        AutonomousBotCraftOrders.Orders.Flush(wait);
     }
 
     #region Pruning (start-up and the flush timer, never the game loop; deletes go through the batched writer)

@@ -722,7 +722,11 @@ public static class AutonomousObjectiveAssignments
     // durable phase commits to unloading even after the first slot is freed.
     private static bool TryBeginBetweenTaskServices(GameBot bot)
     {
-        if (bot?.PersistentRecord == null || bot.Group != null)
+        if (bot?.PersistentRecord == null)
+            return false;
+        // A natural task break: deliver pieces made for other bots and perhaps commission one (bot_craft_orders).
+        AutonomousBotCraftOrders.AtTaskBreak(bot);
+        if (bot.Group != null)
             return false;
         // Unload at this task boundary when the bag is nearly full, not only
         // when completely full: otherwise the next task leaves loot on the ground.
@@ -730,8 +734,10 @@ public static class AutonomousObjectiveAssignments
             AutonomousBotEconomy.IsBackpackNearlyFull(bot), Random.Shared.NextDouble(), Random.Shared.NextDouble(),
             bot.IsAutonomousTrainingOverdue);
         bool downtime = AutonomousBotPersonality.RollTownBreak(bot, Random.Shared.NextDouble());
+        // A crafter with a paid order to make always goes.
         bool craft = AutonomousBotCrafting.WantsTrip(AutonomousBotCrafting.IsTrained(bot), bot.Level,
-            AutonomousBotCrafting.MaterialStacks(bot), Random.Shared.NextDouble());
+            AutonomousBotCrafting.MaterialStacks(bot), Random.Shared.NextDouble()) ||
+            AutonomousBotCrafting.WantsTrip(true, bot.Level, 0, 0) && AutonomousBotCraftOrders.HasOpenWork(bot);
         if (!plan.Train && !plan.Unload && !downtime && !craft) return false;
         OfflineWorldBotRecord record = bot.PersistentRecord;
         record.ObjectiveKind = eAutonomousObjectiveKind.SoloPve.ToString();

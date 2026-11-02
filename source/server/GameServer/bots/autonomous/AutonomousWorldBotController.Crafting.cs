@@ -82,7 +82,8 @@ namespace DOL.GS
                     bot.StopMoving();
                     _craftWorkDoneTick = GameLoop.GameLoopTime + AutonomousBotCrafting.WorkSeconds(bot, _craftSession) * 1000L;
                     _craftPhase = eCraftTripPhase.Work;
-                    SetStatus(bot, $"Crafting {_craftSession.Recipe.Product.Name}", "Craft real items at a real station",
+                    SetStatus(bot, $"Crafting {_craftSession.Recipe.Product.Name}",
+                        _craftSession.OrderId != null ? "Make a piece another bot paid for" : "Craft real items at a real station",
                         $"Skill {AutonomousBotCrafting.SkillValue(bot.PersistentRecord.SerializedCraftingSkills, _craftSession.Skill)} {_craftSession.Skill}", string.Empty);
                     return true;
                 case eCraftTripPhase.Work:
@@ -118,7 +119,9 @@ namespace DOL.GS
             AutonomousBotCrafting.MarkTripDone(bot);
             bot.StopMovingOnPath();
             bot.StopMoving();
-            SetStatus(bot, "Done crafting", "Use or sell what was made", reason);
+            // The end of the trip is the crafter's task break: commissioned pieces go to their buyers now.
+            int delivered = AutonomousBotCraftOrders.Enabled ? AutonomousBotCraftOrders.Deliver(bot) : 0;
+            SetStatus(bot, "Done crafting", "Use or sell what was made", delivered > 0 ? $"{reason}; delivered {delivered} order(s)" : reason);
             return false;
         }
 
