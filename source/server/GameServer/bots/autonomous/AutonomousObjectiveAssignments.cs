@@ -769,6 +769,8 @@ public static class AutonomousObjectiveAssignments
     public static void CompleteBetweenTaskServices(GameBot bot)
     {
         if (!IsBetweenPveTasks(bot)) return;
+        // Hand over what this break's craft trip made for other bots, not one task later.
+        AutonomousBotCraftOrders.AtTaskBreak(bot, commission: false);
         if (BetweenTaskServiceExpired(bot))
             DOL.Logging.LoggerManager.Create(typeof(AutonomousObjectiveAssignments)).Warn(
                 $"AUTONOMOUS_BETWEEN_TASK_TIMEOUT bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} " +

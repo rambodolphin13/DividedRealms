@@ -324,6 +324,29 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void OnlyACrafterWhoseTaskEndsSoonIsAsked()
+        {
+            TestBot buyer = Bot("Buyer");
+            TestBot late = Bot("Late", "1|300;6|300");
+            TestBot soon = Bot("Soon", "1|120;6|200");
+            TestBot later = Bot("Later", "1|200;6|200");
+            TestBot resting = Bot("Resting", "1|500;6|500");
+            late.PersistentRecord.ObjectiveExpiresUtc = DateTime.UtcNow.AddMinutes(100).ToString("O");
+            soon.PersistentRecord.ObjectiveExpiresUtc = DateTime.UtcNow.AddMinutes(10).ToString("O");
+            later.PersistentRecord.ObjectiveExpiresUtc = DateTime.UtcNow.AddMinutes(30).ToString("O");
+            resting.PersistentRecord.ObjectiveAssignmentId = "between-pve-services-ID-" + resting.DatabaseID + "-1";
+            Recipe recipe = MakeRecipe(110);
+
+            Assert.That(AutonomousBotCraftOrders.PickCrafter([late, soon, later, resting], recipe, buyer), Is.SameAs(soon),
+                "The soonest break; not one 100 minutes away, nor one on a break without a craft trip");
+
+            resting.PersistentRecord.ObjectiveAssignmentId = "between-pve-services-CI-" + resting.DatabaseID + "-1";
+            Assert.That(AutonomousBotCraftOrders.PickCrafter([late, soon, later, resting], recipe, buyer), Is.SameAs(resting),
+                "A crafter on its craft trip now");
+            Assert.That(AutonomousBotCraftOrders.PickCrafter([late], recipe, buyer), Is.Null);
+        }
+
+        [Test]
         public void TheBiggestAffordableUpgradeWithACrafterIsOrdered()
         {
             Recipe small = MakeRecipe(10, price: 10, productLevel: 18);

@@ -54,7 +54,10 @@ public static class AutonomousBotCraftOrders
 
     public const string OpenState = "open";
     public const string MadeState = "made";
-    public static readonly TimeSpan Lifetime = TimeSpan.FromHours(2);
+    public static readonly TimeSpan Lifetime = TimeSpan.FromHours(3);
+    /// <summary>A crafter makes orders only at a task break (45-120 minute tasks), so it is asked only when its current
+    /// task ends within this window.</summary>
+    public static readonly TimeSpan BreakWindow = TimeSpan.FromMinutes(45);
     /// <summary>Chance, at a task break, that a bot with no order looks for one.</summary>
     public const double CommissionChance = 0.25;
     /// <summary>A crafter fills orders it makes at this chance or better: orange, yellow or easier.</summary>
@@ -130,19 +133,38 @@ public static class AutonomousBotCraftOrders
                AutonomousBotCrafting.MeetsSecondaryRequirement(craft, recipe, skills);
     }
 
-    /// <summary>The crafter of the buyer's realm to ask: able to fill it, least busy first, then the most skilled.</summary>
+    /// <summary>
+    /// When the crafter next reaches a task break where it can craft: now while on a craft trip or with no task, the end
+    /// of its task otherwise. Never while grouped (group bots get no break) or on a break that is not a craft trip.
+    /// </summary>
+    public static DateTime NextCraftBreak(GameBot crafter)
+    {
+        OfflineWorldBotRecord record = crafter?.PersistentRecord;
+        if (record == null || crafter.Group != null)
+            return DateTime.MaxValue;
+        if (AutonomousObjectiveAssignments.IsBetweenPveTasks(record))
+            return AutonomousObjectiveAssignments.HasBetweenTaskFlag(record, 'C') ? DateTime.MinValue : DateTime.MaxValue;
+        return DateTime.TryParse(record.ObjectiveExpiresUtc, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime end)
+            ? end.ToUniversalTime()
+            : DateTime.MinValue;
+    }
+
+    /// <summary>The crafter of the buyer's realm to ask: able to fill it and at a craft break within
+    /// <see cref="BreakWindow"/>; least busy first, then the soonest break, then the most skilled.</summary>
     public static GameBot PickCrafter(IEnumerable<GameBot> crafters, Recipe recipe, GameBot buyer)
     {
         AbstractCraftingSkill craft = CraftingMgr.getSkillbyEnum(recipe.RequiredCraftingSkill);
         if (craft == null || buyer == null)
             return null;
+        DateTime latest = DateTime.UtcNow + BreakWindow;
         return crafters
             .Where(crafter => crafter != null && crafter.DatabaseID > 0 && crafter.DatabaseID != buyer.DatabaseID &&
                               crafter.Realm == buyer.Realm && crafter.IsAutonomousWorldBot && !crafter.IsTemporaryGroupHelper &&
                               crafter.Level >= AutonomousBotCrafting.MinimumBotLevel &&
                               CanFill(craft, crafter.PersistentRecord?.SerializedCraftingSkills, recipe) &&
-                              OpenFor(crafter.DatabaseID) < MaximumOpenPerCrafter)
+                              OpenFor(crafter.DatabaseID) < MaximumOpenPerCrafter && NextCraftBreak(crafter) <= latest)
             .OrderBy(crafter => OpenFor(crafter.DatabaseID))
+            .ThenBy(crafter => NextCraftBreak(crafter))
             .ThenByDescending(crafter => AutonomousBotCrafting.SkillValue(crafter.PersistentRecord.SerializedCraftingSkills, craft.eSkill))
             .ThenBy(crafter => crafter.DatabaseID)
             .FirstOrDefault();
@@ -192,15 +214,16 @@ public static class AutonomousBotCraftOrders
 
     #region Placing, making and delivering
 
-    /// <summary>At a task break: deliver what this bot made for others, then perhaps order an upgrade for itself.</summary>
-    public static void AtTaskBreak(GameBot bot)
+    /// <summary>At a task break: deliver what this bot made for others, then perhaps order an upgrade for itself. At the
+    /// end of a break (<paramref name="commission"/> false) it only delivers what the craft trip made.</summary>
+    public static void AtTaskBreak(GameBot bot, bool commission = true)
     {
         if (!Enabled || bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.DatabaseID <= 0)
             return;
         try
         {
             Deliver(bot);
-            if (Random.Shared.NextDouble() < CommissionChance)
+            if (commission && Random.Shared.NextDouble() < CommissionChance)
                 TryCommission(bot);
         }
         catch (Exception exception)
