@@ -145,6 +145,7 @@ namespace DOL.GS
             });
             Listeners.GetOrAdd(account, _ => new())[channel] = 0;
             Interlocked.Increment(ref _listenerCount);
+            EffectWindows.EnsureRunning();
             return channel;
         }
 

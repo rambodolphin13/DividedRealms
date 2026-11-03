@@ -28,9 +28,11 @@ internal sealed class CombatNumbersOverlay : Form
     private FightReport? _card;
     private long _cardShown;
     private Bitmap? _canvas;
+    private EffectSnapshot? _effects;
+    private long _effectsAt;
     private Rectangle _drawnGame = Hidden;
     private bool _drawnEmpty;
-    private bool _cardSteady;
+    private bool _dirty;
 
     /// <summary>Starts the overlay, or points the running one at this server and account.</summary>
     public static void EnsureRunning(int loginPort, string account)
@@ -142,7 +144,13 @@ internal sealed class CombatNumbersOverlay : Form
             {
                 _card = report;
                 _cardShown = now;
-                _cardSteady = false;
+                _dirty = true;
+            }
+            else if (item is EffectSnapshot effects)
+            {
+                _effects = effects;
+                _effectsAt = now;
+                _dirty = true;
             }
             else if (item is CombatNumber number && game != null)
                 _numbers.Add(number, now);
@@ -151,28 +159,38 @@ internal sealed class CombatNumbersOverlay : Form
         IReadOnlyList<FloatingNumber> frame = _numbers.Frame(now);
         float cardAlpha = _card == null ? 0 : FightCard.Alpha(now - _cardShown);
         if (_card != null && cardAlpha <= 0)
+        {
             _card = null;
+            _dirty = true;
+        }
+        // The server sends effects every second while connected; older ones mean it stopped.
+        if (_effects != null && now - _effectsAt > EffectPanels.StaleMilliseconds)
+        {
+            _effects = null;
+            _dirty = true;
+        }
+        bool panels = _effects != null && EffectPanels.Sections(_effects).Count > 0;
 
-        if (game == null || (frame.Count == 0 && _card == null))
+        if (game == null || (frame.Count == 0 && _card == null && !panels))
         {
             if (!_drawnEmpty)
             {
-                Present(Hidden, Array.Empty<FloatingNumber>(), null, 0);
+                Present(Hidden, Array.Empty<FloatingNumber>(), null, 0, null);
                 _drawnGame = Hidden;
                 _drawnEmpty = true;
             }
             return;
         }
 
-        // A card sitting still with no numbers in flight needs no new frame.
-        bool steady = frame.Count == 0 && cardAlpha >= 1;
-        if (steady && _cardSteady && !_drawnEmpty && _drawnGame == game.Value)
+        // Cards and panels sitting still with no numbers in flight need no new frame.
+        bool moving = frame.Count > 0 || (_card != null && cardAlpha < 1);
+        if (!moving && !_dirty && !_drawnEmpty && _drawnGame == game.Value)
             return;
-        _cardSteady = steady;
+        _dirty = false;
         _drawnEmpty = false;
         if (!Visible)
             Show();
-        Present(game.Value, frame, _card, cardAlpha);
+        Present(game.Value, frame, _card, cardAlpha, panels ? _effects : null);
         _drawnGame = game.Value;
     }
 
@@ -193,7 +211,7 @@ internal sealed class CombatNumbersOverlay : Form
     }
 
     // Draws over the whole game area with real per-pixel transparency, so edges stay smooth.
-    private void Present(Rectangle game, IReadOnlyList<FloatingNumber> frame, FightReport? card, float cardAlpha)
+    private void Present(Rectangle game, IReadOnlyList<FloatingNumber> frame, FightReport? card, float cardAlpha, EffectSnapshot? effects)
     {
         if (_canvas == null || _canvas.Width != game.Width || _canvas.Height != game.Height)
         {
@@ -201,7 +219,7 @@ internal sealed class CombatNumbersOverlay : Form
             _canvas = new Bitmap(Math.Max(1, game.Width), Math.Max(1, game.Height), PixelFormat.Format32bppArgb);
         }
         using (Graphics graphics = Graphics.FromImage(_canvas))
-            Render(graphics, game.Size, frame, card, cardAlpha);
+            Render(graphics, game.Size, frame, card, cardAlpha, effects);
 
         IntPtr screen = GetDC(IntPtr.Zero);
         IntPtr memory = CreateCompatibleDC(screen);
@@ -224,8 +242,9 @@ internal sealed class CombatNumbersOverlay : Form
         }
     }
 
-    /// <summary>One frame: the numbers in flight and the fight card, on a transparent surface the size of the game area.</summary>
-    internal static void Render(Graphics graphics, Size game, IReadOnlyList<FloatingNumber> frame, FightReport? card, float cardAlpha)
+    /// <summary>One frame: numbers in flight, the fight card and the effect panels, on a transparent surface the size of the game area.</summary>
+    internal static void Render(Graphics graphics, Size game, IReadOnlyList<FloatingNumber> frame, FightReport? card, float cardAlpha,
+        EffectSnapshot? effects)
     {
         graphics.Clear(Color.Transparent);
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -248,6 +267,71 @@ internal sealed class CombatNumbersOverlay : Form
         }
         if (card != null && cardAlpha > 0)
             DrawCard(graphics, game, card, cardAlpha);
+        if (effects != null)
+            DrawPanels(graphics, game, effects);
+    }
+
+    // The panels sit left, under the top of the screen and clear of the chat at the bottom left.
+    private static void DrawPanels(Graphics graphics, Size game, EffectSnapshot snapshot)
+    {
+        float scale = Math.Clamp(game.Height / 900f, 0.8f, 2.4f);
+        float row = 19 * scale, pad = 8 * scale, gap = 8 * scale;
+        float width = 250 * scale;
+        float x = game.Width * 0.015f, y = game.Height * 0.2f;
+        float bottom = game.Height * 0.62f;
+
+        using var background = new SolidBrush(Color.FromArgb(185, 14, 16, 22));
+        using var border = new Pen(Color.FromArgb(120, 196, 160, 90), Math.Max(1f, scale));
+        using var titleFont = new Font("Segoe UI", 12 * scale, FontStyle.Bold, GraphicsUnit.Pixel);
+        using var font = new Font("Segoe UI", 11.5f * scale, FontStyle.Regular, GraphicsUnit.Pixel);
+        using var mineFont = new Font("Segoe UI", 11.5f * scale, FontStyle.Bold, GraphicsUnit.Pixel);
+        using var gold = new SolidBrush(Color.FromArgb(255, 230, 200, 120));
+        using var text = new SolidBrush(Color.FromArgb(255, 225, 228, 236));
+        using var dim = new SolidBrush(Color.FromArgb(255, 140, 145, 160));
+        using var good = new SolidBrush(Color.FromArgb(255, 90, 200, 110));
+        using var bad = new SolidBrush(Color.FromArgb(255, 225, 80, 70));
+        using var track = new SolidBrush(Color.FromArgb(120, 60, 64, 76));
+        using var right = new StringFormat { Alignment = StringAlignment.Far };
+        using var clip = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap };
+
+        foreach (EffectPanels.Section section in EffectPanels.Sections(snapshot))
+        {
+            float lines = 1.15f + section.Effects.Count + (section.Hidden > 0 ? 1 : 0);
+            float height = pad * 2 + row * lines + (section.Health != null ? 7 * scale : 0);
+            if (y + height > bottom)
+                break;
+            using var box = Rounded(new RectangleF(x, y, width, height), 6 * scale);
+            graphics.FillPath(background, box);
+            graphics.DrawPath(border, box);
+
+            float left = x + pad, top = y + pad, inner = width - pad * 2;
+            graphics.DrawString(section.Title, titleFont, gold, new RectangleF(left, top, inner, row), clip);
+            top += row * 1.15f;
+            if (section.Health is int health)
+            {
+                Color lifeColor = health > 50 ? Color.FromArgb(255, 90, 200, 110)
+                    : health > 25 ? Color.FromArgb(255, 230, 190, 70) : Color.FromArgb(255, 225, 80, 70);
+                using var life = new SolidBrush(lifeColor);
+                graphics.FillRectangle(track, left, top - 4 * scale, inner, 4 * scale);
+                graphics.FillRectangle(life, left, top - 4 * scale, inner * health / 100f, 4 * scale);
+                top += 7 * scale;
+            }
+            foreach (EffectInfo effect in section.Effects)
+            {
+                Brush tone = effect.Good ? good : bad;
+                float nameLeft = left + row * 0.6f, barWidth = inner - row * 0.6f;
+                graphics.FillEllipse(tone, left, top + row * 0.3f, row * 0.4f, row * 0.4f);
+                graphics.DrawString(effect.Name, effect.Mine ? mineFont : font, effect.Mine ? text : dim,
+                    new RectangleF(nameLeft, top, inner * 0.72f, row), clip);
+                graphics.DrawString(EffectPanels.Time(effect.Seconds), font, text, left + inner, top, right);
+                graphics.FillRectangle(track, nameLeft, top + row - 3 * scale, barWidth, 2 * scale);
+                graphics.FillRectangle(tone, nameLeft, top + row - 3 * scale, barWidth * EffectPanels.Left(effect), 2 * scale);
+                top += row;
+            }
+            if (section.Hidden > 0)
+                graphics.DrawString("+" + section.Hidden + " more", font, dim, left, top);
+            y += height + gap;
+        }
     }
 
     // The card sits right of centre, clear of the chat (bottom left) and quickbars (bottom).

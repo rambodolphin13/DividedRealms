@@ -129,3 +129,58 @@ internal static class TestLet
 {
     public static TResult Let<T, TResult>(this T value, Func<T, TResult> use) => use(value);
 }
+
+[TestFixture]
+public class EffectPanelTests
+{
+    private const string EffectsLine =
+        "data: {\"self\":[{\"name\":\"Strength\",\"icon\":1,\"seconds\":65,\"total\":600,\"good\":true,\"mine\":false}]," +
+        "\"pets\":[{\"name\":\"Fang\",\"level\":18,\"health\":72,\"effects\":[]}]," +
+        "\"target\":{\"name\":\"crab\",\"level\":12,\"health\":40,\"effects\":[{\"name\":\"Snare\",\"icon\":2,\"seconds\":9,\"total\":20,\"good\":false,\"mine\":true}]}}";
+
+    [Test] public void ReadsAnEffectsEvent()
+    {
+        var reader = new CombatFeedReader();
+        reader.Read("event: effects");
+        var snapshot = reader.Read(EffectsLine) as EffectSnapshot;
+
+        Assert.That(snapshot, Is.Not.Null);
+        Assert.That(snapshot!.Self[0].Name, Is.EqualTo("Strength"));
+        Assert.That(snapshot.Pets[0].Health, Is.EqualTo(72));
+        Assert.That(snapshot.Target!.Effects[0].Mine, Is.True);
+    }
+
+    [Test] public void SectionsGoYouThenPetsThenTarget()
+    {
+        var reader = new CombatFeedReader();
+        reader.Read("event: effects");
+        var sections = EffectPanels.Sections((EffectSnapshot)reader.Read(EffectsLine)!);
+
+        Assert.That(sections.Select(section => section.Title), Is.EqualTo(new[] { "You", "Fang  18", "crab  12" }));
+        Assert.That(sections[0].Health, Is.Null);
+        Assert.That(sections[2].Health, Is.EqualTo(40));
+    }
+
+    [Test] public void EmptyYouIsLeftOutAndLongListsAreCut()
+    {
+        EffectInfo Buff(int i) => new($"Buff{i}", i, 10, 20, true, false);
+        var snapshot = new EffectSnapshot(Array.Empty<EffectInfo>(),
+            new[] { new EffectUnit("Fang", 18, 100, Enumerable.Range(0, 9).Select(Buff).ToArray()) }, null);
+
+        var sections = EffectPanels.Sections(snapshot);
+
+        Assert.That(sections, Has.Count.EqualTo(1));
+        Assert.That(sections[0].Effects, Has.Count.EqualTo(EffectPanels.MaxPet));
+        Assert.That(sections[0].Hidden, Is.EqualTo(3));
+    }
+
+    [Test] public void TimesAndBars()
+    {
+        Assert.That(EffectPanels.Time(0), Is.EqualTo(""));
+        Assert.That(EffectPanels.Time(45), Is.EqualTo("45s"));
+        Assert.That(EffectPanels.Time(65), Is.EqualTo("1:05"));
+        Assert.That(EffectPanels.Time(3720), Is.EqualTo("1h 02"));
+        Assert.That(EffectPanels.Left(new EffectInfo("x", 1, 5, 20, true, false)), Is.EqualTo(0.25f));
+        Assert.That(EffectPanels.Left(new EffectInfo("aura", 1, 0, 0, true, false)), Is.EqualTo(1));
+    }
+}

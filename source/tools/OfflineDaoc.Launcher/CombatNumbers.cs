@@ -118,7 +118,8 @@ public sealed record FightRow(string Name, string? Class, int Level, string Kind
     long Healed, long HealedTaken, int Kills, int Deaths);
 public sealed record FightReport(int Seconds, FightRow[] Allies, FightRow[] Enemies);
 
-/// <summary>Reads the stream line by line: a CombatNumber for each plain data line, a FightReport after "event: fight".</summary>
+/// <summary>Reads the stream line by line: a CombatNumber for each plain data line, a FightReport after "event: fight",
+/// an EffectSnapshot after "event: effects".</summary>
 public sealed class CombatFeedReader
 {
     private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true };
@@ -136,13 +137,15 @@ public sealed class CombatFeedReader
             _event = line[6..].Trim();
             return null;
         }
-        if (_event != "fight")
+        if (_event is not ("fight" or "effects"))
             return CombatNumberFeed.ParseLine(line);
         if (!line.StartsWith("data:", StringComparison.Ordinal))
             return null;
         try
         {
-            return JsonSerializer.Deserialize<FightReport>(line.AsSpan(5).Trim(), Json);
+            return _event == "fight"
+                ? JsonSerializer.Deserialize<FightReport>(line.AsSpan(5).Trim(), Json)
+                : JsonSerializer.Deserialize<EffectSnapshot>(line.AsSpan(5).Trim(), Json);
         }
         catch (JsonException)
         {
@@ -195,4 +198,48 @@ public static class FightCard
         ageMilliseconds >= ShowMilliseconds ? 0
         : ageMilliseconds <= ShowMilliseconds - FadeMilliseconds ? 1
         : (ShowMilliseconds - ageMilliseconds) / (float)FadeMilliseconds;
+}
+
+// The server's buff, debuff and pet windows (GameServer gameutils/EffectWindows.cs), sent once a second as "event: effects".
+public sealed record EffectInfo(string Name, int Icon, int Seconds, int Total, bool Good, bool Mine);
+public sealed record EffectUnit(string Name, int Level, int Health, EffectInfo[] Effects);
+public sealed record EffectSnapshot(EffectInfo[] Self, EffectUnit[] Pets, EffectUnit? Target);
+
+/// <summary>What the effect panels show: you, each pet, then your target, each with its effects cut to fit.</summary>
+public static class EffectPanels
+{
+    public const int StaleMilliseconds = 3000;
+    public const int MaxSelf = 10;
+    public const int MaxPet = 6;
+    public const int MaxTarget = 8;
+
+    public sealed record Section(string Title, int? Health, IReadOnlyList<EffectInfo> Effects, int Hidden);
+
+    public static List<Section> Sections(EffectSnapshot snapshot)
+    {
+        var sections = new List<Section>();
+        if (snapshot.Self.Length > 0)
+            sections.Add(Cut("You", null, snapshot.Self, MaxSelf));
+        foreach (EffectUnit pet in snapshot.Pets)
+            sections.Add(Cut($"{pet.Name}  {pet.Level}", pet.Health, pet.Effects, MaxPet));
+        if (snapshot.Target is { } target)
+            sections.Add(Cut($"{target.Name}  {target.Level}", target.Health, target.Effects, MaxTarget));
+        return sections;
+    }
+
+    private static Section Cut(string title, int? health, EffectInfo[] effects, int max) =>
+        new(title, health, effects.Take(max).ToList(), Math.Max(0, effects.Length - max));
+
+    /// <summary>"" for an endless effect, then 45s, 1:05, 1h 02.</summary>
+    public static string Time(int seconds) => seconds switch
+    {
+        <= 0 => "",
+        < 60 => seconds + "s",
+        < 3600 => $"{seconds / 60}:{seconds % 60:00}",
+        _ => $"{seconds / 3600}h {seconds % 3600 / 60:00}",
+    };
+
+    /// <summary>How much of the bar is left, 0 to 1; a full bar for an endless effect.</summary>
+    public static float Left(EffectInfo effect) =>
+        effect.Total <= 0 ? 1 : Math.Clamp(effect.Seconds / (float)effect.Total, 0, 1);
 }
