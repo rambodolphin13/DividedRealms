@@ -809,6 +809,7 @@ internal sealed partial class MainForm : Form
         _rvrGrid.ColumnHeadersHeight = 28;
         _rvrGrid.RowTemplate.Height = 25;
         _rvrGrid.DataSource = _rvrSource;
+        _rvrGrid.DataError += IgnoreStaleRowError;
         _rvrGrid.Columns.Add(TextColumn("Name / meet-up", "NameWithMeetUpTimer", 135));
         _rvrGrid.Columns.Add(TextColumn("Realm", "Realm", 70));
         _rvrGrid.Columns.Add(TextColumn("Class", "ClassName", 95));
@@ -1208,6 +1209,7 @@ internal sealed partial class MainForm : Form
         _auctionGrid.ColumnHeadersHeight = 28;
         _auctionGrid.RowTemplate.Height = 25;
         _auctionGrid.DataSource = _auctionSource;
+        _auctionGrid.DataError += IgnoreStaleRowError;
         _auctionGrid.Columns.Add(TextColumn("Item", "ItemName", 230, DataGridViewAutoSizeColumnMode.Fill));
         _auctionGrid.Columns.Add(TextColumn("Seller", "Seller", 130));
         _auctionGrid.Columns.Add(TextColumn("Level", "ItemLevel", 60));
@@ -1257,6 +1259,7 @@ internal sealed partial class MainForm : Form
         _grid.ColumnHeadersHeight = 28;
         _grid.RowTemplate.Height = 25;
         _grid.DataSource = _botSource;
+        _grid.DataError += IgnoreStaleRowError;
         _grid.Columns.Add(TextColumn("Name", "Name", 120));
         _grid.Columns.Add(TextColumn("Realm", "Realm", 70));
         _grid.Columns.Add(TextColumn("Race", "RaceName", 85));
@@ -2676,6 +2679,10 @@ internal sealed partial class MainForm : Form
         transaction.Commit();
         return serverRunning;
     }
+
+    // A refresh can shrink the list while the grid is still painting an old row; the next paint is right, so it needs no dialog.
+    private static void IgnoreStaleRowError(object? sender, DataGridViewDataErrorEventArgs eventArgs) =>
+        eventArgs.ThrowException = false;
 
     private static void PurgeBotData(SQLiteConnection connection, SQLiteTransaction transaction, long botId)
     {
