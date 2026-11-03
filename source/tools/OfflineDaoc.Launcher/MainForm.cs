@@ -603,6 +603,15 @@ internal sealed partial class MainForm : Form
         var overlay = new TabPage("Overlay") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
         overlay.Controls.Add(new OverlaySettingsControl(Path.Combine(_root, OverlaySettings.FileName)));
         tabs.TabPages.Add(overlay);
+        if (!_newClient)
+        {
+            // The 1.130 client keeps settings in LotM unless paths.dat names a folder; the original client's copy names its own.
+            var uiProfiles = new TabPage("UI Profiles") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
+            uiProfiles.Controls.Add(new UiProfilesControl(
+                UiProfiles.SettingsFolder(_clientDirectory, _modernClient != null ? "LotM" : "OfflineDAoC036"),
+                Path.Combine(_root, UiProfiles.FolderName), UiProfilesControl.GameWindowOpen));
+            tabs.TabPages.Add(uiProfiles);
+        }
         var botGoals = new TabPage("Bot Goals Setting") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
         _botGoalsSettings = new BotGoalsSettingsControl(
             Path.Combine(_serverDirectory, OfflineDaoc.Configuration.BotGoalSettings.FileName), BotGoalsServerStopped);
