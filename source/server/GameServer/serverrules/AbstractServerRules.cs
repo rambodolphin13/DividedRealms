@@ -1151,6 +1151,10 @@ namespace DOL.GS.ServerRules
                 }
 
                 DropLoot(killedNpc, killer, itemOwners);
+
+                // after the share, so a player it already gave an item is not paid twice
+                if (DragonLairPlacement.DragonRealm(killedNpc) != eRealm.None)
+                    DragonPlayerReward.Grant(killedNpc, playerCountAndDamage.Keys, expeditionOwner?.PlayersGivenItems ?? []);
             }
 
             static void SendNotWorthRewardMessage(GameNPC killedNpc, GameNPC.RewardEligibility rewardEligibility)

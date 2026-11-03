@@ -38,6 +38,20 @@ namespace DOL.GS
             PreloadLootTemplates();
         }
 
+        /// <summary>
+        /// Every entry of the loot tables the mob's MobXLootTemplate rows name, without entries whose item is missing.
+        /// </summary>
+        public static List<DbLootTemplate> MobTable(string mobName)
+        {
+            PreloadLootTemplates();
+            if (mobName == null || !m_mobXLootTemplates.TryGetValue(mobName.ToLower(), out List<DbMobXLootTemplate> rows))
+                return [];
+            return rows.SelectMany(row => m_lootTemplates.TryGetValue(row.LootTemplateName.ToLower(),
+                    out Dictionary<string, DbLootTemplate> table) ? table.Values : Enumerable.Empty<DbLootTemplate>())
+                .Distinct()
+                .ToList();
+        }
+
         public static void ReloadLootTemplates()
         {
             m_lootTemplates = null;
