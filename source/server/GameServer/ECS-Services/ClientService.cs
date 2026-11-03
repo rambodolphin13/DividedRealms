@@ -139,6 +139,12 @@ namespace DOL.GS
                             player.NextWorldUpdate = GameLoop.GameLoopTime + Properties.WORLD_PLAYER_UPDATE_INTERVAL;
                         }
 
+                        if (player != null && GameServiceUtils.ShouldTick(player.NextRegenerationCheck))
+                        {
+                            player.NextRegenerationCheck = GameLoop.GameLoopTime + 10_000;
+                            player.EnsureRegeneration();
+                        }
+
                         Send(client);
                         break;
                     }

@@ -2349,6 +2349,39 @@ namespace DOL.GS
             m_powerRegenerationTimer.Start(GetPowerRegenerationInterval());
         }
 
+        /// <summary>When the regeneration timers were last checked (see <see cref="EnsureRegeneration"/>).</summary>
+        public long NextRegenerationCheck;
+
+        /// <summary>
+        /// Owner 2026-11-03: a player sat out of combat with the endurance bar at zero and it stayed there until a new login. A
+        /// regeneration timer is only started when the value drops, and StartXRegeneration does nothing for a character that is
+        /// dead or not yet active, so one missed call leaves a bar below its maximum with no timer. Every ten seconds a living,
+        /// active player whose health, power or endurance is below the maximum and whose timer is not running gets it back.
+        /// </summary>
+        public void EnsureRegeneration()
+        {
+            if (!IsAlive || ObjectState is not eObjectState.Active)
+                return;
+
+            if (Endurance < MaxEndurance && !m_enduRegenerationTimer.IsAlive)
+            {
+                StartEnduranceRegeneration();
+                log.Warn($"REGENERATION_RESTARTED who=\"{Name}\" kind=endurance value={Endurance}/{MaxEndurance}");
+            }
+
+            if (MaxMana > 0 && Mana < MaxMana && !m_powerRegenerationTimer.IsAlive)
+            {
+                StartPowerRegeneration();
+                log.Warn($"REGENERATION_RESTARTED who=\"{Name}\" kind=power value={Mana}/{MaxMana}");
+            }
+
+            if (Health < MaxHealth && !m_healthRegenerationTimer.IsAlive)
+            {
+                StartHealthRegeneration();
+                log.Warn($"REGENERATION_RESTARTED who=\"{Name}\" kind=health value={Health}/{MaxHealth}");
+            }
+        }
+
         public override void StartEnduranceRegeneration()
         {
             if (m_health == 0 || ObjectState is not eObjectState.Active || m_enduRegenerationTimer.IsAlive)
