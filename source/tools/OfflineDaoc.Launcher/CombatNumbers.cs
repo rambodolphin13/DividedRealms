@@ -62,8 +62,10 @@ public sealed class FloatingNumbers
             _live.RemoveAt(0);
     }
 
-    public IReadOnlyList<FloatingNumber> Frame(long nowMilliseconds)
+    public IReadOnlyList<FloatingNumber> Frame(long nowMilliseconds, OverlaySettings? settings = null)
     {
+        settings ??= OverlaySettings.Defaults;
+        float centre = settings.Number("numbers.x"), start = settings.Number("numbers.y"), size = settings.Number("numbers.size");
         _live.RemoveAll(entry => nowMilliseconds - entry.Born >= LifeMilliseconds);
         if (_live.Count == 0)
             Array.Clear(_nextLane);
@@ -73,12 +75,20 @@ public sealed class FloatingNumbers
             float age = Math.Clamp((nowMilliseconds - born) / (float)LifeMilliseconds, 0, 1);
             float alpha = age < 0.6f ? 1 : 1 - (age - 0.6f) / 0.4f;
             bool yours = IsYours(number.Kind);
-            float x = yours ? 0.56f + lane : 0.44f - lane;
-            float y = 0.45f - Rise * age;
-            frame.Add(new FloatingNumber(Label(number), ColorOf(number), SizeOf(number), x, y, alpha));
+            float x = yours ? centre + 0.06f + lane : centre - 0.06f - lane;
+            float y = start - Rise * age;
+            frame.Add(new FloatingNumber(Label(number), ColorOf(number, settings), SizeOf(number) * size, x, y, alpha));
         }
         return frame;
     }
+
+    /// <summary>Whether the player's overlay settings want this number shown at all.</summary>
+    public static bool Shows(CombatNumber number, OverlaySettings settings) =>
+        settings.On("numbers.enabled")
+        && (number.Kind is not (CombatNumberKind.HealOut or CombatNumberKind.HealIn) || settings.On("numbers.heals"))
+        && (number.Kind is not (CombatNumberKind.AvoidOut or CombatNumberKind.AvoidIn) || settings.On("numbers.avoided"))
+        && (number.Who != CombatNumberWho.Pet || settings.On("numbers.pet"))
+        && (number.Who != CombatNumberWho.Group || settings.On("numbers.group"));
 
     public static bool IsYours(CombatNumberKind kind) =>
         kind is CombatNumberKind.Out or CombatNumberKind.HealOut or CombatNumberKind.AvoidOut;
@@ -91,17 +101,17 @@ public sealed class FloatingNumbers
         _ => number.Critical ? number.Value + "!" : number.Value.ToString(),
     };
 
-    public static Color ColorOf(CombatNumber number) => (number.Kind, number.Who) switch
-    {
-        (CombatNumberKind.In, _) => Color.FromArgb(255, 80, 70),
-        (CombatNumberKind.HealOut or CombatNumberKind.HealIn, CombatNumberWho.Group) => Color.FromArgb(150, 210, 150),
-        (CombatNumberKind.HealOut or CombatNumberKind.HealIn, _) => Color.FromArgb(90, 235, 110),
-        (CombatNumberKind.AvoidIn, _) => Color.FromArgb(130, 190, 255),
-        (CombatNumberKind.AvoidOut, _) => Color.FromArgb(190, 190, 190),
-        (_, CombatNumberWho.Pet) => Color.FromArgb(255, 170, 90),
-        (_, CombatNumberWho.Group) => Color.FromArgb(175, 185, 210),
-        _ => number.Critical ? Color.FromArgb(255, 235, 80) : Color.FromArgb(255, 255, 255),
-    };
+    public static Color ColorOf(CombatNumber number, OverlaySettings? settings = null) => (settings ?? OverlaySettings.Defaults).Color(
+        (number.Kind, number.Who) switch
+        {
+            (CombatNumberKind.In, _) => "color.taken",
+            (CombatNumberKind.HealOut or CombatNumberKind.HealIn, _) => "color.heal",
+            (CombatNumberKind.AvoidIn, _) => "color.avoidIn",
+            (CombatNumberKind.AvoidOut, _) => "color.avoidOut",
+            (_, CombatNumberWho.Pet) => "color.pet",
+            (_, CombatNumberWho.Group) => "color.group",
+            _ => number.Critical ? "color.crit" : "color.yours",
+        });
 
     // Relative to the normal size: crits bigger, group and pet numbers smaller so your own stand out.
     public static float SizeOf(CombatNumber number) =>
@@ -194,10 +204,10 @@ public static class FightCard
     };
 
     /// <summary>Opacity at this age: full, then a fade, then gone (0).</summary>
-    public static float Alpha(long ageMilliseconds) =>
-        ageMilliseconds >= ShowMilliseconds ? 0
-        : ageMilliseconds <= ShowMilliseconds - FadeMilliseconds ? 1
-        : (ShowMilliseconds - ageMilliseconds) / (float)FadeMilliseconds;
+    public static float Alpha(long ageMilliseconds, int showMilliseconds = ShowMilliseconds) =>
+        ageMilliseconds >= showMilliseconds ? 0
+        : ageMilliseconds <= showMilliseconds - FadeMilliseconds ? 1
+        : (showMilliseconds - ageMilliseconds) / (float)FadeMilliseconds;
 }
 
 // The server's buff, debuff and pet windows (GameServer gameutils/EffectWindows.cs), sent once a second as "event: effects".
@@ -215,14 +225,15 @@ public static class EffectPanels
 
     public sealed record Section(string Title, int? Health, IReadOnlyList<EffectInfo> Effects, int Hidden);
 
-    public static List<Section> Sections(EffectSnapshot snapshot)
+    public static List<Section> Sections(EffectSnapshot snapshot, OverlaySettings? settings = null)
     {
+        settings ??= OverlaySettings.Defaults;
         var sections = new List<Section>();
-        if (snapshot.Self.Length > 0)
+        if (snapshot.Self.Length > 0 && settings.On("panels.self"))
             sections.Add(Cut("You", null, snapshot.Self, MaxSelf));
-        foreach (EffectUnit pet in snapshot.Pets)
+        foreach (EffectUnit pet in settings.On("panels.pets") ? snapshot.Pets : [])
             sections.Add(Cut($"{pet.Name}  {pet.Level}", pet.Health, pet.Effects, MaxPet));
-        if (snapshot.Target is { } target)
+        if (snapshot.Target is { } target && settings.On("panels.target"))
             sections.Add(Cut($"{target.Name}  {target.Level}", target.Health, target.Effects, MaxTarget));
         return sections;
     }

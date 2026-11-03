@@ -600,6 +600,9 @@ internal sealed partial class MainForm : Form
         records.Enter += async (_, _) => await eventRecords.RefreshAsync();
         tabs.TabPages.Add(records);
         tabs.TabPages.Add(xpSettings);
+        var overlay = new TabPage("Overlay") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
+        overlay.Controls.Add(new OverlaySettingsControl(Path.Combine(_root, OverlaySettings.FileName)));
+        tabs.TabPages.Add(overlay);
         var botGoals = new TabPage("Bot Goals Setting") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
         _botGoalsSettings = new BotGoalsSettingsControl(
             Path.Combine(_serverDirectory, OfflineDaoc.Configuration.BotGoalSettings.FileName), BotGoalsServerStopped);
@@ -2981,7 +2984,7 @@ internal sealed partial class MainForm : Form
             {
                 _modernClient.ValidateServer(_root);
                 Process.Start(_modernClient.CreateStartInfo(credentials.Account, credentials.Password));
-                CombatNumbersOverlay.EnsureRunning(_modernClient.Port, credentials.Account);
+                CombatNumbersOverlay.EnsureRunning(_modernClient.Port, credentials.Account, Path.Combine(_root, OverlaySettings.FileName));
             }
             catch (Exception ex)
             {
@@ -3000,7 +3003,7 @@ internal sealed partial class MainForm : Form
         if (client != null)
         {
             ClientSessionDiagnostics.Start(client, _clientDirectory, _logsDirectory);
-            CombatNumbersOverlay.EnsureRunning(10300, credentials.Account);
+            CombatNumbersOverlay.EnsureRunning(10300, credentials.Account, Path.Combine(_root, OverlaySettings.FileName));
         }
     }
 

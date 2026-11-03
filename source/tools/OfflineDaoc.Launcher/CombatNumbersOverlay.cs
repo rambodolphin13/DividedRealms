@@ -25,6 +25,10 @@ internal sealed class CombatNumbersOverlay : Form
     private readonly System.Windows.Forms.Timer _tick = new() { Interval = 33 };
     private readonly CancellationTokenSource _stop = new();
     private volatile Uri _stream;
+    private volatile string _settingsPath;
+    private OverlaySettings _settings = OverlaySettings.Defaults;
+    private DateTime _settingsStamp;
+    private long _settingsChecked = -1000;
     private FightReport? _card;
     private long _cardShown;
     private Bitmap? _canvas;
@@ -35,7 +39,7 @@ internal sealed class CombatNumbersOverlay : Form
     private bool _dirty;
 
     /// <summary>Starts the overlay, or points the running one at this server and account.</summary>
-    public static void EnsureRunning(int loginPort, string account)
+    public static void EnsureRunning(int loginPort, string account, string settingsPath)
     {
         Uri stream = CombatNumberFeed.StreamUri(loginPort, account);
         lock (StartLock)
@@ -43,6 +47,7 @@ internal sealed class CombatNumbersOverlay : Form
             if (_instance is { IsDisposed: false } running)
             {
                 running._stream = stream;
+                running._settingsPath = settingsPath;
                 return;
             }
             var ready = new ManualResetEventSlim();
@@ -50,7 +55,7 @@ internal sealed class CombatNumbersOverlay : Form
             {
                 // Game windows report real pixels; without this a scaled display would place the numbers off-centre.
                 SetThreadDpiAwarenessContext(new IntPtr(-4));
-                _instance = new CombatNumbersOverlay(stream);
+                _instance = new CombatNumbersOverlay(stream, settingsPath);
                 ready.Set();
                 Application.Run(_instance);
             })
@@ -61,9 +66,10 @@ internal sealed class CombatNumbersOverlay : Form
         }
     }
 
-    private CombatNumbersOverlay(Uri stream)
+    private CombatNumbersOverlay(Uri stream, string settingsPath)
     {
         _stream = stream;
+        _settingsPath = settingsPath;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;
@@ -137,10 +143,11 @@ internal sealed class CombatNumbersOverlay : Form
     private void Step()
     {
         long now = _clock.ElapsedMilliseconds;
+        ReloadSettings(now);
         Rectangle? game = GameClientArea();
         while (_incoming.TryDequeue(out object? item))
         {
-            if (item is FightReport report)
+            if (item is FightReport report && _settings.On("card.enabled"))
             {
                 _card = report;
                 _cardShown = now;
@@ -152,12 +159,12 @@ internal sealed class CombatNumbersOverlay : Form
                 _effectsAt = now;
                 _dirty = true;
             }
-            else if (item is CombatNumber number && game != null)
+            else if (item is CombatNumber number && game != null && FloatingNumbers.Shows(number, _settings))
                 _numbers.Add(number, now);
         }
 
-        IReadOnlyList<FloatingNumber> frame = _numbers.Frame(now);
-        float cardAlpha = _card == null ? 0 : FightCard.Alpha(now - _cardShown);
+        IReadOnlyList<FloatingNumber> frame = _numbers.Frame(now, _settings);
+        float cardAlpha = _card == null ? 0 : FightCard.Alpha(now - _cardShown, (int)(_settings.Number("card.seconds") * 1000));
         if (_card != null && cardAlpha <= 0)
         {
             _card = null;
@@ -169,7 +176,7 @@ internal sealed class CombatNumbersOverlay : Form
             _effects = null;
             _dirty = true;
         }
-        bool panels = _effects != null && EffectPanels.Sections(_effects).Count > 0;
+        bool panels = _effects != null && EffectPanels.Sections(_effects, _settings).Count > 0;
 
         if (game == null || (frame.Count == 0 && _card == null && !panels))
         {
@@ -192,6 +199,20 @@ internal sealed class CombatNumbersOverlay : Form
             Show();
         Present(game.Value, frame, _card, cardAlpha, panels ? _effects : null);
         _drawnGame = game.Value;
+    }
+
+    // Picks up changes saved from the launcher's Overlay tab within a second, while the game runs.
+    private void ReloadSettings(long now)
+    {
+        if (now - _settingsChecked < 1000)
+            return;
+        _settingsChecked = now;
+        DateTime stamp = File.Exists(_settingsPath) ? File.GetLastWriteTimeUtc(_settingsPath) : DateTime.MinValue;
+        if (stamp == _settingsStamp)
+            return;
+        _settingsStamp = stamp;
+        _settings = OverlaySettings.Load(_settingsPath);
+        _dirty = true;
     }
 
     /// <summary>The game's client area on screen, while the game is the window in front; otherwise null.</summary>
@@ -219,7 +240,7 @@ internal sealed class CombatNumbersOverlay : Form
             _canvas = new Bitmap(Math.Max(1, game.Width), Math.Max(1, game.Height), PixelFormat.Format32bppArgb);
         }
         using (Graphics graphics = Graphics.FromImage(_canvas))
-            Render(graphics, game.Size, frame, card, cardAlpha, effects);
+            Render(graphics, game.Size, frame, card, cardAlpha, effects, _settings);
 
         IntPtr screen = GetDC(IntPtr.Zero);
         IntPtr memory = CreateCompatibleDC(screen);
@@ -244,7 +265,7 @@ internal sealed class CombatNumbersOverlay : Form
 
     /// <summary>One frame: numbers in flight, the fight card and the effect panels, on a transparent surface the size of the game area.</summary>
     internal static void Render(Graphics graphics, Size game, IReadOnlyList<FloatingNumber> frame, FightReport? card, float cardAlpha,
-        EffectSnapshot? effects)
+        EffectSnapshot? effects, OverlaySettings settings)
     {
         graphics.Clear(Color.Transparent);
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -266,21 +287,21 @@ internal sealed class CombatNumbersOverlay : Form
             graphics.FillPath(fill, path);
         }
         if (card != null && cardAlpha > 0)
-            DrawCard(graphics, game, card, cardAlpha);
+            DrawCard(graphics, game, card, cardAlpha, settings);
         if (effects != null)
-            DrawPanels(graphics, game, effects);
+            DrawPanels(graphics, game, effects, settings);
     }
 
     // The panels sit left, under the top of the screen and clear of the chat at the bottom left.
-    private static void DrawPanels(Graphics graphics, Size game, EffectSnapshot snapshot)
+    private static void DrawPanels(Graphics graphics, Size game, EffectSnapshot snapshot, OverlaySettings settings)
     {
-        float scale = Math.Clamp(game.Height / 900f, 0.8f, 2.4f);
+        float scale = Math.Clamp(game.Height / 900f, 0.8f, 2.4f) * settings.Number("panels.size");
         float row = 19 * scale, pad = 8 * scale, gap = 8 * scale;
         float width = 250 * scale;
-        float x = game.Width * 0.015f, y = game.Height * 0.2f;
-        float bottom = game.Height * 0.62f;
+        float x = game.Width * settings.Number("panels.x"), y = game.Height * settings.Number("panels.y");
+        float bottom = game.Height * 0.95f;
 
-        using var background = new SolidBrush(Color.FromArgb(185, 14, 16, 22));
+        using var background = new SolidBrush(Color.FromArgb((int)(255 * settings.Number("panels.opacity")), 14, 16, 22));
         using var border = new Pen(Color.FromArgb(120, 196, 160, 90), Math.Max(1f, scale));
         using var titleFont = new Font("Segoe UI", 12 * scale, FontStyle.Bold, GraphicsUnit.Pixel);
         using var font = new Font("Segoe UI", 11.5f * scale, FontStyle.Regular, GraphicsUnit.Pixel);
@@ -294,7 +315,7 @@ internal sealed class CombatNumbersOverlay : Form
         using var right = new StringFormat { Alignment = StringAlignment.Far };
         using var clip = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap };
 
-        foreach (EffectPanels.Section section in EffectPanels.Sections(snapshot))
+        foreach (EffectPanels.Section section in EffectPanels.Sections(snapshot, settings))
         {
             float lines = 1.15f + section.Effects.Count + (section.Hidden > 0 ? 1 : 0);
             float height = pad * 2 + row * lines + (section.Health != null ? 7 * scale : 0);
@@ -335,15 +356,15 @@ internal sealed class CombatNumbersOverlay : Form
     }
 
     // The card sits right of centre, clear of the chat (bottom left) and quickbars (bottom).
-    private static void DrawCard(Graphics graphics, Size game, FightReport report, float alpha)
+    private static void DrawCard(Graphics graphics, Size game, FightReport report, float alpha, OverlaySettings settings)
     {
         List<FightCard.Line> lines = FightCard.Lines(report);
-        float scale = Math.Clamp(game.Height / 900f, 0.8f, 2.4f);
+        float scale = Math.Clamp(game.Height / 900f, 0.8f, 2.4f) * settings.Number("card.size");
         float row = 22 * scale, pad = 12 * scale;
         float width = 430 * scale;
         float height = pad * 2 + row * 2.4f + row * lines.Count + (lines.Any(line => line.Enemy) ? row * 0.6f : 0);
-        float x = game.Width - width - game.Width * 0.02f;
-        float y = game.Height * 0.22f;
+        float x = Math.Max(0, game.Width * settings.Number("card.x") - width);
+        float y = game.Height * settings.Number("card.y");
         int a(int value) => (int)(value * alpha);
 
         using var background = new SolidBrush(Color.FromArgb(a(200), 14, 16, 22));
