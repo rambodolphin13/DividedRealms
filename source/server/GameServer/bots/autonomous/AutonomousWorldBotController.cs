@@ -664,6 +664,8 @@ namespace DOL.GS
                             AutonomousObjectiveAssignments.TryCompleteBetweenTaskServicesIfSatisfied(bot);
                             return true;
                         }
+                        if (AutonomousObjectiveAssignments.WantsBetweenTaskCraft(bot) && HandleCraftTrip(bot))
+                            return true;
                         if (AutonomousObjectiveAssignments.WantsBetweenTaskInventory(bot) && TryRouteToNeededService(bot))
                             return true;
                         if (AutonomousObjectiveAssignments.WantsBetweenTaskDowntime(bot) && HandleTownIdle(brain, bot))
@@ -679,6 +681,14 @@ namespace DOL.GS
 
                 if (objectiveKind == eAutonomousObjectiveKind.Battleground && _groupDirective?.IsDynamic != true)
                     return ExecuteBattleground(brain, bot);
+
+                // Quests are solo work; a party's goal wins, and the quest waits for the bot to be alone again. Its
+                // kills still count for the quest, and a step that wants a group is done.
+                if (bot.Group != null)
+                    AutonomousBotQuests.OnGrouped(bot);
+                if (_groupDirective?.IsDynamic != true && bot.Group == null && objectiveKind is eAutonomousObjectiveKind.SoloPve or eAutonomousObjectiveKind.GroupPve &&
+                    HandleQuestWork(bot))
+                    return true;
 
                 if (_groupDirective?.IsDynamic == true && _groupDirective.Camp != null &&
                     (!string.Equals(_camp?.Id, _groupDirective.Camp.Id, StringComparison.Ordinal) ||
@@ -2994,7 +3004,7 @@ namespace DOL.GS
             // experience, so a solo bot fought on in place until the stuck watchdog
             // rescued it fifteen minutes later. Targets are sorted by con, so a grey
             // pick means nothing better is near: plan a camp for the new level.
-            if (target != null && bot.Group == null && !_camp.IsDungeon &&
+            if (target != null && bot.Group == null && !_camp.IsDungeon && !IsQuestCamp(_camp) &&
                 ConLevels.GetConColor(bot.GetConLevel(target)) == ConColor.GREY)
             {
                 Log.Info($"AUTONOMOUS_CAMP_OUTLEVELED bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
@@ -3136,7 +3146,7 @@ namespace DOL.GS
                     .Where(npc => npc.IsAlive && IsExperienceMonster(npc) && npc.CurrentRegionID == _camp.RegionId &&
                         npc.CurrentZone == bot.CurrentZone && GameServer.ServerRules.IsAllowedToAttack(bot, npc, true) &&
                         string.Equals(npc.Name, _camp.MonsterName, StringComparison.OrdinalIgnoreCase) &&
-                        !AutonomousAuditedCampPolicy.IsBotExcludedNpc(npc) &&
+                        !AutonomousAuditedCampPolicy.IsBotExcludedNpc(npc, bot) &&
                         Vector3.DistanceSquared(currentAnchor, new(npc.X, npc.Y, npc.Z)) >= 300 * 300)
                     .OrderBy(npc => bot.GetDistanceTo(npc)).Take(16))
                 {
@@ -3341,7 +3351,7 @@ namespace DOL.GS
                 searchClass is eCharacterClass.Scout or eCharacterClass.Hunter or eCharacterClass.Ranger;
             GameNPC FindWithin(ushort radius) => bot.GetNPCsInRadius(radius)
                 .Where(npc => IsExperienceMonster(npc) && npc.IsAlive && npc.CurrentRegionID == _camp.RegionId &&
-                    !AutonomousAuditedCampPolicy.IsBotExcludedNpc(npc) &&
+                    !AutonomousAuditedCampPolicy.IsBotExcludedNpc(npc, bot) &&
                     !AutonomousPveTargetPolicy.IsUnreachableFlyer(npc.Flags, npc.Z, bot.Z) &&
                     !AutonomousPveTargetPolicy.FlyerOutOfRangedReach(npc.Flags, canPullFromRange, bot.GetDistanceTo(npc)))
                 .Where(npc => _camp.RegionId != AutonomousDarknessFallsPolicy.RegionId ||
@@ -4144,7 +4154,9 @@ namespace DOL.GS
                 TryRegroupStrandedExpeditionMember(bot);
                 return;
             }
-            if (_camp != null)
+            if (IsQuestCamp(_camp))
+                AutonomousBotQuests.NoteStepFailure(bot, reason);
+            else if (_camp != null)
             {
                 // Apply the existing bounded camp cooldown to outdoor failures
                 // too. Otherwise the coordinator immediately republishes the same
@@ -4228,6 +4240,8 @@ namespace DOL.GS
             _lastEngagedCon = null;
 
             string failedTarget = _camp?.MonsterName ?? bot.PersistentRecord?.TargetName ?? "the previous target";
+            if (IsQuestCamp(_camp))
+                AutonomousBotQuests.NoteStepFailure(bot, $"Defeated on the way to {failedTarget}");
             AutonomousGoalDiagnostics.End(bot, GoalAttemptEnd.Defeated, "Solo defeat caused a safer camp replan");
             _lastFailedCampId = _camp?.Id ?? bot.PersistentRecord?.CurrentCampId ?? string.Empty;
             _lastFailedTargetName = failedTarget;

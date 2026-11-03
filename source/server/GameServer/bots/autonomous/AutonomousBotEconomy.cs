@@ -23,6 +23,8 @@ namespace DOL.GS;
         // Owner 2026-10-29: 3 posts per bot (was 1; Codex's 10 made a launcher refresh take minutes before the launcher split
         // bot snapshots from the exchange). Players stay unlimited.
         public const int MaxBotRealmExchangeListings = 3;
+        /// <summary>Extra posts for a crafter's own work, on top of <see cref="MaxBotRealmExchangeListings"/>.</summary>
+        public const int OwnWorkExtraListings = 3;
         private const int ServiceDecisionSafetyRefreshMilliseconds = 5 * 60_000;
         private sealed class ServiceDecisionState
         {
@@ -145,18 +147,17 @@ namespace DOL.GS;
         if (bot?.Inventory == null || bot.DatabaseID <= 0)
             return null;
 
-        bool hasCraft = !string.IsNullOrWhiteSpace(bot.PersistentRecord?.SerializedCraftingSkills);
         // Appraise matching goods before limiting results. Cheap unusable bot
         // wares must not hide a useful player listing beyond the first 48 rows.
         return FindAffordableExchangeItems(bot, int.MaxValue)
-            .Select(item => ScorePurchase(bot, item, hasCraft))
+            .Select(item => ScorePurchase(bot, item))
             .Where(candidate => candidate != null && candidate.Utility > 0)
             .OrderByDescending(candidate => candidate.Utility)
             .ThenBy(candidate => candidate.Item.SellPrice)
             .FirstOrDefault();
     }
 
-        private static PurchaseCandidate ScorePurchase(GameBot bot, DbInventoryItem item, bool hasCraft)
+        private static PurchaseCandidate ScorePurchase(GameBot bot, DbInventoryItem item)
         {
             if (item == null || item.Template == null || item.LevelRequirement > bot.Level ||
                 !BotWeaponStats.HasFunctionalMeleeStats(item) ||
@@ -189,10 +190,9 @@ namespace DOL.GS;
                 return new PurchaseCandidate(item, 1_000 + improvement + playerPreference, equipSlot, true, isPlayerListing);
         }
 
-        // Stackable world goods are the server's practical crafting-material
-        // signal. Only trained crafters buy them, and they remain real backpack
-        // inventory until an actual recipe consumes them.
-        if (hasCraft && item.IsStackable && item.Count > 0)
+        // Only trained crafters buy materials, only those of their own crafts, and
+        // they remain real backpack inventory until an actual recipe consumes them.
+        if (item.Count > 0 && AutonomousBotCrafting.IsMaterialFor(bot, item))
             return new PurchaseCandidate(item, 300 + Math.Min(150, item.Count * 3) + playerPreference, eInventorySlot.Invalid, false, isPlayerListing);
 
         return null;
@@ -219,7 +219,8 @@ namespace DOL.GS;
         public static bool TryGetEquipmentUpgrade(GameBot bot, DbInventoryItem item, out eInventorySlot equipSlot)
         {
             equipSlot = eInventorySlot.Invalid;
-            if (bot?.Inventory == null || item?.Template == null ||
+            // A piece made for another bot's order is the buyer's, never its maker's upgrade.
+            if (bot?.Inventory == null || item?.Template == null || AutonomousBotCraftOrders.IsHeldForOrder(item) ||
                 (eObjectType)item.Object_Type == eObjectType.GenericItem || item.LevelRequirement > bot.Level ||
                 !BotWeaponStats.HasFunctionalMeleeStats(item) ||
                 (BotWeaponStats.IsMeleeWeapon((eObjectType)item.Object_Type) &&
@@ -363,7 +364,7 @@ namespace DOL.GS;
             // Choose the single listing from the complete backpack before any
             // vendor sale changes that candidate pool. Once the listing slot is
             // occupied, finish clearing every disposable item before shopping.
-            if (HasListingSpace(bot) && FindValuableListingCandidate(bot) != null)
+            if (FindValuableListingCandidate(bot) != null)
                 return eWorldServiceKind.RealmExchange;
 
             if (FindVendorTrashCandidate(bot) != null)
@@ -424,7 +425,7 @@ namespace DOL.GS;
             if (!arrivedAtMerchant || bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper ||
                 bot.IsPlayerLedGroup || bot.Inventory == null || bot.DatabaseID <= 0 ||
                 !IsBackpackFull(bot) || FindVendorTrashCandidate(bot) != null ||
-                HasListingSpace(bot) && FindValuableListingCandidate(bot) != null)
+                FindValuableListingCandidate(bot) != null)
                 return false;
 
             DbInventoryItem[] backpack = bot.Inventory.AllItems
@@ -438,7 +439,8 @@ namespace DOL.GS;
 
             HashSet<DbInventoryItem> operationalLoadout = FindOperationalLoadoutItems(bot);
             foreach (DbInventoryItem item in backpack.Where(item =>
-                         !operationalLoadout.Contains(item) && !TryGetEquipmentUpgrade(bot, item, out _)))
+                         !operationalLoadout.Contains(item) && !AutonomousBotCraftOrders.IsHeldForOrder(item) &&
+                         !TryGetEquipmentUpgrade(bot, item, out _)))
             {
                 if (bot.Inventory.RemoveItem(item))
                     removed++;
@@ -552,16 +554,26 @@ namespace DOL.GS;
             (!IsBackpackFull(bot) && !AutonomousObjectiveAssignments.IsBetweenPveTasks(bot)))
             return null;
 
+            // Only what fits under the cap now: the bot's own work has its own few extra posts.
+            bool space = HasListingSpace(bot);
+            bool ownWorkSpace = space || HasOwnWorkListingSpace(bot);
+            if (!ownWorkSpace)
+                return null;
             HashSet<DbInventoryItem> operationalLoadout = FindOperationalLoadoutItems(bot);
             return bot.Inventory.AllItems
             .Where(item => item != null && item.IsTradable && !string.IsNullOrWhiteSpace(item.Name) &&
                            item.OwnerLot == 0 && item.SlotPosition >= (int)eInventorySlot.FirstBackpack &&
                            item.SlotPosition <= (int)eInventorySlot.LastBackpack &&
                            !operationalLoadout.Contains(item) &&
+                           !AutonomousBotQuests.IsHeldForQuest(bot, item) &&
+                           !AutonomousBotCraftOrders.IsHeldForOrder(item) &&
+                           (space || AutonomousBotCrafting.IsOwnWork(bot, item)) &&
                            !TryGetEquipmentUpgrade(bot, item, out _))
             .Select(item => new ListingCandidate(item, RecommendListingPrice(item)))
-            .Where(candidate => candidate.PriceCopper >= Math.Max(50, candidate.Item.Level * candidate.Item.Level * 4))
-            .OrderByDescending(candidate => candidate.PriceCopper)
+            .Where(candidate => WorthListing(candidate.Item, candidate.PriceCopper))
+            // A craft trip ends by posting what it made, not the dearest loot in the bag.
+            .OrderByDescending(candidate => AutonomousObjectiveAssignments.WantsBetweenTaskCraft(bot) && AutonomousBotCrafting.IsOwnWork(bot, candidate.Item))
+            .ThenByDescending(candidate => candidate.PriceCopper)
             .FirstOrDefault();
         }
 
@@ -570,21 +582,20 @@ namespace DOL.GS;
             if (bot?.Inventory == null)
                 return null;
 
-            bool trainedCrafter = !string.IsNullOrWhiteSpace(bot.PersistentRecord?.SerializedCraftingSkills);
             bool canList = HasListingSpace(bot);
             HashSet<DbInventoryItem> operationalLoadout = FindOperationalLoadoutItems(bot);
             return bot.Inventory.AllItems
                 .Where(item => item != null && item.IsDropable && item.OwnerLot == 0 &&
                                item.SlotPosition >= (int)eInventorySlot.FirstBackpack &&
                                item.SlotPosition <= (int)eInventorySlot.LastBackpack)
-                .Where(item => !IsProtectedFromVendor(bot, item, trainedCrafter, canList, operationalLoadout))
+                .Where(item => !IsProtectedFromVendor(bot, item, canList, operationalLoadout))
                 .Where(item => CalculateStandardVendorSaleCopper(item) > 0)
                 .OrderBy(item => EquipmentValue(item))
                 .ThenBy(item => item.Price)
                 .FirstOrDefault();
         }
 
-        private static bool IsProtectedFromVendor(GameBot bot, DbInventoryItem item, bool trainedCrafter,
+        private static bool IsProtectedFromVendor(GameBot bot, DbInventoryItem item,
             bool canList, HashSet<DbInventoryItem> operationalLoadout)
         {
             if (item is GameInventoryRelic || BotSiegeRuntime.IsSupply(item.Id_nb) ||
@@ -592,13 +603,24 @@ namespace DOL.GS;
                 return true;
             if (TryGetEquipmentUpgrade(bot, item, out _))
                 return true;
-            if (trainedCrafter && item.IsStackable && item.Count > 0)
+            if (item.Count > 0 && AutonomousBotCrafting.IsMaterialFor(bot, item))
+                return true;
+            if (AutonomousBotQuests.IsHeldForQuest(bot, item))
+                return true;
+            if (AutonomousBotCraftOrders.IsHeldForOrder(item))
+                return true;
+            // The bot's own work waits for a free Realm Exchange post; only a nearly full bag sends it to a vendor.
+            if (AutonomousBotCrafting.IsOwnWork(bot, item) && !IsBackpackNearlyFull(bot))
                 return true;
             // If the bot's single listing slot is occupied, unwanted gear can
             // still be sold normally. Never vendor an equippable upgrade.
-            return canList && item.IsTradable &&
-                RecommendListingPrice(item) >= Math.Max(50, item.Level * item.Level * 4);
+            return canList && item.IsTradable && WorthListing(item, RecommendListingPrice(item));
         }
+
+        /// <summary>Worth a Realm Exchange post: dear enough for its level, or the bot's own work, which it sells there
+        /// whatever a low-level piece fetches.</summary>
+        public static bool WorthListing(DbInventoryItem item, int priceCopper) =>
+            item.IsCrafted && !item.IsStackable || priceCopper >= Math.Max(50, item.Level * item.Level * 4);
 
         /// <summary>
         /// Performs the same appraisal and range checks as a real merchant, removes the exact
@@ -616,8 +638,7 @@ namespace DOL.GS;
                 !merchant.IsWithinRadius(bot, GS.ServerProperties.Properties.WORLD_PICKUP_DISTANCE))
                 return false;
 
-            bool trainedCrafter = !string.IsNullOrWhiteSpace(bot.PersistentRecord?.SerializedCraftingSkills);
-            if (IsProtectedFromVendor(bot, item, trainedCrafter, HasListingSpace(bot),
+            if (IsProtectedFromVendor(bot, item, HasListingSpace(bot),
                     FindOperationalLoadoutItems(bot)))
                 return false;
 
@@ -915,7 +936,7 @@ namespace DOL.GS;
             }
         }
 
-        int slot = FindFreeListingSlot(ownerId);
+        int slot = FindFreeListingSlot(ownerId, AutonomousBotCrafting.IsOwnWork(bot, item));
         int originalSlot = item.SlotPosition;
         if (slot < 0 || !bot.Inventory.RemoveItemWithoutDbDeletion(item))
             return false;
@@ -947,17 +968,27 @@ namespace DOL.GS;
         stored.SlotPosition >= (int)eInventorySlot.FirstBackpack && stored.SlotPosition <= (int)eInventorySlot.LastBackpack &&
         item.ITemplate_Id == stored.ITemplate_Id && item.UTemplate_Id == stored.UTemplate_Id && item.Count == stored.Count;
 
-    public static int FindFreeListingSlot(string ownerId)
+    /// <summary>
+    /// A free post under the bot's cap. The bot's own crafted work may use <see cref="OwnWorkExtraListings"/> more:
+    /// at the cap of three, crafters held their work in the bag instead of posting it (run of 2026-11-01).
+    /// </summary>
+    public static int FindFreeListingSlot(string ownerId, bool ownWork = false)
     {
         var used = MarketCache.SearchItems(new ItemQuery { Owner = ownerId })
             .Where(item => RealmExchangeBroker.IsExchangeOwnerLot(item.OwnerLot)).Select(item => item.SlotPosition).ToHashSet();
-        if (used.Count >= MaxBotRealmExchangeListings) return -1;
+        if (used.Count >= MaxBotRealmExchangeListings + (ownWork ? OwnWorkExtraListings : 0)) return -1;
         for (int slot = (int)eInventorySlot.Consignment_First; slot <= (int)eInventorySlot.Consignment_Last; slot++)
             if (!used.Contains(slot)) return slot;
         return -1;
     }
 
     private static bool HasListingSpace(GameBot bot) => FindFreeListingSlot(GetOwnerId(bot.DatabaseID)) >= 0;
+
+    private static bool HasOwnWorkListingSpace(GameBot bot) => FindFreeListingSlot(GetOwnerId(bot.DatabaseID), true) >= 0;
+
+    /// <summary>Whether this item can be posted now, under the cap that applies to it.</summary>
+    public static bool CanListNow(GameBot bot, DbInventoryItem item) =>
+        bot != null && FindFreeListingSlot(GetOwnerId(bot.DatabaseID), AutonomousBotCrafting.IsOwnWork(bot, item)) >= 0;
 
     public static bool TryBuy(GameBot bot, DbInventoryItem item)
     {
@@ -1000,7 +1031,7 @@ namespace DOL.GS;
             item.OwnerID = GetOwnerId(bot.DatabaseID);
             payment.Apply();
             var sale = new RealmExchangeSaleLedger.Sale((int)bot.Realm, item.Name, item.Count, price,
-                sellerId, payment.SellerName, GetOwnerId(bot.DatabaseID), bot.Name, DateTime.UtcNow);
+                sellerId, payment.SellerName, GetOwnerId(bot.DatabaseID), bot.Name, DateTime.UtcNow, item.IsCrafted);
             if (!RealmExchangeSaleLedger.CommitSale(GameServer.Database, sale, item, bot.PersistentRecord, payment.Row))
             {
                 payment.Restore();
