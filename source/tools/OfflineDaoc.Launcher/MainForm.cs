@@ -137,6 +137,15 @@ internal sealed partial class MainForm : Form
     private readonly Button _editorButton;
     private readonly Button _joinFriendButton;
     private readonly Button _hostFriendsButton;
+    // The redesign: a sidebar picks the page, Home has one Play button, Bots holds bot creation and delete-all.
+    private DaocTabControl? _pages;
+    private readonly Label _statusPill = new() { AutoSize = true, Font = new Font("Segoe UI", 10f, FontStyle.Bold), BackColor = Color.Transparent };
+    private readonly Button _homePlay = ActionButton("PLAY", Color.FromArgb(194, 157, 77));
+    private readonly Label _homeTitle = new() { AutoSize = true, Font = new Font("Georgia", 15f, FontStyle.Bold), ForeColor = DaocTheme.GoldLight };
+    private readonly Label _homeText = new() { AutoSize = true, MaximumSize = new Size(560, 0), Font = new Font("Segoe UI", 10f), ForeColor = DaocTheme.Text };
+    private readonly TextBox _deleteConfirm = new() { Width = 120, Font = new Font("Segoe UI", 10f), BackColor = Color.FromArgb(22, 16, 14), ForeColor = DaocTheme.Text, BorderStyle = BorderStyle.FixedSingle };
+    private bool _launchWhenReady;
+    private DateTime _launchRequestedUtc;
     private Process? _serverProcess;
     private RollingServerLog? _serverLog;
     private bool _stoppingServer;
@@ -201,13 +210,12 @@ internal sealed partial class MainForm : Form
         var rootLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            RowCount = 4,
+            RowCount = 3,
             ColumnCount = 1,
             Padding = new Padding(5),
             BackColor = Color.Transparent,
         };
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 132));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 116));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 31));
         stoneFrame.Controls.Add(rootLayout);
@@ -225,10 +233,13 @@ internal sealed partial class MainForm : Form
         _joinFriendButton.Click += (_, _) => OpenJoinFriend();
         _hostFriendsButton.Click += (_, _) => OpenHostForFriends();
 
+        _homePlay.Click += (_, _) => PlayFromHome();
+        // Until the first refresh says the server is up, Home offers Play (start), not Enter Realm.
+        _playButton.Enabled = false;
+        _stopButton.Enabled = false;
         rootLayout.Controls.Add(BuildHeader(), 0, 0);
-        rootLayout.Controls.Add(BuildCards(), 0, 1);
-        rootLayout.Controls.Add(BuildTabs(), 0, 2);
-        rootLayout.Controls.Add(BuildFooter(), 0, 3);
+        rootLayout.Controls.Add(BuildBody(), 0, 1);
+        rootLayout.Controls.Add(BuildFooter(), 0, 2);
 
         _realmFilter.Items.AddRange(["All realms", "Albion", "Midgard", "Hibernia"]);
         _realmFilter.SelectedIndex = 0;
@@ -293,6 +304,7 @@ internal sealed partial class MainForm : Form
         // Repaint only visible clock cells/labels from the last manual snapshot.
         // No ResetBindings, resort, card reconstruction, DB reads or server writes.
         UpdateAutoRefreshCountdown();
+        UpdateHome();
         RefreshRvrSnapshotIfDue();
         if (_rvrObjectivesGrid.Visible)
             foreach (DataGridViewColumn column in _rvrObjectivesGrid.Columns)
@@ -363,56 +375,39 @@ internal sealed partial class MainForm : Form
     private Control BuildHeader()
     {
         var banner = new FantasyBanner { Dock = DockStyle.Fill, Margin = new Padding(2, 2, 2, 3) };
-        var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, BackColor = Color.Transparent, Padding = new Padding(12, 7, 10, 6) };
+        var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, BackColor = Color.Transparent, Padding = new Padding(10, 3, 14, 2) };
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        // Two button columns: the server on the left; the world editor and playing with friends on the right.
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 284));
+        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 360));
+        header.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         var titlePanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
-        titlePanel.Controls.Add(new RealmShieldPicture
-        {
-            Size = new Size(88, 88),
-            Location = new Point(0, 6),
-        });
+        titlePanel.Controls.Add(new RealmShieldPicture { Size = new Size(46, 46), Location = new Point(0, 2) });
         titlePanel.Controls.Add(new Label
         {
             AutoSize = true,
             Text = "DIVIDED REALMS",
-            Font = new Font("Georgia", 28f, FontStyle.Bold),
+            Font = new Font("Georgia", 17f, FontStyle.Bold),
             ForeColor = DaocTheme.GoldLight,
-            Location = new Point(94, 5),
-        });
-        titlePanel.Controls.Add(new Label
-        {
-            AutoSize = true,
-            Text = "THREE REALMS  •  PLAY ALONE OR ADVENTURE WITH LIVING PLAYER BOTS",
-            Font = new Font("Georgia", 9f),
-            ForeColor = Color.FromArgb(196, 145, 70),
-            Location = new Point(97, 57),
+            Location = new Point(54, 0),
+            BackColor = Color.Transparent,
         });
         titlePanel.Controls.Add(new Label
         {
             AutoSize = true,
             Text = _modernClient != null ? "MODERN CLIENT 1.130 • TEST" : _newClient ? $"VERSION {DisplayVersion}c" : VersionLabel(InstalledEditionHasCustomClass(_database)),
             Font = new Font("Georgia", 12f, FontStyle.Bold),
-            ForeColor = DaocTheme.GoldLight,
-            Location = new Point(97, 79),
+            ForeColor = Color.FromArgb(196, 160, 100),
+            Location = new Point(57, 29),
+            BackColor = Color.Transparent,
         });
         header.Controls.Add(titlePanel, 0, 0);
 
-        var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = true, Padding = new Padding(3, 5, 0, 0), BackColor = Color.Transparent };
-        foreach (var button in new[] { _startButton, _stopButton, _playButton, _editorButton, _joinFriendButton, _hostFriendsButton })
-        {
-            button.Width = 132;
-            button.Height = 24;
-            button.Margin = new Padding(2, 1, 2, 1);
-        }
-        actions.Controls.Add(_startButton);
-        actions.Controls.Add(_stopButton);
-        actions.Controls.Add(_playButton);
-        actions.Controls.Add(_editorButton);
-        actions.Controls.Add(_joinFriendButton);
-        actions.Controls.Add(_hostFriendsButton);
+        _statusPill.AutoSize = false;
+        _statusPill.Dock = DockStyle.Fill;
+        _statusPill.TextAlign = ContentAlignment.MiddleRight;
+        _statusPill.ForeColor = DaocTheme.Muted;
+        _statusPill.Text = "● SERVER STOPPED";
+        header.Controls.Add(_statusPill, 1, 0);
         if (_newClient)
         {
             // Join Friend starts the original or modern client; the new client is not supported yet.
@@ -422,11 +417,234 @@ internal sealed partial class MainForm : Form
         else
             SetToolTip(_joinFriendButton, "Play in a friend's world over Tailscale or your home network. Your own server and save are not touched.");
         SetToolTip(_hostFriendsButton, "Let friends join this game's server over Tailscale or your home network, and set up the firewall for it.");
-        SetToolTip(_editorButton, "World Workshop: edit the world, NPCs, items, merchants and server settings of this game in your browser. "
-            + "Close the game and stop the server before saving changes.");
-        header.Controls.Add(actions, 1, 0);
         banner.Controls.Add(header);
         return banner;
+    }
+
+    // The sidebar on the left picks which page shows; the pages are the old tabs, unchanged, with the strip hidden.
+    private Control BuildBody()
+    {
+        var body = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Color.Transparent, Margin = new Padding(0, 3, 0, 3) };
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 190));
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        body.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        Control pages = BuildTabs();
+        body.Controls.Add(BuildSidebar(), 0, 0);
+        body.Controls.Add(pages, 1, 0);
+        return body;
+    }
+
+    private Control BuildSidebar()
+    {
+        TabPage Page(string text) => _pages!.TabPages.Cast<TabPage>().Single(page => page.Text == text);
+        var sidebar = new LauncherSidebar(_pages!) { Dock = DockStyle.Fill, Margin = new Padding(2, 0, 4, 0) };
+        sidebar.AddPage("Play", Page("Home"));
+        sidebar.AddSection("World");
+        sidebar.AddPage("Population", Page("Active Population"));
+        sidebar.AddPage("Groups", Page("Active Groups"));
+        sidebar.AddPage("RvR and keeps", Page("Active RvR"));
+        sidebar.AddPage("Battlegrounds", Page("Battlegrounds"));
+        sidebar.AddPage("Realm events", Page("Realm Events"));
+        sidebar.AddPage("Records", Page("Realm Records"));
+        sidebar.AddPage("Realm Exchange", Page("Realm Exchange"));
+        sidebar.AddSection("Settings");
+        sidebar.AddPage("Game", Page("Options"));
+        sidebar.AddPage("Living Server", Page("Living Server"));
+        sidebar.AddPage("Bot goals", Page("Bot Goals Setting"));
+        sidebar.AddPage("Overlay", Page("Overlay"));
+        sidebar.AddSection("Tools");
+        sidebar.AddPage("Bots", Page("Bots"));
+        Button editor = sidebar.AddAction("World Editor  ↗", OpenWorldEditor);
+        SetToolTip(editor, "World Workshop: edit the world, NPCs, items, merchants and server settings of this game in your browser. "
+            + "Close the game and stop the server before saving changes.");
+        return sidebar;
+    }
+
+    // Home: one Play button (starts the server when needed, then the game), the world at a glance, and friends.
+    private Control BuildHomePage()
+    {
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4, Padding = new Padding(14, 12, 14, 8), BackColor = DaocTheme.Panel };
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var play = new InsetPanel { Dock = DockStyle.Fill, BackColor = DaocTheme.PanelAlt, Accent = DaocTheme.Gold, Margin = new Padding(3) };
+        var playLayout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, BackColor = Color.Transparent, Padding = new Padding(18, 14, 18, 10) };
+        playLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        playLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        var words = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, BackColor = Color.Transparent };
+        words.Controls.Add(_homeTitle);
+        _homeText.Margin = new Padding(3, 8, 3, 3);
+        words.Controls.Add(_homeText);
+        playLayout.Controls.Add(words, 0, 0);
+        var buttons = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.TopDown, WrapContents = false, BackColor = Color.Transparent, Anchor = AnchorStyles.Right };
+        _homePlay.Size = new Size(230, 50);
+        _homePlay.Font = new Font("Georgia", 14f, FontStyle.Bold);
+        _homePlay.Margin = new Padding(3, 4, 3, 8);
+        var secondary = new FlowLayoutPanel { AutoSize = true, WrapContents = false, BackColor = Color.Transparent, Margin = Padding.Empty };
+        foreach (Button button in new[] { _startButton, _stopButton })
+        {
+            button.Size = new Size(113, 28);
+            button.Margin = new Padding(3, 0, 1, 0);
+            secondary.Controls.Add(button);
+        }
+        _startButton.Text = "SERVER ONLY";
+        SetToolTip(_startButton, "Start the server without opening the game, to let bots play or friends join.");
+        buttons.Controls.Add(_homePlay);
+        buttons.Controls.Add(secondary);
+        playLayout.Controls.Add(buttons, 1, 0);
+        play.Controls.Add(playLayout);
+        layout.Controls.Add(play, 0, 0);
+
+        layout.Controls.Add(BuildCards(), 0, 1);
+
+        var friends = new InsetPanel { Dock = DockStyle.Fill, BackColor = DaocTheme.PanelAlt, Accent = DaocTheme.Iron, Margin = new Padding(3) };
+        var friendsLayout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, BackColor = Color.Transparent, Padding = new Padding(16, 8, 12, 8) };
+        friendsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        friendsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        friendsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        friendsLayout.Controls.Add(new Label
+        {
+            Text = "Play with friends: let them into this world, or visit theirs.",
+            AutoSize = true, Anchor = AnchorStyles.Left, Font = new Font("Segoe UI", 10f), ForeColor = DaocTheme.Text, BackColor = Color.Transparent,
+        }, 0, 0);
+        foreach (Button button in new[] { _hostFriendsButton, _joinFriendButton })
+        {
+            button.Size = new Size(150, 30);
+            button.Anchor = AnchorStyles.Right;
+            button.Margin = new Padding(6, 0, 0, 0);
+        }
+        friendsLayout.Controls.Add(_hostFriendsButton, 1, 0);
+        friendsLayout.Controls.Add(_joinFriendButton, 2, 0);
+        friends.Controls.Add(friendsLayout);
+        layout.Controls.Add(friends, 0, 2);
+
+        layout.Controls.Add(new Label
+        {
+            Text = "The live world is under World on the left, and how it plays under Settings. Bots, in Tools, adds and removes autonomous bots.",
+            AutoSize = true, MaximumSize = new Size(820, 0), Margin = new Padding(6, 14, 3, 3), Font = new Font("Segoe UI", 9.5f), ForeColor = DaocTheme.Muted,
+        }, 0, 3);
+        UpdateHome();
+        return layout;
+    }
+
+    // Bots: per realm, roll new autonomous bots at level 1 or 50; and the guarded delete-all.
+    private Control BuildBotsPage()
+    {
+        var layout = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true, Padding = new Padding(16, 14, 16, 8), BackColor = DaocTheme.Panel };
+        layout.Controls.Add(new Label { Text = "BOTS", AutoSize = true, Font = new Font("Georgia", 15f, FontStyle.Bold), ForeColor = DaocTheme.GoldLight });
+        layout.Controls.Add(new Label
+        {
+            Text = "Add autonomous bots to a realm, or clear them all out. Your /spawn companions are never touched here. " +
+                "Hold Shift to add 10 at once, or Ctrl to add 100.",
+            AutoSize = true, MaximumSize = new Size(820, 0), Margin = new Padding(3, 6, 3, 12), Font = new Font("Segoe UI", 10f), ForeColor = DaocTheme.Text,
+        });
+        var realms = new TableLayoutPanel { Width = 760, Height = 108, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Margin = new Padding(0, 0, 0, 18) };
+        for (int i = 0; i < 3; i++) realms.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3f));
+        realms.Controls.Add(RealmBotsCard(1, "ALBION", DaocTheme.Albion), 0, 0);
+        realms.Controls.Add(RealmBotsCard(2, "MIDGARD", DaocTheme.Midgard), 1, 0);
+        realms.Controls.Add(RealmBotsCard(3, "HIBERNIA", DaocTheme.Hibernia), 2, 0);
+        layout.Controls.Add(realms);
+
+        var danger = new InsetPanel { Width = 760, Height = 132, BackColor = Color.FromArgb(31, 21, 19), Accent = DaocTheme.Danger, Margin = new Padding(3) };
+        var dangerLayout = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, BackColor = Color.Transparent, Padding = new Padding(16, 12, 16, 8) };
+        dangerLayout.Controls.Add(new Label { Text = "Delete all bots", AutoSize = true, Font = new Font("Segoe UI", 11f, FontStyle.Bold), ForeColor = Color.FromArgb(240, 138, 128) });
+        dangerLayout.Controls.Add(new Label
+        {
+            Text = "Removes every autonomous bot with its gear, bank, coins and Realm Exchange records. Your account and characters stay. This cannot be undone.",
+            AutoSize = true, MaximumSize = new Size(720, 0), Margin = new Padding(3, 4, 3, 8), Font = new Font("Segoe UI", 9.5f), ForeColor = Color.FromArgb(216, 199, 189),
+        });
+        var confirm = new FlowLayoutPanel { AutoSize = true, WrapContents = false, BackColor = Color.Transparent, Margin = Padding.Empty };
+        confirm.Controls.Add(new Label { Text = "Type DELETE to confirm", AutoSize = true, Margin = new Padding(3, 6, 8, 3), Font = new Font("Segoe UI", 9.5f), ForeColor = Color.FromArgb(216, 199, 189) });
+        _deleteConfirm.AccessibleName = "Type DELETE to confirm";
+        _deleteConfirm.TextChanged += (_, _) => UpdateDeleteButton();
+        confirm.Controls.Add(_deleteConfirm);
+        _deleteAllBotsButton = ActionButton("DELETE ALL BOTS", Color.FromArgb(151, 45, 40));
+        _deleteAllBotsButton.Size = new Size(170, 28);
+        _deleteAllBotsButton.Margin = new Padding(10, 0, 0, 0);
+        _deleteAllBotsButton.Enabled = false;
+        _deleteAllBotsButton.Click += async (_, _) =>
+        {
+            await DeleteAllBotsAsync();
+            _deleteConfirm.Clear();
+        };
+        confirm.Controls.Add(_deleteAllBotsButton);
+        dangerLayout.Controls.Add(confirm);
+        danger.Controls.Add(dangerLayout);
+        layout.Controls.Add(danger);
+        return layout;
+    }
+
+    private Panel RealmBotsCard(int realm, string realmName, Color accent)
+    {
+        var panel = new InsetPanel { Dock = DockStyle.Fill, BackColor = DaocTheme.PanelAlt, Margin = new Padding(3), Accent = accent };
+        var inner = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 2, ColumnCount = 1, BackColor = Color.Transparent, Padding = new Padding(10, 8, 10, 10) };
+        inner.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        inner.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        inner.Controls.Add(new Label { Text = realmName, AutoSize = true, Font = new Font("Georgia", 11f, FontStyle.Bold), ForeColor = DaocTheme.GoldLight, BackColor = Color.Transparent }, 0, 0);
+        inner.Controls.Add(RealmGenerateButton(realm, realmName, accent), 0, 1);
+        panel.Controls.Add(inner);
+        return panel;
+    }
+
+    // Play on Home: enter the realm when the server is up, else start it and enter once it is ready.
+    private void PlayFromHome()
+    {
+        if (_playButton.Enabled)
+        {
+            LaunchClient();
+            return;
+        }
+        if (!_startButton.Enabled)
+            return;
+        _launchWhenReady = true;
+        _launchRequestedUtc = DateTime.UtcNow;
+        StartServer();
+        UpdateHome();
+    }
+
+    // Called after each dashboard refresh and every second: the Play button's words, and the header's status.
+    private void UpdateHome()
+    {
+        bool running = _serverState.Text.Equals("RUNNING", StringComparison.OrdinalIgnoreCase);
+        if (_launchWhenReady && _playButton.Enabled)
+        {
+            _launchWhenReady = false;
+            LaunchClient();
+        }
+        // A start that never came up (the server stopped again) stops waiting after half a minute.
+        if (_launchWhenReady && _startButton.Enabled && DateTime.UtcNow - _launchRequestedUtc > TimeSpan.FromSeconds(30))
+            _launchWhenReady = false;
+
+        if (_launchWhenReady)
+        {
+            _homePlay.Text = "STARTING…";
+            _homePlay.Enabled = false;
+            _homeTitle.Text = "Opening the realms…";
+            _homeText.Text = "The server is starting. The game opens by itself as soon as it is ready.";
+        }
+        else if (_playButton.Enabled)
+        {
+            _homePlay.Text = "ENTER REALM";
+            _homePlay.Enabled = true;
+            _homeTitle.Text = "The realms are open";
+            _homeText.Text = "Your world is running. Enter the realm to log in with your character.";
+        }
+        else
+        {
+            _homePlay.Text = _startButton.Enabled ? "PLAY" : _serverState.Text is { Length: > 0 } shown && !running ? shown : "PLAY";
+            _homePlay.Enabled = _startButton.Enabled;
+            _homeTitle.Text = running ? "The realms are open" : "Ready when you are";
+            _homeText.Text = running
+                ? "The server is running, but the game client is not set up yet."
+                : "Play starts the server, then opens the game and logs you in. Server only starts the world without the game.";
+        }
+
+        // Until the first refresh the server card still shows its placeholder.
+        string state = _serverState.Text is { Length: > 0 } text && text != "0" ? text : "STOPPED";
+        _statusPill.Text = running ? $"● RUNNING  ·  {_onlineValue.Text} bots online" : $"● SERVER {state}";
+        _statusPill.ForeColor = _serverState.ForeColor == default ? DaocTheme.Muted : _serverState.ForeColor;
     }
 
     private void OpenJoinFriend()
@@ -463,16 +681,16 @@ internal sealed partial class MainForm : Form
     private Control BuildCards()
     {
         var cards = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 6, RowCount = 1, Padding = new Padding(0, 4, 0, 5), BackColor = Color.Transparent };
-        // Realm cards need room for two generation actions; status cards do not.
-        foreach (float width in new[] { 16f, 13f, 19f, 19f, 19f, 14f })
+        // The AI delay card needs room for its two-word caption on one line.
+        foreach (float width in new[] { 15f, 16f, 16f, 16f, 16f, 21f })
             cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, width));
         cards.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         cards.Controls.Add(Card("SERVER", _serverState, DaocTheme.Iron), 0, 0);
         _serverState.Font = new Font("Georgia", 12f, FontStyle.Bold);
         cards.Controls.Add(Card("ONLINE BOTS", _onlineValue, DaocTheme.Gold), 1, 0);
-        cards.Controls.Add(Card("ALBION", _albionValue, DaocTheme.Albion, RealmGenerateButton(1, "ALBION", DaocTheme.Albion)), 2, 0);
-        cards.Controls.Add(Card("MIDGARD", _midgardValue, DaocTheme.Midgard, RealmGenerateButton(2, "MIDGARD", DaocTheme.Midgard)), 3, 0);
-        cards.Controls.Add(Card("HIBERNIA", _hiberniaValue, DaocTheme.Hibernia, RealmGenerateButton(3, "HIBERNIA", DaocTheme.Hibernia)), 4, 0);
+        cards.Controls.Add(Card("ALBION", _albionValue, DaocTheme.Albion), 2, 0);
+        cards.Controls.Add(Card("MIDGARD", _midgardValue, DaocTheme.Midgard), 3, 0);
+        cards.Controls.Add(Card("HIBERNIA", _hiberniaValue, DaocTheme.Hibernia), 4, 0);
         Panel performanceCard = Card("BOT AI DELAY", _performanceValue, DaocTheme.Gold);
         const string performanceHelp = PerformanceHelp;
         SetToolTip(performanceCard, performanceHelp);
@@ -562,7 +780,11 @@ internal sealed partial class MainForm : Form
 
     private Control BuildTabs()
     {
-        var tabs = new DaocTabControl { Dock = DockStyle.Fill };
+        var tabs = new DaocTabControl { Dock = DockStyle.Fill, HideStrip = true };
+        _pages = tabs;
+        var home = new TabPage("Home") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
+        home.Controls.Add(BuildHomePage());
+        tabs.TabPages.Add(home);
         var population = new TabPage("Active Population") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
         var populationLayout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 2, ColumnCount = 1 };
         populationLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 43));
@@ -597,7 +819,11 @@ internal sealed partial class MainForm : Form
         var records = new TabPage("Realm Records") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
         var eventRecords = new RealmEventRecordsControl(Path.Combine(_serverDirectory, "realm-event-records.sqlite3"));
         records.Controls.Add(eventRecords);
-        records.Enter += async (_, _) => await eventRecords.RefreshAsync();
+        tabs.SelectedIndexChanged += async (_, _) =>
+        {
+            if (tabs.SelectedTab == records)
+                await eventRecords.RefreshAsync();
+        };
         tabs.TabPages.Add(records);
         tabs.TabPages.Add(xpSettings);
         var overlay = new TabPage("Overlay") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
@@ -609,6 +835,9 @@ internal sealed partial class MainForm : Form
         botGoals.Controls.Add(_botGoalsSettings);
         tabs.TabPages.Add(botGoals);
         tabs.TabPages.Add(auction);
+        var bots = new TabPage("Bots") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
+        bots.Controls.Add(BuildBotsPage());
+        tabs.TabPages.Add(bots);
         return tabs;
     }
 
@@ -1099,7 +1328,7 @@ internal sealed partial class MainForm : Form
         {
             Dock = DockStyle.Fill,
             BackColor = DaocTheme.StoneDark,
-            ColumnCount = 4,
+            ColumnCount = 3,
             RowCount = 1,
             Margin = new Padding(0),
             Padding = new Padding(0),
@@ -1107,17 +1336,10 @@ internal sealed partial class MainForm : Form
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 168));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         panel.Controls.Add(_footer, 0, 0);
         panel.Controls.Add(_autoRefreshCountdownCaption, 1, 0);
         panel.Controls.Add(_autoRefreshCountdownValue, 2, 0);
-        _deleteAllBotsButton = ActionButton("DELETE ALL BOTS…", Color.FromArgb(151, 45, 40));
-        _deleteAllBotsButton.Dock = DockStyle.Fill;
-        _deleteAllBotsButton.Margin = new Padding(0);
-        _deleteAllBotsButton.Enabled = false;
-        _deleteAllBotsButton.Click += async (_, _) => await DeleteAllBotsAsync();
-        panel.Controls.Add(_deleteAllBotsButton, 3, 0);
         return panel;
     }
 
@@ -1394,6 +1616,7 @@ internal sealed partial class MainForm : Form
             _resetKeepsRelics.Enabled = !_resettingKeepsRelics && !_savingXpRates && snapshot.ServerState == "Stopped" && BotGoalsServerStopped();
             _stopButton.Enabled = !_stoppingServer && snapshot.ServerState is "Running" or "Starting";
             _playButton.Enabled = !_stoppingServer && snapshot.ServerState == "Running" && File.Exists(_clientConnector);
+            UpdateHome();
             UpdateXpRateControls(snapshot);
             ApplyFilter();
             UpdateDeleteButton();
@@ -2746,8 +2969,8 @@ internal sealed partial class MainForm : Form
             _deleteBotButton.Enabled = SelectedBot() is { CanDelete: true } selected &&
                                        (!selected.DeletionQueued || !serverRunning);
         if (_deleteAllBotsButton != null)
-            _deleteAllBotsButton.Enabled = _bots.Any(bot => bot.BotId.HasValue &&
-                                                            (!bot.DeletionQueued || !serverRunning));
+            _deleteAllBotsButton.Enabled = _deleteConfirm.Text == "DELETE" &&
+                                           _bots.Any(bot => bot.BotId.HasValue && (!bot.DeletionQueued || !serverRunning));
     }
 
     private void SelectBot(string name)

@@ -525,7 +525,8 @@ internal sealed class SocialExpansionSettingsControl : UserControl
 
     private static RuneButton Action(string text, Color accent) => new()
     {
-        Text = text, Accent = accent, AutoSize = true, MinimumSize = new Size(150, 32), Margin = new Padding(8, 0, 0, 0),
+        // Narrow enough that the status beside them still reads with the launcher's sidebar taking width.
+        Text = text, Accent = accent, AutoSize = true, MinimumSize = new Size(124, 32), Margin = new Padding(6, 0, 0, 0),
     };
 
     /// <summary>One XP-by-level row: Off, the suggested ranges, or custom ranges typed in, plus an error line under it.</summary>
