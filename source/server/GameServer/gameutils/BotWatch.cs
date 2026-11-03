@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using DOL.Events;
@@ -30,6 +31,7 @@ namespace DOL.GS
         private static readonly ConditionalWeakTable<Group, object> GroupIds = new();
         private static int _nextGroupId;
         private static WebApplication _app;
+        private static readonly JsonSerializerOptions Json = new(); // Property names as in the records, which the page reads.
 
         public sealed record RegionRow(ushort Id, string Name, bool Dungeon, int Bots, int Players);
         public sealed record ZoneRow(ushort Id, string Name, int X, int Y, int Width, int Height);
@@ -52,8 +54,8 @@ namespace DOL.GS
                 _app = builder.Build();
                 _app.Use(RefuseForeignHosts);
                 _app.MapGet("/", Page);
-                _app.MapGet("/api/regions", () => Results.Json(Regions()));
-                _app.MapGet("/api/region/{id}", (ushort id) => Region(id) is { } view ? Results.Json(view) : Results.NotFound());
+                _app.MapGet("/api/regions", () => Results.Json(Regions(), Json));
+                _app.MapGet("/api/region/{id}", (ushort id) => Region(id) is { } view ? Results.Json(view, Json) : Results.NotFound());
                 _app.StartAsync().GetAwaiter().GetResult();
 
                 if (log.IsInfoEnabled)
