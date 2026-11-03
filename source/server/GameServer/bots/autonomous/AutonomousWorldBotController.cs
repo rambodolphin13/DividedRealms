@@ -1554,9 +1554,10 @@ namespace DOL.GS
                     return true;
                 }
 
-                // Not scanned (tried 2026-11-02 on a private copy): a member that backed off and waited for the way to clear
-                // died while waiting (24) and fell behind, then caught up alone in formation travel, which no scan covers
-                // (15 -> 64 deaths); under-10 red and purple deaths before camp went from 136 to 187.
+                // Scanned without stopping (GuardMeetupWalk). A member that backed off and waited for the way to clear
+                // (tried 2026-11-02 on a private copy) died while waiting and fell behind, then caught up alone in
+                // formation travel, which no scan covers: under-10 red and purple deaths before camp went from 136 to 187.
+                GuardMeetupWalk(bot, approach);
                 if (!IssuePath(bot, approach, preciseArrival: true))
                 {
                     AutonomousBotGroupCoordinator.ReportUnreachableRendezvous(

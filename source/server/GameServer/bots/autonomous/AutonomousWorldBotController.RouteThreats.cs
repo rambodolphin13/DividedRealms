@@ -68,7 +68,17 @@ namespace DOL.GS
         private bool GuardLoneWalk(GameBot bot, Vector3 destination, out bool turnedBack) =>
             GuardRoute(bot, destination, alone: true, out turnedBack);
 
-        private bool GuardRoute(GameBot bot, Vector3 destination, bool alone, out bool turnedBack)
+        /// <summary>
+        /// The walk to a party's meeting point: bends around monsters far above the bot and sidesteps one on the way,
+        /// but never stops or turns back (a member that held for the way to clear died waiting or fell behind, see
+        /// HandleGroupRendezvous). On 2026-11-02 private copy runs this walk was behind 52 and 53 low level deaths in
+        /// 14 minutes: members of one party walked one after another from Cotswold Village into the same Camelot Hills
+        /// bandit camp, released there and walked into it again.
+        /// </summary>
+        private bool GuardMeetupWalk(GameBot bot, Vector3 destination) =>
+            GuardRoute(bot, destination, alone: true, out _, mayTurnBack: false);
+
+        private bool GuardRoute(GameBot bot, Vector3 destination, bool alone, out bool turnedBack, bool mayTurnBack = true)
         {
             turnedBack = false;
             if (!AutonomousRouteThreatPolicy.Enabled || bot.Brain is not BotBrain brain ||
@@ -82,7 +92,7 @@ namespace DOL.GS
                 return false;
             long now = GameLoop.GameLoopTime;
             // Still backing off from the last monster: the turn is spent, the reaction was already taken.
-            if (alone && now < _loneWalkHoldUntilTick)
+            if (alone && mayTurnBack && now < _loneWalkHoldUntilTick)
                 return true;
             if (now < _nextRouteThreatScanTick)
                 return false;
@@ -209,6 +219,9 @@ namespace DOL.GS
             if (blocker.InCombat)
                 action = AutonomousRouteThreatPolicy.ForBusyMonster(action,
                     detour.HasValue && detours < AutonomousRouteThreatPolicy.MaxDetoursPerThreat, alone || _camp != null);
+            // A walk that may not stop only takes a way around; anything else walks on as before.
+            if (!mayTurnBack && action != RouteThreatAction.Detour)
+                action = RouteThreatAction.Ignore;
             if (action == RouteThreatAction.Ignore)
                 return false;
 
