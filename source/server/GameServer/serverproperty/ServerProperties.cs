@@ -2552,6 +2552,12 @@ namespace DOL.GS.ServerProperties
 		public static bool BOT_SHOW_AS_PLAYERS;
 
 		/// <summary>
+		/// Bot Watch: a read-only map of gamebots, players and groups in a browser, on 127.0.0.1 only (gameutils/BotWatch.cs).
+		/// </summary>
+		[ServerProperty("bots", "bot_watch", "Open Bot Watch, a read-only browser map of gamebots, players and their groups, at http://127.0.0.1:<login port + 20>/. It listens on this PC only.", true)]
+		public static bool BOT_WATCH;
+
+		/// <summary>
 		/// How busy realm chat is (the talking update): a multiplier on how often bots start /faction and /say lines.
 		/// </summary>
 		[ServerProperty("bots", "bot_voices_chat_rate", "When bot voices are on: how much bots talk unprompted, from 0 (only answers) to 3 (very busy). 1 is a normal evening; it already rises and falls with how many bots are on and the hour.", 1.0)]

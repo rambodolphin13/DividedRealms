@@ -559,6 +559,7 @@ namespace DOL.GS
 				}
 
 				PassportDesk.Start(Configuration);
+				BotWatch.Start(Configuration);
 				GetPatchNotes();
 
 				if (log.IsInfoEnabled)
