@@ -868,7 +868,37 @@ namespace DOL.AI.Brain
             characterClass.ID != (int)eCharacterClass.Shaman;
 
         private bool PrefersCurrentSpellRange() =>
-            PrefersSpellRange(BotBody?.CharacterClass, BotBody?.Group?.MemberCount > 1, BotBody?.IsAutonomousWorldBot == true);
+            FightsAtSpellRange(
+                PrefersSpellRange(BotBody?.CharacterClass, BotBody?.Group?.MemberCount > 1, BotBody?.IsAutonomousWorldBot == true),
+                BotBody?.CharacterClass?.ID == (int)eCharacterClass.Druid, _knowsAttackSpellCheck ??= KnowsAttackSpell);
+
+        private Func<bool> _knowsAttackSpellCheck;
+
+        /// <summary>The ranged stance this bot fights in now (see the static overload).</summary>
+        public bool FightsAtSpellRange() => PrefersCurrentSpellRange();
+
+        /// <summary>
+        /// A Druid with no attack spell yet fights in melee: it has only buffs and heals before its Nature line, and on the
+        /// 2026-11-02 overnight run six level 1 Druids stood at spell range all night casting nothing (2,310 pull timeouts,
+        /// 20 XP each). Pure casters keep holding back without spells (tester 2026-10-26: casters walking in with their
+        /// staff looked wrong); every one of them has a nuke from level 1. Pure.
+        /// </summary>
+        public static bool FightsAtSpellRange(bool classPrefersSpellRange, bool druid, Func<bool> knowsAttackSpell) =>
+            classPrefersSpellRange && (!druid || knowsAttackSpell());
+
+        private long _attackSpellCheckTick = -1;
+        private bool _knowsAttackSpell;
+
+        private bool KnowsAttackSpell()
+        {
+            long now = GameLoop.GameLoopTime;
+            if (now != _attackSpellCheckTick)
+            {
+                _attackSpellCheckTick = now;
+                _knowsAttackSpell = SpellApproachRange() > 0;
+            }
+            return _knowsAttackSpell;
+        }
 
         // True when the body already runs the same melee follow NpcStartAttack would
         // issue (its own target, melee weapon, stick distance).
@@ -2781,7 +2811,8 @@ namespace DOL.AI.Brain
             var claims = scope == null ? null : BuffClaims.GetValue(scope, _ => new());
             int family = (int)EffectHelper.GetEffectFromSpell(spell);
             long now = GameLoop.GameLoopTime;
-            int range = Math.Max(minimumRange, spell.CalculateEffectiveRange(Body));
+            // A point-blank group buff (no range, a radius around the caster) reaches members within its radius.
+            int range = spell.IsPBAoE ? spell.Radius : Math.Max(minimumRange, spell.CalculateEffectiveRange(Body));
 
             // BUFF_RULES: the buffer's own dexterity and dexterity/quickness come first.
             if (spell.SpellType is eSpellType.DexterityBuff or eSpellType.DexterityQuicknessBuff &&
@@ -2793,7 +2824,9 @@ namespace DOL.AI.Brain
                 tier = int.MaxValue;
             }
 
-            IEnumerable<GameLiving> members = spell.Target == eSpellTarget.REALM ? AutonomousRealmRaid.SupportMembers(BotBody) : group?.GetMembersInTheGroup() ?? [Body];
+            // A point-blank realm buff lands on the caster's own group only (SpellHandler.GetGroupAndPets), not the raid.
+            IEnumerable<GameLiving> members = spell.Target == eSpellTarget.REALM && !spell.IsPBAoE
+                ? AutonomousRealmRaid.SupportMembers(BotBody) : group?.GetMembersInTheGroup() ?? [Body];
             // BUFF_RULES: real players first, then bots that need the buff, then bots for whom it is
             // optional, then pets (only once every member in range has it). Members a buff does
             // nothing for (acuity on a non-list-caster) are skipped. Ties are picked at random so
@@ -4988,12 +5021,11 @@ namespace DOL.AI.Brain
                         if (spell.SpellType == eSpellType.DamageShield)
                             return false;
 
-                        if (Body.ControlledBrain?.Body != null)
-                        {
-                            if (!LivingHasEffect(Body.ControlledBrain.Body, spell))
-                                Body.TargetObject = Body.ControlledBrain.Body;
-                        }
-
+                        // No pet, or a pet that has it: no cast. The target used to stay whatever it was (often the bot
+                        // itself), and on the 2026-11-02 overnight run Druids cast Embrace of Nature at themselves 484 times.
+                        if (Body.ControlledBrain?.Body is not GameLiving pet || LivingHasEffect(pet, spell))
+                            return false;
+                        Body.TargetObject = pet;
                         break;
                     }
 

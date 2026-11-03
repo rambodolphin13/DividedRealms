@@ -99,6 +99,32 @@ namespace DOL.GS
             return list;
         }
 
+        /// <summary>How near a fighting red or purple monster a gamebot corpse lies when raising it only feeds the monster.</summary>
+        public const int HardFoeCorpseRadius = 600;
+
+        /// <summary>
+        /// A gamebot is raised where its corpse lies. On the 2026-11-02 overnight run a raid raised a Mauler under Prince
+        /// Ba'alorien (level 78) 78 times in an hour; it died again within 5-10 seconds each time. A corpse within
+        /// <see cref="HardFoeCorpseRadius"/> of a fighting monster that cons red or purple to it waits instead (the raid
+        /// releases it after its corpse wait, and it rejoins from its bind point). Pure.
+        /// </summary>
+        public static bool CorpseUnderHardFoe(Vector3 corpse, Vector3 foe, bool foeFighting, ConColor conToCorpse) =>
+            foeFighting && conToCorpse >= ConColor.RED &&
+            Vector2.Distance(new(corpse.X, corpse.Y), new(foe.X, foe.Y)) <= HardFoeCorpseRadius;
+
+        private static GameNPC HardFoeOverCorpse(GameLiving corpse)
+        {
+            Vector3 body = new(corpse.X, corpse.Y, corpse.Z);
+            foreach (GameNPC npc in corpse.GetNPCsInRadius(HardFoeCorpseRadius))
+            {
+                if (npc == null || npc is GameBot || !npc.IsAlive || npc.Realm != eRealm.None)
+                    continue;
+                if (CorpseUnderHardFoe(body, new(npc.X, npc.Y, npc.Z), npc.InCombat, ConLevels.GetConColor(corpse.GetConLevel(npc))))
+                    return npc;
+            }
+            return null;
+        }
+
         /// <summary>The nearest hostile beside the caster that would hit a player raised there (null when it is clear).</summary>
         public static GameNPC ThreatToRaisedPlayer(GameBot bot)
         {
@@ -178,6 +204,7 @@ namespace DOL.GS
                         GameLoop.GameLoopTime)) continue;
                 int cost = (int)(bot.MaxMana * Math.Max(.1f, .5f + (corpse.Level - bot.Level) / (float)Math.Max(1, (int)bot.Level)));
                 if (bot.Mana < cost) continue;
+                if (combat && corpse is GameBot && HardFoeOverCorpse(corpse) != null) continue;
                 if (state.Resurrection.TryReserve(bot, corpse, GameLoop.GameLoopTime, spell.CastTime,
                     true, combat, combat ? budget + 1 : healers, false, bot.CanCastHealSpells)) return corpse;
             }
@@ -201,6 +228,7 @@ namespace DOL.GS
             if (corpse.TempProperties.GetProperty<GameLiving>("RESURRECT_CASTER") != null) return "another resurrection is already pending on the corpse";
             int cost = (int)(bot.MaxMana * Math.Max(.1f, .5f + (corpse.Level - bot.Level) / (float)Math.Max(1, (int)bot.Level)));
             if (bot.Mana < cost) return $"not enough power for the reservation ({bot.Mana}/{cost} of {bot.MaxMana})";
+            if (corpse is GameBot && HardFoeOverCorpse(corpse) is GameNPC foe) return $"the corpse lies under {foe.Name}, still fighting";
             return "the shared reservation refused (another resurrector holds it, or healers are needed for combat)";
         }
 

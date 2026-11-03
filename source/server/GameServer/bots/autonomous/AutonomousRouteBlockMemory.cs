@@ -19,6 +19,21 @@ namespace DOL.GS
         private const int SlotsPerOwner = 4;
         private const int SoftOwnerCap = 2_048;
 
+        /// <summary>
+        /// Blockers a whole realm's bots of about one level share, per region. On the 2026-11-02 overnight run nine roaming
+        /// howling maidens (24-26) in Black Mtns. North killed about 200 Albion bots of level 10-19, each finding the field
+        /// for itself on the way to Lieutenant Brude or a quest step and giving its camp up only once inside it.
+        /// </summary>
+        public const int WordOfMouthSlots = 32;
+        public const int WordOfMouthLevelBand = 5;
+
+        /// <summary>Only a red or purple blocker is passed on: a yellow or orange one is a fair fight for some bots of the band. Pure.</summary>
+        public static bool PassedOn(ConColor con) => con >= ConColor.RED;
+
+        /// <summary>The shared owner key for a realm's bots of one level band in one region (negative: bot and party keys are positive). Pure.</summary>
+        public static long WordOfMouthKey(eRealm realm, int level, ushort region) =>
+            -(((long)realm << 32) | ((long)(level / WordOfMouthLevelBand) << 16) | region) - 1;
+
         private struct Entry
         {
             public ushort Region;
@@ -29,13 +44,13 @@ namespace DOL.GS
 
         private static readonly ConcurrentDictionary<long, Entry[]> Owners = new();
 
-        public static void Note(long ownerKey, ushort region, Vector2 at, float radius, long now)
+        public static void Note(long ownerKey, ushort region, Vector2 at, float radius, long now, int slots = SlotsPerOwner)
         {
             if (ownerKey == 0 || region == 0)
                 return;
             if (Owners.Count > SoftOwnerCap)
                 Prune(now);
-            Entry[] entries = Owners.GetOrAdd(ownerKey, _ => new Entry[SlotsPerOwner]);
+            Entry[] entries = Owners.GetOrAdd(ownerKey, _ => new Entry[slots]);
             radius = System.Math.Max(radius, MinimumRadius);
             lock (entries)
             {

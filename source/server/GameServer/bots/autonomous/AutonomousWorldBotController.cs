@@ -2857,7 +2857,7 @@ namespace DOL.GS
             }
             eCharacterClass pullClass = (eCharacterClass)bot.CharacterClass.ID;
             bool meleePuller = SavageBotCombatPolicy.MustMeleePull(pullClass) ||
-                !BotBrain.PrefersSpellRange(bot.CharacterClass, bot.Group?.MemberCount > 1, true);
+                !brain.FightsAtSpellRange();
 
             // A real swing (including a miss), incoming hit, or health lost by
             // the target belongs to ordinary combat. Never cancel that fight.
