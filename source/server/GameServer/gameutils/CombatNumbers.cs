@@ -36,7 +36,7 @@ namespace DOL.GS
         /// <summary>One number or word to float. Damage type is the eDamageType number; Text is set for avoided attacks (Miss, Block, Parry, Evade, Resist).</summary>
         public sealed record Number(Kind Kind, Who Who, int Value, bool Critical, int DamageType, string Text);
 
-        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<Channel<Number>, byte>> Listeners =
+        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<Channel<string>, byte>> Listeners =
             new(StringComparer.OrdinalIgnoreCase);
         private static int _listenerCount;
         private static WebApplication _app;
@@ -99,7 +99,7 @@ namespace DOL.GS
                 return;
             }
 
-            Channel<Number> channel = Subscribe(account);
+            Channel<string> channel = Subscribe(account);
 
             try
             {
@@ -116,8 +116,7 @@ namespace DOL.GS
 
                     try
                     {
-                        Number number = await channel.Reader.ReadAsync(wait.Token);
-                        line = $"data: {JsonSerializer.Serialize(number, Json)}\n\n";
+                        line = await channel.Reader.ReadAsync(wait.Token);
                     }
                     catch (OperationCanceledException) when (!context.RequestAborted.IsCancellationRequested)
                     {
@@ -137,9 +136,9 @@ namespace DOL.GS
             }
         }
 
-        public static Channel<Number> Subscribe(string account)
+        public static Channel<string> Subscribe(string account)
         {
-            Channel<Number> channel = Channel.CreateBounded<Number>(new BoundedChannelOptions(QUEUE_LENGTH)
+            Channel<string> channel = Channel.CreateBounded<string>(new BoundedChannelOptions(QUEUE_LENGTH)
             {
                 FullMode = BoundedChannelFullMode.DropOldest,
                 SingleReader = true
@@ -149,7 +148,7 @@ namespace DOL.GS
             return channel;
         }
 
-        public static void Unsubscribe(string account, Channel<Number> channel)
+        public static void Unsubscribe(string account, Channel<string> channel)
         {
             if (Listeners.TryGetValue(account, out var channels) && channels.TryRemove(channel, out _))
                 Interlocked.Decrement(ref _listenerCount);
@@ -167,6 +166,7 @@ namespace DOL.GS
                 return;
 
             Report(target, source, Kind.Out, Kind.In, total, criticalAmount > 0, (int)damageType, null);
+            FightReports.Damage(target, source, total);
         }
 
         /// <summary>Called from GameLiving.ChangeHealth for heals other than natural regeneration.</summary>
@@ -176,6 +176,7 @@ namespace DOL.GS
                 return;
 
             Report(target, source, Kind.HealOut, Kind.HealIn, amount, false, 0, null);
+            FightReports.Heal(target, source, amount);
         }
 
         /// <summary>Called from GameLiving.OnAttackedByEnemy: misses, blocks, parries, evades and resisted spells.</summary>
@@ -204,16 +205,42 @@ namespace DOL.GS
 
             foreach ((GamePlayer viewer, bool done, Who who) in Viewers(doer, byPet, doer?.Group?.GetMembersInTheGroup(), target))
             {
-                string account = viewer.Client?.Account?.Name;
-
-                if (account == null || !Listeners.TryGetValue(account, out var channels))
-                    continue;
-
-                var number = new Number(done ? outKind : inKind, who, value, critical, damageType, text);
-
-                foreach (Channel<Number> channel in channels.Keys)
-                    channel.Writer.TryWrite(number);
+                if (IsListening(viewer))
+                    Publish(viewer, Frame(null, new Number(done ? outKind : inKind, who, value, critical, damageType, text)));
             }
+        }
+
+        /// <summary>Called from GameLiving.Die, once per death.</summary>
+        public static void Died(GameLiving victim, GameObject killer)
+        {
+            if (Volatile.Read(ref _listenerCount) != 0)
+                FightReports.Died(victim, killer);
+        }
+
+        public static bool AnyListening => Volatile.Read(ref _listenerCount) != 0;
+
+        public static bool IsListening(GamePlayer player)
+        {
+            string account = player?.Client?.Account?.Name;
+            return account != null && Listeners.TryGetValue(account, out var channels) && !channels.IsEmpty;
+        }
+
+        /// <summary>One server-sent event: a number when eventName is null, else the named event (such as "fight").</summary>
+        public static string Frame(string eventName, object payload)
+        {
+            string data = $"data: {JsonSerializer.Serialize(payload, payload.GetType(), Json)}\n\n";
+            return eventName == null ? data : $"event: {eventName}\n{data}";
+        }
+
+        public static void Publish(GamePlayer viewer, string frame)
+        {
+            string account = viewer?.Client?.Account?.Name;
+
+            if (account == null || !Listeners.TryGetValue(account, out var channels))
+                return;
+
+            foreach (Channel<string> channel in channels.Keys)
+                channel.Writer.TryWrite(frame);
         }
 
         /// <summary>

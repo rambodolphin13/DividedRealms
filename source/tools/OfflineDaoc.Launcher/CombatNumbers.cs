@@ -112,3 +112,87 @@ public sealed class FloatingNumbers
             _ => 1f,
         };
 }
+
+// The server's fight report (GameServer gameutils/FightReports.cs), sent as an "event: fight" when a fight goes quiet.
+public sealed record FightRow(string Name, string? Class, int Level, string Kind, int Count, long Done, long Taken,
+    long Healed, long HealedTaken, int Kills, int Deaths);
+public sealed record FightReport(int Seconds, FightRow[] Allies, FightRow[] Enemies);
+
+/// <summary>Reads the stream line by line: a CombatNumber for each plain data line, a FightReport after "event: fight".</summary>
+public sealed class CombatFeedReader
+{
+    private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true };
+    private string? _event;
+
+    public object? Read(string? line)
+    {
+        if (string.IsNullOrEmpty(line))
+        {
+            _event = null;
+            return null;
+        }
+        if (line.StartsWith("event:", StringComparison.Ordinal))
+        {
+            _event = line[6..].Trim();
+            return null;
+        }
+        if (_event != "fight")
+            return CombatNumberFeed.ParseLine(line);
+        if (!line.StartsWith("data:", StringComparison.Ordinal))
+            return null;
+        try
+        {
+            return JsonSerializer.Deserialize<FightReport>(line.AsSpan(5).Trim(), Json);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+}
+
+/// <summary>What the fight card shows: a title, your side, then the enemies, each row cut to fit.</summary>
+public static class FightCard
+{
+    public const int ShowMilliseconds = 15000;
+    public const int FadeMilliseconds = 1500;
+    public const int MaxAllies = 8;
+    public const int MaxEnemies = 5;
+
+    public sealed record Line(string Name, string Detail, string Done, string Taken, string Healed, string KillsDeaths, bool Enemy);
+
+    public static string Title(FightReport report) =>
+        $"Fight  {(report.Seconds >= 60 ? $"{report.Seconds / 60}m {report.Seconds % 60:00}s" : $"{report.Seconds}s")}";
+
+    public static List<Line> Lines(FightReport report)
+    {
+        var lines = new List<Line>();
+        foreach (FightRow row in report.Allies.Take(MaxAllies))
+            lines.Add(new Line(row.Name, row.Kind == "pet" ? "pet" : row.Class ?? "", Compact(row.Done), Compact(row.Taken),
+                Compact(row.Healed), $"{row.Kills}/{row.Deaths}", false));
+        if (report.Allies.Length > MaxAllies)
+            lines.Add(new Line($"+{report.Allies.Length - MaxAllies} more", "", "", "", "", "", false));
+        foreach (FightRow row in report.Enemies.Take(MaxEnemies))
+            lines.Add(new Line(row.Count > 1 ? $"{row.Count}× {row.Name}" : row.Name, row.Level > 0 ? $"level {row.Level}" : "",
+                Compact(row.Done), Compact(row.Taken), Compact(row.Healed), $"{row.Kills}/{row.Deaths}", true));
+        if (report.Enemies.Length > MaxEnemies)
+            lines.Add(new Line($"+{report.Enemies.Length - MaxEnemies} more", "", "", "", "", "", true));
+        return lines;
+    }
+
+    /// <summary>1-3 digits as they are, then 1.2k, 12k, 1.2M.</summary>
+    public static string Compact(long value) => value switch
+    {
+        0 => "-",
+        < 1000 => value.ToString(),
+        < 10_000 => (value / 1000.0).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "k",
+        < 1_000_000 => (value / 1000) + "k",
+        _ => (value / 1_000_000.0).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "M",
+    };
+
+    /// <summary>Opacity at this age: full, then a fade, then gone (0).</summary>
+    public static float Alpha(long ageMilliseconds) =>
+        ageMilliseconds >= ShowMilliseconds ? 0
+        : ageMilliseconds <= ShowMilliseconds - FadeMilliseconds ? 1
+        : (ShowMilliseconds - ageMilliseconds) / (float)FadeMilliseconds;
+}

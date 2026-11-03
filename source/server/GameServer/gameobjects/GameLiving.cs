@@ -2068,7 +2068,10 @@ namespace DOL.GS
 		public virtual void Die(GameObject killer)
 		{
 			if (Interlocked.Exchange(ref _isBeingHandledByReaperService, true) == false)
+			{
+				CombatNumbers.Died(this, killer);
 				ReaperService.KillLiving(this, killer);
+			}
 		}
 
 		public void OnReaperServiceHandlingComplete()

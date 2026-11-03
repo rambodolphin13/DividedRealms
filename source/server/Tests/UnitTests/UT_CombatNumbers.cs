@@ -83,7 +83,7 @@ namespace DOL.UnitTests
         [Test]
         public void ALeftStreamStopsCounting()
         {
-            Channel<Number> channel = Subscribe("someone");
+            Channel<string> channel = Subscribe("someone");
             Unsubscribe("someone", channel);
             Unsubscribe("someone", channel);
 

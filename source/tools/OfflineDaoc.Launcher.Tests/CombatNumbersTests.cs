@@ -68,3 +68,64 @@ public class CombatNumbersTests
         Assert.That(FloatingNumbers.SizeOf(new(CombatNumberKind.Out, CombatNumberWho.Self, 1, true, 1, null)), Is.GreaterThan(yours));
     }
 }
+
+[TestFixture]
+public class FightCardTests
+{
+    private const string FightLine =
+        "data: {\"seconds\":38,\"allies\":[{\"name\":\"Cnwarrior\",\"class\":\"Warrior\",\"level\":20,\"kind\":\"player\",\"count\":1,\"done\":1240,\"taken\":96,\"healed\":0,\"healedTaken\":0,\"kills\":2,\"deaths\":0}]," +
+        "\"enemies\":[{\"name\":\"soft-shelled crab\",\"class\":null,\"level\":12,\"kind\":\"npc\",\"count\":2,\"done\":96,\"taken\":1240,\"healed\":0,\"healedTaken\":0,\"kills\":0,\"deaths\":2}]}";
+
+    [Test] public void ReadsAFightEventAndStillReadsNumbersAfterIt()
+    {
+        var reader = new CombatFeedReader();
+        Assert.That(reader.Read("event: fight"), Is.Null);
+        var report = reader.Read(FightLine) as FightReport;
+        Assert.That(reader.Read(""), Is.Null);
+        var number = reader.Read("data: {\"kind\":1,\"who\":0,\"value\":9,\"critical\":false,\"damageType\":1,\"text\":null}");
+
+        Assert.That(report, Is.Not.Null);
+        Assert.That(report!.Seconds, Is.EqualTo(38));
+        Assert.That(report.Allies[0].Done, Is.EqualTo(1240));
+        Assert.That(report.Enemies[0].Count, Is.EqualTo(2));
+        Assert.That(number, Is.EqualTo(new CombatNumber(CombatNumberKind.In, CombatNumberWho.Self, 9, false, 1, null)));
+    }
+
+    [Test] public void TheCardListsYourSideThenTheEnemies()
+    {
+        var report = (FightReport)new CombatFeedReader().Let(r => { r.Read("event: fight"); return r.Read(FightLine)!; });
+        var lines = FightCard.Lines(report);
+
+        Assert.That(FightCard.Title(report), Is.EqualTo("Fight  38s"));
+        Assert.That(lines[0], Is.EqualTo(new FightCard.Line("Cnwarrior", "Warrior", "1.2k", "96", "-", "2/0", false)));
+        Assert.That(lines[1], Is.EqualTo(new FightCard.Line("2× soft-shelled crab", "level 12", "96", "1.2k", "-", "0/2", true)));
+    }
+
+    [Test] public void LongListsAreCut()
+    {
+        FightRow Row(int i) => new($"Bot{i}", "Cleric", 50, "companion", 1, i, 0, 0, 0, 0, 0);
+        var report = new FightReport(75, Enumerable.Range(0, 12).Select(Row).ToArray(), Array.Empty<FightRow>());
+
+        var lines = FightCard.Lines(report);
+
+        Assert.That(lines, Has.Count.EqualTo(FightCard.MaxAllies + 1));
+        Assert.That(lines[^1].Name, Is.EqualTo("+4 more"));
+        Assert.That(FightCard.Title(report), Is.EqualTo("Fight  1m 15s"));
+    }
+
+    [Test] public void NumbersAreShortAndTheCardFadesThenGoes()
+    {
+        Assert.That(FightCard.Compact(0), Is.EqualTo("-"));
+        Assert.That(FightCard.Compact(999), Is.EqualTo("999"));
+        Assert.That(FightCard.Compact(12_400), Is.EqualTo("12k"));
+        Assert.That(FightCard.Compact(2_500_000), Is.EqualTo("2.5M"));
+        Assert.That(FightCard.Alpha(1000), Is.EqualTo(1));
+        Assert.That(FightCard.Alpha(FightCard.ShowMilliseconds - FightCard.FadeMilliseconds / 2), Is.EqualTo(0.5f).Within(0.01f));
+        Assert.That(FightCard.Alpha(FightCard.ShowMilliseconds), Is.Zero);
+    }
+}
+
+internal static class TestLet
+{
+    public static TResult Let<T, TResult>(this T value, Func<T, TResult> use) => use(value);
+}
