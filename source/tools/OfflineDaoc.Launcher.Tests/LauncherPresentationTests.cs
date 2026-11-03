@@ -279,10 +279,11 @@ public sealed class LauncherPresentationTests
         form.Show();
         Application.DoEvents();
         form.PerformLayout();
-        var playButton = (Button)mainFormType.GetField("_playButton", HiddenInstance)!.GetValue(form)!;
-        Control banner = Descendants(form).Single(control => control.GetType().FullName == "OfflineDaoc.Launcher.FantasyBanner");
-        Assert.That(playButton.RectangleToScreen(playButton.ClientRectangle).Bottom,
-            Is.LessThanOrEqualTo(banner.RectangleToScreen(banner.ClientRectangle).Bottom - 8));
+        // The redesign: one Play button on Home, the page the launcher opens on, shown whole inside the window.
+        var playButton = (Button)mainFormType.GetField("_homePlay", HiddenInstance)!.GetValue(form)!;
+        Assert.That(Descendants(form).Count(control => control.GetType().FullName == "OfflineDaoc.Launcher.FantasyBanner"), Is.EqualTo(1));
+        Assert.That(playButton.Visible, Is.True);
+        Assert.That(form.RectangleToScreen(form.ClientRectangle).Contains(playButton.RectangleToScreen(playButton.ClientRectangle)), Is.True);
         using var preview = new Bitmap(form.Width, form.Height);
         form.DrawToBitmap(preview, new Rectangle(Point.Empty, preview.Size));
         preview.Save(Path.Combine(TestContext.CurrentContext.WorkDirectory, "launcher-v0.2-preview.png"));

@@ -242,10 +242,27 @@ internal sealed class DaocTabControl : TabControl
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
     }
 
+    /// <summary>Hides the tab strip and border so another control (the launcher's sidebar) picks the page.</summary>
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public bool HideStrip
+    {
+        get => _hideStrip;
+        // Several rows of tabs instead of one with scroll arrows: the arrows would still show over a hidden strip.
+        set { _hideStrip = value; Multiline = value; }
+    }
+    private bool _hideStrip;
+
     protected override void WndProc(ref Message message)
     {
+        // TCM_ADJUSTRECT: answering it ourselves gives the pages the whole control, with no strip or border.
+        if (HideStrip && message.Msg == 0x1328 && !DesignMode)
+        {
+            message.Result = (IntPtr)1;
+            return;
+        }
         base.WndProc(ref message);
-        if (message.Msg != 0x000F || !IsHandleCreated || TabCount == 0) return;
+        if (HideStrip || message.Msg != 0x000F || !IsHandleCreated || TabCount == 0) return;
 
         using var graphics = Graphics.FromHwnd(Handle);
         var lastTab = GetTabRect(TabCount - 1);
