@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Numerics;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.GS;
@@ -68,6 +69,31 @@ namespace DOL.UnitTests
                 Assert.That(BotBrain.IsOutclassedDamageSpell(weakDread, new[] { weakDread, lesserAgony }, 37), Is.False,
                     "the only Dread stays, however low");
             });
+        }
+
+        [Test]
+        public void ACampBeyondAGivenUpPackIsSkipped()
+        {
+            AutonomousRouteBlockMemory.Clear();
+            const long owner = 4242;
+            AutonomousRouteBlockMemory.Note(owner, 1, new Vector2(504_000, 455_000), 500, now: 0);
+            Vector2 party = new(504_000, 458_000);
+            Assert.Multiple(() =>
+            {
+                Assert.That(AutonomousRouteBlockMemory.Crosses(owner, 1, party, new(504_600, 444_200), 60_000), Is.True,
+                    "the next spawn of the same camp, past the goblins");
+                Assert.That(AutonomousRouteBlockMemory.Crosses(owner, 1, party, new(512_000, 470_000), 60_000), Is.False,
+                    "a camp the other way");
+                Assert.That(AutonomousRouteBlockMemory.Crosses(owner, 2, party, new(504_600, 444_200), 60_000), Is.False,
+                    "another region");
+                Assert.That(AutonomousRouteBlockMemory.Crosses(owner + 1, 1, party, new(504_600, 444_200), 60_000), Is.False,
+                    "another bot or party");
+                Assert.That(AutonomousRouteBlockMemory.Crosses(owner, 1, party, new(504_600, 444_200),
+                    AutonomousRouteBlockMemory.CooldownMilliseconds + 1), Is.False, "forgotten after the cooldown");
+                Assert.That(AutonomousRouteBlockMemory.Crosses(owner, 1, party, new(504_600, 455_400), 60_000), Is.True,
+                    "the small radius is raised to the minimum reach");
+            });
+            AutonomousRouteBlockMemory.Clear();
         }
 
         [Test]

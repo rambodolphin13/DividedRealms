@@ -3531,9 +3531,19 @@ namespace DOL.GS
                 campGiveUpSkipped |= blocked;
                 return blocked;
             }
+            // Nor a camp beyond the pack a camp was just given up for (AutonomousRouteBlockMemory).
+            long planNow = GameLoop.GameLoopTime;
+            bool routeBlockers = HasRouteBlockers(bot, planNow);
+            int behindBlockers = 0;
+            bool BehindBlocker(CampCatalogCell cell)
+            {
+                bool behind = routeBlockers && IsBehindRouteBlocker(bot, cell.RegionId, cell.X, cell.Y, planNow);
+                behindBlockers += behind ? 1 : 0;
+                return behind;
+            }
             foreach (CampCatalogCell cell in CampCatalogSnapshot()
                          .Where(cell => !rejectedDungeons.Contains(cell.Id) && reachableRegions.Contains(cell.RegionId) &&
-                                        !CampGiveUp(cell) &&
+                                        !CampGiveUp(cell) && !BehindBlocker(cell) &&
                                         (sharedGroup || !_recentFailedSoloCamps.ContainsKey(cell.Id)) &&
                                         !AutonomousCampRouteQuarantine.IsQuarantined(cell.Id) &&
                                         !AutonomousCampRouteQuarantine.IsFamilyQuarantined(cell.RegionId, cell.MonsterName) &&
@@ -3659,6 +3669,9 @@ namespace DOL.GS
             }
             if (campGiveUpSkipped)
                 AutonomousRouteGoalFixMetrics.CampRepickBlocked();
+            if (behindBlockers > 0)
+                Log.Info($"AUTONOMOUS_ROUTE_BLOCK_SKIP bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
+                         $"group={(sharedGroup ? _groupDirective.GroupId : "solo")} skipped={behindBlockers} left={camps.Count}");
 
             // Once realm/accessibility/level/con filters have been applied, each
             // distinct location is drawn in proportion to its live spawns (capped).
