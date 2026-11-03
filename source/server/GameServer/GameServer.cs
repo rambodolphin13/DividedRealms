@@ -560,6 +560,7 @@ namespace DOL.GS
 
 				PassportDesk.Start(Configuration);
 				BotWatch.Start(Configuration);
+				CombatNumbers.Start(Configuration);
 				GetPatchNotes();
 
 				if (log.IsInfoEnabled)

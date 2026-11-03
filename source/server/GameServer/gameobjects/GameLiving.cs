@@ -1578,6 +1578,8 @@ namespace DOL.GS
 			if (ad == null)
 				return;
 
+			CombatNumbers.Avoided(ad);
+
 			HandleCrowdControlOnAttacked(ad);
             RealmAbilities.ModernRr5.OnAttacked(this, ad);
             RealmAbilities.ModernRr5.ModifyIncoming(this, ad);
@@ -2010,6 +2012,7 @@ namespace DOL.GS
 				//natural regeneration, this allows for aggro on healers!
 				if (healthChanged > 0 && healthChangeType != eHealthChangeType.Regenerate)
 				{
+					CombatNumbers.Heal(this, changeSource, healthChanged);
 					EnemyHealedEventArgs args = new(this, changeSource, healthChangeType, healthChanged);
 
 					foreach (GameLiving attacker in attackComponent.AttackerTracker.Attackers)

@@ -877,6 +877,7 @@ namespace DOL.GS
 		public virtual void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
 		{
 			Notify(GameObjectEvent.TakeDamage, this, new TakeDamageEventArgs(source, damageType, damageAmount, criticalAmount));
+			CombatNumbers.Damage(this, source, damageType, damageAmount, criticalAmount);
 		}
 
 		#endregion

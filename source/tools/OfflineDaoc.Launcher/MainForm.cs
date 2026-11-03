@@ -2974,6 +2974,7 @@ internal sealed partial class MainForm : Form
             {
                 _modernClient.ValidateServer(_root);
                 Process.Start(_modernClient.CreateStartInfo(credentials.Account, credentials.Password));
+                CombatNumbersOverlay.EnsureRunning(_modernClient.Port, credentials.Account);
             }
             catch (Exception ex)
             {
@@ -2990,7 +2991,10 @@ internal sealed partial class MainForm : Form
             ArgumentList = { "game.dll", "127.0.0.1", credentials.Account, credentials.Password },
         });
         if (client != null)
+        {
             ClientSessionDiagnostics.Start(client, _clientDirectory, _logsDirectory);
+            CombatNumbersOverlay.EnsureRunning(10300, credentials.Account);
+        }
     }
 
     internal const string NewClientExecutable = "Godot_v4.7.2-stable_mono_win64.exe";

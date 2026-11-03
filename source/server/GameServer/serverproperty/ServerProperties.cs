@@ -2558,6 +2558,12 @@ namespace DOL.GS.ServerProperties
 		public static bool BOT_WATCH;
 
 		/// <summary>
+		/// Floating combat numbers: hits, heals and avoided attacks streamed to the launcher overlay (gameutils/CombatNumbers.cs).
+		/// </summary>
+		[ServerProperty("server", "combat_numbers", "Stream floating combat numbers (your, your pets' and your group's hits and heals, and what is done to you) to the launcher overlay at http://127.0.0.1:<login port + 30>/combat. It listens on this PC only.", true)]
+		public static bool COMBAT_NUMBERS;
+
+		/// <summary>
 		/// How busy realm chat is (the talking update): a multiplier on how often bots start /faction and /say lines.
 		/// </summary>
 		[ServerProperty("bots", "bot_voices_chat_rate", "When bot voices are on: how much bots talk unprompted, from 0 (only answers) to 3 (very busy). 1 is a normal evening; it already rises and falls with how many bots are on and the hour.", 1.0)]
