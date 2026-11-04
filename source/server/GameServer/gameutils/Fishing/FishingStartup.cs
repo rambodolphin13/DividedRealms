@@ -8,7 +8,7 @@ namespace DOL.GS.Fishing;
 
 /// <summary>
 /// Adds the fishing item templates (fish, junk, the poles and camp kits) to the database when the server starts.
-/// Existing rows are left alone, so edits made in the database are kept, except the model of our own rows:
+/// Existing rows are left alone, so edits made in the database are kept, except the model and stack size of our own rows:
 /// a model changed in FishingCatalog (the pole's look, say) is copied onto the existing row.
 /// </summary>
 public static class FishingStartup
@@ -44,27 +44,30 @@ public static class FishingStartup
                 }
 
                 // The client draws an item (hand mesh and bag icon) from its model alone, and inventory items read
-                // the model through their template, so updating the cached row changes every existing pole too.
-                if (existing.Model != template.Model)
+                // the model and stack size through their template, so updating the cached row changes every existing
+                // pole and fish too.
+                if (existing.Model != template.Model || existing.MaxCount != template.MaxCount)
                 {
                     int oldModel = existing.Model;
+                    int oldMaxCount = existing.MaxCount;
 
                     // DbItemTemplate ignores Dirty unless AllowUpdate is set, and SaveObject skips clean rows while
-                    // still returning true, so without it the new model would never reach the database.
+                    // still returning true, so without it the change would never reach the database.
                     existing.AllowUpdate = true;
                     existing.Model = template.Model;
+                    existing.MaxCount = template.MaxCount;
                     bool saved = GameServer.Database.SaveObject(existing);
                     existing.AllowUpdate = false;
 
                     if (saved)
                     {
                         updated++;
-                        Log.Info($"Fishing: item template '{template.Id_nb}' model changed from {oldModel} to {template.Model}.");
+                        Log.Info($"Fishing: item template '{template.Id_nb}' model {oldModel} -> {template.Model}, stack {oldMaxCount} -> {template.MaxCount}.");
                     }
                     else
                     {
                         failed++;
-                        Log.Error($"Fishing: could not save the new model of item template '{template.Id_nb}'.");
+                        Log.Error($"Fishing: could not save item template '{template.Id_nb}'.");
                     }
                 }
 

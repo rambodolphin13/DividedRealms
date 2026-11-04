@@ -47,6 +47,16 @@ public class UT_Fishing
     }
 
     [Test]
+    public void FishAndJunk_StackInTheBackpack()
+    {
+        foreach (DbItemTemplate template in FishingCatalog.AllTemplates().Where(t => t.Id_nb != FishingCatalog.PoleTemplateId))
+        {
+            Assert.That(template.IsStackable, Is.True, template.Id_nb);
+            Assert.That(template.MaxCount, Is.EqualTo(20), template.Id_nb);
+        }
+    }
+
+    [Test]
     public void Pole_IsATwoHandedGenericWeaponAnyClassCanHold()
     {
         DbItemTemplate pole = FishingCatalog.AllTemplates().Single(t => t.Id_nb == FishingCatalog.PoleTemplateId);

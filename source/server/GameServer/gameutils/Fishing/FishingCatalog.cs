@@ -212,7 +212,7 @@ namespace DOL.GS.Fishing
                             Model = tier < 2 ? SmallFishModel : LargeFishModel,
                             Weight = Math.Clamp(weight, 1, MaxTemplateWeightTenths),
                             Price = species.BaseValueCopper * TierPriceMultiplier[tier],
-                            MaxCount = tier == 3 ? 1 : 20,
+                            MaxCount = 20,
                             PackSize = 1,
                             IsPickable = true,
                             IsDropable = true,

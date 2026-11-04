@@ -570,8 +570,9 @@ public static class FishingManager
             player.Out.SendMessage($"You reel in {description}!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
         }
 
+        // AddTemplate tops up a stack of the same fish before it takes an empty slot.
         DbInventoryItem item = GameInventoryItem.Create(template);
-        bool bagged = player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
+        bool bagged = player.Inventory.AddTemplate(item, 1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 
         if (bagged)
         {
