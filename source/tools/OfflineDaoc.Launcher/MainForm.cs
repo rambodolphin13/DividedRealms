@@ -1,4 +1,4 @@
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -131,6 +131,9 @@ internal sealed partial class MainForm : Form
     private Button? _deleteBotButton;
     private Button? _deleteAllBotsButton;
     private readonly List<Button> _realmGenerateButtons = [];
+    // The Bots page's own counts, so adding bots does not mean switching back to Home to see them.
+    private readonly Dictionary<string, Label> _botsPageRealmCounts = [];
+    private readonly Label _botsPageTotal = new() { AutoSize = true, Margin = new Padding(3, 0, 3, 8), Font = new Font("Segoe UI", 10.5f, FontStyle.Bold), ForeColor = DaocTheme.Gold, Text = "—" };
     private readonly Button _startButton;
     private readonly Button _stopButton;
     private readonly Button _playButton;
@@ -540,7 +543,8 @@ internal sealed partial class MainForm : Form
                 "Hold Shift to add 10 at once, or Ctrl to add 100.",
             AutoSize = true, MaximumSize = new Size(820, 0), Margin = new Padding(3, 6, 3, 12), Font = new Font("Segoe UI", 10f), ForeColor = DaocTheme.Text,
         });
-        var realms = new TableLayoutPanel { Width = 760, Height = 108, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Margin = new Padding(0, 0, 0, 18) };
+        layout.Controls.Add(_botsPageTotal);
+        var realms = new TableLayoutPanel { Width = 760, Height = 132, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Margin = new Padding(0, 0, 0, 18) };
         for (int i = 0; i < 3; i++) realms.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3f));
         realms.Controls.Add(RealmBotsCard(1, "ALBION", DaocTheme.Albion), 0, 0);
         realms.Controls.Add(RealmBotsCard(2, "MIDGARD", DaocTheme.Midgard), 1, 0);
@@ -579,11 +583,15 @@ internal sealed partial class MainForm : Form
     private Panel RealmBotsCard(int realm, string realmName, Color accent)
     {
         var panel = new InsetPanel { Dock = DockStyle.Fill, BackColor = DaocTheme.PanelAlt, Margin = new Padding(3), Accent = accent };
-        var inner = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 2, ColumnCount = 1, BackColor = Color.Transparent, Padding = new Padding(10, 8, 10, 10) };
+        var inner = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3, ColumnCount = 1, BackColor = Color.Transparent, Padding = new Padding(10, 8, 10, 10) };
+        inner.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         inner.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         inner.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         inner.Controls.Add(new Label { Text = realmName, AutoSize = true, Font = new Font("Georgia", 11f, FontStyle.Bold), ForeColor = DaocTheme.GoldLight, BackColor = Color.Transparent }, 0, 0);
-        inner.Controls.Add(RealmGenerateButton(realm, realmName, accent), 0, 1);
+        var count = new Label { Text = "—", AutoSize = true, Margin = new Padding(3, 4, 3, 0), Font = new Font("Segoe UI", 10f), ForeColor = DaocTheme.Text, BackColor = Color.Transparent };
+        _botsPageRealmCounts[realmName] = count;
+        inner.Controls.Add(count, 0, 1);
+        inner.Controls.Add(RealmGenerateButton(realm, realmName, accent), 0, 2);
         panel.Controls.Add(inner);
         return panel;
     }
@@ -1601,6 +1609,7 @@ internal sealed partial class MainForm : Form
             _albionValue.Text = RealmRosterValue(snapshot.Bots, "Albion");
             _midgardValue.Text = RealmRosterValue(snapshot.Bots, "Midgard");
             _hiberniaValue.Text = RealmRosterValue(snapshot.Bots, "Hibernia");
+            UpdateBotsPageCounts(snapshot.Bots);
             _performanceValue.Text = snapshot.BotAiDelay is { } aiDelay ? $"{aiDelay.AverageMs:0.0} ms" : "—";
             // Only when the text changed: re-setting a tooltip on every refresh while the pointer is on it trips a
             // WinForms keyboard-tooltip state machine bug (KeyNotFoundException, 2026-10-30).
@@ -3470,6 +3479,20 @@ internal sealed partial class MainForm : Form
         if (silver > 0) parts.Add($"{silver}s");
         if (remainder > 0 || parts.Count == 0) parts.Add($"{remainder}c");
         return string.Join(" ", parts);
+    }
+
+    private void UpdateBotsPageCounts(IReadOnlyCollection<BotRow> bots)
+    {
+        foreach (var (realmName, label) in _botsPageRealmCounts)
+        {
+            string realm = char.ToUpperInvariant(realmName[0]) + realmName[1..].ToLowerInvariant();
+            int total = bots.Count(bot => bot.Realm == realm && !bot.DeletionQueued);
+            int online = bots.Count(bot => bot.Realm == realm && bot.IsOnline && !bot.DeletionQueued);
+            label.Text = $"{total:N0} {(total == 1 ? "bot" : "bots")}  ·  {online:N0} online";
+        }
+        int all = bots.Count(bot => !bot.DeletionQueued);
+        int allOnline = bots.Count(bot => bot.IsOnline && !bot.DeletionQueued);
+        _botsPageTotal.Text = $"{all:N0} bots in all  ·  {allOnline:N0} online now";
     }
 
     private static string RealmRosterValue(IReadOnlyCollection<BotRow> bots, string realm)

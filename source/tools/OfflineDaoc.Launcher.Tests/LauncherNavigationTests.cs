@@ -39,6 +39,26 @@ public class LauncherNavigationTests
         Assert.That(deleteAll.Enabled, Is.False);
     }
 
+    [Test] public void BotsPageShowsTheCountsPerRealm()
+    {
+        using var form = (Form)Activator.CreateInstance(MainForm)!;
+        Type row = MainForm.GetNestedType("BotRow", BindingFlags.NonPublic)!;
+        object Bot(string realm, bool online, bool queued = false) => Activator.CreateInstance(row,
+            [null, "x", realm, "", "", "", 1, "", "", online, true, queued, "", "", "", "", "", "", "", ""])!;
+        var bots = Array.CreateInstance(row, 4);
+        bots.SetValue(Bot("Albion", true), 0);
+        bots.SetValue(Bot("Albion", false), 1);
+        bots.SetValue(Bot("Hibernia", true), 2);
+        bots.SetValue(Bot("Midgard", true, queued: true), 3);
+        MainForm.GetMethod("UpdateBotsPageCounts", Hidden)!.Invoke(form, [bots]);
+
+        var counts = Field<Dictionary<string, Label>>(form, "_botsPageRealmCounts");
+        Assert.That(counts["ALBION"].Text, Is.EqualTo("2 bots  ·  1 online"));
+        Assert.That(counts["MIDGARD"].Text, Is.EqualTo("0 bots  ·  0 online"));
+        Assert.That(counts["HIBERNIA"].Text, Is.EqualTo("1 bot  ·  1 online"));
+        Assert.That(Field<Label>(form, "_botsPageTotal").Text, Is.EqualTo("3 bots in all  ·  2 online now"));
+    }
+
     [Test] public void PlaySaysWhatItWillDo()
     {
         using var form = (Form)Activator.CreateInstance(MainForm)!;
