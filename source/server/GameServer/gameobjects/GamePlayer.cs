@@ -9614,6 +9614,13 @@ namespace DOL.GS
             if (floorObject.ObjectState is not eObjectState.Active)
                 return;
 
+            // From True165 eefaa8d62: a dead player picks up nothing (loot, relics or anything else).
+            if (!IsAlive)
+            {
+                Out.SendMessage("You can't do that while you're dead!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                return;
+            }
+
             // A relic is taken with the same rules whether right-clicked or picked up with the Get key (2026-10-30).
             if (floorObject is GameRelic relic)
             {
