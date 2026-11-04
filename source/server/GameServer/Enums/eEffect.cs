@@ -251,6 +251,7 @@ namespace DOL.GS
         ArtifactMezFeedback,
         ArtifactStunFeedback,
         ArtifactCheatDeath,
-        ArtifactMorph
+        ArtifactMorph,
+        CampRest
     }
 }

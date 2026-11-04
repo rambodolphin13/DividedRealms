@@ -136,6 +136,9 @@ client). The original DAoC client is no longer supported, and the Sluaghbinder c
   power and endurance regeneration; the feast is the strongest.
 - Waterlogged chests can be opened from the backpack: coins that grow with your level, and one chest in four also
   holds a random magic item of about your level.
+- Resting by a burning campfire shows "Camp Rest" on your buff bar (no spell effect in the world); it goes away when you
+  walk off. Fishing beside a camp lands better fish and quicker bites: the bigger the camp, the bigger the bonus.
+- The Bedroll Camp Kit puts down a camp cot instead of what showed as a loot bag.
 
 **Bots and raids**
 - Hibernian bots no longer get stuck at the door of their portal keep in Odin's Gate. Once out of the keep's

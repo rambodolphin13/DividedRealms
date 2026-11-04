@@ -86,6 +86,7 @@ public class UT_FishingCraft
         Assert.That(FishingCraft.RollSkill(500, FishingCraft.Poles[0]), Is.EqualTo(50));
         Assert.That(FishingCraft.RollSkill(500, FishingCraft.Poles[2]), Is.EqualTo(60));
         Assert.That(FishingCraft.RollSkill(1000, FishingCraft.Poles.Last()), Is.EqualTo(100));
+        Assert.That(FishingCraft.RollSkill(500, FishingCraft.Poles[0], FishingCraft.Camps.Last()), Is.EqualTo(60));
     }
 
     [Test]
@@ -152,6 +153,13 @@ public class UT_FishingCraft
             Assert.That(FishingCraft.Camps[i].Minutes, Is.GreaterThan(FishingCraft.Camps[i - 1].Minutes));
             Assert.That(FishingCraft.Camps[i].RestorePercent, Is.GreaterThan(FishingCraft.Camps[i - 1].RestorePercent));
         }
+
+        for (int i = 1; i < FishingCraft.Camps.Count; i++)
+        {
+            Assert.That(FishingCraft.Camps[i].FishingBonus, Is.GreaterThan(FishingCraft.Camps[i - 1].FishingBonus));
+        }
+
+        Assert.That(FishingCraft.Camps.All(c => c.ShelterModel != FishingCraft.BedrollModel), Is.True, "1882 has no mesh: it draws as a loot bag");
 
         FishingCampTier tent = FishingCraft.Camps.Last();
 

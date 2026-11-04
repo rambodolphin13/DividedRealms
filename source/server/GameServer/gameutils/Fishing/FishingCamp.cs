@@ -42,17 +42,29 @@ namespace DOL.GS.Fishing
         }
 
         /// <summary>True when a burning campfire (anyone's) is within the camp radius: where fish can be cooked.</summary>
-        public static bool IsNearCampfire(GamePlayer player)
+        public static bool IsNearCampfire(GameLiving living)
         {
+            return BestCampNear(living) != null;
+        }
+
+        /// <summary>
+        /// The best camp tier burning within the camp radius of <paramref name="living"/> (anyone's camp), or null. Fishing
+        /// beside it adds the tier's FishingBonus.
+        /// </summary>
+        public static FishingCampTier BestCampNear(GameLiving living)
+        {
+            FishingCampTier best = null;
+
             foreach (Camp camp in Camps.Values)
             {
-                if (!camp.Ended && camp.Fire.CurrentRegionID == player.CurrentRegionID && player.IsWithinRadius(camp.Fire, Radius))
+                if (!camp.Ended && camp.Fire.CurrentRegionID == living.CurrentRegionID && living.IsWithinRadius(camp.Fire, Radius)
+                    && (best == null || camp.Tier.FishingBonus > best.FishingBonus))
                 {
-                    return true;
+                    best = camp.Tier;
                 }
             }
 
-            return false;
+            return best;
         }
 
         /// <summary>Called from GamePlayer.UseSlot for a camp kit. The kit is used up only when the camp goes up.</summary>
@@ -275,6 +287,12 @@ namespace DOL.GS.Fishing
             if (living.CurrentRegionID != camp.RegionId || !living.IsWithinRadius(camp.Fire, Radius))
             {
                 return;
+            }
+
+            // The buff bar icon; the effect ends itself once its owner is away from every burning fire.
+            if (living is GamePlayer resting && !resting.effectListComponent.ContainsEffectForEffectType(eEffect.CampRest))
+            {
+                ECSGameEffectFactory.Create(new(resting, 0, 1), static (in ECSGameEffectInitParams i) => new CampRestECSGameEffect(i));
             }
 
             int percent = RestorePercent(camp.Tier, living is GamePlayer player && player.IsSitting);

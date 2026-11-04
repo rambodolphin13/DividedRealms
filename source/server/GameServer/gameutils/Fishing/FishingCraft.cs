@@ -42,6 +42,9 @@ namespace DOL.GS.Fishing
 
         public string ShelterName;
         public int PriceCopper;
+
+        /// <summary>Points added to an angler's skill (0-1000) for the catch and bite rolls while fishing beside this camp.</summary>
+        public int FishingBonus;
     }
 
     /// <summary>A stock crafting material a recipe uses. Every one is sold by crafting merchants in all three realms.</summary>
@@ -84,7 +87,10 @@ namespace DOL.GS.Fishing
 
         // objects.csv 2656 "Campfire" (items.csv 1064 with fire effect 74), 1882 "bedroll pillow", 4237 "Summer_tentRound".
         public const int CampfireModel = 2656;
+        // 1882 "bedroll pillow" has an icon (2238) but no mesh, so it stays the kit's bag look; on the ground it drew as a
+        // loot bag (owner, 2026-11-04). 3869 "Cot Prop" (cot_prop.nif) is a real camp cot.
         public const int BedrollModel = 1882;
+        public const int CotModel = 3869;
         public const int TentModel = 4237;
 
         /// <summary>Pole tiers, weakest first. The first is the stock fishing pole that /fish pole hands out.</summary>
@@ -100,9 +106,9 @@ namespace DOL.GS.Fishing
         /// <summary>Camp kits, smallest first.</summary>
         public static readonly IReadOnlyList<FishingCampTier> Camps = new[]
         {
-            new FishingCampTier { TemplateId = "offline_camp_kit_fire", Name = "Campfire Kit", KitModel = CampfireModel, Minutes = 15, RestorePercent = 2, ShelterModel = 0, PriceCopper = 300 },
-            new FishingCampTier { TemplateId = "offline_camp_kit_bedroll", Name = "Bedroll Camp Kit", KitModel = BedrollModel, Minutes = 20, RestorePercent = 3, ShelterModel = BedrollModel, ShelterName = "bedroll", PriceCopper = 2500 },
-            new FishingCampTier { TemplateId = "offline_camp_kit_tent", Name = "Tent Camp Kit", KitModel = BedrollModel, Minutes = 30, RestorePercent = 4, ShelterModel = TentModel, ShelterName = "tent", PriceCopper = 10000 },
+            new FishingCampTier { TemplateId = "offline_camp_kit_fire", Name = "Campfire Kit", KitModel = CampfireModel, Minutes = 15, RestorePercent = 2, ShelterModel = 0, PriceCopper = 300, FishingBonus = 30 },
+            new FishingCampTier { TemplateId = "offline_camp_kit_bedroll", Name = "Bedroll Camp Kit", KitModel = BedrollModel, Minutes = 20, RestorePercent = 3, ShelterModel = CotModel, ShelterName = "bedroll", PriceCopper = 2500, FishingBonus = 60 },
+            new FishingCampTier { TemplateId = "offline_camp_kit_tent", Name = "Tent Camp Kit", KitModel = BedrollModel, Minutes = 30, RestorePercent = 4, ShelterModel = TentModel, ShelterName = "tent", PriceCopper = 10000, FishingBonus = 100 },
         };
 
         // Stock materials (realm 0 rows sold by crafting merchants in every realm).
@@ -169,11 +175,12 @@ namespace DOL.GS.Fishing
         }
 
         /// <summary>
-        /// The 0-100 skill FishingCatalog rolls with: the angler's 0-1000 skill plus the pole's bonus, scaled down.
+        /// The 0-100 skill FishingCatalog rolls with: the angler's 0-1000 skill plus the pole's bonus and the bonus of a camp
+        /// burning beside them, scaled down.
         /// </summary>
-        public static int RollSkill(int skill, FishingPoleTier pole)
+        public static int RollSkill(int skill, FishingPoleTier pole, FishingCampTier camp = null)
         {
-            int bonus = pole?.Bonus ?? 0;
+            int bonus = (pole?.Bonus ?? 0) + (camp?.FishingBonus ?? 0);
 
             return Math.Clamp((Math.Clamp(skill, 0, MaxSkill) + bonus) / 10, 0, 100);
         }

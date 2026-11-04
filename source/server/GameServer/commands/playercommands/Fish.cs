@@ -163,6 +163,54 @@ namespace DOL.GS.Commands
 
                     break;
                 }
+                case "preview":
+                {
+                    // Testing aid for GMs: shows an objects.csv model on the ground in front of them for a while.
+                    if (client.Account.PrivLevel < (uint)ePrivLevel.GM)
+                    {
+                        DisplaySyntax(client);
+
+                        break;
+                    }
+
+                    if (args.Length < 3 || !ushort.TryParse(args[2], out ushort model))
+                    {
+                        player.Out.SendMessage("Usage: /fish preview <objects.csv model> [seconds]", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                        break;
+                    }
+
+                    int seconds = args.Length >= 4 && int.TryParse(args[3], out int s) ? Math.Clamp(s, 5, 600) : 60;
+                    Point2D spot = player.GetPointFromHeading(player.Heading, 250);
+                    GameStaticItem preview = new()
+                    {
+                        CurrentRegion = player.CurrentRegion,
+                        X = spot.X,
+                        Y = spot.Y,
+                        Z = player.Z,
+                        Heading = player.Heading,
+                        Realm = player.Realm,
+                        Model = model,
+                        Name = $"model {model}"
+                    };
+
+                    if (!preview.AddToWorld())
+                    {
+                        player.Out.SendMessage($"Model {model} could not be placed here.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                        break;
+                    }
+
+                    new ECSGameTimer(preview, _ =>
+                    {
+                        preview.Delete();
+
+                        return 0;
+                    }, seconds * 1000);
+                    player.Out.SendMessage($"Showing model {model} 250 units ahead for {seconds} seconds.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                    break;
+                }
                 case "cook":
                 {
                     FishingCooking.TryCook(player);

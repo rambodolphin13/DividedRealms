@@ -502,7 +502,7 @@ public static class FishingManager
         progress.RecordCast();
         FishingProgressStore.Save(progress);
 
-        int biteDelay = FishingCatalog.RollBiteDelayMs(FishingCraft.RollSkill(progress.Skill, GetPole(player)), Random.Shared);
+        int biteDelay = FishingCatalog.RollBiteDelayMs(FishingCraft.RollSkill(progress.Skill, GetPole(player), FishingCamp.BestCampNear(player)), Random.Shared);
         long now = GameLoop.GameLoopTime;
 
         session.Phase = ePhase.Waiting;
@@ -538,7 +538,7 @@ public static class FishingManager
 
         FishingProgress progress = FishingProgressStore.Load(player);
         FishingPoleTier pole = GetPole(player);
-        FishingCatch fish = FishingCatalog.Roll(player.Realm, FishingCraft.RollSkill(progress.Skill, pole), Random.Shared);
+        FishingCatch fish = FishingCatalog.Roll(player.Realm, FishingCraft.RollSkill(progress.Skill, pole, FishingCamp.BestCampNear(player)), Random.Shared);
 
         if (fish == null)
         {
