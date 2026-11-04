@@ -156,14 +156,31 @@ public static class HostForFriends
     /// The addresses an invite code carries, in the order a friend tries them. Tailscale and internet addresses go
     /// before the home network one, which could be some other device on the friend's own network.
     /// </summary>
-    public static IReadOnlyList<IPAddress> InviteAddresses(IPAddress? internet)
+    public static IReadOnlyList<IPAddress> InviteAddresses(IPAddress? internet) => InviteAddresses(internet, LocalAddresses());
+
+    public static IReadOnlyList<IPAddress> InviteAddresses(IPAddress? internet, IReadOnlyList<LocalAddress> local)
     {
-        var addresses = new List<IPAddress>(TailscaleAddresses().Take(1));
+        var usable = local.Where(entry => JoinFriend.IsAllowedHost(entry.Address)).ToList();
+        var addresses = new List<IPAddress>(usable.Select(entry => entry.Address).Where(IsTailscale).Take(1));
         if (internet != null)
             addresses.Add(internet);
-        addresses.AddRange(HomeAddresses().Take(1));
+        // Adapters with a gateway first, so not WSL or Hyper-V; one without beats no address at all.
+        addresses.AddRange(usable
+            .Where(entry => !IsInternet(entry.Address) && !IsTailscale(entry.Address))
+            .OrderByDescending(entry => entry.HasGateway)
+            .Select(entry => entry.Address)
+            .Take(1));
         return addresses;
     }
+
+    /// <summary>
+    /// An internet address held by this PC itself, as when the modem is in bridge mode and no router sits in front.
+    /// Friends reach it directly, with no UPnP or port forwarding.
+    /// </summary>
+    public static IPAddress? DirectInternetAddress() => DirectInternetAddress(LocalAddresses());
+
+    public static IPAddress? DirectInternetAddress(IReadOnlyList<LocalAddress> local) =>
+        local.FirstOrDefault(entry => entry.HasGateway && IsInternet(entry.Address))?.Address;
 
     public static string SettingsPath(string runtime) => Path.Combine(runtime, SettingsFileName);
 
@@ -226,37 +243,26 @@ public static class HostForFriends
         $"TCP {state.LoginPort} and {state.DeskPort} and UDP {state.UdpPort} to this PC by hand and set PublicIP in server\\config\\serverconfig.xml " +
         "to your internet address.";
 
-    /// <summary>This PC's Tailscale IPv4 addresses (100.64.0.0/10) on interfaces that are up.</summary>
-    public static IReadOnlyList<IPAddress> TailscaleAddresses()
-    {
-        try
-        {
-            return NetworkInterface.GetAllNetworkInterfaces()
-                .Where(network => network.OperationalStatus == OperationalStatus.Up)
-                .SelectMany(network => network.GetIPProperties().UnicastAddresses)
-                .Select(unicast => unicast.Address)
-                .Where(IsTailscale)
-                .Distinct()
-                .ToList();
-        }
-        catch (NetworkInformationException)
-        {
-            return [];
-        }
-    }
+    /// <summary>An IPv4 address of this PC; HasGateway is false on virtual adapters (WSL, Hyper-V).</summary>
+    public sealed record LocalAddress(IPAddress Address, bool HasGateway);
 
-    /// <summary>This PC's addresses on the networks with a gateway, so not virtual adapters (WSL, Hyper-V).</summary>
-    public static IReadOnlyList<IPAddress> HomeAddresses()
+    /// <summary>This PC's IPv4 addresses on interfaces that are up, loopback left out.</summary>
+    public static IReadOnlyList<LocalAddress> LocalAddresses()
     {
         try
         {
             return NetworkInterface.GetAllNetworkInterfaces()
-                .Where(network => network.OperationalStatus == OperationalStatus.Up && network.GetIPProperties().GatewayAddresses.Count > 0)
-                .SelectMany(network => network.GetIPProperties().UnicastAddresses)
-                .Select(unicast => unicast.Address)
-                .Where(address => address.AddressFamily == AddressFamily.InterNetwork && !IsInternet(address) && !IsTailscale(address) &&
-                                  !IPAddress.IsLoopback(address) && JoinFriend.IsAllowedHost(address))
-                .Distinct()
+                .Where(network => network.OperationalStatus == OperationalStatus.Up &&
+                                  network.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                .SelectMany(network =>
+                {
+                    IPInterfaceProperties properties = network.GetIPProperties();
+                    bool gateway = properties.GatewayAddresses.Any(g => !g.Address.Equals(IPAddress.Any) && !g.Address.Equals(IPAddress.IPv6Any));
+                    return properties.UnicastAddresses
+                        .Where(unicast => unicast.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(unicast.Address))
+                        .Select(unicast => new LocalAddress(unicast.Address, gateway));
+                })
+                .DistinctBy(entry => entry.Address)
                 .ToList();
         }
         catch (NetworkInformationException)

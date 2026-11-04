@@ -167,6 +167,11 @@ internal sealed class HostForFriendsForm : Form
                 return;
             internet = check.Usable ? check.InternetAddress : HostForFriends.ManualPublicAddress(_runtime);
             _router.Text = internet != null && !check.Usable ? $"Using your own PublicIP setting: {internet}." : check.Message;
+            if (internet == null && HostForFriends.DirectInternetAddress() is IPAddress direct)
+            {
+                internet = direct;
+                _router.Text = $"This PC is on the internet directly at {direct} (no router in front), so friends join there.";
+            }
             _router.ForeColor = internet != null ? DaocTheme.Success : DaocTheme.Danger;
         }
 
