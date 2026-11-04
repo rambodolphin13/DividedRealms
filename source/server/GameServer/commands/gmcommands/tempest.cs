@@ -6,6 +6,7 @@ namespace DOL.GS.Commands
         "&tempest",
         ePrivLevel.GM,
         "Tests the Storm Sovereign Tempest orbs (the Warlock chamber orbs over your head)",
+        "/tempest - show your Tempest charges",
         "/tempest cycle - show each stock orb colour for 5 seconds",
         "/tempest show <code> - light all five orbs in one colour code (0x66 or 102)",
         "/tempest set <0-5> - set your Tempest charges",
@@ -16,8 +17,11 @@ namespace DOL.GS.Commands
         public void OnCommand(GameClient client, string[] args)
         {
             GamePlayer player = client.Player;
-            if (player == null || args.Length < 2)
+            if (player == null)
+                return;
+            if (args.Length < 2)
             {
+                Say(player, $"Tempest {StormTempest.Charges(player)}/{StormTempest.MaxCharges}.");
                 DisplaySyntax(client);
                 return;
             }

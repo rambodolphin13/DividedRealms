@@ -17,6 +17,7 @@ namespace DOL.UnitTests
     public class UT_StormRemake
     {
         private GameServer _previous;
+        private PetTestLanguageScope _language;
         private readonly List<GameLiving> _actors = new();
 
         private sealed class Server : GameServer
@@ -39,6 +40,7 @@ namespace DOL.UnitTests
         public void Setup()
         {
             _previous = GameServer.Instance;
+            _language = new PetTestLanguageScope();
             GameServer.LoadTestDouble((Server)RuntimeHelpers.GetUninitializedObject(typeof(Server)));
         }
 
@@ -49,6 +51,7 @@ namespace DOL.UnitTests
                 StormTempest.Reset(actor);
             _actors.Clear();
             GameServer.LoadTestDouble(_previous);
+            _language.Dispose();
         }
 
         private Pool NewPool()
@@ -167,6 +170,21 @@ namespace DOL.UnitTests
             Assert.That(StormTempest.Spend(owner), Is.EqualTo(5));
             Assert.That(StormTempest.Charges(owner), Is.EqualTo(0));
             Assert.That(StormTempest.Spend(owner), Is.EqualTo(0), "nothing left to spend");
+        }
+
+        [TestCase(0, 1)]   // Thunderstroke
+        [TestCase(14, 2)]  // Hidden Thunder
+        [TestCase(20, 1)]  // Winterbite
+        [TestCase(40, 1)]  // Royal Rebuke
+        public void BuildingStyles_AddTempestWhenTheirEffectRuns(int index, int charges)
+        {
+            var owner = NewPool();
+            var enemy = NewPool();
+            var spell = new Spell(new DbSpell { SpellID = StormRemakeStyles.FirstEffectId + index, Type = "StormSovereignAbility", Target = "Enemy", Duration = 10 }, 50);
+            var handler = new StormSovereignHandler(owner, spell, new SpellLine("Combat Style Effects", "Combat Style Effects", "", false));
+            Assert.That(handler.Ability, Is.Not.Null);
+            handler.Ability.Run(handler, enemy);
+            Assert.That(StormTempest.Charges(owner), Is.EqualTo(charges));
         }
 
         [Test]

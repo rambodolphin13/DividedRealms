@@ -16,6 +16,7 @@ namespace DOL.GS
         public const int CycleMs = 5000;
         public const double BonusPerCharge = 0.20;
         private const string StateKey = "StormTempest.State";
+        private static readonly DOL.Logging.Logger _log = DOL.Logging.LoggerManager.Create(typeof(StormTempest));
 
         // The chamber colour codes the stock Warlock packet used (primary only, then one per secondary spell type).
         public static readonly byte[] StockCodes = { 0x03, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
@@ -46,6 +47,7 @@ namespace DOL.GS
             var state = GetOrCreate(living);
             state.Charges = Math.Min(MaxCharges, state.Charges + amount);
             state.LastGain = GameLoop.GameLoopTime;
+            Trace(living, $"+{amount}", state.Charges);
             Refresh(living, state);
         }
 
@@ -62,6 +64,7 @@ namespace DOL.GS
             if (StormforgedHeroicRules.HasAvatar(living))
                 return spent;
             state.Charges = Math.Min(spent, Refund(living));
+            Trace(living, $"spent {spent}", state.Charges);
             Refresh(living, state);
             return spent;
         }
@@ -132,6 +135,13 @@ namespace DOL.GS
             if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
                 return byte.TryParse(text.AsSpan(2), System.Globalization.NumberStyles.HexNumber, null, out code);
             return byte.TryParse(text, out code);
+        }
+
+        // Players only: one log line per change, to check the orbs against the real count in game.
+        private static void Trace(GameLiving living, string change, int charges)
+        {
+            if (living is GamePlayer && _log.IsInfoEnabled)
+                _log.Info($"TEMPEST {living.Name} {change} -> {charges}/{MaxCharges}");
         }
 
         // Eye of Tempest (RA): finishers refund 1/1/2 charges and charges last 30/45/60 seconds.
