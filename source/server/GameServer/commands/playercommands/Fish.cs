@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using DOL.Database;
 using DOL.GS.Fishing;
@@ -135,6 +136,30 @@ namespace DOL.GS.Commands
                     {
                         FishingWorkbench.ShowRecipes(player);
                     }
+
+                    break;
+                }
+                case "setskill":
+                {
+                    // Testing aid for GMs and admins: sets their own fishing skill.
+                    if (client.Account.PrivLevel < (uint)ePrivLevel.GM)
+                    {
+                        DisplaySyntax(client);
+
+                        break;
+                    }
+
+                    if (args.Length < 3 || !int.TryParse(args[2], out int skill))
+                    {
+                        player.Out.SendMessage($"Usage: /fish setskill <0-{FishingCraft.MaxSkill}>", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                        break;
+                    }
+
+                    FishingProgress progress = FishingProgressStore.Load(player);
+                    progress.Skill = Math.Clamp(skill, 0, FishingCraft.MaxSkill);
+                    FishingProgressStore.Save(progress);
+                    player.Out.SendMessage($"Your fishing skill is now {progress.Skill}.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
                     break;
                 }
