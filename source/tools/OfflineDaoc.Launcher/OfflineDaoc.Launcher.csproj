@@ -30,6 +30,9 @@
     <Compile Include="../OfflineDaoc.Passport/PassportTravel.cs" Link="Friends/PassportTravel.cs" />
     <!-- The patcher's world update, so the launcher brings a modern test world up to its release by the same rules. -->
     <Compile Include="../OfflineDaoc.Patcher/WorldUpdate.cs" Link="Updates/WorldUpdate.cs" />
+    <!-- IMPORT PROGRESS: the progress transfer's own engine, so a new folder takes saves by the same rules. -->
+    <Compile Include="../OfflineDaoc.ProgressImport/ImportEngine.cs" Link="Updates/ImportEngine.cs" />
+    <EmbeddedResource Include="../OfflineDaoc.ProgressImport/progress-policy.json" LogicalName="progress-policy.json" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Join Friend.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

@@ -70,19 +70,20 @@ TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.cs
 # package's world doesn't. mount_67 rides mount 89, the saddled Chimera (tools/horses/install_chimera_mount.py adds it
 # to gamedata.mpk and figures/, neither of which client-patch.json patches).
 WITHHELD_MERCHANT_ITEMS = ('mount_67',)
-# Models only the developer's client has, for the same reason: the private fishing rod (tools/pet-art/install_fishing_rod.py,
-# objects 4927 spear hold and 4928 staff hold in gamedata.mpk). The package's world draws poles with the stock quarterstaff.
-PRIVATE_MODELS = {4927: 442, 4928: 442}
-STOCK_SERVER_PROPERTIES = {'fishing_pole_model': '442'}
+# Models only the developer's client has, for the same reason, mapped to the stock model the package's world uses instead,
+# and the settings that would swap them in. Empty since the fishing rod (objects 4927 and 4928) is in the client patch
+# (make_client_patch.py rod_entries); a new private model goes here until the patch adds it.
+PRIVATE_MODELS: dict[int, int] = {}
+STOCK_SERVER_PROPERTIES: dict[str, str] = {}
 
 
-def use_stock_models(con) -> dict:
+def use_stock_models(con, models: dict | None = None, properties: dict | None = None) -> dict:
     """Puts the stock look back on everything that names a private model, and the settings that would swap it in again."""
     templates = sum(con.execute('UPDATE ItemTemplate SET Model = ? WHERE Model = ?', (stock, private)).rowcount
-                    for private, stock in PRIVATE_MODELS.items())
-    properties = sum(con.execute('UPDATE ServerProperty SET Value = ? WHERE `Key` = ? AND Value <> ?', (value, key, value)).rowcount
-                     for key, value in STOCK_SERVER_PROPERTIES.items())
-    return dict(item_templates=templates, server_properties=properties)
+                    for private, stock in (PRIVATE_MODELS if models is None else models).items())
+    changed = sum(con.execute('UPDATE ServerProperty SET Value = ? WHERE `Key` = ? AND Value <> ?', (value, key, value)).rowcount
+                     for key, value in (STOCK_SERVER_PROPERTIES if properties is None else properties).items())
+    return dict(item_templates=templates, server_properties=changed)
 
 START_CMD = r'''@echo off
 setlocal
