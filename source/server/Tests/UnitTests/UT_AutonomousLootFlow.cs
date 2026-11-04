@@ -362,8 +362,11 @@ namespace DOL.UnitTests
             var item = new GeneratedUniqueItem(eRealm.Midgard, eCharacterClass.Stormforged, 50, eObjectType.Chain);
             var flags = BindingFlags.NonPublic | BindingFlags.Instance;
             var valid = typeof(GeneratedUniqueItem).GetMethod("SkillIsValidForClass", flags);
-            foreach (var property in new[] { eProperty.Skill_Sword, eProperty.Skill_Hammer, eProperty.Skill_Axe, eProperty.Skill_Spear, eProperty.Skill_Shields, eProperty.Skill_Parry, eProperty.Skill_Stealth })
+            foreach (var property in new[] { eProperty.Skill_Hammer, eProperty.Skill_Axe, eProperty.Skill_Shields, eProperty.Skill_Parry, eProperty.Skill_Stealth })
                 Assert.That(valid.Invoke(item, new object[] { property }), Is.True, property.ToString());
+            // 2026-11-04 remake: Hammer, Axe and Shield only.
+            foreach (var property in new[] { eProperty.Skill_Sword, eProperty.Skill_Spear })
+                Assert.That(valid.Invoke(item, new object[] { property }), Is.False, property.ToString());
             Assert.That(valid.Invoke(item, new object[] { eProperty.Skill_Stormcalling }), Is.False, "The custom class has no trained stock Stormcalling specialization");
             Assert.That(valid.Invoke(item, new object[] { eProperty.Skill_Staff }), Is.False);
             foreach (string method in new[] { "SkillIsValidForMagical", "SkillIsValidForArmor", "SkillIsValidForWeapon" })

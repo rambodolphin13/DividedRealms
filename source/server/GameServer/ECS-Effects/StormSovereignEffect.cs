@@ -9,7 +9,10 @@ namespace DOL.GS
     {
         private long _lastProc;
         private GameLiving _marked;
-        private int Key => PendragonRules.IsRoyalRank(SpellHandler.Spell.ID) ? StormSovereignAbilities.Key(SpellHandler.Spell.ID) : -1;
+        // Old royal keys; the Storm remake's Runic Armament, Runic Reversal and Hunter's Mark map onto 15, 18 and 17.
+        private int Key => PendragonRules.IsRoyalRank(SpellHandler.Spell.ID) ? StormSovereignAbilities.Key(SpellHandler.Spell.ID) :
+            StormRemakeSpells.Key(SpellHandler.Spell.ID) switch { StormRemakeSpells.RunicArmament => 15, StormRemakeSpells.RunicReversal => 18, StormRemakeSpells.HuntersMark => 17, _ => -1 };
+        private bool Remake => StormRemakeSpells.Owns(SpellHandler.Spell.ID);
         public StormSovereignEffect(in ECSGameEffectInitParams init) : base(init,StormSovereignAbilities.Toggle(init.SpellHandler.Spell.ID)) { }
         public override void OnStartEffect()
         {
@@ -38,6 +41,19 @@ namespace DOL.GS
             if(GameLoop.GameLoopTime<_lastProc || !Owner.Chance(RandomDeckEvent.OffensiveProcChance,20)) return;
             _lastProc=GameLoop.GameLoopTime+2000;
             eObjectType weapon=(eObjectType)(Owner.ActiveWeapon?.Object_Type??0);
+            if(Remake)
+            {
+                // Storm remake: hammers splash lightning, axes open a frost wound.
+                if(weapon is eObjectType.Axe) {
+                    StormSovereignAbilities.Strike(Handler,hit.Target,Owner.Level*1.5,eDamageType.Cold);
+                    StormRemakeStyles.Wound(Handler,hit.Target,eDamageType.Cold);
+                } else {
+                    StormSovereignAbilities.Strike(Handler,hit.Target,Owner.Level*1.5);
+                    foreach(var enemy in Handler.Enemies(hit.Target,250).Where(t=>t!=hit.Target && t.InCombat).Take(2))
+                        StormSovereignAbilities.Strike(Handler,enemy,Owner.Level*0.75);
+                }
+                return;
+            }
             if(weapon is eObjectType.Sword or eObjectType.SlashingWeapon) Handler.Heal(Owner,Math.Max(1,Owner.MaxHealth*2/100));
             else {
                 StormSovereignAbilities.Strike(Handler,hit.Target,Owner.Level*1.5,weapon is eObjectType.Axe or eObjectType.ThrustWeapon?eDamageType.Cold:eDamageType.Energy);
@@ -50,11 +66,11 @@ namespace DOL.GS
         {
             if(IsEnding || !IsActive || GameLoop.GameLoopTime<_lastProc || args is not AttackedByEnemyEventArgs { AttackData: var hit } ||
                 !hit.IsMeleeAttack || hit.Attacker==null || !hit.Attacker.IsAlive) return;
-            if(Key==18 && hit.AttackResult==eAttackResult.Parried) {
+            if(Key==18 && (hit.AttackResult==eAttackResult.Parried || Remake && hit.AttackResult==eAttackResult.Blocked)) {
                 _lastProc=GameLoop.GameLoopTime+1000;
                 StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2);
             }
-            else if(Key==15 && hit.AttackResult==eAttackResult.Blocked && Owner.Chance(RandomDeckEvent.DefensiveProcChance,20)) {
+            else if(Key==15 && hit.AttackResult==eAttackResult.Blocked && Owner.Chance(RandomDeckEvent.DefensiveProcChance,Remake?30:20)) {
                 _lastProc=GameLoop.GameLoopTime+5000;
                 Handler.Cast(Owner,500+Owner.Level,eSpellType.BothAblativeArmor,db=>{db.Target="Self";db.Duration=8;db.Value=Owner.Level*3;db.Damage=50;});
             }

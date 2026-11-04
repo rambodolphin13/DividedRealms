@@ -1,6 +1,7 @@
 # Storm Sovereign remake: Hammer, Axe and Shield
 
-Status: design for owner review, 2026-11-04. Nothing built or installed yet.
+Status: owner approved 2026-11-04; built on feature/storm-remake. Orb colour chosen in game: **0x77** (blue ring, gold runes).
+Not yet installed on the modern test world; not played.
 Builds on `SOVEREIGN-IDENTITY-REDESIGN-PROPOSAL.md` (2026-10-25), narrowed to the owner's pick:
 **Hammer, Axe and Shield**, with real offensive and defensive chains, still overpowered.
 
@@ -45,14 +46,11 @@ spending charges clears them. The stock packet colour codes are 0x03, 0x11, 0x22
 
 Nothing in the client changes: no new art, no patched files. Two things are not known yet and get checked first:
 
-1. Whether the 1.130 client still draws the orbs. Modern Warlocks no longer use them, so this server never sends
-   the packet on the modern client today.
-2. Which colour code looks most like blue lightning. A GM test command (`/tempest show <code>`) lights all five orbs in
-   one colour so the owner can compare them in game.
+1. Whether the 1.130 client still draws the orbs: **yes** (owner's screenshot, 2026-11-04).
+2. Which colour code looks most like blue lightning: **0x77**, a blue lightning ring around gold runes. The GM command
+   `/tempest cycle|show <code>|set <n>|color <code>|clear` stays for testing.
 
-Backup if the orbs don't draw: a **Tempest** buff icon (lightning icon) whose name shows the count
-("Tempest 3/5"), plus a short lightning flash on the Sovereign each time a charge is gained, and a big one when
-charges are spent. The buff icon and flash are added either way.
+The orbs show the count, so no separate buff icon was added.
 
 ## Styles: 20 per line, 60 total
 
@@ -137,17 +135,17 @@ Shield styles need a shield in hand. There is no parry chain here; shields get t
 | 45 | Oathbinding | anytime | Fills Tempest to 5 |
 | 48 | Stormwall | Oathbinding | Signature: spends Tempest; 10 s party ablative plus a 350-radius retaliation aura |
 
-## Spells and abilities: 23 buttons down to 18
+## Spells and abilities: 23 buttons down to 19
 
 | Keep / change | Ability | Change |
 |---|---|---|
 | Keep | Lightning Spear, Winter's Grasp, Royal Thunder, Chain of the Crown, Stormbreak, Eye of the Storm | Royal Thunder and Stormbreak **spend Tempest** (+20% per charge) |
 | Merge | Royal Presence | unchanged chant |
-| Merge | Armor of the Crown + Runic Ward | one self buff (stats and the extra resist) |
+| Merge | Runic Ward into Runic Armament | one maintained buff: weapon procs plus the extra magic resist (Armor of the Crown stays) |
 | Merge | Decree: Advance / Stand Fast / Strike True | one **Royal Decree**: all three effects, 10 s, 30 s reuse |
 | Merge | Sovereign's Renewal + Rally to the Crown | **Rally to the Crown**: 25% self, 15% party, 20% endurance, 30 s reuse |
 | Keep | Will of the Sovereign, Sovereign's Challenge, Storm Wolf, Storm Crown, Hammerfall, Veil of Winter | Storm Crown also fills Tempest to 5 and makes finishers cost nothing |
-| Rework | Runic Armament | Hammer: lightning proc splash. Axe: frost bleed proc. Shield: blocks give Tempest and a small ward |
+| Rework | Runic Armament | Hammer: lightning proc splash. Axe: frost wound proc. Shield: blocks can raise a small ward (every block or parry gives Tempest anyway) |
 | Rework | Runic Reversal | Parries **and blocks** return lightning for 8 s |
 | Rework | Hunter's Mark | From stealth: +30% on the next hit **and** +3 Tempest |
 
@@ -166,12 +164,12 @@ trained stay trained**; they just stop appearing for new purchases.
 - **Keep the four Sovereign RAs:** Royal Fortitude, Storm Mastery, Crown's Resolve, Wrath of the Crown (free at RR5).
 - **New, 3 ranks each (2/4/6 points):**
   - *Thunderlord:* style damage +5/10/15%.
-  - *Eye of Tempest:* Tempest cap 5/6/7 and every finisher refunds 1/1/2 charges.
+  - *Eye of Tempest:* finishers refund 1/1/2 charges and charges last 30/45/60 s (the cap stays 5: the client has five orbs).
   - *Shieldwall of Asgard:* block chance +3/6/9% and block chains add 10/20/30% to their wards.
 
 ## How it gets built
 
-1. New C# handler `StormSovereignStyles` with one explicit entry per style (no shared index switch).
+1. New C# handler `StormRemakeStyles` with one explicit entry per style (no shared index switch).
    New style IDs and spell IDs in a fresh private range; the old 1800-1834 styles and 62700-62734 effects stay for
    Pendragon and Tuatha, which are not touched.
 2. A `TempestEffect` (stacking 0-5 charges, 30 s decay, no gain from splash/procs/echoes) that sends the chamber
@@ -188,3 +186,22 @@ trained stay trained**; they just stop appearing for new purchases.
 
 Each chain fires in order; block chains with a shield; parry chains with a two-hander; Tempest stack count
 shows; finishers visibly hit harder with charges; Storm Crown fills Tempest; old sword/spear gear is still in bags.
+
+## As built (2026-11-04)
+
+| Part | Where |
+|---|---|
+| Style table (names, levels, chains, growth, descriptions) | `source/tools/sovereign/storm_remake_styles.json` |
+| Style effects, by table index (proc spells 63500-63559, styles 7100-7159) | `spells/Stormforged/StormRemakeStyles.cs` |
+| Merged/reworked spells (63600 + tier x 16 + key, lines `Stormforged.Remake00-06`) | `spells/Stormforged/StormRemakeSpells.cs` |
+| Tempest charges and orbs | `gameutils/StormTempest.cs`, `PacketLib173.SendChamberOrbs` |
+| Blocks/parries build Tempest | `GamePlayer.OnAttackedByEnemy` |
+| Storm Crown fills Tempest, finishers free | `StormforgedAvatarEffect`, `StormTempest.Spend` |
+| New RAs | `SovereignThunderlord`, `SovereignEyeOfTempest`, `SovereignShieldwall` (InternalID 1904-1906) |
+| Loot and bots: no Sword/Spear | `GeneratedUniqueItem`, `StormforgedRules.IsRogSkill`, `SovereignBotSpec` |
+| World edits (World Workshop plan/apply/undo) | `source/tools/sovereign/storm_remake_edits.py` |
+
+Install: build the edits from the stopped world (`storm_remake_edits.py <db> edits.json`), `cli.py plan`, then `apply`
+with the owner's OK. Undo with the id `apply` prints. Old hotbar buttons for removed styles and spells stop working:
+drag new ones from the style and spell lists. Characters who had the old Runic Ward or Runic Armament switched on keep
+those icons until they cancel them.

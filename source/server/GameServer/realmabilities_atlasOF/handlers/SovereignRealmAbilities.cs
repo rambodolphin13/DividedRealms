@@ -39,6 +39,30 @@ namespace DOL.GS.RealmAbilities
         public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 2;
     }
 
+    /// <summary>Storm Sovereign: weapon style damage +5/10/15%.</summary>
+    public sealed class SovereignThunderlord : SovereignPassive
+    {
+        public SovereignThunderlord(DbAbility ability, int level) : base(ability, level, eProperty.StyleDamage) { }
+        public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 5;
+    }
+
+    /// <summary>Storm Sovereign: finishers refund 1/1/2 Tempest charges; charges last 30/45/60 seconds (read by StormTempest).</summary>
+    public sealed class SovereignEyeOfTempest : SovereignPassive
+    {
+        public const string KeyName = "Sovereign_EyeOfTempest";
+        public SovereignEyeOfTempest(DbAbility ability, int level) : base(ability, level, Array.Empty<eProperty>()) { }
+        protected override string ValueUnit => " s";
+        public override int GetAmountForLevel(int level) => level <= 0 ? 0 : 30 + 15 * Math.Min(level - 1, 2);
+    }
+
+    /// <summary>Storm Sovereign: block chance +3/6/9%; style storm shields absorb 10/20/30% more.</summary>
+    public sealed class SovereignShieldwall : SovereignPassive
+    {
+        public const string KeyName = "Sovereign_Shieldwall";
+        public SovereignShieldwall(DbAbility ability, int level) : base(ability, level, eProperty.BlockChance) { }
+        public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 3;
+    }
+
     /// <summary>The existing Realm Abilities career automatically grants this free at RR5.</summary>
     public sealed class SovereignWrathOfTheCrown : RR5RealmAbility
     {

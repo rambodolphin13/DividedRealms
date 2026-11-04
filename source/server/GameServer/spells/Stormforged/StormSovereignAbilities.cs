@@ -17,10 +17,14 @@ namespace DOL.GS.Spells
         {
             int normalized = PendragonRules.NormalizeSpell(id);
             return normalized >= FirstId && normalized < 62656 || normalized >= 62700 && normalized < 62735 ||
-                normalized == RR5SpellId || id is >= 64335 and <= 64341 or >= 73335 and <= 73341;
+                normalized == RR5SpellId || id is >= 64335 and <= 64341 or >= 73335 and <= 73341 ||
+                StormRemakeStyles.OwnsEffect(id) || StormRemakeSpells.Owns(id);
         }
         public static int Key(int id) => (PendragonRules.NormalizeSpell(id) - FirstId) % 32;
-        public static bool Toggle(int id) => PendragonRules.IsRoyalRank(id) && Key(id) is 6 or 13 or 14 or 15 or 22;
+        /// <summary>One number per ability across all its ranks: the royal key, or 100 + key for the Storm remake spells.</summary>
+        public static int AbilityKey(int id) => StormRemakeSpells.Owns(id) ? 100 + StormRemakeSpells.Key(id) : Key(id);
+        public static bool IsRankedAbility(int id) => PendragonRules.IsRoyalRank(id) || StormRemakeSpells.Owns(id);
+        public static bool Toggle(int id) => PendragonRules.IsRoyalRank(id) && Key(id) is 6 or 13 or 14 or 15 or 22 || StormRemakeSpells.Toggle(id);
         public static bool IsHammerfall(int id) => PendragonRules.IsRoyalRank(id) && Key(id) == 21;
         public static bool HasVeil(GameLiving living) => living.effectListComponent.GetSpellEffects(eEffect.MasterLevel)
             .Any(effect => !effect.IsEnding && !effect.IsDisabled && PendragonRules.IsRoyalRank(effect.SpellHandler.Spell.ID) && Key(effect.SpellHandler.Spell.ID)==22);
@@ -236,7 +240,7 @@ namespace DOL.GS.Spells
             if(StormSovereignAbilities.Toggle(Spell.ID))
                 foreach(var effect in Caster.effectListComponent.GetSpellEffects(eEffect.MasterLevel))
                     if(!effect.IsEnding && effect.SpellHandler.Spell.ID==Spell.ID) { effect.End(); return false; }
-            if(StormSovereignAbilities.Key(Spell.ID)==17 && !Caster.IsStealthed) {
+            if((PendragonRules.IsRoyalRank(Spell.ID) && StormSovereignAbilities.Key(Spell.ID)==17 || StormRemakeSpells.Key(Spell.ID)==StormRemakeSpells.HuntersMark) && !Caster.IsStealthed) {
                 MessageToCaster(Spell.Name+" requires stealth.",eChatType.CT_SpellResisted); return false;
             }
             return base.CheckBeginCast(target);

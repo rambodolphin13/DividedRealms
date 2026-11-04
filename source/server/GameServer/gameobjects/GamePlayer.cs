@@ -5242,6 +5242,11 @@ namespace DOL.GS
             // group. Solo bots and unrelated groups are intentionally excluded.
             BotBrain.NotifyNearbyGroupBots(this, ad);
 
+            // Storm Sovereign: every melee blow you block or parry builds one Tempest charge.
+            if (StormforgedRules.IsStormforged(CharacterClass.ID) && ad.IsMeleeAttack &&
+                ad.AttackResult is eAttackResult.Blocked or eAttackResult.Parried)
+                StormTempest.Add(this);
+
             switch (ad.AttackResult)
             {
                 // is done in game living because of guard

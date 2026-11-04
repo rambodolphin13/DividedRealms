@@ -486,6 +486,10 @@ namespace DOL.GS.Spells
                 _byId[id] = ability;
             foreach (var (id, ability) in StormSovereignAbilities.Build())
                 _byId[id] = ability;
+            foreach (var (id, ability) in StormRemakeStyles.Build())
+                _byId[id] = ability;
+            foreach (var (id, ability) in StormRemakeSpells.Build())
+                _byId[id] = ability;
         }
 
         // ---------------- Banelord: shouts that cripple enemies around you ----------------

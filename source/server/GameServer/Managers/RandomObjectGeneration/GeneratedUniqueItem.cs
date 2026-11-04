@@ -2036,7 +2036,10 @@ namespace DOL.GS
                 return PendragonRules.IsRogSkill(property);
             if (this.charClass == eCharacterClass.TuathaSovereign)
                 return PendragonRules.IsTuathaSkill(property);
-            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Stealth || property == eProperty.Skill_Spear))
+            // Storm Sovereign trains Hammer, Axe, Shields, Parry and Stealth (no Sword or Spear).
+            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Sword || property == eProperty.Skill_Spear))
+                return false;
+            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
                 return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
@@ -2681,7 +2684,10 @@ namespace DOL.GS
                 return PendragonRules.IsRogSkill(property);
             if (this.charClass == eCharacterClass.TuathaSovereign)
                 return PendragonRules.IsTuathaSkill(property);
-            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Stealth || property == eProperty.Skill_Spear))
+            // Storm Sovereign trains Hammer, Axe, Shields, Parry and Stealth (no Sword or Spear).
+            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Sword || property == eProperty.Skill_Spear))
+                return false;
+            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
                 return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
@@ -3723,7 +3729,10 @@ namespace DOL.GS
                 return PendragonRules.IsRogSkill(property);
             if (this.charClass == eCharacterClass.TuathaSovereign)
                 return PendragonRules.IsTuathaSkill(property);
-            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Stealth || property == eProperty.Skill_Spear))
+            // Storm Sovereign trains Hammer, Axe, Shields, Parry and Stealth (no Sword or Spear).
+            if (this.charClass == eCharacterClass.Stormforged && (property == eProperty.Skill_Sword || property == eProperty.Skill_Spear))
+                return false;
+            if (this.charClass == eCharacterClass.Stormforged && property == eProperty.Skill_Stealth)
                 return true;
             int level = this.Level;
             eRealm realm = (eRealm)this.Realm;
@@ -5758,8 +5767,14 @@ namespace DOL.GS
                     weaponTypes.Add(eObjectType.Shield);
                     break;
                 case eCharacterClass.Stormforged:
-                    weaponTypes.Add(eObjectType.Spear);
-                    goto case eCharacterClass.Thane;
+                    // Hammer, Axe and Shield only (2026-11-04 remake).
+                    weaponTypes.Add(eObjectType.Axe);
+                    weaponTypes.Add(eObjectType.Hammer);
+                    weaponTypes.Add(eObjectType.Axe);
+                    weaponTypes.Add(eObjectType.Hammer);
+                    weaponTypes.Add(eObjectType.Shield);
+                    weaponTypes.Add(eObjectType.Shield);
+                    break;
                 case eCharacterClass.Thane:
                 case eCharacterClass.Warrior:
                     weaponTypes.Add(eObjectType.Sword);

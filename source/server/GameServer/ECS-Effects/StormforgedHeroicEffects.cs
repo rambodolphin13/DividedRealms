@@ -43,6 +43,9 @@ namespace DOL.GS
                 Owner.AbilityBonus[eProperty.MeleeDamage] += SovereignCrownMeleeDamage;
                 Owner.AbilityBonus[eProperty.MeleeSpeed] += SovereignCrownHaste;
                 MLMod.Refresh(Owner);
+                // Storm Sovereign: the crown fills Tempest, and finishers spend nothing while it lasts.
+                if (Owner is GamePlayer { CharacterClass: var cls } && StormforgedRules.IsStormforged(cls.ID))
+                    StormTempest.Set(Owner, StormTempest.MaxCharges);
             }
         }
 
