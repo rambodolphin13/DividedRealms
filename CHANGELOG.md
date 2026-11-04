@@ -100,6 +100,20 @@ The newest version is first. For the full detail of every earlier update, see
 **Going forward only the new client is supported.** 0.38 is one download (the server, the launcher and the new
 client). The original DAoC client is no longer supported, and the Sluaghbinder class is discontinued.
 
+**Fishing**
+- Fishing: face open water with a fishing pole and type /fish to relax and fish. Each realm's waters have their own
+  fish in four sizes (brown trout and pike in Albion, arctic char and halibut in Midgard, salmon and bream in Hibernia),
+  plus the odd old boot, a waterlogged chest and a few legendary named specimens. Fishing skill grows as you catch and
+  is kept across updates. /fish keeps casting after each catch until you move or type /fish stop; /fish active has
+  you reel in each bite yourself (type /fish within 4 seconds). Also /fish stats, and /fish pole gives you a pole if
+  you have none.
+- Fishing sits you down when you cast and stands you up when you stop, and a bobber floats where your line lands,
+  with a small cast and bite effect.
+- Fishing spots: /fish spots lists built-in shores in each realm and /fish go <number> takes you to one in your own
+  realm; /fish mark <name> saves the shore you stand on (facing water) and /fish unmark <number> removes it.
+- Monsters and enemy guards don't aggro a player who holds the fishing pole and isn't in combat (server setting
+  fishing_pole_prevents_aggro, on by default). Attack something and you're a normal target again; bots are not affected.
+
 **Bots and raids**
 - Hibernian bots no longer get stuck at the door of their portal keep in Odin's Gate. Once out of the keep's
   inner door, the route they planned led back in to the keep yard and then out again, over and over, until they
