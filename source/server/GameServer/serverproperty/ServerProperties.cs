@@ -2744,6 +2744,12 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("craft", "fishing_pole_model", "objects.csv model of fishing poles (442 stock quarterstaff; 4927 needs the private rod in every client).", 442)]
 		public static int FISHING_POLE_MODEL = 442;
 
+		/// <summary>
+		/// Offline DAoC fishing: whether casting sits the angler down. Off, they fish standing with the pole drawn.
+		/// </summary>
+		[ServerProperty("craft", "fishing_sits", "Casting a line sits the angler down; off, they fish standing with the pole in hand.", true)]
+		public static bool FISHING_SITS = true;
+
 		#endregion
 
 		#region ACCOUNT

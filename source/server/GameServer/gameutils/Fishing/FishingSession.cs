@@ -197,8 +197,15 @@ public static class FishingManager
 
         lock (session.Lock)
         {
+            // A pole in the two-hand slot is drawn, so it is held while fishing instead of hanging on the back.
+            if (FishingCraft.FindPole(player.Inventory.GetItem(eInventorySlot.TwoHandWeapon)?.Template?.Id_nb) != null
+                && player.ActiveWeaponSlot != eActiveWeaponSlot.TwoHanded)
+            {
+                player.SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+            }
+
             // Sit only once, at the start: a player who stands up mid-session keeps fishing standing.
-            if (!player.IsSitting)
+            if (ServerProperties.Properties.FISHING_SITS && !player.IsSitting)
             {
                 player.Sit(true);
                 session.SatPlayer = player.IsSitting;

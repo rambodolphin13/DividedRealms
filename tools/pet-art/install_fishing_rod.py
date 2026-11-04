@@ -13,7 +13,8 @@ Client (private additions only; no stock file or row changes):
                                thick handle to a thin tip, butt 19 units behind the hand like the stock spears.
   gamedata objects.csv 4927 and items.csv 3085, cloned from the Quarterstaff rows (442 / 198). The object row takes the
   two-handed spear stance (Combat 3, Left 2, like the Pike 69 and Norse Simple Spear 328), so the rod is held out in front,
-  and the stock "fishing pole" bag icon 530.
+  and the stock "fishing pole" bag icon 530. objects.csv 4928 is the same rod in the staff stance (Combat 4, Left 1).
+Server: set the craft setting fishing_pole_model to 4927 (or 4928) and restart; every client needs these rows.
 """
 from __future__ import annotations
 
@@ -54,6 +55,7 @@ WORK = HERE / "work" / "fishing-rod"
 SOURCE_NIF = "b_st_quarterstaff01.nif"
 PRIVATE_NIF = "offline_fishrod01.nif"
 OBJECT_ID, SOURCE_OBJECT = 4927, 442
+STAFF_OBJECT_ID = 4928      # the same rod held in the staff stance, to compare in game
 ITEM_ID, SOURCE_ITEM = 3085, 198
 LABEL = "Offline Fishing Rod"
 SPEAR_STANCE = ("3", "2")   # objects.csv Combat, Left
@@ -136,12 +138,16 @@ def catalog():
     bs.require(obj_rows[str(SOURCE_OBJECT)][1] == "Quarterstaff", "objects.csv 442 is not the Quarterstaff")
     orow = list(obj_rows[str(SOURCE_OBJECT)])
     orow[0], orow[1], orow[2] = str(OBJECT_ID), LABEL, str(ITEM_ID)
+    bs.require(str(STAFF_OBJECT_ID) not in obj_rows, f"ID {STAFF_OBJECT_ID} already used")
     orow[3] = POLE_ICON
+    staff = list(orow)
+    staff[0], staff[1] = str(STAFF_OBJECT_ID), LABEL + " (staff hold)"
     orow[19], orow[20] = SPEAR_STANCE
     irow = list(item_rows[str(SOURCE_ITEM)])
     irow[0], irow[1], irow[2] = str(ITEM_ID), LABEL, PRIVATE_NIF.rsplit(".", 1)[0]
-    added = {"objects.csv": [orow], "items.csv": [irow]}
-    updates = {"objects.csv": bs.add_row(files["objects.csv"], orow), "items.csv": bs.add_row(files["items.csv"], irow)}
+    added = {"objects.csv": [orow, staff], "items.csv": [irow]}
+    objects = bs.add_row(bs.add_row(files["objects.csv"], orow), staff)
+    updates = {"objects.csv": objects, "items.csv": bs.add_row(files["items.csv"], irow)}
     blob = archive.write(name, [archive.Entry(e.name, updates.get(e.name.lower(), e.data), e.timestamp, e.flags)
                                 for e in entries])
     archive.verify_memory_image(blob)
@@ -192,7 +198,7 @@ def install():
     bs.atomic_write(game, blob)
     bs.require(bs.file_sha(game) == manifest["after_gamedata_sha256"], "Installed catalog differs")
     bs.require(bs.file_sha(ITEMS / PRIVATE_NIF) == manifest["private_files"][PRIVATE_NIF], "Installed rod differs")
-    print("Installed", PRIVATE_NIF, f"objects.csv {OBJECT_ID}, items.csv {ITEM_ID}")
+    print("Installed", PRIVATE_NIF, f"objects.csv {OBJECT_ID} and {STAFF_OBJECT_ID}, items.csv {ITEM_ID}")
     print(f'Rollback:\n  python -B "{Path(__file__).resolve()}" rollback "{backup}"')
 
 
