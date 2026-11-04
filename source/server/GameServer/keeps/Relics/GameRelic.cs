@@ -473,6 +473,7 @@ namespace DOL.GS
         }
 
         private long _carrierOutOfWorldSince;
+        public const int RELIC_ZONING_GRACE_MS = 60_000;
 
         private int CarrierTimerTick(ECSGameTimer timer)
         {
@@ -491,10 +492,11 @@ namespace DOL.GS
         {
             if (CurrentCarrier == null)
                 return 0;
-            // M9: a carrier between RemoveFromWorld and AddToWorld of a region move is out of the world for a moment; only
-            // a carrier still gone on the next tick has really left.
+            // M9: a carrier between RemoveFromWorld and AddToWorld of a region move is out of the world until its client
+            // has loaded the new region, which a portal keep's portal can take well past one tick. As 1.60 did, it keeps
+            // the relic for up to 60 s (HearthDAoC d03334f1e); quitting and linkdeath drop it through their own events.
             if (CurrentCarrier.IsAlive && !CurrentCarrier.IsStealthed && CurrentCarrier.ObjectState != eObjectState.Active &&
-                (_carrierOutOfWorldSince == 0 || GameLoop.GameLoopTime - _carrierOutOfWorldSince < RELIC_EFFECT_INTERVAL))
+                (_carrierOutOfWorldSince == 0 || GameLoop.GameLoopTime - _carrierOutOfWorldSince < RELIC_ZONING_GRACE_MS))
             {
                 if (_carrierOutOfWorldSince == 0) _carrierOutOfWorldSince = GameLoop.GameLoopTime;
                 return RELIC_EFFECT_INTERVAL;
