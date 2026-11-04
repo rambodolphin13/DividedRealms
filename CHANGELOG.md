@@ -127,6 +127,15 @@ client). The original DAoC client is no longer supported, and the Sluaghbinder c
   20 or 30 minutes, and you and your group (companion bots too) who stay near it out of combat get health, power and
   endurance back every 3 seconds (2, 3 or 4 percent; twice that sitting down). One camp per player; /fish camp shows
   the time left and /fish camp break packs it up.
+- Fish are worth real money now: about 25 times their old price, so a small common fish sells for a couple of silver
+  and a trophy rare one for about 2 gold. Fish stack in the backpack (trophies too).
+- Legendary fish are much rarer (about one cast in a thousand for a beginner, one in 200 for a master) and everyone
+  online hears about it when someone lands one.
+- /fish cook beside a burning campfire cooks up to 10 raw fish into food: Grilled Fish, Smoked Fish (uncommon or
+  large fish) and Angler's Feast (rare or trophy fish). Eat it from your backpack for 20 minutes of faster health,
+  power and endurance regeneration; the feast is the strongest.
+- Waterlogged chests can be opened from the backpack: coins that grow with your level, and one chest in four also
+  holds a random magic item of about your level.
 
 **Bots and raids**
 - Hibernian bots no longer get stuck at the door of their portal keep in Odin's Gate. Once out of the keep's

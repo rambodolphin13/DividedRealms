@@ -598,10 +598,14 @@ public static class FishingManager
             foreach (GamePlayer viewer in player.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
             {
                 viewer.Out.SendEmoteAnimation(player, eEmote.Cheer);
+            }
 
-                if (viewer != player)
+            // Rare enough now (FishingCatalog rarity weights) to be news for everyone online.
+            foreach (GamePlayer other in ClientService.Instance.GetPlayers())
+            {
+                if (other != player)
                 {
-                    viewer.Out.SendMessage($"{player.Name} has landed a legendary {fish.DisplayName}!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    other.Out.SendMessage($"{player.Name} has landed {fish.DisplayName}!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                 }
             }
         }

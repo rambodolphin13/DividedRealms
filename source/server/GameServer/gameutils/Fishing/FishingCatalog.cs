@@ -75,9 +75,14 @@ namespace DOL.GS.Fishing
         private static readonly double[] TierMidFraction = { 0.125, 0.45, 0.775, 0.95 };
         private static readonly int[] TierPriceMultiplier = { 1, 2, 4, 10 };
 
-        // Rarity weights in the order Common, Uncommon, Rare, Legendary, Junk: at skill 0 and at skill 100.
-        private static readonly double[] RarityWeightsNovice = { 65, 22, 9, 1, 3 };
-        private static readonly double[] RarityWeightsMaster = { 46, 30, 18, 5, 1 };
+        // Species base values are in the original pocket-change scale (a few copper); every fish sells for this many
+        // times that, so a common fish fetches a couple of silver and a trophy rare one about 2 gold (owner, 2026-11-03).
+        public const int FishValueScale = 25;
+
+        // Rarity weights in the order Common, Uncommon, Rare, Legendary, Junk: at skill 0 and at skill 100. Legendary was
+        // 1 and 5 (a master landed about ten an hour); now about one in a thousand casts for a novice, one in 200 at the top.
+        private static readonly double[] RarityWeightsNovice = { 65, 22, 9, 0.1, 3 };
+        private static readonly double[] RarityWeightsMaster = { 46, 30, 18, 0.5, 1 };
 
         private static readonly int[] SkillGainByRarity = { 1, 2, 4, 10, 0 };
 
@@ -211,7 +216,7 @@ namespace DOL.GS.Fishing
                             Item_Type = (int)eInventorySlot.FirstBackpack,
                             Model = tier < 2 ? SmallFishModel : LargeFishModel,
                             Weight = Math.Clamp(weight, 1, MaxTemplateWeightTenths),
-                            Price = species.BaseValueCopper * TierPriceMultiplier[tier],
+                            Price = species.BaseValueCopper * TierPriceMultiplier[tier] * FishValueScale,
                             MaxCount = 20,
                             PackSize = 1,
                             IsPickable = true,
@@ -395,6 +400,33 @@ namespace DOL.GS.Fishing
                 Rarity = rarity,
                 SkillGain = SkillGainByRarity[(int)rarity],
             };
+        }
+
+        /// <summary>The species rarity and size tier (0 small - 3 trophy) of a fish template; false for junk, the pole or an
+        /// unknown id.</summary>
+        public static bool TryGetFish(string templateId, out eFishingRarity rarity, out int tier)
+        {
+            foreach (Species[] table in AllSpecies)
+            {
+                foreach (Species species in table)
+                {
+                    for (int t = 0; t < 4; t++)
+                    {
+                        if (species.TemplateId(t) == templateId)
+                        {
+                            rarity = species.Rarity;
+                            tier = t;
+
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            rarity = eFishingRarity.Junk;
+            tier = 0;
+
+            return false;
         }
 
         /// <summary>The weight range (tenths of a pound) of the species behind a fish template; false for junk, the pole or

@@ -6677,11 +6677,9 @@ namespace DOL.GS
                         return;
                 }
 
-                if (Fishing.FishingCamp.IsCampKit(useItem.Id_nb))
-                {
-                    Fishing.FishingCamp.TryDeploy(this, useItem);
+                // Camp kits, cooked food and waterlogged chests from fishing.
+                if (Fishing.FishingCooking.TryUse(this, useItem))
                     return;
-                }
 
                 if (GameBoat.IsBoatItem(useItem.Id_nb))
                 {

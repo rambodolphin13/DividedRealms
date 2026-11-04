@@ -7,8 +7,8 @@ using DOL.Logging;
 namespace DOL.GS.Fishing;
 
 /// <summary>
-/// Adds the fishing item templates (fish, junk, the poles and camp kits) to the database when the server starts.
-/// Existing rows are left alone, so edits made in the database are kept, except the model and stack size of our own rows:
+/// Adds the fishing item templates (fish, junk, the poles, camp kits and cooked food) to the database when the server starts.
+/// Existing rows are left alone, so edits made in the database are kept, except the model, stack size and price of our own rows:
 /// a model changed in FishingCatalog (the pole's look, say) is copied onto the existing row.
 /// </summary>
 public static class FishingStartup
@@ -22,7 +22,7 @@ public static class FishingStartup
         int updated = 0;
         int failed = 0;
 
-        foreach (DbItemTemplate template in FishingCatalog.AllTemplates().Concat(FishingCraft.AllTemplates()))
+        foreach (DbItemTemplate template in FishingCatalog.AllTemplates().Concat(FishingCraft.AllTemplates()).Concat(FishingCooking.AllTemplates()))
         {
             // A client with the private rod (tools/pet-art/install_fishing_rod.py) gets it through fishing_pole_model.
             if (FishingCraft.FindPole(template.Id_nb) != null && ServerProperties.Properties.FISHING_POLE_MODEL > 0)
@@ -46,23 +46,25 @@ public static class FishingStartup
                 // The client draws an item (hand mesh and bag icon) from its model alone, and inventory items read
                 // the model and stack size through their template, so updating the cached row changes every existing
                 // pole and fish too.
-                if (existing.Model != template.Model || existing.MaxCount != template.MaxCount)
+                if (existing.Model != template.Model || existing.MaxCount != template.MaxCount || existing.Price != template.Price)
                 {
                     int oldModel = existing.Model;
                     int oldMaxCount = existing.MaxCount;
+                    long oldPrice = existing.Price;
 
                     // DbItemTemplate ignores Dirty unless AllowUpdate is set, and SaveObject skips clean rows while
                     // still returning true, so without it the change would never reach the database.
                     existing.AllowUpdate = true;
                     existing.Model = template.Model;
                     existing.MaxCount = template.MaxCount;
+                    existing.Price = template.Price;
                     bool saved = GameServer.Database.SaveObject(existing);
                     existing.AllowUpdate = false;
 
                     if (saved)
                     {
                         updated++;
-                        Log.Info($"Fishing: item template '{template.Id_nb}' model {oldModel} -> {template.Model}, stack {oldMaxCount} -> {template.MaxCount}.");
+                        Log.Info($"Fishing: item template '{template.Id_nb}' model {oldModel} -> {template.Model}, stack {oldMaxCount} -> {template.MaxCount}, price {oldPrice} -> {template.Price}.");
                     }
                     else
                     {

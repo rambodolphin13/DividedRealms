@@ -16,6 +16,7 @@ namespace DOL.GS.Commands
         "'/fish pole' - Gives you a fishing pole if you don't have one.",
         "'/fish craft' - Lists the poles and camp kits you can make; '/fish craft <number>' makes one.",
         "'/fish camp' - Shows how long your camp has left; '/fish camp break' packs it up. Use a camp kit from your backpack to make camp.",
+        "'/fish cook' - Cooks up to 10 raw fish into food beside a burning campfire. Use the food from your backpack for 20 minutes of faster regeneration.",
         "'/fish spots' - Lists the fishing spots you can travel to.",
         "'/fish go <number>' - Travels to a fishing spot in your realm from the /fish spots list.",
         "'/fish mark <name>' - Saves the shore you stand on, facing open water, as a new fishing spot.",
@@ -134,6 +135,12 @@ namespace DOL.GS.Commands
                     {
                         FishingWorkbench.ShowRecipes(player);
                     }
+
+                    break;
+                }
+                case "cook":
+                {
+                    FishingCooking.TryCook(player);
 
                     break;
                 }

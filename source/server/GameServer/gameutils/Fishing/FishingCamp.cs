@@ -41,6 +41,20 @@ namespace DOL.GS.Fishing
             return FishingCraft.FindCamp(templateId) != null;
         }
 
+        /// <summary>True when a burning campfire (anyone's) is within the camp radius: where fish can be cooked.</summary>
+        public static bool IsNearCampfire(GamePlayer player)
+        {
+            foreach (Camp camp in Camps.Values)
+            {
+                if (!camp.Ended && camp.Fire.CurrentRegionID == player.CurrentRegionID && player.IsWithinRadius(camp.Fire, Radius))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>Called from GamePlayer.UseSlot for a camp kit. The kit is used up only when the camp goes up.</summary>
         public static void TryDeploy(GamePlayer player, DbInventoryItem kit)
         {
