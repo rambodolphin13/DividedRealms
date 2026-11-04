@@ -140,6 +140,16 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void RemakeSpellsAndStyles_ShowTheirOwnTooltipNotTheBorrowedIcon()
+        {
+            // Runic Armament borrowed icon 3537 and showed as the stock "Thor's Potence" in the buff bar.
+            int armament = StormRemakeSpells.FirstId + 2 * 16 + StormRemakeSpells.RunicArmament;
+            foreach (int id in new[] { armament, StormRemakeStyles.FirstEffectId, StormRemakeStyles.FirstEffectId + 59,
+                         StormRemakeStyles.FirstEffectId * 1000 + 805, armament * 1000 + 990 })
+                Assert.That(DOL.GS.PacketHandler.PacketLib1110.UsesOwnTooltipIdentity(id), Is.True, id.ToString());
+        }
+
+        [Test]
         public void RemakeSpells_OnlyRunicArmamentIsAToggle()
         {
             for (int key = 0; key < StormRemakeSpells.Keys; key++)

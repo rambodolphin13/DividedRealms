@@ -56,15 +56,19 @@ namespace DOL.GS.PacketHandler
 		/// <summary>
 		/// Stormforged spells (62000-62239) have their own tooltips, as do and the offline Master Level and Champion abilities
 		/// (63000-63199) with the stock effects they apply (ability ID * 1000 + n),
-		/// and the Valkyrie test kit (64990-65150, tooltips 27000-27160; 65151+ are stock spells).
+		/// and the Valkyrie test kit (64990-65150, tooltips 27000-27160; 65151+ are stock spells),
+		/// and the Storm Sovereign remake styles and spells (63500-63727) with their stock effects.
 		/// Their icons are borrowed, so the icon's stock tooltip would be wrong.
 		/// </summary>
 		public static bool UsesOwnTooltipIdentity(int spellId)
 		{
             if (DOL.GS.Spells.ModernMauler.Owns(spellId) || DOL.GS.Spells.ModernWarlock.Owns(spellId))
                 return true;
-			return spellId is >= 64000 and <= 64572 or >= 73000 and <= 73572 or >= 73000000 and <= 73572999 or >= 64990 and <= 65150 or >= 65200 and <= 65260 or >= 64000000 and <= 64572999 or >= 62000 and <= 62239 or >= 62400 and <= 62972 or >= 63000 and <= 63199 or >= 62400000 and <= 62960999 or >= 63000000 and <= 63199999;
+			return spellId is >= 64000 and <= 64572 or >= 73000 and <= 73572 or >= 73000000 and <= 73572999 or >= 64990 and <= 65150 or >= 65200 and <= 65260 or >= 64000000 and <= 64572999 or >= 62000 and <= 62239 or >= 62400 and <= 62972 or >= 63000 and <= 63199 or >= 62400000 and <= 62960999 or >= 63000000 and <= 63199999 || IsStormRemake(spellId);
 		}
+
+		private static bool IsStormRemake(int spellId) =>
+			spellId is >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId and <= 63727 or >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId * 1000 and <= 63727999;
 
         /// <summary>
 		/// New system in v1.110+ for delve info. delve is cached by client in extra file, stored locally.

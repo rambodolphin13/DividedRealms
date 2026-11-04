@@ -5221,6 +5221,9 @@ namespace DOL.GS
             base.DealDamage(ad);
             if (PendragonRules.IsSovereign(CharacterClass.ID))
                 DOL.GS.Spells.StormSovereignAbilities.Siphon(this, ad, healthBefore);
+            // Storm Sovereign: every landed melee hit builds one Tempest charge (styles and finishers add their own).
+            if (StormforgedRules.IsStormforged(CharacterClass.ID) && ad.IsMeleeAttack && ad.Damage > 0 && ad.Target != null && ad.Target != this)
+                StormTempest.Add(this);
         }
 
         /// <summary>

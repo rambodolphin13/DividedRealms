@@ -1334,7 +1334,8 @@ namespace DOL.GS.Spells
 		public virtual int CalculateEnduranceCost()
 		{
 			// Custom Stormforged and royal class spells cost power only; styles still cost endurance.
-			if (m_spell.ID is >= 62000 and <= 62239 or >= 62400 and <= 62972 or >= 64000 and <= 64572 or >= 73000 and <= 73572)
+			if (m_spell.ID is >= 62000 and <= 62239 or >= 62400 and <= 62972 or >= 64000 and <= 64572 or >= 73000 and <= 73572 ||
+				StormRemakeStyles.OwnsEffect(m_spell.ID) || StormRemakeSpells.Owns(m_spell.ID))
 				return 0;
 
 			return 5;

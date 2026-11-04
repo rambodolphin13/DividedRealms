@@ -33,7 +33,7 @@ Up to **5 Tempest charges** (shown as a buff with a stack count). Gained from la
 and parries, at most one per swing. Lasts 30 seconds without fighting. Splash hits, procs and echoes never
 build charges, so it can't loop.
 
-Finishers and two spells **spend all charges** for a bigger effect: each charge adds +20% to the finisher's
+Every landed melee hit also builds one charge (owner, 2026-11-04). Finishers and two spells **spend all charges** for a bigger effect: each charge adds +20% to the finisher's
 lightning and +1 target to its arcs. Everything still works with zero charges; charges make it explode.
 
 ### How Tempest shows in game: Warlock chamber orbs
