@@ -89,11 +89,31 @@ namespace DOL.GS.PacketHandler
 		{
 		}
 
+		// The client picks the message from the code, and 1.130 changed two of them: 0x15 (and 0x16) is an account
+		// notice that opens the publisher's account site in the browser when the dialog closes, and 99 is "Unknown error.".
+		// Up to 1.127, 0x15 is "Unknown error." and there is no 99 or account notice. 1.128 and 1.129 are untested.
+		public static byte LoginDeniedCode(eLoginError error, GameClient.eClientVersion version)
+		{
+			const byte UNKNOWN_ERROR_1130 = 99;
+
+			if (version >= GameClient.eClientVersion.Version1130)
+			{
+				return error switch
+				{
+					eLoginError.Unknown => UNKNOWN_ERROR_1130,
+					eLoginError.AccountNotice => Properties.LOGIN_ACCOUNT_NOTICE ? (byte) eLoginError.AccountNotice : UNKNOWN_ERROR_1130,
+					_ => (byte) error
+				};
+			}
+
+			return (byte) (error is eLoginError.AccountNotice ? eLoginError.Unknown : error);
+		}
+
 		public virtual void SendLoginDenied(eLoginError et)
 		{
 			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.LoginDenied)))
 			{
-				pak.WriteByte((byte)et); // Error Code
+				pak.WriteByte(LoginDeniedCode(et, m_gameClient.Version)); // Error Code
 				/*
 				if(is_si)
 					pak.WriteByte(0x32);
