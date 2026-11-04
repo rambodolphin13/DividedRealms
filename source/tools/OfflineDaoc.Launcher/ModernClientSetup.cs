@@ -28,13 +28,14 @@ public static class ModernClientSetup
 
     public sealed record Patch(int Format, string ClientVersion, PatchedFile[] Files);
     public sealed record PatchedFile(string Path, string InputSha256, string OutputSha256, long OutputSize, Edit[] Edits,
-        string? From = null, string? Member = null, MemberEdits[]? Members = null)
+        string? From = null, string? Member = null, MemberEdits[]? Members = null, bool AnyBuild = false)
     {
         /// <summary>The stock file InputSha256 is the hash of.</summary>
         public string InputPath => From ?? Path;
     }
     public sealed record Edit(long At, long Remove, string Insert);
-    public sealed record MemberEdits(string Member, Edit[] Edits);
+    // Rows: the whole catalog lines the edits add, placed by ID when the archive isn't the stock one (AnyBuild).
+    public sealed record MemberEdits(string Member, Edit[] Edits, string[]? Rows = null);
 
     public static Patch Load(string runtime)
     {
@@ -52,17 +53,33 @@ public static class ModernClientSetup
     /// The patched files whose copy isn't this patch's output: a newer release copied over an older one leaves the client
     /// copy patched by the older release, since setup only runs once.
     /// </summary>
-    public static PatchedFile[] Stale(string client, Patch patch) => patch.Files.Where(f =>
+    public static PatchedFile[] Stale(string client, Patch patch) => patch.Files.Where(f => !IsCurrent(Path.Combine(client, f.Path), f)).ToArray();
+
+    /// <summary>
+    /// The file is this patch's output; a file of any build counts once it is as patched as it can be (our rows are in it,
+    /// or one of our IDs holds another row there).
+    /// </summary>
+    private static bool IsCurrent(string path, PatchedFile file)
     {
-        string path = Path.Combine(client, f.Path);
-        return !File.Exists(path) || !Hash(path).Equals(f.OutputSha256, StringComparison.OrdinalIgnoreCase);
-    }).ToArray();
+        if (!File.Exists(path))
+            return false;
+        if (Hash(path).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (!file.AnyBuild)
+            return false;
+        try
+        {
+            byte[] data = File.ReadAllBytes(path);
+            return Adapt(data, file).AsSpan().SequenceEqual(data);
+        }
+        catch (Exception ex) when (ex is not IOException) { return false; }
+    }
 
     /// <summary>The stale files that can't be patched from the copy itself (it holds an older patch, not the pristine file).</summary>
     public static PatchedFile[] NeedSource(string client, Patch patch) => Stale(client, patch).Where(f =>
     {
         string path = Path.Combine(client, f.InputPath);
-        return !File.Exists(path) || !Hash(path).Equals(f.InputSha256, StringComparison.OrdinalIgnoreCase);
+        return !File.Exists(path) || !f.AnyBuild && !Hash(path).Equals(f.InputSha256, StringComparison.OrdinalIgnoreCase);
     }).ToArray();
 
     /// <summary>The player's own client folder the copy was made from, when it is still there.</summary>
@@ -87,12 +104,12 @@ public static class ModernClientSetup
         {
             string target = Path.Combine(client, file.Path);
             string input = Path.Combine(client, file.InputPath);
-            string from = File.Exists(input) && Hash(input).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase)
+            string from = File.Exists(input) && (file.AnyBuild || Hash(input).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
                 ? input
                 : source != null ? Path.Combine(source, file.InputPath)
                 : throw new InvalidDataException($"Your client copy's {file.InputPath} is from an older version. Choose your Dark Age of Camelot " +
                                                  $"{patch.ClientVersion} folder so it can be patched again.");
-            if (!File.Exists(from) || !Hash(from).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
+            if (!File.Exists(from) || !file.AnyBuild && !Hash(from).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException($"That client's {file.InputPath} isn't the {patch.ClientVersion} build this game is made for, so it " +
                                                "can't be patched. It may be a newer or modified client. Nothing was changed.");
             outputs.Add((target, Apply(File.ReadAllBytes(from), file)));
@@ -150,7 +167,7 @@ public static class ModernClientSetup
         {
             cancel.ThrowIfCancellationRequested();
             string target = Path.Combine(client, file.Path);
-            if (File.Exists(target) && Hash(target).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
+            if (IsCurrent(target, file))
                 continue;
             Swap(target, Apply(File.ReadAllBytes(Path.Combine(source, file.InputPath)), file));
             repatched++;
@@ -184,6 +201,13 @@ public static class ModernClientSetup
             string path = Path.Combine(source, file.InputPath);
             if (!File.Exists(path))
                 return $"That client has no {file.InputPath}.";
+            if (file.AnyBuild)
+            {
+                // Any build of this file is patched (a later live update or another client changes it often); it only has to be readable.
+                try { Adapt(File.ReadAllBytes(path), file); }
+                catch (Exception ex) when (ex is not IOException) { return $"That client's {file.InputPath} can't be read. Nothing was changed."; }
+                continue;
+            }
             if (!Hash(path).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
                 return File.Exists(Path.Combine(source, EdenMarker))
                     ? $"That Dark Age of Camelot folder was changed by the Eden client: its {file.InputPath} (and other files) are Eden's " +
@@ -200,7 +224,7 @@ public static class ModernClientSetup
     public static byte[] Apply(byte[] input, PatchedFile file)
     {
         if (!Convert.ToHexString(SHA256.HashData(input)).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException($"{file.InputPath} isn't the pristine client file.");
+            return file.AnyBuild ? Adapt(input, file) : throw new InvalidDataException($"{file.InputPath} isn't the pristine client file.");
         byte[] result;
         if (file.Members is { Length: > 0 })
         {
@@ -215,6 +239,54 @@ public static class ModernClientSetup
             !Convert.ToHexString(SHA256.HashData(result)).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Patching {file.Path} didn't give the expected file.");
         return result;
+    }
+
+    /// <summary>
+    /// A file of another build (a later live gamedata.mpk, or one another client changed) gets our catalog rows by ID, as
+    /// make_client_patch.py placed them in the stock one, instead of by offset. Rows already there are kept. When one of our
+    /// IDs holds another row the whole file is left as it is (the rod then has no model) rather than taking that ID.
+    /// </summary>
+    public static byte[] Adapt(byte[] input, PatchedFile file)
+    {
+        byte[] result = input;
+        foreach (var part in file.Members ?? [])
+        {
+            string table = System.Text.Encoding.Latin1.GetString(MemberOf(result, part.Member));
+            string? added = WithRows(table, part.Rows ?? throw new InvalidDataException($"The client patch for {file.Path} has no rows."));
+            if (added == null)
+                return input;
+            if (added != table)
+                result = WithMember(result, System.Text.Encoding.Latin1.GetBytes(added), part.Member);
+        }
+        return result;
+    }
+
+    /// <summary>The catalog with each row added before the first higher ID (tools/pet-art add_row); null when an ID holds another row.</summary>
+    private static string? WithRows(string table, string[] rows)
+    {
+        var lines = table.Split("\r\n").ToList();
+        foreach (string row in rows)
+        {
+            long id = IdOf(row) ?? throw new InvalidDataException("A client patch row has no ID.");
+            var numbered = lines.Select((line, at) => (At: at, Id: IdOf(line))).Where(l => l.Id != null).ToList();
+            if (numbered.Count == 0)
+                return null;
+            if (numbered.Where(l => l.Id == id).Select(l => lines[l.At]).ToList() is { Count: > 0 } same)
+            {
+                if (same.Any(line => line != row))
+                    return null;
+                continue;
+            }
+            int before = numbered.Where(l => l.Id > id).Select(l => l.At).DefaultIfEmpty(numbered[^1].At + 1).First();
+            lines.Insert(before, row);
+        }
+        return string.Join("\r\n", lines);
+    }
+
+    private static long? IdOf(string line)
+    {
+        string first = line.Split(',', 2)[0].Trim();
+        return first.Length > 0 && first.All(char.IsAsciiDigit) && long.TryParse(first, out long id) ? id : null;
     }
 
     private static byte[] Splice(byte[] input, PatchedFile file) => Splice(input, file.Edits, file.Path);
@@ -404,7 +476,7 @@ public static class ModernClientSetup
             File.WriteAllBytes(target, Apply(File.ReadAllBytes(Path.Combine(source, file.InputPath)), file));
         }
         foreach (var file in patch.Files)
-            if (!Hash(Path.Combine(destination, file.Path)).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
+            if (!IsCurrent(Path.Combine(destination, file.Path), file))
                 throw new InvalidDataException($"The patched {file.Path} doesn't verify.");
         File.WriteAllText(Path.Combine(destination, SourceFile), source);
         File.Delete(Path.Combine(destination, IncompleteMarker));

@@ -121,6 +121,63 @@ public sealed class ModernClientSetupTests
         Assert.Throws<InvalidDataException>(() => ModernClientSetup.Apply(afterBound, both), "only the pristine archive is accepted");
     }
 
+    // gamedata.mpk's catalogs, as z.csv of a small archive: the stock table, and our rod row added at its place by ID.
+    private const string StockCatalog = "10,staff\r\n20,spear\r\n14999,end\r\n";
+    private const string RodRow = "15,rod";
+
+    private static (byte[] Stock, byte[] Output, ModernClientSetup.PatchedFile File) Gamedata()
+    {
+        byte[] stock = Archive("WithMember", Convert.FromBase64String(StockZone), Encoding.Latin1.GetBytes(StockCatalog), "z.csv");
+        byte[] output = Archive("WithMember", stock, Encoding.Latin1.GetBytes("10,staff\r\n15,rod\r\n20,spear\r\n14999,end\r\n"), "z.csv");
+        return (stock, output, new("gamedata.mpk", Hash(stock), Hash(output), output.Length, [],
+            Members: [new("z.csv", [new(10, 0, Convert.ToBase64String(Encoding.Latin1.GetBytes(RodRow + "\r\n")))], [RodRow])], AnyBuild: true));
+    }
+
+    private static string CatalogOf(byte[] archive) => Encoding.Latin1.GetString(Archive("MemberOf", archive, "z.csv"));
+
+    [Test]
+    public void AGamedataOfAnotherBuildGetsTheRodRowsByID()
+    {
+        var (stock, output, file) = Gamedata();
+        Assert.That(ModernClientSetup.Apply(stock, file), Is.EqualTo(output), "the stock archive still patches byte for byte");
+        // A later live gamedata.mpk: a new row and a changed one; ours goes in by ID and nothing else moves.
+        byte[] newer = Archive("WithMember", stock, Encoding.Latin1.GetBytes("10,staff v2\r\n12,new live row\r\n20,spear\r\n14999,end\r\n"), "z.csv");
+        byte[] adapted = ModernClientSetup.Apply(newer, file);
+        Assert.That(CatalogOf(adapted), Is.EqualTo("10,staff v2\r\n12,new live row\r\n15,rod\r\n20,spear\r\n14999,end\r\n"));
+        Assert.That(ModernClientSetup.Apply(adapted, file), Is.EqualTo(adapted), "rows already there aren't added twice");
+        Assert.That(Archive("MemberOf", adapted, "bound.csv"), Is.EqualTo(Archive("MemberOf", newer, "bound.csv")), "other files are kept");
+        // Our ID taken by another row: the archive stays as it is, the rod just has no model.
+        byte[] taken = Archive("WithMember", stock, Encoding.Latin1.GetBytes("10,staff\r\n15,someone else's\r\n14999,end\r\n"), "z.csv");
+        Assert.That(ModernClientSetup.Apply(taken, file), Is.EqualTo(taken));
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Apply("not an archive"u8.ToArray(), file));
+    }
+
+    [Test]
+    public void SetupAcceptsAClientWhoseGamedataIsAnotherBuild()
+    {
+        var (stock, _, rod) = Gamedata();
+        var patch = TestPatch() with { Files = [.. TestPatch().Files, rod] };
+        string client = PristineClient(), destination = Path.Combine(root, "game", "client-modern", "app");
+        byte[] newer = Archive("WithMember", stock, Encoding.Latin1.GetBytes("10,staff\r\n12,new live row\r\n20,spear\r\n14999,end\r\n"), "z.csv");
+        File.WriteAllBytes(Path.Combine(client, "gamedata.mpk"), newer);
+        Assert.That(ModernClientSetup.CheckSource(client, patch), Is.Null);
+        ModernClientSetup.Install(client, destination, patch, null, CancellationToken.None);
+        Assert.That(CatalogOf(File.ReadAllBytes(Path.Combine(destination, "gamedata.mpk"))), Does.Contain("12,new live row\r\n15,rod\r\n"));
+        Assert.That(File.ReadAllBytes(Path.Combine(client, "gamedata.mpk")), Is.EqualTo(newer), "the player's own client is unchanged");
+        Assert.That(ModernClientSetup.Stale(destination, patch), Is.Empty);
+        Assert.That(ModernClientSetup.Repair(destination, client, patch, null, CancellationToken.None), Is.EqualTo((0, 0)));
+
+        // A copy set up by an older release (no rod rows yet) is brought up to date from itself, without the client folder.
+        File.WriteAllBytes(Path.Combine(destination, "gamedata.mpk"), newer);
+        Assert.That(ModernClientSetup.Stale(destination, patch).Select(f => f.Path), Is.EqualTo(new[] { "gamedata.mpk" }));
+        Assert.That(ModernClientSetup.NeedSource(destination, patch), Is.Empty);
+        ModernClientSetup.Update(destination, patch, null);
+        Assert.That(ModernClientSetup.Stale(destination, patch), Is.Empty);
+
+        File.WriteAllText(Path.Combine(client, "gamedata.mpk"), "damaged");
+        Assert.That(ModernClientSetup.CheckSource(client, patch), Does.Contain("can't be read"));
+    }
+
     // The archive helpers are private to the launcher; the tests reach them as the launcher does.
     private static dynamic Archive(string method, byte[] archive, params object[] rest) =>
         typeof(ModernClientSetup).GetMethod(method, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
@@ -192,6 +249,55 @@ public sealed class ModernClientSetupTests
         Assert.That(ModernClientSetup.CheckSource(client!, patch), Is.Null);
         foreach (var file in patch.Files)
             Assert.DoesNotThrow(() => ModernClientSetup.Apply(File.ReadAllBytes(Path.Combine(client!, file.InputPath)), file), file.Path);
+    }
+
+    // With OFFLINE_DAOC_PRISTINE_1130 and OFFLINE_DAOC_CLIENT_PATCH: the real rod rows go into a later build of gamedata.mpk
+    // (the stock one with a new objects.csv row, as a live update adds them) and nothing else of it changes. With
+    // OFFLINE_DAOC_OTHER_GAMEDATA too (a real other build, such as Eden's): the rows go in, or, where that build already uses
+    // one of our IDs, the archive is left exactly as it is.
+    [Test]
+    public void TheRealRodRowsGoIntoAnotherBuildsGamedata()
+    {
+        string? client = Environment.GetEnvironmentVariable("OFFLINE_DAOC_PRISTINE_1130");
+        string? folder = Environment.GetEnvironmentVariable("OFFLINE_DAOC_CLIENT_PATCH");
+        if (client == null || folder == null) Assert.Ignore("No pristine client and patch on this machine.");
+        var file = ModernClientSetup.Load(folder!).Files.Single(f => f.Path == "gamedata.mpk");
+        byte[] stock = File.ReadAllBytes(Path.Combine(client!, "gamedata.mpk"));
+        string objects = Encoding.Latin1.GetString((byte[])Archive("MemberOf", stock, "objects.csv"));
+        int last = objects.LastIndexOf("\r\n4923,", StringComparison.Ordinal);
+        Assert.That(last, Is.GreaterThan(0), "stock objects.csv ends at 4923");
+        int end = objects.IndexOf("\r\n", last + 2, StringComparison.Ordinal);
+        string later = objects[..end] + "\r\n4924,A later live object,1,566" + objects[end..];
+        CheckRows((byte[])Archive("WithMember", stock, Encoding.Latin1.GetBytes(later), "objects.csv"), file, expectRows: true);
+
+        if (Environment.GetEnvironmentVariable("OFFLINE_DAOC_OTHER_GAMEDATA") is { } other)
+            CheckRows(File.ReadAllBytes(other), file, expectRows: null);
+    }
+
+    private static void CheckRows(byte[] input, ModernClientSetup.PatchedFile file, bool? expectRows)
+    {
+        byte[] output = ModernClientSetup.Apply(input, file);
+        Assert.That(ModernClientSetup.Apply(output, file), Is.EqualTo(output), "a second pass changes nothing");
+        bool added = !output.AsSpan().SequenceEqual(input);
+        if (expectRows is { } expected)
+            Assert.That(added, Is.EqualTo(expected));
+        foreach (var part in file.Members!)
+        {
+            List<string> before = Encoding.Latin1.GetString((byte[])Archive("MemberOf", input, part.Member)).Split("\r\n").ToList();
+            List<string> after = Encoding.Latin1.GetString((byte[])Archive("MemberOf", output, part.Member)).Split("\r\n").ToList();
+            if (added)
+            {
+                Assert.That(after.Where(line => !part.Rows!.Contains(line)), Is.EqualTo(before), part.Member);
+                Assert.That(part.Rows, Is.SubsetOf(after), part.Member);
+            }
+        }
+        if (!added)
+        {
+            // Left alone only because one of our IDs holds another row there.
+            var ids = file.Members!.SelectMany(p => p.Rows!.Select(r => (p.Member, Id: r.Split(',')[0], Row: r)));
+            Assert.That(ids.Any(x => Encoding.Latin1.GetString((byte[])Archive("MemberOf", input, x.Member)).Split("\r\n")
+                .Any(line => line.Split(',')[0].Trim() == x.Id && line != x.Row)), Is.True, "an ID of ours is taken");
+        }
     }
 
     [Test]

@@ -71,6 +71,15 @@ STOCK_TABLE = b''.join(
 
 
 class ClientPatchTests(unittest.TestCase):
+    def test_rows_go_in_by_id_or_not_at_all(self):
+        # The launcher's WithRows: another build of a catalog gets our rows at their place; a taken ID leaves it alone.
+        table = '10,staff\r\n12,new live row\r\n20,spear\r\n14999,end\r\n'
+        self.assertEqual(m.with_rows(table, ['15,rod', '16,rod staff']),
+                         '10,staff\r\n12,new live row\r\n15,rod\r\n16,rod staff\r\n20,spear\r\n14999,end\r\n')
+        self.assertEqual(m.with_rows('10,staff\r\n15,rod\r\n', ['15,rod']), '10,staff\r\n15,rod\r\n')
+        self.assertIsNone(m.with_rows('10,staff\r\n15,garden pitcher\r\n', ['15,rod']))
+        self.assertEqual(m.with_rows('10,staff\r\n', ['15,rod']), '10,staff\r\n15,rod\r\n')
+
     def test_in_place_changes_and_growth(self):
         original = bytes(range(256)) * 5000  # over 1 MB: compared in place
         patched = bytearray(original)
