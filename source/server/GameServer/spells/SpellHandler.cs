@@ -1532,6 +1532,8 @@ namespace DOL.GS.Spells
 			if (enduranceCost > 0)
 				m_caster.ChangeEndurance(m_caster, eEnduranceChangeType.Spell, -enduranceCost);
 
+			if (m_caster is GameBot botCaster)
+				botCaster.NoteSpellFinished(Spell, target);
 			GameEventMgr.Notify(GameLivingEvent.CastFinished, m_caster, new CastingEventArgs(this, target, m_lastAttackData));
 		}
 
@@ -2069,6 +2071,15 @@ namespace DOL.GS.Spells
 			spellHandler.StartSpell(target);
 		}
 
+		/// <summary>
+		/// How far from the caster a realm buff for the whole group reaches. The 1.130 baseline buffs (Acuity of the Council,
+		/// Archangel's Allotment, Strength of the Wildwood and the like) have no range and a 1,000 radius around the caster;
+		/// measured by their range (0) they reached only the caster, and on the 2026-11-02 overnight run Clerics, Druids and
+		/// Shamans recast them at their group thousands of times. Pure.
+		/// </summary>
+		public static int BuffReach(Spell spell, GameLiving caster) =>
+			spell.IsPBAoE ? spell.Radius : spell.CalculateEffectiveRange(caster);
+
 		public virtual List<GameLiving> GetGroupAndPets(Spell spell)
 		{
 			List<GameLiving> livingsInRange = GameLoop.GetListForTick<GameLiving>();
@@ -2093,6 +2104,8 @@ namespace DOL.GS.Spells
 				groupMembers.Add(Caster);
 			}
 
+			int reach = BuffReach(Spell, Caster);
+
 			foreach (GameLiving living in groupMembers)
 			{
 				IControlledBrain controlledBrain = living.ControlledBrain;
@@ -2100,17 +2113,17 @@ namespace DOL.GS.Spells
 
 				if (subControlledBrains != null)
 				{
-					foreach (IControlledBrain subControlledBrain in subControlledBrains.Where(x => x != null && Caster.IsWithinRadius(x.Body, Spell.CalculateEffectiveRange(Caster))))
+					foreach (IControlledBrain subControlledBrain in subControlledBrains.Where(x => x != null && Caster.IsWithinRadius(x.Body, reach)))
 						livingsInRange.Add(subControlledBrain.Body);
 				}
 
 				if (controlledBrain != null)
 				{
-					if (Caster.IsWithinRadius(controlledBrain.Body, Spell.CalculateEffectiveRange(Caster)))
+					if (Caster.IsWithinRadius(controlledBrain.Body, reach))
 						livingsInRange.Add(controlledBrain.Body);
 				}
 
-				if (Caster == living || Caster.IsWithinRadius(living, Spell.CalculateEffectiveRange(Caster)))
+				if (Caster == living || Caster.IsWithinRadius(living, reach))
 					livingsInRange.Add(living);
 			}
 
@@ -2747,6 +2760,8 @@ namespace DOL.GS.Spells
             if (!Spell.IsHarmful)
                 CabalistRestDiagnostics.Message(Caster, Spell, message);
             BotTesterLog.SpellMessage(Caster, Spell, message);
+            if (Caster is GameBot botCaster)
+                botCaster.NoteSpellMessage(Spell, message);
 			if (Caster is GamePlayer playerCaster)
 				playerCaster.MessageToSelf(message, type);
 			else if (Caster is GameNPC npcCaster && npcCaster.Brain is IControlledBrain npcCasterBrain

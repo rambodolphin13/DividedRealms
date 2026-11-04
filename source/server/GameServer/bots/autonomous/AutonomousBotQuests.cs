@@ -987,6 +987,13 @@ public static class AutonomousBotQuests
 
     public static bool StepTimedOut(Run run, long now) => now - run.StepStartedTick >= StepTimeoutMilliseconds;
 
+    /// <summary>
+    /// The step waits while the bot finishes the camp it is at: that time is not the step's. On the 2026-11-02 overnight run
+    /// 2,206 of 2,615 "ran past its time" abandons came the moment a bot got back to a quest it had resumed, a median 41
+    /// minutes after the resume, spent grinding its other camp.
+    /// </summary>
+    public static void HoldStepClock(Run run, long now) => run.StepStartedTick = now;
+
     private static IEnumerable<string> QuestItemIds(BotQuestPlan plan) => plan.Steps.SelectMany(step =>
         step.GivenAtStart.Append(step.GivenAtEnd).Append(step.NeededItem)
             .Concat(step.Drops.Select(drop => drop.Item)).Concat(step.Trades?.Keys ?? []))

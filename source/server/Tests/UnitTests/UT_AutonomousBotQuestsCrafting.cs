@@ -422,6 +422,18 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void TimeAtAnotherCampIsNotTheStepsTime()
+        {
+            var run = new AutonomousBotQuests.Run { StepStartedTick = 0 };
+            long later = AutonomousBotQuests.StepTimeoutMilliseconds + 60_000;
+            Assert.That(AutonomousBotQuests.StepTimedOut(run, later), Is.True, "a step left untouched runs out");
+
+            AutonomousBotQuests.HoldStepClock(run, later);   // still finishing the other camp at that moment
+            Assert.That(AutonomousBotQuests.StepTimedOut(run, later + 60_000), Is.False, "the clock starts when the bot takes the step up");
+            Assert.That(AutonomousBotQuests.StepTimedOut(run, later + AutonomousBotQuests.StepTimeoutMilliseconds), Is.True);
+        }
+
+        [Test]
         public void ADefeatWaitsForALevelOrTwoHours()
         {
             TestBot bot = Bot();

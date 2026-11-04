@@ -256,7 +256,7 @@ namespace DOL.GS
 
                 case RouteThreatAction.Retarget:
                     _lastRouteThreatRetargetTick = now;
-                    NoteRouteBlocker(bot, packMembers, margin, now);
+                    NoteRouteBlocker(bot, packMembers, margin, now, con);
                     AbandonCamp(bot, mayRetarget || !grouped
                         ? $"Route blocked by {blocker.Name} (level {blocker.Level}, {pack} together) with no way around"
                         : $"Route blocked by {blocker.Name} (level {blocker.Level}, {pack} together), too strong for the party and no way around");
@@ -353,8 +353,11 @@ namespace DOL.GS
             }
         }
 
-        /// <summary>The pack a camp was given up for, remembered for this bot and its party (AutonomousRouteBlockMemory).</summary>
-        private void NoteRouteBlocker(GameBot bot, GameNPC[] pack, int margin, long now)
+        /// <summary>
+        /// The pack a camp was given up for, remembered for this bot and its party (AutonomousRouteBlockMemory). A red or
+        /// purple one is also passed on to the realm's bots of about the same level, as word of mouth.
+        /// </summary>
+        private void NoteRouteBlocker(GameBot bot, GameNPC[] pack, int margin, long now, ConColor con)
         {
             var members = new (Vector2 Position, int AggroRange)[pack.Length];
             for (int i = 0; i < pack.Length; i++)
@@ -362,16 +365,22 @@ namespace DOL.GS
             (Vector2 center, float radius) = AutonomousRouteThreatPolicy.PackRetreat(members, margin);
             AutonomousRouteBlockMemory.Note(FailedGoalOwnerKey(bot), bot.CurrentRegionID, center, radius, now);
             AutonomousRouteBlockMemory.Note(WarbandGoalKey(), bot.CurrentRegionID, center, radius, now);
+            if (AutonomousRouteBlockMemory.PassedOn(con))
+                AutonomousRouteBlockMemory.Note(AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, bot.CurrentRegionID),
+                    bot.CurrentRegionID, center, radius, now, AutonomousRouteBlockMemory.WordOfMouthSlots);
         }
 
-        /// <summary>A camp in this region whose straight way from the bot passes a pack the bot or its party just gave up a camp for.</summary>
+        /// <summary>A camp in this region whose straight way from the bot passes a pack the bot, its party or its realm's bots of its level just gave up a camp for.</summary>
         private bool IsBehindRouteBlocker(GameBot bot, ushort region, float x, float y, long now) =>
             region == bot.CurrentRegionID &&
             (AutonomousRouteBlockMemory.Crosses(FailedGoalOwnerKey(bot), region, new(bot.X, bot.Y), new(x, y), now) ||
-             AutonomousRouteBlockMemory.Crosses(WarbandGoalKey(), region, new(bot.X, bot.Y), new(x, y), now));
+             AutonomousRouteBlockMemory.Crosses(WarbandGoalKey(), region, new(bot.X, bot.Y), new(x, y), now) ||
+             AutonomousRouteBlockMemory.Crosses(AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, region), region,
+                 new(bot.X, bot.Y), new(x, y), now));
 
         private bool HasRouteBlockers(GameBot bot, long now) =>
-            AutonomousRouteBlockMemory.HasAny(FailedGoalOwnerKey(bot), now) || AutonomousRouteBlockMemory.HasAny(WarbandGoalKey(), now);
+            AutonomousRouteBlockMemory.HasAny(FailedGoalOwnerKey(bot), now) || AutonomousRouteBlockMemory.HasAny(WarbandGoalKey(), now) ||
+            AutonomousRouteBlockMemory.HasAny(AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, bot.CurrentRegionID), now);
 
         /// <summary>
         /// Who stands around a purple, counted from the monster and not from the leader: the pack above comes from a scan around

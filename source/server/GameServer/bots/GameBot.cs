@@ -3008,7 +3008,54 @@ namespace DOL.GS
                 return;
             log.Warn($"BOT_BUFF_RECAST_LOOP bot=\"{Name}\" id={DatabaseID} class=\"{CharacterClass?.Name}\" level={Level} region={CurrentRegionID} " +
                 $"spell=\"{spell.Name}\" spellId={spell.ID} type={spell.SpellType} spellTarget={spell.Target} concentration={spell.Concentration} " +
-                $"duration={spell.Duration} target=\"{target?.Name}\"");
+                $"duration={spell.Duration} target=\"{target?.Name}\" {BuffRecastFacts(spell, target)}");
+        }
+
+        /// <summary>
+        /// What the target already carries of this buff's kind when the guard trips, so the log can tell a refused buff
+        /// (a better one there) from a cast that never finished (out of range, moving away).
+        /// </summary>
+        private string BuffRecastFacts(Spell spell, GameLiving target)
+        {
+            GameLiving holder = target ?? this;
+            eEffect kind = EffectHelper.GetEffectFromSpell(spell);
+            string held = string.Join(",", holder.effectListComponent?.GetSpellEffects(kind)
+                .Select(effect => $"{effect.SpellHandler?.Spell?.ID}:{effect.SpellHandler?.Spell?.Value}:{(effect.IsActive ? "on" : "off")}") ?? []);
+            string missing = spell.Target == eSpellTarget.GROUP && Group != null
+                ? string.Join(",", Group.GetMembersInTheGroup()
+                    .Where(member => member != this && !member.effectListComponent.GetSpellEffects(kind).Any(e => e.SpellHandler?.Spell?.ID == spell.ID))
+                    .Select(member => $"{member.Name}:{(member.CurrentRegionID == CurrentRegionID ? (int)GetDistanceTo(member) : -1)}" +
+                                      $"{(member.IsAlive ? "" : ":dead")}{(member is GameBot { IsOnStableMasterRoute: true } ? ":riding" : "")}"))
+                : string.Empty;
+            string state = target == null || target == this ? "self" :
+                $"{target.ObjectState}{(target.IsAlive ? "" : ":dead")}{(target.CurrentRegionID != CurrentRegionID ? ":otherRegion" : "")}" +
+                $"{(target is GameBot { IsOnStableMasterRoute: true } ? ":riding" : "")}{(target.IsStealthed ? ":stealthed" : "")}" +
+                $"{(target.Group != null && target.Group == Group ? ":grouped" : "")}";
+            string message = _lastSpellMessage.SpellId == spell.ID ? _lastSpellMessage.Text : string.Empty;
+            return $"effect={kind} held=\"{held}\" myValue={spell.Value} dist={(target == null ? 0 : (int)GetDistanceTo(target))} " +
+                   $"range={spell.Range} targetMoving={target?.IsMoving == true} targetState={state} missing=\"{missing}\" " +
+                   $"lastMessage=\"{message}\" onRoute={IsOnStableMasterRoute} " +
+                   $"finishedAgo={(_lastFinishedBuff.SpellId == spell.ID ? (GameLoop.GameLoopTime - _lastFinishedBuff.Tick) / 1000 : -1)} " +
+                   $"finishedOn=\"{(_lastFinishedBuff.SpellId == spell.ID ? _lastFinishedBuff.Target : string.Empty)}\" " +
+                   $"casterHolds={effectListComponent?.GetSpellEffects(kind).Any(e => e.SpellHandler?.Spell?.ID == spell.ID) == true}";
+        }
+
+        private (int SpellId, long Tick, string Target) _lastFinishedBuff;
+
+        /// <summary>A cast of this bot ran to the end (SpellHandler.FinishSpellCast), whatever the effect then did.</summary>
+        internal void NoteSpellFinished(Spell spell, GameLiving target)
+        {
+            if (spell != null && !spell.IsHarmful)
+                _lastFinishedBuff = (spell.ID, GameLoop.GameLoopTime, target?.Name ?? string.Empty);
+        }
+
+        private (int SpellId, string Text) _lastSpellMessage;
+
+        /// <summary>The last thing a spell of this bot told its caster (a refusal, an "already has a better" and so on).</summary>
+        internal void NoteSpellMessage(Spell spell, string message)
+        {
+            if (spell != null && !spell.IsHarmful)
+                _lastSpellMessage = (spell.ID, message?.Replace('"', '\'') ?? string.Empty);
         }
 
         public override void StartAttack(GameObject target)

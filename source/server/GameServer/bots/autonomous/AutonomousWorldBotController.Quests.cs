@@ -57,7 +57,10 @@ namespace DOL.GS
                     return false;
                 }
                 if (_camp != null && !IsQuestCamp(_camp))
+                {
+                    AutonomousBotQuests.HoldStepClock(run, now);
                     return false;
+                }
             }
 
             switch (run.Step > 0 ? run.Current?.Action : null)
