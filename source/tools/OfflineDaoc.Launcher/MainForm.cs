@@ -3033,6 +3033,18 @@ internal sealed partial class MainForm : Form
             MessageBox.Show(this, "The compiled server package is missing.", "Cannot start", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
+        string dotnetRoot = DotNetRuntimeCheck.ResolveRoot(_root);
+        var missingDotNet = DotNetRuntimeCheck.Missing(DotNetRuntimeCheck.Required(_serverExecutable), dotnetRoot);
+        if (missingDotNet.Count > 0)
+        {
+            if (MessageBox.Show(this, DotNetRuntimeCheck.Explain(missingDotNet, dotnetRoot, _root), ".NET 10 is missing",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+            {
+                try { Process.Start(new ProcessStartInfo(DotNetRuntimeCheck.DownloadPage) { UseShellExecute = true }); }
+                catch (Exception) { }
+            }
+            return;
+        }
         if (!PrepareWorld())
             return;
 
@@ -3059,6 +3071,7 @@ internal sealed partial class MainForm : Form
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
+            DotNetRuntimeCheck.Apply(startInfo, dotnetRoot);
             _serverProcess = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
             _serverProcess.OutputDataReceived += (_, args) => { if (args.Data is not null) _serverLog?.WriteLine(args.Data); };
             _serverProcess.ErrorDataReceived += (_, args) => { if (args.Data is not null) _serverLog?.WriteLine("ERROR: " + args.Data); };

@@ -109,7 +109,9 @@ This download contains no game client: you use your own.
 
 1. You need Dark Age of Camelot installed (the 1.130 client), and the Windows feature
    ".NET Framework 3.5" turned on (Control Panel > Programs > Turn Windows features on or off).
-2. Extract this whole folder somewhere with about 7 GB free.
+2. Extract this whole folder somewhere with about 7 GB free. Keep the tools folder: tools\\dotnet is
+   the .NET 10 the server runs on. Without it you need Microsoft's "ASP.NET Core Runtime 10"
+   Windows Hosting Bundle installed (https://dotnet.microsoft.com/download/dotnet/10.0).
 3. Double-click START DIVIDED REALMS.cmd.
 4. On first start the launcher asks for your Dark Age of Camelot folder (the one with game.dll
    and camelot.exe). It copies it into this folder and patches the copy. Your own install is
