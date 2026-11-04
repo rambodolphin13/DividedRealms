@@ -8,9 +8,12 @@ Divided Realms is a free, single-player Dark Age of Camelot world that runs on y
 **original retail 1.130 client**, every modern class and race, and a world full of bots that level, talk, raid and
 siege whether or not you log in. Bring friends along if you like: one of you hosts, the others join.
 
-> **[Download the latest test build (0.38-dev8)](https://github.com/rambodolphin13/DividedRealms/releases/tag/v0.38-dev8-modern-test)**
+[![The Fishing Update](docs/images/fishing-update-banner.png)](https://github.com/rambodolphin13/DividedRealms/releases/tag/DR-dev-0.1)
+
+> **[Download the latest test build (DR-dev-0.1, the Fishing Update)](https://github.com/rambodolphin13/DividedRealms/releases/tag/DR-dev-0.1)**
 > · [All releases](https://github.com/rambodolphin13/DividedRealms/releases)
 > · [Report a bug](https://github.com/rambodolphin13/DividedRealms/issues/new/choose)
+> · **[Join us on Discord](https://discord.gg/pq73ErExR)**
 >
 > **We're looking for testers.** These are development builds: the automated tests pass, but a lot of the newest work
 > needs people playing it.
@@ -86,7 +89,7 @@ siege whether or not you log in. Bring friends along if you like: one of you hos
 - About 7 GB of free disk space.
 
 **Then:**
-1. Download the zip from the [latest release](https://github.com/rambodolphin13/DividedRealms/releases/tag/v0.38-dev8-modern-test)
+1. Download the zip from the [latest release](https://github.com/rambodolphin13/DividedRealms/releases/tag/DR-dev-0.1)
    and extract it.
 2. Double-click **START DIVIDED REALMS.cmd**. The launcher asks for your DAoC folder, copies the client and patches the
    copy. **Your own install is not changed.**

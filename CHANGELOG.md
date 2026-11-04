@@ -3,7 +3,26 @@
 The newest version is first. For the full detail of every earlier update, see
 [docs/history/CHANGELOG-0.3-to-0.32b.md](docs/history/CHANGELOG-0.3-to-0.32b.md).
 
-## 0.38 (not released yet)
+## DR-dev-0.1, the Fishing Update — 2026-11-04
+
+The first build under the Divided Realms numbering, for the original 1.130 client. It carries everything below,
+which has been built since 0.38-dev8 (the 0.38 line goes on under the new name). Discord: https://discord.gg/pq73ErExR
+
+- Power regeneration is 1.5 times the classic rate and no longer halves below 50% power, for players and bots alike.
+  A world that still has the old defaults is moved to the new ones once, at its first start; a value you changed
+  yourself is kept. Both are in the launcher's Living Server tab. (From the chris4aker/OfflineDAoC-LivingServer fork.)
+- Gamebots you invite into your guild earn it merit for their levels and realm levels, and pay your dues rate into the
+  guild bank from coin they loot; `bot_player_guild_economy` switches it off. (From the Living Server fork.)
+- The world database is saved safely: it always opens in WAL with Synchronous=Normal, checks itself at each start
+  (`db_integrity_check`), writes everything into the database file when the server stops, and keeps a daily backup in
+  runtime\data\backups (`db_backup_keep`, 7). (From the Living Server fork; the backup design is lometur's HearthDAoC.)
+- Power, endurance or health that stopped regenerating until the next login restarts by itself. Bots read their spell
+  lines at their trained rank (a Minstrel with Instruments 50 now sings the 204% speed song), and a bot caster's focus
+  staff counts. Group followers no longer stutter. (From the Nikse77 fork.)
+- Border keep doors no longer open and close straight away. (From OpenDAoC.)
+- A dead player can't pick anything up, health never shows 0% while there is any left, and a relic carrier crossing
+  into another region keeps the relic for up to 60 seconds. (From shadowofze's True165 and lometur's HearthDAoC.)
+- The 54 files from the original game client that came with upstream are gone from the repository.
 
 - Gamebots do classic quests while they level: they take a quest in their level and realm from its giver, walk the steps,
   fight and collect what it asks for, and hand in for its real experience, coin and items. A quest monster opens only to
@@ -113,8 +132,9 @@ client). The original DAoC client is no longer supported, and the Sluaghbinder c
   realm; /fish mark <name> saves the shore you stand on (facing water) and /fish unmark <number> removes it.
 - Monsters and enemy guards don't aggro a player who holds the fishing pole and isn't in combat (server setting
   fishing_pole_prevents_aggro, on by default). Attack something and you're a normal target again; bots are not affected.
-- Fishing is now a trade skill from 1 to 1000, listed in the trade skill window beside the crafts. It rises as you
-  catch fish (rare and legendary fish teach more), quickly at first and slower near the top.
+- Fishing is now a trade skill from 1 to 1000, shown by /fish stats (the 1.130 trade skill window can't list a line it
+  doesn't know). It rises as you catch fish (rare and legendary fish teach more), quickly at first and slower near the
+  top.
 - Five fishing poles: the starter Fishing Pole, then Oaken, Ironwood, Heartwood and the Runewood Angler's Pole. A
   better pole lands better fish and bites come sooner, and each pole only teaches up to a point (250, 500, 750, then
   1000), so you craft the next one to keep improving. Hold the pole or keep it in your backpack; the best one you carry
