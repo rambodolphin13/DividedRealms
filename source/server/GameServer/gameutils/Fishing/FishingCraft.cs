@@ -79,7 +79,7 @@ namespace DOL.GS.Fishing
         /// <summary>The skill's name in messages (and the name sent with the trade skill window line, which the client ignores).</summary>
         public const string SkillName = "Fishing";
 
-        // A plain two-handed staff for every tier until a real rod mesh is checked in game (see FishingCatalog.PoleModel).
+        // The stock quarterstaff for every tier; the fishing_pole_model server setting swaps in the private rod (4927) at start.
         private const int PoleModel = 442;
 
         // objects.csv 2656 "Campfire" (items.csv 1064 with fire effect 74), 1882 "bedroll pillow", 4237 "Summer_tentRound".

@@ -24,6 +24,12 @@ public static class FishingStartup
 
         foreach (DbItemTemplate template in FishingCatalog.AllTemplates().Concat(FishingCraft.AllTemplates()))
         {
+            // A client with the private rod (tools/pet-art/install_fishing_rod.py) gets it through fishing_pole_model.
+            if (FishingCraft.FindPole(template.Id_nb) != null && ServerProperties.Properties.FISHING_POLE_MODEL > 0)
+            {
+                template.Model = ServerProperties.Properties.FISHING_POLE_MODEL;
+            }
+
             DbItemTemplate existing = GameServer.Database.FindObjectByKey<DbItemTemplate>(template.Id_nb);
 
             if (existing != null)

@@ -2736,6 +2736,14 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("craft", "fishing_trade_skill_id", "Trade skill window id for the Fishing line; 0 hides it (the client names lines by id from its own data).", 0)]
 		public static int FISHING_TRADE_SKILL_ID = 0;
 
+		/// <summary>
+		/// Offline DAoC fishing: the objects.csv model every fishing pole is drawn with, applied to the pole item templates at
+		/// server start. 442 is the stock quarterstaff every client has; 4927 is the private fishing rod that
+		/// tools/pet-art/install_fishing_rod.py adds to a client (a client without it draws no pole).
+		/// </summary>
+		[ServerProperty("craft", "fishing_pole_model", "objects.csv model of fishing poles (442 stock quarterstaff; 4927 needs the private rod in every client).", 442)]
+		public static int FISHING_POLE_MODEL = 442;
+
 		#endregion
 
 		#region ACCOUNT
