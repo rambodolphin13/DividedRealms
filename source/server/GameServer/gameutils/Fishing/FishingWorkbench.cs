@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using DOL.Database;
 using DOL.GS.PacketHandler;
@@ -109,7 +110,7 @@ namespace DOL.GS.Fishing
 
             foreach (FishingMaterial material in recipe.Materials)
             {
-                if (!player.Inventory.RemoveTemplate(material.TemplateId, material.Count, FirstBag, LastBag))
+                if (!TakeMaterial(player, material))
                 {
                     player.Out.SendMessage($"You are missing {material.Name}.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
@@ -153,7 +154,7 @@ namespace DOL.GS.Fishing
 
             foreach (FishingMaterial material in recipe.Materials)
             {
-                int have = player.Inventory.CountItemTemplate(material.TemplateId, FirstBag, LastBag);
+                int have = CountMaterial(player, material);
 
                 if (have < material.Count)
                 {
@@ -164,6 +165,42 @@ namespace DOL.GS.Fishing
             }
 
             return true;
+        }
+
+        // The stock world has several templates per material, all with the same name: one per merchant list
+        // (cured_leather_squares, cured_leather_square3...) plus the leather/cloth/wood conversion results. Any of them
+        // counts, matched by name (FishingMaterial.Name is the stock name).
+        private static bool IsMaterial(DbInventoryItem item, FishingMaterial material)
+        {
+            return item != null && string.Equals(item.Name, material.Name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static int CountMaterial(GamePlayer player, FishingMaterial material)
+        {
+            return player.Inventory.GetItemRange(FirstBag, LastBag).Where(item => IsMaterial(item, material)).Sum(item => item.Count);
+        }
+
+        // Caller has checked CountMaterial. Takes from as many stacks as it needs.
+        private static bool TakeMaterial(GamePlayer player, FishingMaterial material)
+        {
+            int left = material.Count;
+
+            foreach (DbInventoryItem item in player.Inventory.GetItemRange(FirstBag, LastBag).Where(item => IsMaterial(item, material)).ToList())
+            {
+                int take = Math.Min(left, item.Count);
+
+                if (player.Inventory.RemoveCountFromStack(item, take))
+                {
+                    left -= take;
+                }
+
+                if (left == 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static string DescribeMaterials(GamePlayer player, FishingRecipe recipe)
@@ -177,7 +214,7 @@ namespace DOL.GS.Fishing
                     text.Append(", ");
                 }
 
-                int have = player.Inventory.CountItemTemplate(material.TemplateId, FirstBag, LastBag);
+                int have = CountMaterial(player, material);
                 text.Append($"{material.Count} {material.Name} ({have})");
             }
 
