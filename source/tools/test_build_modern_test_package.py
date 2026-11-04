@@ -1,4 +1,5 @@
 """Checks of the modern-test package builder's file selection and server configuration (build_modern_test_package.py)."""
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -24,6 +25,18 @@ class ModernPackageTests(unittest.TestCase):
             self.assertIn('Data Source=../data/opendaoc.sqlite3.db;Version=3', text)
             self.assertIn('<AutoAccountCreation>True</AutoAccountCreation>', text)
             self.assertNotIn('someone', text)
+
+    def test_the_private_fishing_rod_never_ships(self):
+        con = sqlite3.connect(':memory:')
+        con.execute('CREATE TABLE ItemTemplate (Id_nb TEXT, Model INTEGER)')
+        con.execute('CREATE TABLE ServerProperty (`Key` TEXT, Value TEXT, DefaultValue TEXT)')
+        con.executemany('INSERT INTO ItemTemplate VALUES (?, ?)', [('pole_a', 4927), ('pole_b', 4928), ('staff', 442), ('sword', 4)])
+        con.executemany('INSERT INTO ServerProperty VALUES (?, ?, ?)', [('fishing_pole_model', '4927', '442'), ('fishing_sits', 'True', 'True')])
+        self.assertEqual(b.use_stock_models(con), dict(item_templates=2, server_properties=1))
+        self.assertEqual(con.execute('SELECT COUNT(*) FROM ItemTemplate WHERE Model IN (4927, 4928)').fetchone()[0], 0)
+        self.assertEqual(dict(con.execute('SELECT Id_nb, Model FROM ItemTemplate')), dict(pole_a=442, pole_b=442, staff=442, sword=4))
+        self.assertEqual(dict(con.execute('SELECT `Key`, Value FROM ServerProperty')), dict(fishing_pole_model='442', fishing_sits='True'))
+        self.assertEqual(b.use_stock_models(con), dict(item_templates=0, server_properties=0))
 
     def test_host_for_friends_is_switched_off(self):
         with tempfile.TemporaryDirectory() as folder:
