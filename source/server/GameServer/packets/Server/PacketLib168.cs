@@ -84,6 +84,11 @@ namespace DOL.GS.PacketHandler
 		{
 		}
 
+		/// <summary>Draws the five Warlock chamber orbs over <paramref name="owner"/> for this client (Storm Sovereign Tempest).</summary>
+		public virtual void SendChamberOrbs(GameObject owner, byte[] slots)
+		{
+		}
+
 		public virtual void SendLoginDenied(eLoginError et)
 		{
 			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.LoginDenied)))
