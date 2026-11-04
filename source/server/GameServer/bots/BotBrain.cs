@@ -6150,6 +6150,10 @@ namespace DOL.AI.Brain
             return false;
         }
 
+        private GameLiving _raiseWaitCorpse;
+        private long _raiseWaitSince;
+        private bool _raiseWaitSaid;
+
         private bool TryResurrectGroupMember()
         {
             Spell resurrection = BotBody.ResurrectionSpell;
@@ -6175,8 +6179,27 @@ namespace DOL.AI.Brain
                 GameLiving playerCorpse = Body.Group.GetMembersInTheGroup().FirstOrDefault(member => member is GamePlayer && !member.IsAlive &&
                     member.ObjectState == GameObject.eObjectState.Active && member.CurrentRegionID == Body.CurrentRegionID &&
                     Body.IsWithinRadius(member, raiseRange));
-                if (playerCorpse != null && BotGroupSupport.ThreatToRaisedPlayer(BotBody) is GameNPC threat)
+                GameNPC threat = playerCorpse != null ? BotGroupSupport.ThreatToRaisedPlayer(BotBody) : null;
+                if (threat == null || playerCorpse != _raiseWaitCorpse)
                 {
+                    _raiseWaitCorpse = threat != null ? playerCorpse : null;
+                    _raiseWaitSince = threat != null ? GameLoop.GameLoopTime : 0;
+                    _raiseWaitSaid = false;
+                }
+                // Discord report 2026-11-04: in a busy dungeon a monster that never came over held the raise for good. Left alone
+                // for RaiseWaitGiveUpMs, the rezzer raises the player where it stands, as a player would.
+                if (threat != null && BotGroupSupport.RaiseWaitGivesUp(_raiseWaitSince, GameLoop.GameLoopTime, threat.InCombat,
+                        BotGroupSupport.UnderAttack(BotBody)))
+                    threat = null;
+                if (threat != null)
+                {
+                    if (BotBody.IsTemporaryGroupHelper && !_raiseWaitSaid)
+                    {
+                        // The player asked for a rez and heard nothing (Discord report 2026-11-04): say why it waits.
+                        _raiseWaitSaid = true;
+                        Body.Group.SendMessageToGroupMembers(Body, $"Waiting for {threat.GetName(0, false)} to move off, then I'll rez you.",
+                            eChatType.CT_Group, eChatLoc.CL_ChatWindow);
+                    }
                     // Back off to a clear spot within rez range, as players rez from the edge of a camp. In a camp that
                     // respawns (in-game check 2026-10-28) clearing alone never ended. Nothing may be hitting the caster now
                     // (InCombat lingers after each kill, so it never ended there either); at the spot, fight what is left.
@@ -6190,7 +6213,8 @@ namespace DOL.AI.Brain
                         ReportResurrectionBlock(resurrection, $"moving clear of {threat.Name} before raising a player");
                         return true;
                     }
-                    if (!Body.InCombat && CanAggroTarget(threat))
+                    // A companion waits instead of pulling more monsters onto its dead player's party.
+                    if (!BotBody.IsTemporaryGroupHelper && !Body.InCombat && CanAggroTarget(threat))
                     {
                         AddToAggroList(threat, Math.Max(100, threat.EffectiveLevel * 10));
                         FSM.SetCurrentState(eFSMStateType.AGGRO);

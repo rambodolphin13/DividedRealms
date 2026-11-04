@@ -305,5 +305,21 @@ namespace DOL.GS.Tests
             Assert.That(BotGroupSupport.PointIsSafeToRaise(new System.Numerics.Vector3(BotGroupSupport.RaiseDangerRadius + 10, 0, 0), fight), Is.True);
             Assert.That(BotGroupSupport.PointIsSafeToRaise(new System.Numerics.Vector3(0, 0, 0), new BotGroupSupport.RaiseHostile[0]), Is.True);
         }
+
+        [Test]
+        public void ARaiseIgnoresOtherFloorsAndStopsWaitingOnIdleMonsters()
+        {
+            // Discord report 2026-11-04, Stonehenge Barrows: companions never raised the player under a stacked dungeon floor.
+            var above = new[] { new BotGroupSupport.RaiseHostile(new System.Numerics.Vector3(0, 0, BotGroupSupport.RaiseFloorGap + 50), true, 800) };
+            Assert.That(BotGroupSupport.PointIsSafeToRaise(new System.Numerics.Vector3(0, 0, 0), above), Is.True, "another floor");
+            var level = new[] { new BotGroupSupport.RaiseHostile(new System.Numerics.Vector3(0, 0, 100), false, 800) };
+            Assert.That(BotGroupSupport.PointIsSafeToRaise(new System.Numerics.Vector3(0, 0, 0), level), Is.False, "same floor");
+            long wait = BotGroupSupport.RaiseWaitGiveUpMs;
+            Assert.That(BotGroupSupport.RaiseWaitGivesUp(1_000, 1_000 + wait, false, false), Is.True);
+            Assert.That(BotGroupSupport.RaiseWaitGivesUp(1_000, 1_000 + wait - 1, false, false), Is.False, "too soon");
+            Assert.That(BotGroupSupport.RaiseWaitGivesUp(1_000, 1_000 + wait, true, false), Is.False, "monster fighting");
+            Assert.That(BotGroupSupport.RaiseWaitGivesUp(1_000, 1_000 + wait, false, true), Is.False, "caster under attack");
+            Assert.That(BotGroupSupport.RaiseWaitGivesUp(0, 1_000 + wait, false, false), Is.False, "not waiting");
+        }
     }
 }

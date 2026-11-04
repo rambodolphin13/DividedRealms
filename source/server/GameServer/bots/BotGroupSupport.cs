@@ -34,7 +34,7 @@ namespace DOL.GS
         public static double ProjectedHealthPercent(int health, int maxHealth, double incoming) =>
             100.0 * (health + Math.Max(0, incoming)) / Math.Max(1, maxHealth);
 
-        private static bool UnderAttack(GameBot bot) => bot.IsBeingInterruptedByOther ||
+        internal static bool UnderAttack(GameBot bot) => bot.IsBeingInterruptedByOther ||
             GameLoop.GameLoopTime - bot.LastAttackedByEnemyTick < 3000 ||
             bot.attackComponent.AttackerTracker.Attackers.Any(a => a.IsAlive && a.TargetObject == bot);
 
@@ -57,6 +57,20 @@ namespace DOL.GS
         /// <summary>How far from the resurrector a hostile counts as a danger to a raised player: they stand where the caster is.</summary>
         public const int RaiseDangerRadius = 1_200;
 
+        /// <summary>A hostile this far above or below a raise spot is on another floor.</summary>
+        public const int RaiseFloorGap = 400;
+
+        /// <summary>
+        /// How long a rezzer that is left alone waits for an idle aggressive monster to move off before it raises a player
+        /// anyway. The player stands up where the caster has stood unharmed all that time. A monster that is fighting
+        /// still holds the raise.
+        /// </summary>
+        public const long RaiseWaitGiveUpMs = 20_000;
+
+        /// <summary>Whether a rezzer kept from raising a player by an idle monster raises them anyway. Pure.</summary>
+        public static bool RaiseWaitGivesUp(long waitingSince, long now, bool threatFighting, bool casterAttacked) =>
+            waitingSince > 0 && now - waitingSince >= RaiseWaitGiveUpMs && !threatFighting && !casterAttacked;
+
         /// <summary>
         /// Whether a real player may be raised now. Play test 2026-10-28: a level 50 cleric raised a level 1 player in a
         /// level 25 camp; a leech hit the raised player before the rez damage immunity could heal it back (that effect heals
@@ -75,6 +89,10 @@ namespace DOL.GS
             int fighting = 0, aggressive = 0;
             foreach (RaiseHostile hostile in hostiles)
             {
+                // Discord report 2026-11-04 (Stonehenge Barrows): monsters on the floor above or below counted, so no spot in
+                // a stacked dungeon was ever clear and companions stood buffing over the dead player.
+                if (Math.Abs(point.Z - hostile.Position.Z) > RaiseFloorGap)
+                    continue;
                 float distance = Vector2.Distance(new(point.X, point.Y), new(hostile.Position.X, hostile.Position.Y));
                 if (hostile.Fighting && distance <= RaiseDangerRadius) fighting++;
                 else if (hostile.AggroReach > 0 && distance <= hostile.AggroReach) aggressive++;
@@ -85,6 +103,10 @@ namespace DOL.GS
         private static List<(GameNPC Npc, RaiseHostile Hostile)> RaiseHostiles(GameBot bot, int radius)
         {
             var list = new List<(GameNPC, RaiseHostile)>();
+            // In a dungeon a monster behind a wall can't reach the raised player either.
+            bool checkSight = bot.CurrentZone?.IsDungeon == true && PathfindingProvider.Instance.IsAvailable &&
+                PathfindingProvider.Instance.HasNavmesh(bot.CurrentZone);
+            Vector3 eye = new(bot.X, bot.Y, bot.Z + 50);
             foreach (GameNPC npc in bot.GetNPCsInRadius((ushort)Math.Min(ushort.MaxValue, radius)))
             {
                 if (npc == null || npc == bot || npc is GameBot || !npc.IsAlive || npc.ObjectState != GameObject.eObjectState.Active ||
@@ -94,6 +116,10 @@ namespace DOL.GS
                 int reach = npc.Brain is DOL.AI.Brain.StandardMobBrain brain && brain.AggroLevel > 0 && brain.AggroRange > 0
                     ? brain.AggroRange + 300 : 0;
                 if (!npc.InCombat && reach == 0) continue;
+                if (checkSight && Math.Abs(npc.Z - bot.Z) <= RaiseFloorGap &&
+                    !PathfindingProvider.Instance.HasLineOfSight(bot.CurrentZone, eye, new(npc.X, npc.Y, npc.Z + 50),
+                        PathfindingProvider.Instance.DefaultFilters))
+                    continue;
                 list.Add((npc, new RaiseHostile(new(npc.X, npc.Y, npc.Z), npc.InCombat, reach)));
             }
             return list;
