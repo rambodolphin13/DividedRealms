@@ -2727,6 +2727,15 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("craft", "fishing_pole_prevents_aggro", "Monsters do not aggro a player who is wielding the fishing pole and not in combat.", true)]
 		public static bool FISHING_POLE_PREVENTS_AGGRO = true;
 
+		/// <summary>
+		/// Offline DAoC fishing: the trade skill id the Fishing line is sent with in the trade skill window, or 0 to leave it out.
+		/// The 1.130 client names each line from its own tdl.crf by this id and ignores the name the server sends, so a
+		/// stock id shows that craft (15 showed as "Basic Crafting Has Been Removed"). Ids the client has no entry for
+		/// (5, 16) are untested.
+		/// </summary>
+		[ServerProperty("craft", "fishing_trade_skill_id", "Trade skill window id for the Fishing line; 0 hides it (the client names lines by id from its own data).", 0)]
+		public static int FISHING_TRADE_SKILL_ID = 0;
+
 		#endregion
 
 		#region ACCOUNT

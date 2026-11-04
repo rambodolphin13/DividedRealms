@@ -66,7 +66,8 @@ namespace DOL.GS.Fishing
     /// Fishing as a trade skill: the 1-1000 skill scale and how it rises, the pole tiers, the camp kits and the recipes
     /// that make them. Pure logic like FishingCatalog: nothing here touches the database or a player, so it is unit tested
     /// directly. The skill is kept in offline_fishing (FishingProgress), not in eCraftingSkill, so the stock crafting code,
-    /// craft titles and bot crafting never see it; PacketLib168.SendUpdateCraftingSkills adds it to the trade skill window.
+    /// craft titles and bot crafting never see it. The client's trade skill window names its lines by id from tdl.crf, so
+    /// Fishing is only listed there when the fishing_trade_skill_id server setting gives it an id; /fish stats shows it.
     ///
     /// The client draws recipes in its crafting window from its own tdl.crf, which has no fishing recipes, so these are
     /// listed and made through /fish craft instead.
@@ -75,11 +76,8 @@ namespace DOL.GS.Fishing
     {
         public const int MaxSkill = 1000;
 
-        /// <summary>The name shown in the trade skill window.</summary>
+        /// <summary>The skill's name in messages (and the name sent with the trade skill window line, which the client ignores).</summary>
         public const string SkillName = "Fishing";
-
-        /// <summary>Trade skill window icon (the AbstractCraftingSkill.Icon byte); 0x0F is Basic Crafting's.</summary>
-        public const byte SkillIcon = 0x0F;
 
         // A plain two-handed staff for every tier until a real rod mesh is checked in game (see FishingCatalog.PoleModel).
         private const int PoleModel = 442;
