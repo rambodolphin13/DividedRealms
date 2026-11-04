@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DOL.Database;
 using DOL.Events;
 using DOL.Logging;
@@ -6,7 +7,7 @@ using DOL.Logging;
 namespace DOL.GS.Fishing;
 
 /// <summary>
-/// Adds the fishing item templates (fish, junk and the pole) to the database when the server starts.
+/// Adds the fishing item templates (fish, junk, the poles and camp kits) to the database when the server starts.
 /// Existing rows are left alone, so edits made in the database are kept, except the model of our own rows:
 /// a model changed in FishingCatalog (the pole's look, say) is copied onto the existing row.
 /// </summary>
@@ -21,7 +22,7 @@ public static class FishingStartup
         int updated = 0;
         int failed = 0;
 
-        foreach (DbItemTemplate template in FishingCatalog.AllTemplates())
+        foreach (DbItemTemplate template in FishingCatalog.AllTemplates().Concat(FishingCraft.AllTemplates()))
         {
             DbItemTemplate existing = GameServer.Database.FindObjectByKey<DbItemTemplate>(template.Id_nb);
 

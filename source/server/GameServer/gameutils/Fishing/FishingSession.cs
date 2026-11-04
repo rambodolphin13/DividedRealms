@@ -69,28 +69,35 @@ public static class FishingManager
 
     public static bool HasFishingPole(GamePlayer player)
     {
-        DbInventoryItem twoHand = player.Inventory.GetItem(eInventorySlot.TwoHandWeapon);
-        DbInventoryItem rightHand = player.Inventory.GetItem(eInventorySlot.RightHandWeapon);
+        return GetPole(player) != null;
+    }
 
-        if (IsPole(twoHand) || IsPole(rightHand))
+    /// <summary>
+    /// The pole the player fishes with: the one in their hands, or else the best one in their backpack. Null if none.
+    /// </summary>
+    public static FishingPoleTier GetPole(GamePlayer player)
+    {
+        FishingPoleTier held = FishingCraft.FindPole(player.Inventory.GetItem(eInventorySlot.TwoHandWeapon)?.Template?.Id_nb)
+            ?? FishingCraft.FindPole(player.Inventory.GetItem(eInventorySlot.RightHandWeapon)?.Template?.Id_nb);
+
+        if (held != null)
         {
-            return true;
+            return held;
         }
+
+        FishingPoleTier best = null;
 
         foreach (DbInventoryItem item in player.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
         {
-            if (IsPole(item))
+            FishingPoleTier pole = FishingCraft.FindPole(item?.Template?.Id_nb);
+
+            if (pole != null && (best == null || pole.Bonus > best.Bonus))
             {
-                return true;
+                best = pole;
             }
         }
 
-        return false;
-    }
-
-    private static bool IsPole(DbInventoryItem item)
-    {
-        return item != null && item.Template != null && item.Template.Id_nb == FishingCatalog.PoleTemplateId;
+        return best;
     }
 
     /// <summary>
@@ -488,7 +495,7 @@ public static class FishingManager
         progress.RecordCast();
         FishingProgressStore.Save(progress);
 
-        int biteDelay = FishingCatalog.RollBiteDelayMs(progress.Skill, Random.Shared);
+        int biteDelay = FishingCatalog.RollBiteDelayMs(FishingCraft.RollSkill(progress.Skill, GetPole(player)), Random.Shared);
         long now = GameLoop.GameLoopTime;
 
         session.Phase = ePhase.Waiting;
@@ -523,8 +530,8 @@ public static class FishingManager
         player.Out.SendCloseTimerWindow();
 
         FishingProgress progress = FishingProgressStore.Load(player);
-        int skillBefore = progress.Skill;
-        FishingCatch fish = FishingCatalog.Roll(player.Realm, skillBefore, Random.Shared);
+        FishingPoleTier pole = GetPole(player);
+        FishingCatch fish = FishingCatalog.Roll(player.Realm, FishingCraft.RollSkill(progress.Skill, pole), Random.Shared);
 
         if (fish == null)
         {
@@ -568,13 +575,14 @@ public static class FishingManager
             player.Out.SendMessage($"Your backpack is full, so you let the {fish.DisplayName} go.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
         }
 
-        // RecordCatch counts the catch, keeps the best one and awards fish.SkillGain (capped at 100).
+        // RecordCatch counts the catch and keeps the best one; the skill rises like a trade skill, up to the pole's cap.
         progress.RecordCatch(fish);
-        FishingProgressStore.Save(progress);
+        int gain = FishingCraft.RollCatchGain(progress.Skill, fish.SkillGain, pole, Random.Shared);
+        FishingSkill.Gain(player, progress, gain);
 
-        if (progress.Skill > skillBefore)
+        if (gain == 0 && pole != null && progress.Skill >= pole.SkillCap && progress.Skill < FishingCraft.MaxSkill && fish.SkillGain > 0 && Random.Shared.Next(10) == 0)
         {
-            player.Out.SendMessage($"Your fishing skill increases to {progress.Skill}.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            player.Out.SendMessage($"You have learned all your {pole.Name} can teach you. A better pole would let you improve.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
         }
 
         if (fish.Rarity == eFishingRarity.Legendary)

@@ -12,8 +12,10 @@ namespace DOL.GS.Commands
         "'/fish' - Fishes and casts again after each catch until you move or type /fish stop.",
         "'/fish active' - Like /fish, but you reel in each bite yourself: type /fish within 4 seconds.",
         "'/fish stop' - Reels in your line and stops fishing.",
-        "'/fish stats' - Shows your fishing skill, casts, catches and best catch.",
+        "'/fish stats' - Shows your fishing skill, pole, casts, catches and best catch.",
         "'/fish pole' - Gives you a fishing pole if you don't have one.",
+        "'/fish craft' - Lists the poles and camp kits you can make; '/fish craft <number>' makes one.",
+        "'/fish camp' - Shows how long your camp has left; '/fish camp break' packs it up. Use a camp kit from your backpack to make camp.",
         "'/fish spots' - Lists the fishing spots you can travel to.",
         "'/fish go <number>' - Travels to a fishing spot in your realm from the /fish spots list.",
         "'/fish mark <name>' - Saves the shore you stand on, facing open water, as a new fishing spot.",
@@ -79,7 +81,11 @@ namespace DOL.GS.Commands
                         best = $"{progress.BestCatchName} ({progress.BestWeightTenths / 10}.{progress.BestWeightTenths % 10} lbs)";
                     }
 
-                    player.Out.SendMessage($"Fishing skill: {progress.Skill} / 100", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    FishingPoleTier pole = FishingManager.GetPole(player);
+                    string poleText = pole == null ? "none (type /fish pole)" : $"{pole.Name} (+{pole.Bonus}, teaches up to {pole.SkillCap})";
+
+                    player.Out.SendMessage($"Fishing skill: {progress.Skill} / {FishingCraft.MaxSkill}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    player.Out.SendMessage($"Pole: {poleText}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     player.Out.SendMessage($"Casts: {progress.Casts}   Catches: {progress.Catches}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     player.Out.SendMessage($"Best catch: {best}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
@@ -87,7 +93,7 @@ namespace DOL.GS.Commands
                 }
                 case "pole":
                 {
-                    // MVP shortcut until a merchant sells poles.
+                    // The starter pole is free; better ones are made with /fish craft.
                     if (FishingManager.HasFishingPole(player))
                     {
                         player.Out.SendMessage("You already have a fishing pole.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -115,6 +121,32 @@ namespace DOL.GS.Commands
 
                     InventoryLogging.LogInventoryAction("(fishing)", player, eInventoryActionType.Other, pole.Template, pole.Count);
                     player.Out.SendMessage("You receive a fishing pole. Face open water and type /fish to cast.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                    break;
+                }
+                case "craft":
+                {
+                    if (args.Length >= 3)
+                    {
+                        FishingWorkbench.TryCraft(player, args[2]);
+                    }
+                    else
+                    {
+                        FishingWorkbench.ShowRecipes(player);
+                    }
+
+                    break;
+                }
+                case "camp":
+                {
+                    if (args.Length >= 3 && args[2].ToLowerInvariant() == "break")
+                    {
+                        FishingCamp.BreakCamp(player, "You put out your campfire and pack up.");
+                    }
+                    else
+                    {
+                        FishingCamp.ShowStatus(player);
+                    }
 
                     break;
                 }

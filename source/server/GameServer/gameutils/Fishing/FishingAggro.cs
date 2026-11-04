@@ -31,6 +31,6 @@ public static class FishingAggro
 
         DbInventoryItem pole = player.Inventory?.GetItem(eInventorySlot.TwoHandWeapon);
 
-        return pole?.Template?.Id_nb == FishingCatalog.PoleTemplateId;
+        return FishingCraft.FindPole(pole?.Template?.Id_nb) != null;
     }
 }

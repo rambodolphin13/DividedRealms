@@ -6677,6 +6677,12 @@ namespace DOL.GS
                         return;
                 }
 
+                if (Fishing.FishingCamp.IsCampKit(useItem.Id_nb))
+                {
+                    Fishing.FishingCamp.TryDeploy(this, useItem);
+                    return;
+                }
+
                 if (GameBoat.IsBoatItem(useItem.Id_nb))
                 {
                     GameBoat.Summon(this, useItem);

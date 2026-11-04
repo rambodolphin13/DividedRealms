@@ -385,8 +385,10 @@ NORMAL PLAYER COMMANDS
   '/fish' - Fishes and casts again after each catch until you move or type /fish stop.
   '/fish active' - Like /fish, but you reel in each bite yourself: type /fish within 4 seconds.
   '/fish stop' - Reels in your line and stops fishing.
-  '/fish stats' - Shows your fishing skill, casts, catches and best catch.
+  '/fish stats' - Shows your fishing skill, pole, casts, catches and best catch.
   '/fish pole' - Gives you a fishing pole if you don't have one.
+  '/fish craft' - Lists the poles and camp kits you can make; '/fish craft <number>' makes one.
+  '/fish camp' - Shows how long your camp has left; '/fish camp break' packs it up. Use a camp kit from your backpack to make camp.
   '/fish spots' - Lists the fishing spots you can travel to.
   '/fish go <number>' - Travels to a fishing spot in your realm from the /fish spots list.
   '/fish mark <name>' - Saves the shore you stand on, facing open water, as a new fishing spot.

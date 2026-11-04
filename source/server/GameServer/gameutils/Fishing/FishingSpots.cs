@@ -220,7 +220,10 @@ public static class FishingSpots
         {
             if (!names.Add(spot.Name))
             {
-                Log.Warn($"Fishing: the marked spot '{spot.Name}' in {FileName} has the name of another spot and is skipped.");
+                if (Log.IsWarnEnabled)
+                {
+                    Log.Warn($"Fishing: the marked spot '{spot.Name}' in {FileName} has the name of another spot and is skipped.");
+                }
 
                 continue;
             }

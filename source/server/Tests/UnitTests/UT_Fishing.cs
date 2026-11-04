@@ -189,19 +189,23 @@ public class UT_Fishing
     }
 
     [Test]
-    public void Progress_RecordCatch_AwardsSkillGainClampsSkillAndKeepsTheHeaviestCatch()
+    public void Progress_RecordCatchKeepsTheHeaviestCatchAndAddSkillClampsAtTheTop()
     {
-        var progress = new FishingProgress { Skill = 95 };
+        var progress = new FishingProgress { Skill = 995 };
 
-        // RecordCatch is the only place skill is awarded; the session adds nothing on top.
+        // RecordCatch only counts; the session raises the skill through AddSkill with FishingCraft's roll.
         progress.RecordCast();
         progress.RecordCatch(new FishingCatch { DisplayName = "salmon", WeightTenths = 120, Rarity = eFishingRarity.Rare, SkillGain = 4 });
 
-        Assert.That(progress.Skill, Is.EqualTo(99));
+        Assert.That(progress.Skill, Is.EqualTo(995));
 
-        progress.RecordCatch(new FishingCatch { DisplayName = "perch", WeightTenths = 20, Rarity = eFishingRarity.Common, SkillGain = 10 });
+        progress.AddSkill(4);
+        Assert.That(progress.Skill, Is.EqualTo(999));
 
-        Assert.That(progress.Skill, Is.EqualTo(100));
+        progress.RecordCatch(new FishingCatch { DisplayName = "perch", WeightTenths = 20, Rarity = eFishingRarity.Common, SkillGain = 1 });
+        progress.AddSkill(10);
+
+        Assert.That(progress.Skill, Is.EqualTo(FishingCraft.MaxSkill));
         Assert.That(progress.Casts, Is.EqualTo(1));
         Assert.That(progress.Catches, Is.EqualTo(2));
         Assert.That(progress.BestWeightTenths, Is.EqualTo(120));

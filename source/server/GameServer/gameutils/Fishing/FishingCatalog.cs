@@ -244,35 +244,8 @@ namespace DOL.GS.Fishing
                 });
             }
 
-            // The pole is a GenericWeapon rather than a Staff: AbstractServerRules.CheckAbilityToUseItem lets every class
-            // hold a GenericWeapon, while a Staff needs the Weapon_Staves ability most melee classes lack. Two-handed
-            // (Hand = 1, Item_Type = TwoHandWeapon) with 0.1 DPS: it is not meant to fight with.
-            templates.Add(new DbItemTemplate
-            {
-                Id_nb = PoleTemplateId,
-                Name = "Fishing Pole",
-                Level = 1,
-                Object_Type = (int)eObjectType.GenericWeapon,
-                Item_Type = (int)eInventorySlot.TwoHandWeapon,
-                Hand = 1,
-                Type_Damage = (int)eDamageType.Crush,
-                DPS_AF = 1,
-                SPD_ABS = 40,
-                Model = PoleModel,
-                Weight = 30,
-                Price = 500,
-                Quality = 100,
-                Condition = 50000,
-                MaxCondition = 50000,
-                Durability = 50000,
-                MaxDurability = 50000,
-                MaxCount = 1,
-                PackSize = 1,
-                IsPickable = true,
-                IsDropable = true,
-                IsTradable = true,
-                PackageID = PackageId,
-            });
+            // The stock pole; the crafted tiers are in FishingCraft.
+            templates.Add(FishingCraft.CreatePoleTemplate(PoleTemplateId, "Fishing Pole", PoleModel, 500));
 
             return templates;
         }

@@ -5,7 +5,7 @@ using DOL.Database.Attributes;
 
 namespace DOL.GS.Fishing
 {
-    /// <summary>A character's fishing skill and records, in memory. Saved through <see cref="FishingProgressStore"/>.</summary>
+    /// <summary>A character's fishing skill (0-1000, a trade skill shown in the trade skill window) and records, in memory. Saved through <see cref="FishingProgressStore"/>.</summary>
     public sealed class FishingProgress
     {
         /// <summary>The character's database id (DOLCharacters ObjectId).</summary>
@@ -25,6 +25,13 @@ namespace DOL.GS.Fishing
             Casts++;
         }
 
+        /// <summary>Raises the skill by <paramref name="points"/> (FishingCraft.RollCatchGain / RollCraftGain), up to 1000.</summary>
+        public void AddSkill(int points)
+        {
+            Skill = Math.Clamp(Skill + Math.Max(0, points), 0, FishingCraft.MaxSkill);
+        }
+
+        /// <summary>Counts the catch and keeps the heaviest. Skill is raised separately with <see cref="AddSkill"/>.</summary>
         public void RecordCatch(FishingCatch c)
         {
             if (c == null)
@@ -33,7 +40,6 @@ namespace DOL.GS.Fishing
             }
 
             Catches++;
-            Skill = Math.Clamp(Skill + c.SkillGain, 0, 100);
 
             if (c.WeightTenths > BestWeightTenths)
             {
@@ -51,6 +57,19 @@ namespace DOL.GS.Fishing
     public static class FishingProgressStore
     {
         private static readonly ConcurrentDictionary<string, FishingProgress> Cache = new();
+
+        /// <summary>The character's fishing skill without creating a row for someone who never fished (0 then).</summary>
+        public static int PeekSkill(GamePlayer player)
+        {
+            if (Cache.TryGetValue(player.ObjectId, out FishingProgress cached))
+            {
+                return cached.Skill;
+            }
+
+            OfflineFishingRecord record = DOLDB<OfflineFishingRecord>.FindObjectByKey(player.ObjectId);
+
+            return record == null ? 0 : Math.Clamp(record.Skill, 0, FishingCraft.MaxSkill);
+        }
 
         public static FishingProgress Load(GamePlayer player)
         {
@@ -78,7 +97,7 @@ namespace DOL.GS.Fishing
             {
                 CharacterId = characterId,
                 CharacterName = player.Name,
-                Skill = Math.Clamp(record.Skill, 0, 100),
+                Skill = Math.Clamp(record.Skill, 0, FishingCraft.MaxSkill),
                 Casts = record.Casts,
                 Catches = record.Catches,
                 BestWeightTenths = record.BestWeightTenths,
@@ -106,7 +125,7 @@ namespace DOL.GS.Fishing
 
             p.Record = record;
             record.CharacterName = p.CharacterName ?? string.Empty;
-            record.Skill = Math.Clamp(p.Skill, 0, 100);
+            record.Skill = Math.Clamp(p.Skill, 0, FishingCraft.MaxSkill);
             record.Casts = p.Casts;
             record.Catches = p.Catches;
             record.BestWeightTenths = p.BestWeightTenths;

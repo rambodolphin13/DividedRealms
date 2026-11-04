@@ -113,6 +113,20 @@ client). The original DAoC client is no longer supported, and the Sluaghbinder c
   realm; /fish mark <name> saves the shore you stand on (facing water) and /fish unmark <number> removes it.
 - Monsters and enemy guards don't aggro a player who holds the fishing pole and isn't in combat (server setting
   fishing_pole_prevents_aggro, on by default). Attack something and you're a normal target again; bots are not affected.
+- Fishing is now a trade skill from 1 to 1000, listed in the trade skill window beside the crafts. It rises as you
+  catch fish (rare and legendary fish teach more), quickly at first and slower near the top.
+- Five fishing poles: the starter Fishing Pole, then Oaken, Ironwood, Heartwood and the Runewood Angler's Pole. A
+  better pole lands better fish and bites come sooner, and each pole only teaches up to a point (250, 500, 750, then
+  1000), so you craft the next one to keep improving. Hold the pole or keep it in your backpack; the best one you carry
+  is used. /fish stats shows which pole you fish with.
+- /fish craft lists what you can make with your fishing skill and /fish craft <number> makes it: the poles and three
+  camp kits. Materials are ordinary wooden boards, heavy thread, cloth and leather squares sold by crafting merchants
+  in every realm. Crafting takes a few seconds anywhere (moving or fighting stops it) and teaches fishing skill until
+  the recipe goes grey.
+- Camp kits: use a Campfire Kit, Bedroll Camp Kit or Tent Camp Kit from your backpack to make camp. The fire burns 15,
+  20 or 30 minutes, and you and your group (companion bots too) who stay near it out of combat get health, power and
+  endurance back every 3 seconds (2, 3 or 4 percent; twice that sitting down). One camp per player; /fish camp shows
+  the time left and /fish camp break packs it up.
 
 **Bots and raids**
 - Hibernian bots no longer get stuck at the door of their portal keep in Odin's Gate. Once out of the keep's

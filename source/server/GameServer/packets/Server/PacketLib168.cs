@@ -2460,8 +2460,11 @@ namespace DOL.GS.PacketHandler
 
 			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.VariousUpdate)))
 			{
+				// Fishing is not an eCraftingSkill (see FishingCraft) but is listed with the trade skills as one more line.
+				int fishingSkill = DOL.GS.Fishing.FishingProgressStore.PeekSkill(m_gameClient.Player);
+
 				pak.WriteByte(0x08); //subcode
-				pak.WriteByte((byte) m_gameClient.Player.CraftingSkills.Count); //count
+				pak.WriteByte((byte) (m_gameClient.Player.CraftingSkills.Count + 1)); //count
 				pak.WriteByte(0x03); //subtype
 				pak.WriteByte(0x00); //unk
 
@@ -2473,6 +2476,11 @@ namespace DOL.GS.PacketHandler
 					pak.WriteInt(1);
 					pak.WritePascalString(curentCraftingSkill.Name); //name
 				}
+
+				pak.WriteShort((ushort) Math.Max(1, fishingSkill)); //points
+				pak.WriteByte(DOL.GS.Fishing.FishingCraft.SkillIcon); //icon
+				pak.WriteInt(1);
+				pak.WritePascalString(DOL.GS.Fishing.FishingCraft.SkillName); //name
 				SendTCP(pak);
 			}
 		}
