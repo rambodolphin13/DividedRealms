@@ -9,7 +9,8 @@ import build_modern_test_package as b
 class ModernPackageTests(unittest.TestCase):
     def test_no_client_profile_or_personal_file_is_copied(self):
         for path in ['client-modern/app/game.dll', 'modern-client.json', 'client-patch.json', 'account.txt', 'logs/server.log',
-                     'data/opendaoc.sqlite3.db', 'server/logs/x.txt', 'modern-profile-verification.json']:
+                     'data/opendaoc.sqlite3.db', 'server/logs/x.txt', 'modern-profile-verification.json',
+                     'client-modern-armortest/app/camelot.exe', 'START ARMOR TEST CLIENT.cmd', 'overlay.json']:
             self.assertFalse(b.keep_runtime(Path(path)), path)
         for path in ['server/GameServer.dll', 'server/navmesh/roads.json', 'OfflineDAoC.exe', 'server/config/serverconfig.xml']:
             self.assertTrue(b.keep_runtime(Path(path)), path)
