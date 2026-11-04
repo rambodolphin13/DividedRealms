@@ -23,6 +23,12 @@ which has been built since 0.38-dev8 (the 0.38 line goes on under the new name).
 - A dead player can't pick anything up, health never shows 0% while there is any left, and a relic carrier crossing
   into another region keeps the relic for up to 60 seconds. (From shadowofze's True165 and lometur's HearthDAoC.)
 - The 54 files from the original game client that came with upstream are gone from the repository.
+- Fishing poles have their own fishing-rod model: the client patch adds it to every player's client copy, made from the
+  player's own quarterstaff, so nothing from the game ships.
+- Options > Update and repair in the launcher: IMPORT PROGRESS brings the account, characters, items, bots, houses,
+  guilds, fishing and artifacts from another Divided Realms or Offline DAoC folder into this one (after a backup; the
+  old folder is only read). REPAIR CLIENT checks every file of the client copy against the player's Dark Age of Camelot
+  folder, restores what differs or is missing and patches again, keeping the game's settings and character layouts.
 
 - Gamebots do classic quests while they level: they take a quest in their level and realm from its giver, walk the steps,
   fight and collect what it asks for, and hand in for its real experience, coin and items. A quest monster opens only to
