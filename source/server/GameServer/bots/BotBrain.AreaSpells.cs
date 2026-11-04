@@ -367,7 +367,7 @@ namespace DOL.AI.Brain
             if (now < _nextAreaReport)
                 return;
             _nextAreaReport = now + 30_000;
-            log.Info($"BOT_AREA_SPELL kind={kind} bot=\"{Body.Name}\" class=\"{BotBody.ClassName}\" spell=\"{spell.Name}\" " +
+            if (BotDiagnostics.Enabled) log.Info($"BOT_AREA_SPELL kind={kind} bot=\"{Body.Name}\" class=\"{BotBody.ClassName}\" spell=\"{spell.Name}\" " +
                      $"hits={hits} radius={spell.Radius} region={Body.CurrentRegionID} at={Body.X},{Body.Y} " +
                      $"companion={BotBody.IsTemporaryGroupHelper}");
         }

@@ -816,7 +816,7 @@ public static class AutonomousBotQuests
             GiveReward(bot, traded);
         if (chosenReward != null)
             GiveReward(bot, chosenReward);
-        Log.Info($"AUTONOMOUS_QUEST_STEP bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={run.Plan.Id} step={step.Number} action={step.Action} target=\"{step.TargetName}\"");
+        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_QUEST_STEP bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} quest={run.Plan.Id} step={step.Number} action={step.Action} target=\"{step.TargetName}\"");
         if (step.Finishes || step.Number >= run.Plan.Steps.Length)
             Finish(bot, run);
         else

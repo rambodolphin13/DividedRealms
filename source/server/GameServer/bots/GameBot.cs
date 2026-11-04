@@ -774,7 +774,7 @@ namespace DOL.GS
                 PersistentRecord.TravelDestination = StableRouteDestination;
             }
             AutonomousStuckWatchdog.MarkProgress(this, eAutonomousProgressKind.StableTravel);
-            log.Info($"AUTONOMOUS_STABLE_ROUTE_BOARD bot=\"{Name}\" id={DatabaseID} level={Level} " +
+            if (BotDiagnostics.Enabled) log.Info($"AUTONOMOUS_STABLE_ROUTE_BOARD bot=\"{Name}\" id={DatabaseID} level={Level} " +
                      $"realm={GlobalConstants.RealmToName(Realm)} destination=\"{StableRouteDestination}\" ticket=\"{ticket?.Name}\" " +
                      $"endpoint={_stableRouteEndpoint.X},{_stableRouteEndpoint.Y},{_stableRouteEndpoint.Z}");
             return true;
@@ -848,7 +848,7 @@ namespace DOL.GS
                     log.Info($"AUTONOMOUS_STABLE_LANDING_CORRECTION bot=\"{Name}\" id={DatabaseID} " +
                              $"region={CurrentRegionID} from={arrival} to={floor}");
                 AutonomousStuckWatchdog.MarkProgress(this, eAutonomousProgressKind.StableTravel);
-                log.Info($"AUTONOMOUS_STABLE_ROUTE_ARRIVE bot=\"{Name}\" id={DatabaseID} level={Level} " +
+                if (BotDiagnostics.Enabled) log.Info($"AUTONOMOUS_STABLE_ROUTE_ARRIVE bot=\"{Name}\" id={DatabaseID} level={Level} " +
                          $"realm={GlobalConstants.RealmToName(Realm)} destination=\"{completedDestination}\" position={X},{Y},{Z}");
             }
         }
@@ -1999,7 +1999,7 @@ namespace DOL.GS
             }
             if (previousExperience == 0 || previousLevel != Level)
             {
-                log.Info($"AUTONOMOUS_XP_PROGRESS bot=\"{Name}\" id={DatabaseID} class=\"{ClassName}\" " +
+                if (BotDiagnostics.Enabled) log.Info($"AUTONOMOUS_XP_PROGRESS bot=\"{Name}\" id={DatabaseID} class=\"{ClassName}\" " +
                          $"amount={experienceGained} xp={previousExperience}->{Experience} level={previousLevel}->{Level}");
             }
         }
@@ -3006,7 +3006,7 @@ namespace DOL.GS
             if (!GuardsBuffRecast(spell) || InCombat ||
                 !(_buffRecastGuard ??= new()).Record(spell.ID, BuffRecastTarget(spell, target), GameLoop.GameLoopTime))
                 return;
-            log.Warn($"BOT_BUFF_RECAST_LOOP bot=\"{Name}\" id={DatabaseID} class=\"{CharacterClass?.Name}\" level={Level} region={CurrentRegionID} " +
+            if (BotDiagnostics.Enabled) log.Warn($"BOT_BUFF_RECAST_LOOP bot=\"{Name}\" id={DatabaseID} class=\"{CharacterClass?.Name}\" level={Level} region={CurrentRegionID} " +
                 $"spell=\"{spell.Name}\" spellId={spell.ID} type={spell.SpellType} spellTarget={spell.Target} concentration={spell.Concentration} " +
                 $"duration={spell.Duration} target=\"{target?.Name}\" {BuffRecastFacts(spell, target)}");
         }
@@ -3659,7 +3659,7 @@ namespace DOL.GS
                     int oldLevel = beforeSpecs.TryGetValue(spec.KeyName, out int value) ? value : 0;
                     return $"{spec.KeyName}:{oldLevel}->{spec.Level}";
                 }));
-            if (AutonomousDiagnosticsProperties.Training)
+            if (AutonomousDiagnosticsProperties.Training && BotDiagnostics.Enabled)
                 log.Info($"AUTONOMOUS_TRAINING bot=\"{Name}\" id={DatabaseID} class=\"{ClassName}\" level={Level} " +
                      $"trainer=\"{trainer.Name}\" trainedFrom={previous} trainedThrough={_lastAutonomousTrainedLevel} " +
                      $"specializations=\"{changes}\" abilities={abilitiesBefore}->{GetAllAbilities().Count} unspent={m_leftOverSpecPoints}");

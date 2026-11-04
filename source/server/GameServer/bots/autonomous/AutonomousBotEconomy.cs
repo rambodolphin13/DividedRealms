@@ -314,7 +314,7 @@ namespace DOL.GS;
         private static void LogEquipmentUpgrade(GameBot bot, DbInventoryItem item,
             DbInventoryItem replaced, eInventorySlot slot, string source)
         {
-            if (!AutonomousDiagnosticsProperties.EquipmentUpgrades || bot?.IsAutonomousWorldBot != true ||
+            if (!(AutonomousDiagnosticsProperties.EquipmentUpgrades && BotDiagnostics.Enabled) || bot?.IsAutonomousWorldBot != true ||
                 bot.IsTemporaryGroupHelper) return;
             // The move has already succeeded. This is one outcome record, not
             // a scan or a second inventory transaction.

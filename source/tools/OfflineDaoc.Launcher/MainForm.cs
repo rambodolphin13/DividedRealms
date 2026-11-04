@@ -87,6 +87,7 @@ internal sealed partial class MainForm : Form
     private readonly TextBox _groupSearch = new() { PlaceholderText = "Search bot, zone or faction", Width = 340 };
     private readonly ComboBox _playerXpRate = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 108 };
     private readonly ComboBox _botXpRate = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 108 };
+    private readonly CheckBox _botDiagnostics = new() { Text = "Bot AI diagnostics", AutoSize = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
     private readonly CheckBox _makeMeGm = new() { Text = "Make Me a GM", AutoSize = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
     private readonly CheckBox _rvrAnnouncements = new() { Text = "RvR and battleground announcements", AutoSize = true, Checked = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
     private readonly CheckBox _pveAnnouncements = new() { Text = "PvE realm event announcements", AutoSize = true, Checked = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
@@ -152,6 +153,9 @@ internal sealed partial class MainForm : Form
     private Process? _serverProcess;
     private RollingServerLog? _serverLog;
     private bool _stoppingServer;
+    private bool _forceStopOffered;
+    private bool _forceStopRequested;
+    private const int ForceStopOfferSeconds = 60;
     private bool _refreshing;
     private bool _refreshingExchange;
     private bool _loadingXpRates;
@@ -854,7 +858,7 @@ internal sealed partial class MainForm : Form
         var surface = new InsetPanel
         {
             Dock = DockStyle.Top,
-            Height = 354,
+            Height = 394,
             Margin = new Padding(18),
             Padding = new Padding(20),
             Accent = DaocTheme.Gold,
@@ -863,7 +867,7 @@ internal sealed partial class MainForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 3,
-            RowCount = 7,
+            RowCount = 8,
             BackColor = Color.Transparent,
         };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 210));
@@ -872,6 +876,7 @@ internal sealed partial class MainForm : Form
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
@@ -909,7 +914,12 @@ internal sealed partial class MainForm : Form
         layout.SetColumnSpan(_pveAnnouncements, 2);
         layout.Controls.Add(XpRateDescription("Screen announcements when realm raids form, and to every realm when a final boss (epic dungeons, Summoner's Hall, Darkness Falls) is defeated."), 2, 5);
         _pveAnnouncements.CheckedChanged += async (_, _) => await SaveAnnouncementSettingAsync();
-        layout.Controls.Add(_xpSettingsStatus, 0, 6);
+        layout.Controls.Add(_botDiagnostics, 0, 6);
+        layout.SetColumnSpan(_botDiagnostics, 2);
+        layout.Controls.Add(XpRateDescription("For testing bot AI: writes every bot decision to the server log. Leave off for normal play (smaller logs, less disk work). Takes effect within 5 seconds, even while the server runs."), 2, 6);
+        _botDiagnostics.Checked = File.Exists(BotDiagnosticsFlagPath);
+        _botDiagnostics.CheckedChanged += (_, _) => SaveBotDiagnosticsSetting();
+        layout.Controls.Add(_xpSettingsStatus, 0, 7);
         layout.SetColumnSpan(_xpSettingsStatus, 3);
         surface.Controls.Add(layout);
         return surface;
@@ -1623,7 +1633,9 @@ internal sealed partial class MainForm : Form
             }
             _startButton.Enabled = !_resettingKeepsRelics && !_savingXpRates && !_stoppingServer && snapshot.ServerState == "Stopped" && File.Exists(_serverExecutable);
             _resetKeepsRelics.Enabled = !_resettingKeepsRelics && !_savingXpRates && snapshot.ServerState == "Stopped" && BotGoalsServerStopped();
-            _stopButton.Enabled = !_stoppingServer && snapshot.ServerState is "Running" or "Starting";
+            _stopButton.Enabled = _stoppingServer
+                ? _forceStopOffered && !_forceStopRequested
+                : snapshot.ServerState is "Running" or "Starting";
             _playButton.Enabled = !_stoppingServer && snapshot.ServerState == "Running" && File.Exists(_clientConnector);
             UpdateHome();
             UpdateXpRateControls(snapshot);
@@ -1922,6 +1934,27 @@ internal sealed partial class MainForm : Form
         try { await Task.Run(() => PersistGmSetting(enabled)); }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Unable to save GM setting"); }
         finally { _savingXpRates = false; await RefreshDashboardAsync(); }
+    }
+
+    // The server checks for this file every few seconds (BotDiagnostics.cs), so no restart is needed.
+    private string BotDiagnosticsFlagPath => Path.Combine(_serverDirectory, "bot-diagnostics.on");
+
+    private void SaveBotDiagnosticsSetting()
+    {
+        try
+        {
+            if (_botDiagnostics.Checked)
+                File.WriteAllText(BotDiagnosticsFlagPath, "Bot AI diagnostics on. Delete this file, or untick the launcher option, to turn them off." + Environment.NewLine);
+            else if (File.Exists(BotDiagnosticsFlagPath))
+                File.Delete(BotDiagnosticsFlagPath);
+            _xpSettingsStatus.ForeColor = DaocTheme.Success;
+            _xpSettingsStatus.Text = _botDiagnostics.Checked ? "BOT AI DIAGNOSTICS ON" : "BOT AI DIAGNOSTICS OFF";
+        }
+        catch (Exception ex)
+        {
+            _xpSettingsStatus.ForeColor = DaocTheme.Danger;
+            _xpSettingsStatus.Text = $"Bot AI diagnostics could not be changed: {ex.Message}";
+        }
     }
 
     private void PersistGmSetting(bool enabled)
@@ -3119,6 +3152,17 @@ internal sealed partial class MainForm : Form
 
     private async Task StopServerAsync()
     {
+        if (_stoppingServer)
+        {
+            // Stop is only clickable mid-shutdown once it has turned into Force close.
+            if (_forceStopOffered)
+            {
+                _forceStopRequested = true;
+                _stopButton.Enabled = false;
+            }
+            return;
+        }
+
         _serverReadinessPoll.Stop();
         Process? externalProcess = null;
         try
@@ -3143,12 +3187,31 @@ internal sealed partial class MainForm : Form
 
             if (ownsRunningProcess)
             {
-                _serverProcess!.StandardInput.WriteLine("exit");
-                _serverProcess.StandardInput.Flush();
-                if (!await WaitForExitWithinAsync(_serverProcess, 10_000))
+                Process server = _serverProcess!;
+                server.StandardInput.WriteLine("exit");
+                server.StandardInput.Flush();
+                // The server saves the world and every bot before it exits, which can take a while with thousands of
+                // bots. Wait without a dialog, counting in the footer; after a minute Stop becomes a force-close.
+                var waited = Stopwatch.StartNew();
+                while (!await WaitForExitWithinAsync(server, 1_000))
                 {
-                    MessageBox.Show(this, "The server is still shutting down. It has not been force-closed.", "Shutdown pending", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
+                    if (_forceStopRequested)
+                    {
+                        _footer.Text = "Force-closing the server…";
+                        server.Kill(true);
+                        await WaitForExitWithinAsync(server, 5_000);
+                        break;
+                    }
+                    int seconds = (int)waited.Elapsed.TotalSeconds;
+                    if (seconds >= ForceStopOfferSeconds && !_forceStopOffered)
+                    {
+                        _forceStopOffered = true;
+                        _stopButton.Text = "FORCE CLOSE";
+                        _stopButton.Enabled = true;
+                    }
+                    _footer.Text = _forceStopOffered
+                        ? $"Server is still saving after {seconds} s. Wait, or press Force close to end it now (unsaved progress since the last autosave is lost)."
+                        : $"Server is saving and shutting down… {seconds} s";
                 }
             }
             else
@@ -3156,7 +3219,7 @@ internal sealed partial class MainForm : Form
                 externalProcess!.Kill(true);
                 if (!await WaitForExitWithinAsync(externalProcess, 5_000))
                 {
-                    MessageBox.Show(this, "The server process has not exited yet.", "Shutdown pending", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _footer.Text = "The server process has not exited yet; status will catch up on refresh.";
                     return;
                 }
             }
@@ -3171,6 +3234,9 @@ internal sealed partial class MainForm : Form
         finally
         {
             externalProcess?.Dispose();
+            _forceStopOffered = false;
+            _forceStopRequested = false;
+            _stopButton.Text = "STOP SERVER";
             await RefreshDashboardAsync();
         }
     }
@@ -3178,6 +3244,8 @@ internal sealed partial class MainForm : Form
     private void ShowStoppingState()
     {
         _stoppingServer = true;
+        _forceStopOffered = false;
+        _forceStopRequested = false;
         _serverState.Text = "STOPPING…";
         _serverState.ForeColor = DaocTheme.Danger;
         _startButton.Enabled = false;

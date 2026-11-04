@@ -225,7 +225,7 @@ namespace DOL.GS
             if (action == RouteThreatAction.Ignore)
                 return false;
 
-            Log.Info($"AUTONOMOUS_ROUTE_THREAT bot={bot.Name} id={bot.DatabaseID} class=\"{bot.ClassName}\" level={bot.Level} " +
+            if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_THREAT bot={bot.Name} id={bot.DatabaseID} class=\"{bot.ClassName}\" level={bot.Level} " +
                      $"group={(grouped ? _groupDirective.GroupId : alone ? "alone" : "solo")} action={action} target=\"{blocker.Name}\" " +
                      $"targetLevel={blocker.Level} con={con} seen={seen} pack={pack} aggro={blockerBrain.AggroRange} along={first:0} " +
                      $"detours={detours} levelsAbove={levelsAbove} strong={strongParty} busy={blocker.InCombat} " +
@@ -268,7 +268,7 @@ namespace DOL.GS
                         !AutonomousZoneItinerary.HasCompleteCorridor(nav, zone, new(bot.X, bot.Y, bot.Z), blockerFloor))
                     {
                         _unreachableRouteThreats.Add(blocker);
-                        Log.Info($"AUTONOMOUS_ROUTE_THREAT_UNREACHABLE bot={bot.Name} id={bot.DatabaseID} target=\"{blocker.Name}\" " +
+                        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_THREAT_UNREACHABLE bot={bot.Name} id={bot.DatabaseID} target=\"{blocker.Name}\" " +
                                  $"at={blocker.X},{blocker.Y},{blocker.Z} zone=\"{zone.Description}\"");
                         return false;
                     }
@@ -280,7 +280,7 @@ namespace DOL.GS
                     {
                         _unreachableRouteThreats.Add(blocker);
                         _routeThreatPullRepeats = 0;
-                        Log.Info($"AUTONOMOUS_ROUTE_THREAT_PULL_FAILED bot={bot.Name} id={bot.DatabaseID} target=\"{blocker.Name}\" " +
+                        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_THREAT_PULL_FAILED bot={bot.Name} id={bot.DatabaseID} target=\"{blocker.Name}\" " +
                                  $"attempts={RouteThreatPullAttempts} at={blocker.X},{blocker.Y},{blocker.Z} zone=\"{zone.Description}\"");
                         return false;
                     }
@@ -304,7 +304,7 @@ namespace DOL.GS
                         // The party could not get ready to pull: go around if there is a way, else walk on and fight it
                         // if it comes (the party defends itself as on any road).
                         _routeThreatHold = null;
-                        Log.Info($"AUTONOMOUS_ROUTE_THREAT_HOLD_EXPIRED bot={bot.Name} id={bot.DatabaseID} group={_groupDirective.GroupId} " +
+                        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_THREAT_HOLD_EXPIRED bot={bot.Name} id={bot.DatabaseID} group={_groupDirective.GroupId} " +
                                  $"target=\"{blocker.Name}\" puller={puller.Name} seconds={RouteThreatHoldLimitMilliseconds / 1000} " +
                                  $"then={(detour.HasValue ? "detour" : "pass")} at={blocker.X},{blocker.Y},{blocker.Z} zone=\"{zone.Description}\"");
                         if (detour.HasValue)
@@ -441,12 +441,12 @@ namespace DOL.GS
                 _nextPlanTick = Math.Max(_nextPlanTick, GameLoop.GameLoopTime + walk);
                 SetStatus(bot, $"Backing away from {threat.Name}", "Find a reachable level-appropriate XP camp",
                     "Getting out of its reach before choosing another camp", threat.Name);
-                Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=walking " +
+                if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=walking " +
                          $"target=\"{threat.Name}\" pack={pack.Length} from={distance:0} radius={radius:0} walk={walkDistance:0} " +
                          $"zone=\"{zone.Description}\" at={bot.X},{bot.Y},{bot.Z} to={floor.X:0},{floor.Y:0},{floor.Z:0}");
                 return;
             }
-            Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=no_way_out " +
+            if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=no_way_out " +
                      $"target=\"{threat.Name}\" pack={pack.Length} from={distance:0} radius={radius:0} " +
                      $"zone=\"{zone.Description}\" at={bot.X},{bot.Y},{bot.Z}");
         }
@@ -492,7 +492,7 @@ namespace DOL.GS
                 {
                     _nextDangerBypassLogTick = now + 60_000;
                     var nearest = dangers.OrderBy(danger => Vector2.DistanceSquared(danger.Center, candidate)).First();
-                    Log.Info($"AUTONOMOUS_DANGER_BYPASS bot={bot.Name} id={bot.DatabaseID} level={bot.Level} danger=\"{nearest.Name}\" " +
+                    if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_DANGER_BYPASS bot={bot.Name} id={bot.DatabaseID} level={bot.Level} danger=\"{nearest.Name}\" " +
                              $"dangerLevel={nearest.Level} radius={(int)nearest.Radius} dangers={dangers.Count} zone=\"{zone.Description}\" " +
                              $"at={bot.X},{bot.Y} bend={(int)candidate.X},{(int)candidate.Y}");
                 }
