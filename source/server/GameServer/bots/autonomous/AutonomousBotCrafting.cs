@@ -539,7 +539,7 @@ public static class AutonomousBotCrafting
             return null;
         }
         GainPoints(bot, craft, session, recipe);
-        Log.Info($"AUTONOMOUS_CRAFT_MADE bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} craft={session.Skill} skill={skill} " +
+        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_CRAFT_MADE bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} craft={session.Skill} skill={skill} " +
                  $"recipeLevel={recipe.Level} item=\"{item.Name}\" itemId=\"{item.Id_nb}\" quality={item.Quality}");
         AutonomousBotEconomy.MarkInventoryChanged(bot);
         bot.MarkAutonomousStateDirty();

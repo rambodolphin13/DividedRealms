@@ -107,7 +107,7 @@ namespace DOL.GS
                 _townPortCloserTick = now;
                 _townPortStartDistance = (float)bot.GetDistanceTo(plan.Porter);
                 _townPortTurns = 0;
-                Log.Info($"AUTONOMOUS_TOWN_TELEPORT_PLANNED bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} " +
+                if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_TOWN_TELEPORT_PLANNED bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} " +
                          $"group={(assembledParty ? _groupDirective.GroupId : "solo")} porter=\"{plan.Porter.Name}\" " +
                          $"destination=\"{plan.Destination.TeleportID}\" seconds={plan.Seconds:0} walkSeconds={walkSeconds:0}");
             }
@@ -234,7 +234,7 @@ namespace DOL.GS
                 AutonomousStuckWatchdog.MarkProgress(member, eAutonomousProgressKind.Movement);
                 AutonomousBotStatusPersistence.Queue(member, true);
             }
-            Log.Info($"AUTONOMOUS_TOWN_TELEPORT bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} " +
+            if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_TOWN_TELEPORT bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} " +
                      $"group={(assembledParty ? _groupDirective.GroupId : "solo")} porter=\"{port.Porter.Name}\" " +
                      $"destination=\"{port.Destination.TeleportID}\" region={port.Destination.RegionID} moved={moved}/{party.Length} " +
                      $"plannedSeconds={port.Seconds:0} baselineSeconds={port.BaselineSeconds:0} " +

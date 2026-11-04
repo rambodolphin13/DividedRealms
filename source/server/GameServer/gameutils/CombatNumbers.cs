@@ -72,7 +72,20 @@ namespace DOL.GS
         public static void Stop(DOLEvent e, object sender, EventArgs args)
         {
             WebApplication app = Interlocked.Exchange(ref _app, null);
-            app?.StopAsync().GetAwaiter().GetResult();
+
+            if (app == null)
+                return;
+
+            // The launcher's overlay keeps a stream open, and Kestrel would wait its default 30 seconds for it to end.
+            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
+
+            try
+            {
+                app.StopAsync(timeout.Token).GetAwaiter().GetResult();
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         // A page on another site could otherwise read the stream through a DNS name pointed at 127.0.0.1.

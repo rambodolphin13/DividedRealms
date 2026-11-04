@@ -2940,7 +2940,7 @@ namespace DOL.GS
                     if (SavageBotCombatPolicy.MustMeleePull(pullClass))
                         Log.Warn($"SAVAGE_MELEE_PULL_TIMEOUT bot={bot.Name} target={target.Name} region={bot.CurrentRegionID} x={bot.X} y={bot.Y} z={bot.Z}");
                     else
-                        Log.Warn($"AUTONOMOUS_PULL_TIMEOUT bot={bot.Name} class={pullClass} level={bot.Level} target=\"{target.Name}\" " +
+                        if (BotDiagnostics.Enabled) Log.Warn($"AUTONOMOUS_PULL_TIMEOUT bot={bot.Name} class={pullClass} level={bot.Level} target=\"{target.Name}\" " +
                             $"targetLevel={target.Level} distance={distance} casting={bot.IsCasting} " +
                             $"pendingCast={bot.castingComponent?.HasPendingSkillRequests == true} resting={bot.IsRecoveryResting} " +
                             $"manaPercent={bot.ManaPercent} moving={bot.IsMoving} pet={bot.ControlledBrain?.Body?.Name ?? "none"} " +
@@ -3007,7 +3007,7 @@ namespace DOL.GS
             if (target != null && bot.Group == null && !_camp.IsDungeon && !IsQuestCamp(_camp) &&
                 ConLevels.GetConColor(bot.GetConLevel(target)) == ConColor.GREY)
             {
-                Log.Info($"AUTONOMOUS_CAMP_OUTLEVELED bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
+                if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_CAMP_OUTLEVELED bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
                          $"class=\"{bot.ClassName}\" camp=\"{_camp.Id}\" target=\"{target.Name}\" targetLevel={target.Level}");
                 AbandonCamp(bot, $"Outleveled {_camp.MonsterName}; the camp no longer gives experience");
                 return true;
@@ -3681,7 +3681,7 @@ namespace DOL.GS
             if (campGiveUpSkipped)
                 AutonomousRouteGoalFixMetrics.CampRepickBlocked();
             if (behindBlockers > 0)
-                Log.Info($"AUTONOMOUS_ROUTE_BLOCK_SKIP bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
+                if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_BLOCK_SKIP bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
                          $"group={(sharedGroup ? _groupDirective.GroupId : "solo")} skipped={behindBlockers} left={camps.Count}");
 
             // Once realm/accessibility/level/con filters have been applied, each
@@ -3827,7 +3827,7 @@ namespace DOL.GS
                 usedDeathFallback = chosen != null;
                 if (usedDeathFallback)
                 {
-                    Log.Warn($"AUTONOMOUS_DEATH_TARGET_FALLBACK bot={bot.Name} id={bot.DatabaseID} " +
+                    if (BotDiagnostics.Enabled) Log.Warn($"AUTONOMOUS_DEATH_TARGET_FALLBACK bot={bot.Name} id={bot.DatabaseID} " +
                              $"level={bot.Level} requested_max={maximumTargetCon} available_con={chosen.TypicalCon} " +
                              $"failed_target=\"{_lastFailedTargetName}\" selected=\"{chosen.MonsterName}\" camp={chosen.Id}");
                 }
@@ -4264,7 +4264,7 @@ namespace DOL.GS
             _nextPlanTick = GameLoop.GameLoopTime + 2_500 + bot.ObjectID % 1_500;
             if (bot.PersistentRecord != null)
                 bot.PersistentRecord.CurrentCampId = string.Empty;
-            Log.Warn($"AUTONOMOUS_DEATH_ROUTE_REPLAN bot={bot.Name} id={bot.DatabaseID} " +
+            if (BotDiagnostics.Enabled) Log.Warn($"AUTONOMOUS_DEATH_ROUTE_REPLAN bot={bot.Name} id={bot.DatabaseID} " +
                      $"level={bot.Level} realm={GlobalConstants.RealmToName(bot.Realm)} class=\"{bot.ClassName}\" deaths={deathCount} " +
                      $"failed_target=\"{failedTarget}\" new_max_con={MaximumTargetCon(groupSize)} " +
                      $"no_xp_death_streak={_recentSoloDeathsWithoutExperience} " +

@@ -36,7 +36,7 @@ namespace DOL.GS
                 AutonomousRepeatDeathSpots.Record(bot.DatabaseID, bot.CurrentRegionID, bot.X, bot.Y, DateTime.UtcNow);
                 AutonomousSharedDeathSpots.Record(bot.DatabaseID, bot.Level, bot.CurrentRegionID, bot.X, bot.Y, DateTime.UtcNow);
             }
-            if (!Log.IsInfoEnabled)
+            if (!Log.IsInfoEnabled || !BotDiagnostics.Enabled)
                 return;
             try
             {

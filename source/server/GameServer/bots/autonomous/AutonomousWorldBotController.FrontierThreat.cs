@@ -104,7 +104,7 @@ public sealed partial class AutonomousWorldBotController
         bot.StopMovingOnPath();
         bot.TargetObject = null;
         _reachWatch = null;
-        Log.Info($"AUTONOMOUS_UNREACHABLE_TARGET bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} target=\"{target.Name}\" " +
+        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_UNREACHABLE_TARGET bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} target=\"{target.Name}\" " +
                  $"targetRealm={GlobalConstants.RealmToName(target.Realm)} heightAbove={target.Z - bot.Z} region={bot.CurrentRegionID} position={bot.X},{bot.Y},{bot.Z}");
         return true;
     }
