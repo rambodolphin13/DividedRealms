@@ -17,6 +17,8 @@ public static class ModernClientSetup
     public const string IncompleteMarker = "setup-in-progress.txt";
     // The player's own client folder, so a later release can patch the copy again without asking.
     public const string SourceFile = "client-source.txt";
+    // The Eden client's own DLL: a folder with it has Eden's versions of game files the patch needs stock.
+    public const string EdenMarker = "eden.dll";
 
     // The same files source/tools/bundle_modern_client.py leaves out of a client copy.
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { "logs", "screenshots", "backups", "cache" };
@@ -183,8 +185,13 @@ public static class ModernClientSetup
             if (!File.Exists(path))
                 return $"That client has no {file.InputPath}.";
             if (!Hash(path).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
-                return $"That client's {file.InputPath} isn't the {patch.ClientVersion} build this game is made for, so it can't be patched. " +
-                       "It may be a newer or modified client. Nothing was changed.";
+                return File.Exists(Path.Combine(source, EdenMarker))
+                    ? $"That Dark Age of Camelot folder was changed by the Eden client: its {file.InputPath} (and other files) are Eden's " +
+                      "versions, and the live patcher doesn't put the originals back. Choose a folder with an unchanged " +
+                      $"{patch.ClientVersion} client, or install Dark Age of Camelot again into a new folder and choose that one. " +
+                      "Nothing was changed."
+                    : $"That client's {file.InputPath} isn't the {patch.ClientVersion} build this game is made for, so it can't be patched. " +
+                      "It may be a newer or modified client. Nothing was changed.";
         }
         return null;
     }

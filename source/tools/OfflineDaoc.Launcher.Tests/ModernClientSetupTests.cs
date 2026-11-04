@@ -161,6 +161,18 @@ public sealed class ModernClientSetupTests
     }
 
     [Test]
+    public void AClientTheEdenLauncherChangedIsNamedAsSuch()
+    {
+        string client = PristineClient();
+        File.WriteAllText(Path.Combine(client, "pregame", "character_creation.xml"), "Eden's layout");
+        Assert.That(ModernClientSetup.CheckSource(client, TestPatch()), Does.Contain("may be a newer or modified client"));
+        File.WriteAllText(Path.Combine(client, ModernClientSetup.EdenMarker), "eden");
+        Assert.That(ModernClientSetup.CheckSource(client, TestPatch()), Does.Contain("changed by the Eden client"));
+        File.WriteAllBytes(Path.Combine(client, "pregame", "character_creation.xml"), Layout);
+        Assert.That(ModernClientSetup.CheckSource(client, TestPatch()), Is.Null, "Eden's DLL alone beside stock files is fine");
+    }
+
+    [Test]
     public void TheLauncherCarriesTheProgressTablesInsideItself()
     {
         var rules = OfflineDaoc.ProgressImport.ImportEngine.Rules;
