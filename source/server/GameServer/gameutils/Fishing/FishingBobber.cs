@@ -13,12 +13,12 @@ namespace DOL.GS.Fishing;
 /// </summary>
 public static class FishingBobber
 {
-    // objects.csv 4185 "Spring_NestEgg" -> items.csv 2224 Spring_NestEgg (Expansion Only 0): a small, round, pale
-    // object with a real mesh. Most small round items (vials 526-532, orbs 523-525, bottle 554, egg 587) have NIF 1,
-    // which the client draws as a loot bag on the ground, so they can't be used. Alternatives with a mesh:
-    //   2084 "pos whitemarker" (items.csv 934 pos_whitemarker)
-    //   1766 "Volcanus orb red" (items.csv 985 Volcanus_orb_red; may be large)
-    public static readonly ushort BobberModel = 4185;
+    // objects.csv 2084 "pos whitemarker" -> items.csv 934 pos_whitemarker: a small white marker with a real mesh.
+    // 4185 "Spring_NestEgg" was used first and showed in game as a bird's nest full of eggs (owner, 2026-11-03).
+    // Most small round items (vials 526-532, orbs 523-525, bottle 554, egg 587) have NIF 1, which the client draws as
+    // a loot bag on the ground, so they can't be used. Other meshes to try: 2081 "pos greenmarker",
+    // 4234 "Summer_appleBob", 1766 "Volcanus orb red" (may be large).
+    public static readonly ushort BobberModel = 2084;
 
     // spells.csv 7461 "Thrusting Arrows": projectile 596 "arrow thrust01 travel" from the caster to the target,
     // strike 597, sound set 0. It is the only quiet, thin stock projectile; every projectile row has a caster
