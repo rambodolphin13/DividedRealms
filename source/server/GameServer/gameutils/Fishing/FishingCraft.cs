@@ -85,13 +85,15 @@ namespace DOL.GS.Fishing
         // The stock quarterstaff for every tier; the fishing_pole_model server setting swaps in the private rod (4927) at start.
         private const int PoleModel = 442;
 
-        // objects.csv 2656 "Campfire" (items.csv 1064 with fire effect 74), 1882 "bedroll pillow", 4237 "Summer_tentRound".
+        // objects.csv 2656 "Campfire" (items.csv 1064 with fire effect 74).
         public const int CampfireModel = 2656;
         // 1882 "bedroll pillow" has an icon (2238) but no mesh, so it stays the kit's bag look; on the ground it drew as a
         // loot bag (owner, 2026-11-04). 3869 "Cot Prop" (cot_prop.nif) is a real camp cot.
         public const int BedrollModel = 1882;
         public const int CotModel = 3869;
-        public const int TentModel = 4237;
+        // 3401 "Fest_refugeetent" (owner's pick, 2026-11-04 with /fish preview): a plain canvas tent about 200 x 280 units,
+        // centred by its shapes' own offset. 4237 "Summer_tentRound" (a striped festival pavilion) was used first.
+        public const int TentModel = 3401;
 
         /// <summary>Pole tiers, weakest first. The first is the stock fishing pole that /fish pole hands out.</summary>
         public static readonly IReadOnlyList<FishingPoleTier> Poles = new[]
