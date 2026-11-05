@@ -3980,6 +3980,36 @@ namespace DOL.AI.Brain
         }
 
         /// <summary>
+        /// Night playtest 2026-11-04 (first batch leftover): grouped Eldritch bots nuked until dry, pulled the monster off
+        /// the tank and then stood in melee with it. In an autonomous party with a tank, a list caster that is not the
+        /// party's puller holds its damage until the monster is on another member, and casts as before once it is (or when
+        /// the monster is on the caster itself). Pure.
+        /// </summary>
+        public static bool GroupCasterMayNuke(bool grouped, bool partyHasTank, bool isPuller, bool targetOnMe, bool targetOnOtherMember) =>
+            !grouped || !partyHasTank || isPuller || targetOnMe || targetOnOtherMember;
+
+        private bool ShouldWaitForTankThreat(GameLiving target)
+        {
+            GameBot bot = BotBody;
+            if (bot?.IsAutonomousWorldBot != true || bot.IsPlayerLedGroup || bot.CharacterClass == null ||
+                bot.CharacterClass.ClassType != eClassType.ListCaster ||
+                bot.CharacterClass.ID is (int)eCharacterClass.Valewalker or (int)eCharacterClass.Vampiir ||
+                target is not GameNPC || target is GameBot || bot.Group == null || bot.Group.MemberCount < 2)
+                return false;
+            GameLiving onWhom = target.TargetObject as GameLiving;
+            bool onOther = onWhom != null && onWhom != bot && (onWhom.Group == bot.Group ||
+                onWhom is GameNPC { Brain: IControlledBrain pet } && pet.GetLivingOwner()?.Group == bot.Group);
+            if (onWhom == bot || onOther)
+                return false;
+            bool hasTank = bot.Group.GetMembersInTheGroup().OfType<GameBot>().Any(member => member != bot && member.IsAlive &&
+                BotPartyRoles.IsTank(member) && member.CurrentRegionID == bot.CurrentRegionID && bot.IsWithinRadius(member, 2_500));
+            if (!hasTank)
+                return false;
+            bool puller = DOL.GS.AutonomousBotGroupCoordinator.PartyPuller(bot) == bot;
+            return !GroupCasterMayNuke(true, hasTank, puller, false, false);
+        }
+
+        /// <summary>
         /// A caster (pet classes included) with no power for any attack spell stays
         /// where it is, out of melee, while its pet keeps fighting; it casts again as
         /// soon as it can pay for a spell. It never walks in with its staff.
@@ -4541,6 +4571,12 @@ namespace DOL.AI.Brain
                     // its refusal for a reason to abandon ranged combat.
                     spellsToCast.RemoveAll(spell => !NeedsOffensiveSpellApplication((GameLiving)Body.TargetObject, spell));
                     if (spellsToCast.Count == 0) return Body.IsCasting;
+                    // A grouped caster lets its tank take the monster first (GroupCasterMayNuke).
+                    if (ShouldWaitForTankThreat(Body.TargetObject as GameLiving))
+                    {
+                        spellsToCast.RemoveAll(BotCasterPriority.IsDamage);
+                        if (spellsToCast.Count == 0) return Body.IsCasting;
+                    }
                     // A Vampiir in melee reach casts only what outdamages its swing (ShamanBotCombatPolicy.VampiirCastsInMelee).
                     if (BotBody.CharacterClass.ID == (int)eCharacterClass.Vampiir &&
                         Body.IsWithinRadius(Body.TargetObject, ShamanBotCombatPolicy.VampiirMeleeReach))
