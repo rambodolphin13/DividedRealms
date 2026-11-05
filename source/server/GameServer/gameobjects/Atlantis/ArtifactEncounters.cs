@@ -73,8 +73,9 @@ namespace DOL.GS
         }
 
         /// <summary>
-        /// Everyone who fought, with their group and battlegroup, if they are near the boss when it
-        /// dies. Dead members count. Bots earn nothing but do bring in the group they fought with.
+        /// Everyone who fought, with their group and battlegroup, if they are alive and near the boss
+        /// when it dies (live gave the dead nothing). Bots earn nothing but do bring in the group they
+        /// fought with.
         /// </summary>
         public static HashSet<GamePlayer> EligiblePlayers(GameNPC boss, GameObject killer)
         {
@@ -115,9 +116,12 @@ namespace DOL.GS
 
             Add(killer);
 
-            players.RemoveWhere(player => player.ObjectState != GameObject.eObjectState.Active || player.CurrentRegionID != boss.CurrentRegionID || !player.IsWithinRadius(boss, CreditRadius));
+            players.RemoveWhere(player => !CanEarnReward(player) || player.CurrentRegionID != boss.CurrentRegionID || !player.IsWithinRadius(boss, CreditRadius));
             return players;
         }
+
+        /// <summary>Only a living player in the world earns encounter credit or glass.</summary>
+        public static bool CanEarnReward(GamePlayer player) => player != null && player.ObjectState == GameObject.eObjectState.Active && player.IsAlive;
 
         /// <summary>A boss out in the world. Some encounters need several of them dead close together.</summary>
         public static void WorldBossDied(GameNPC boss, GameObject killer, string artifactId)
@@ -166,6 +170,11 @@ namespace DOL.GS
 
             foreach (GamePlayer player in players)
             {
+                // Multi-kill and staged encounters gather players over several kills: someone who
+                // died after an earlier kill is still on the list.
+                if (!CanEarnReward(player))
+                    continue;
+
                 if (ArtifactProgress.Get(player, artifactId)?.EncounterDone == true)
                 {
                     GiveGlass(player, RepeatGlassReward);
