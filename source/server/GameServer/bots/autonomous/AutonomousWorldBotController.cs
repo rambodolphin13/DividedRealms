@@ -4242,6 +4242,23 @@ namespace DOL.GS
             _routeCautionUntilTick = nowTick + RouteCautionAfterDeathMilliseconds;
             _recoverAfterSoloDeath = true;
 
+            // Killed by another realm (player, bot, pet or guard): nothing to learn about PvE. Night playtest 2026-11-04: an
+            // enemy bot's kill was logged as a failed PvE camp with new_max_con=GREEN, and the bot hopped goals and died again
+            // and again. The camp, the con ceiling and the camp/target memories stay as they were; the bot only recovers.
+            if (bot.LastDeathByEnemyRealm)
+            {
+                _observedDeathCount = deathCount;
+                _lastEngagedCon = null;
+                if (BotDiagnostics.Enabled) Log.Warn($"AUTONOMOUS_DEATH_ENEMY_REALM bot={bot.Name} id={bot.DatabaseID} " +
+                         $"level={bot.Level} realm={GlobalConstants.RealmToName(bot.Realm)} class=\"{bot.ClassName}\" deaths={deathCount} " +
+                         $"killer=\"{bot.LastDeathKillerName}\" kept_target=\"{_camp?.MonsterName}\" max_con={MaximumTargetCon(groupSize)} " +
+                         $"region={bot.CurrentRegionID} position={bot.X},{bot.Y},{bot.Z}");
+                SetStatus(bot, "Recovering from defeat", GoalText(),
+                    $"Killed by {bot.LastDeathKillerName} of another realm; keeping the current goal", bot.LastDeathKillerName,
+                    forceSave: true);
+                return;
+            }
+
             ConColor failedCon = _lastEngagedCon ?? MaximumTargetCon(groupSize);
             ConColor saferCon = (ConColor)Math.Max((int)ConColor.GREEN, (int)failedCon - 1);
             int requiredSteps = (int)naturalMaximum - (int)saferCon;
@@ -4279,7 +4296,7 @@ namespace DOL.GS
                 bot.PersistentRecord.CurrentCampId = string.Empty;
             if (BotDiagnostics.Enabled) Log.Warn($"AUTONOMOUS_DEATH_ROUTE_REPLAN bot={bot.Name} id={bot.DatabaseID} " +
                      $"level={bot.Level} realm={GlobalConstants.RealmToName(bot.Realm)} class=\"{bot.ClassName}\" deaths={deathCount} " +
-                     $"failed_target=\"{failedTarget}\" new_max_con={MaximumTargetCon(groupSize)} " +
+                     $"failed_target=\"{failedTarget}\" killer=\"{bot.LastDeathKillerName}\" new_max_con={MaximumTargetCon(groupSize)} " +
                      $"no_xp_death_streak={_recentSoloDeathsWithoutExperience} " +
                      $"recovery_wait_ms={Math.Max(0, _soloDeathRecoveryUntilTick - nowTick)} " +
                      $"region={bot.CurrentRegionID} position={bot.X},{bot.Y},{bot.Z}");

@@ -1039,6 +1039,11 @@ namespace DOL.GS
         protected override bool RetainCorpseForResurrection => true;
         protected override bool RetainGroupWhenDead => true;
 
+        /// <summary>Who killed this bot last time (AutonomousWorldBotController.ObserveDeaths reads it).</summary>
+        public string LastDeathKillerName { get; private set; } = string.Empty;
+        /// <summary>The last death was to an enemy realm (player, bot, their pet or a guard), not a PvE monster.</summary>
+        public bool LastDeathByEnemyRealm { get; private set; }
+
         public override void ProcessDeath(GameObject killer)
         {
             // Before the death bookkeeping below overwrites the activity and target.
@@ -1052,6 +1057,8 @@ namespace DOL.GS
             _stableReturnPlan = null;
             CompleteStableMasterRoute();
 
+            LastDeathKillerName = killer?.Name ?? string.Empty;
+            LastDeathByEnemyRealm = AutonomousDeathDiagnostics.IsEnemyRealmKill(Realm, killer);
             if (IsAutonomousWorldBot && PersistentRecord != null)
             {
                 AutonomousDeathDiagnostics.Record(this, killer, PersistentRecord.Activity);

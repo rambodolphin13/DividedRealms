@@ -20,9 +20,28 @@ namespace DOL.GS
             GamePlayer => "player",
             GameBot => "bot",
             GameNPC { Brain: DOL.AI.Brain.IControlledBrain } => "pet",
+            // A realm's guard or keep NPC is not a PvE monster (no boss-danger or repeat-death spot for it).
+            GameNPC { Realm: not eRealm.None } => "guard",
             GameNPC => "monster",
             _ => killer.GetType().Name,
         };
+
+        /// <summary>
+        /// A kill by another realm: a player, a gamebot, their pet or a guard. Night playtest 2026-11-04: such deaths were
+        /// learned as failed PvE camps (AUTONOMOUS_DEATH_ROUTE_REPLAN new_max_con=GREEN after an enemy bot's kill). Pure.
+        /// </summary>
+        public static bool IsEnemyRealmKill(eRealm victim, eRealm killer) => killer != eRealm.None && killer != victim;
+
+        public static bool IsEnemyRealmKill(eRealm victim, GameObject killer)
+        {
+            eRealm realm = killer switch
+            {
+                GameNPC { Brain: DOL.AI.Brain.IControlledBrain pet } when pet.GetLivingOwner() is { } owner => owner.Realm,
+                GameObject other => other.Realm,
+                _ => eRealm.None,
+            };
+            return IsEnemyRealmKill(victim, realm);
+        }
 
         public static void Record(GameBot bot, GameObject killer, string activityBefore)
         {
