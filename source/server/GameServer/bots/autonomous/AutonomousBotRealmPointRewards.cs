@@ -193,6 +193,18 @@ public static class AutonomousBotRealmPointRewards
             // Persistent gamebots remain part of the damage denominator, just
             // like another real participant, but this path only pays connected
             // players. Temporary companions have already resolved to the owner.
+            // A gamebot in a player's group adds its damage and itself to that group's share, as for a monster kill
+            // (ProcessXpGainers). Discord report 2026-11-05 (Abermenai): a player grouped with gamebots got nothing for
+            // the kills the bots made, because the group's share counted players only.
+            if (pair.Key is GameBot { Group: { } botGroup } groupBot && botGroup.GetPlayersInTheGroup().Count > 0)
+            {
+                if (groupBot.ObjectState is GameObject.eObjectState.Active &&
+                    groupBot.IsWithinRadius(killedBot, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+                {
+                    AddContribution(groupBot, pair.Value, botGroup, groupContributions);
+                }
+                continue;
+            }
             if (pair.Key is not GamePlayer player)
                 continue;
             if (player.ObjectState is not GameObject.eObjectState.Active ||
