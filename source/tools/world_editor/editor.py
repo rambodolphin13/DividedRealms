@@ -64,7 +64,8 @@ DATA_TABLES = {
                      'MobDropTemplate', 'DropTemplateXItemTemplate', 'StarterEquipment', 'Salvage', 'SalvageYield',
                      'CraftedItem', 'CraftedXItem', 'Artifact', 'ArtifactBonus', 'ArtifactXItem', 'offline_currency_lists'],
     'Spells & classes': ['Spell', 'SpellLine', 'LineXSpell', 'Style', 'StyleXSpell', 'Specialization', 'SpecXAbility',
-                         'ClassXSpecialization', 'Ability', 'ClassXRealmAbility_Atlas', 'Race'],
+                         'ClassXSpecialization', 'Ability', 'ClassXRealmAbility_Atlas', 'Race',
+                         'SpellXCustomValues'],
     'Quests': ['DataQuest'],
     'Server settings': ['ServerProperty', 'offline_population_settings', 'offline_local_options', 'offline_auction_settings'],
 }
