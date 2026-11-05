@@ -3915,8 +3915,51 @@ namespace DOL.AI.Brain
             spell?.SpellType == eSpellType.WarlockChainDot && !ModernWarlock.ChainReady(ModernWarlock.ChainStage(spell),
                 ModernWarlock.HasStage(target, caster, 1), ModernWarlock.HasStage(target, caster, 2), ModernWarlock.HasStage(target, caster, 3));
 
+        /// <summary>
+        /// Any harmful spell with a higher rank of the same kind known: damage by the rules above, and debuffs, stuns and mezzes
+        /// by a higher rank of the same type, target, shape and damage type. Night playtest 2026-11-04: a Healer kept casting
+        /// all three ranks of Hinder Spirit. Commands, chains, charms, sovereign abilities and wrappers are left alone (their
+        /// ranks are not stronger copies).
+        /// </summary>
+        public static bool IsOutclassedSpell(Spell spell, IEnumerable<Spell> known, int casterLevel)
+        {
+            if (spell == null || !spell.IsHarmful)
+                return false;
+            if (BotCasterPriority.IsDamage(spell))
+                return IsOutclassedDamageSpell(spell, known, casterLevel);
+            if (spell.SubSpellID != 0 || spell.SpellType is eSpellType.CommanderCommand or eSpellType.WarlockChainDot or
+                    eSpellType.Charm or eSpellType.StormSovereignAbility)
+                return false;
+            foreach (Spell other in known)
+            {
+                if (other == null || other == spell || !other.IsHarmful || other.Level > casterLevel || other.Level <= spell.Level ||
+                    other.SubSpellID != 0 || BotCasterPriority.IsDamage(other))
+                    continue;
+                if (other.SpellType == spell.SpellType && other.Target == spell.Target && other.DamageType == spell.DamageType &&
+                    (other.Radius > 0) == (spell.Radius > 0) && (other.CastTime <= 0) == (spell.CastTime <= 0) &&
+                    other.IsPBAoE == spell.IsPBAoE)
+                    return true;
+            }
+            return false;
+        }
+
         private bool IsOutclassedDamageSpell(Spell spell) =>
-            Body?.Spells != null && IsOutclassedDamageSpell(spell, Body.Spells, Body.Level);
+            Body?.Spells != null && IsOutclassedSpell(spell, Body.Spells, Body.Level);
+
+        /// <summary>A primary healer keeps this harmful spell's power for heals (BotHealerOffensePolicy).</summary>
+        private bool HealerHoldsSpell(Spell spell)
+        {
+            if (BotBody?.CharacterClass == null || spell == null || !spell.IsHarmful ||
+                !BotHealerOffensePolicy.IsPrimaryHealer((eCharacterClass)BotBody.CharacterClass.ID))
+                return false;
+            Group group = Body.Group;
+            bool grouped = group != null && group.MemberCount > 1;
+            bool hurt = grouped && group.GetMembersInTheGroup().Any(member => member.IsAlive &&
+                member.CurrentRegionID == Body.CurrentRegionID && Body.IsWithinRadius(member, 2_000) &&
+                member.HealthPercent < BotHealerOffensePolicy.HurtMemberHealthPercent);
+            bool onHealer = Body.TargetObject is GameLiving target && target.TargetObject == Body;
+            return !BotHealerOffensePolicy.Allows(BotHealerOffensePolicy.Kind(spell), true, grouped, Body.ManaPercent, hurt, onHealer);
+        }
 
         /// <summary>
         /// A caster (pet classes included) with no power for any attack spell stays
@@ -4656,6 +4699,8 @@ namespace DOL.AI.Brain
                 return "instant: outclassed by a higher damage spell";
             if (Body.Mana < BotBody.PowerCost(spell))
                 return "instant: not enough power";
+            if (HealerHoldsSpell(spell))
+                return "instant: healer keeps power for heals";
             if (!BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType))
                 return "instant: Bard keeps mezzes for adds";
             if (spell.HasRecastDelay && Body.GetSkillDisabledDuration(spell) > 0)
@@ -4678,6 +4723,7 @@ namespace DOL.AI.Brain
             if (spell.Level > Body.Level) return "cast: above the bot's level";
             if (IsOutclassedDamageSpell(spell)) return "cast: outclassed by a higher damage spell";
             if (Body.TargetObject is not GameLiving target || !target.IsAlive) return "cast: no living target";
+            if (HealerHoldsSpell(spell)) return "cast: healer keeps power for heals";
             if (!BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType))
                 return "cast: Bard keeps mezzes for adds";
             if (!ShamanBotCombatPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell))
