@@ -260,6 +260,19 @@ namespace DOL.GS
                 Log.Info($"AUTONOMOUS_DUNGEON_TURN_BACK bot={bot.Name} id={bot.DatabaseID} level={bot.Level} target=\"{blocker.Name}\" " +
                          $"targetLevel={blocker.Level} con={con} adds={nearbyAdds} camp=\"{_camp?.Id}\" zone=\"{bot.CurrentZone?.Description}\" " +
                          $"at={blocker.X},{blocker.Y},{blocker.Z}");
+                // Night 2026-11-04: 7,904 turn-backs, Bjornarik 531 at one spot in Iarnvidiur's Lair: a solo level 50 left
+                // in a raid dungeon turned back from a red monster in the exit corridor, replanned the same exit (a service
+                // or RvR staging "camp" outside the dungeon) and turned back again for hours. Repeats at one spot end in
+                // the safe relocation, sooner when the bot is only trying to leave.
+                bool leaving = _camp == null || _camp.RegionId != bot.CurrentRegionID || AutonomousRouteRecoveryPolicy.IsBetweenTaskCamp(_camp.Id);
+                long turnNow = GameLoop.GameLoopTime;
+                Vector3 turnAt = new(bot.X, bot.Y, bot.Z);
+                _dungeonTurnBacks = AutonomousRouteRecoveryPolicy.IsSameRepeatedFailurePocket(_dungeonTurnBackRegion, bot.CurrentRegionID,
+                    _dungeonTurnBackSpot, turnAt, turnNow - _dungeonTurnBackTick) ? _dungeonTurnBacks + 1 : 1;
+                if (_dungeonTurnBacks == 1) { _dungeonTurnBackSpot = turnAt; _dungeonTurnBackRegion = bot.CurrentRegionID; }
+                _dungeonTurnBackTick = turnNow;
+                if (_dungeonTurnBacks >= AutonomousDungeonPolicy.TurnBacksBeforeRelocation(leaving) && TryRelocateOutOfDungeon(bot, blocker, leaving))
+                    return true;
                 RejectDungeonRoute(bot, $"Route blocked by {blocker.Name} (level {blocker.Level}, {nearbyAdds + 1} together) in the dungeon corridor");
                 return true;
             }
@@ -280,6 +293,37 @@ namespace DOL.GS
                     ? $"Pulling the first safe corridor threat from a visible pack of {nearbyAdds + 1}; the party will defend any member that draws adds"
                     : "Stopped the live route to clear one visible threat before advancing",
                 blocker.Name, _camp?.ZoneName ?? string.Empty);
+            return true;
+        }
+
+        private int _dungeonTurnBacks;
+        private ushort _dungeonTurnBackRegion;
+        private Vector3 _dungeonTurnBackSpot;
+        private long _dungeonTurnBackTick;
+
+        /// <summary>The bot's realm safe capital, as the route pocket escape's last resort (AUTONOMOUS_DUNGEON_TURN_BACK_RELOCATE).</summary>
+        private bool TryRelocateOutOfDungeon(GameBot bot, GameNPC blocker, bool leaving)
+        {
+            AutonomousStuckWatchdog.CapitalLocation capital = AutonomousStuckWatchdog.SafeCapitalFor(bot.Realm);
+            if (capital.RegionId == 0)
+                return false;
+            ushort fromRegion = bot.CurrentRegionID;
+            int fromX = bot.X, fromY = bot.Y, fromZ = bot.Z;
+            bot.StopMovingOnPath();
+            bot.StopMoving();
+            if (!bot.MoveTo(capital.RegionId, capital.X, capital.Y, capital.Z, capital.Heading))
+                return false;
+            Log.Warn($"AUTONOMOUS_DUNGEON_TURN_BACK_RELOCATE bot={bot.Name} id={bot.DatabaseID} level={bot.Level} target=\"{blocker.Name}\" " +
+                     $"turnBacks={_dungeonTurnBacks} leaving={leaving} camp=\"{_camp?.Id}\" from={fromRegion}:{fromX},{fromY},{fromZ} " +
+                     $"to={capital.RegionId}:{capital.X},{capital.Y},{capital.Z}");
+            _dungeonTurnBacks = 0;
+            if (leaving)
+                DropOutOfRegionServiceGoal(bot, force: false);
+            else
+                RejectDungeonRoute(bot, $"Route blocked by {blocker.Name} (level {blocker.Level}) in the dungeon corridor, again and again");
+            ResetRouteOrderState();
+            AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Recovery);
+            SetStatus(bot, "Left the dungeon", GoalText(), $"Turned back from {blocker.Name} at the same spot again; back in {capital.Name}");
             return true;
         }
 
