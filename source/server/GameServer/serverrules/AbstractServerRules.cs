@@ -652,12 +652,23 @@ namespace DOL.GS.ServerRules
             if (living == null || item == null)
                 return false;
 
-            GamePlayer player = living as GamePlayer;
-            IGamePlayer playerLike = living as IGamePlayer;
-
             // GMs can equip everything
-            if (player != null && player.Client.Account.PrivLevel > (uint)ePrivLevel.Player)
+            if (living is GamePlayer player && player.Client.Account.PrivLevel > (uint)ePrivLevel.Player)
                 return true;
+
+            return CheckClassAbilityToUseItem(living, item);
+        }
+
+        /// <summary>
+        /// Whether the living's realm, class and skills allow the item, without the GM pass
+        /// (artifact scholars offer a GM only the versions their class could use).
+        /// </summary>
+        public bool CheckClassAbilityToUseItem(GameLiving living, DbItemTemplate item)
+        {
+            if (living == null || item == null)
+                return false;
+
+            IGamePlayer playerLike = living as IGamePlayer;
 
             // allow usage of all house items
             if ((item.Object_Type == 0 || item.Object_Type >= (int)eObjectType._FirstHouse) && item.Object_Type <= (int)eObjectType._LastHouse)
