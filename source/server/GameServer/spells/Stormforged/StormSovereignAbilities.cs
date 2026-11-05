@@ -250,6 +250,13 @@ namespace DOL.GS.Spells
             Caster.Mana -= PowerCost(target);
             base.FinishSpellCast(target);
         }
+        public override void ApplyEffectOnTarget(GameLiving target)
+        {
+            // A Storm style whose hit already killed the target still builds its Tempest.
+            if(target is { IsAlive: false } && StormRemakeStyles.OwnsEffect(Spell.ID))
+                StormTempest.Add(Caster,StormRemakeStyles.Builds(Spell.ID-StormRemakeStyles.FirstEffectId));
+            base.ApplyEffectOnTarget(target);
+        }
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams init) =>
             ECSGameEffectFactory.Create(init,static(in i)=>new StormSovereignEffect(i));
     }

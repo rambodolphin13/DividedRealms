@@ -34,6 +34,14 @@ namespace DOL.UnitTests
             public override int GetModified(eProperty p) => 0;
         }
 
+        private sealed class Corpse : GameNPC
+        {
+            public override byte Level { get; set; } = 50;
+            public override int MaxHealth => 1000;
+            public override bool IsAlive => false;
+            public override int GetModified(eProperty p) => 0;
+        }
+
         private sealed record StyleRow(int index, string line, string name, int level, string open, string after, double growth, string description);
 
         [SetUp]
@@ -184,6 +192,22 @@ namespace DOL.UnitTests
             var handler = new StormSovereignHandler(owner, spell, new SpellLine("Combat Style Effects", "Combat Style Effects", "", false));
             Assert.That(handler.Ability, Is.Not.Null);
             handler.Ability.Run(handler, enemy);
+            Assert.That(StormTempest.Charges(owner), Is.EqualTo(charges));
+        }
+
+        [TestCase(0, 1)]   // Thunderstroke
+        [TestCase(14, 2)]  // Hidden Thunder
+        [TestCase(18, 5)]  // Gathering Storm
+        [TestCase(1, 0)]   // Shatterguard builds nothing
+        public void BuildingStyles_StillAddTempestWhenTheirHitKilledTheTarget(int index, int charges)
+        {
+            // In game a level 50 one-shot a young lynx with Thunderstroke and gained nothing: the effect needs a living target.
+            var owner = NewPool();
+            var corpse = new Corpse();
+            _actors.Add(corpse);
+            var spell = new Spell(new DbSpell { SpellID = StormRemakeStyles.FirstEffectId + index, Type = "StormSovereignAbility", Target = "Enemy", Duration = 10 }, 50);
+            var handler = new StormSovereignHandler(owner, spell, new SpellLine("Combat Style Effects", "Combat Style Effects", "", false));
+            handler.ApplyEffectOnTarget(corpse);
             Assert.That(StormTempest.Charges(owner), Is.EqualTo(charges));
         }
 

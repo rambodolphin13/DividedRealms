@@ -22,6 +22,18 @@ namespace DOL.GS.Spells
 
         public static bool OwnsEffect(int id) => id is >= FirstEffectId and < FirstEffectId + Count;
 
+        /// <summary>
+        /// Tempest a style builds (five for the styles that fill it). Paid even when the style's own hit kills the
+        /// target: the effect itself only runs on a living target, so one-shot kills built nothing (owner, 2026-11-04).
+        /// </summary>
+        public static int Builds(int index) => index switch
+        {
+            0 or 3 or 20 or 24 or 40 or 51 or 56 => 1,
+            14 or 34 or 54 => 2,
+            18 or 38 or 58 => StormTempest.MaxCharges,
+            _ => 0
+        };
+
         public static IEnumerable<(int Id, MLAbility Ability)> Build()
         {
             for (int index = 0; index < Count; index++)
