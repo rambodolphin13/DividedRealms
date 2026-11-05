@@ -276,6 +276,18 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void EyeOfTheStorm_TakesTheCastersRealmColour()
+        {
+            // Realm None drew the green Hibernian storm (storm_base_hib); a Midgard caster's storm is the blue storm_base_mid.
+            var owner = NewPool();
+            owner.Realm = eRealm.Midgard;
+            var spell = new Spell(new DbSpell { SpellID = 62400 + 7 * 32 + 5, Type = "StormSovereignAbility", Target = "Self", Radius = 350, Duration = 30 }, 50);
+            var handler = new StormSovereignHandler(owner, spell, new SpellLine("Stormforged.Sovereign05", "Eye of the Storm", "StormforgedCareer", true));
+            Assert.That(new MasterLevelField(owner, handler, new MasterLevelFieldOptions { RealmColour = true }).Realm, Is.EqualTo(eRealm.Midgard));
+            Assert.That(new MasterLevelField(owner, handler, new MasterLevelFieldOptions()).Realm, Is.EqualTo(eRealm.None), "other Master Level fields unchanged");
+        }
+
+        [Test]
         public void Tempest_EachChargeAddsTwentyPercent()
         {
             Assert.That(StormTempest.Bonus(0), Is.EqualTo(1.0));
