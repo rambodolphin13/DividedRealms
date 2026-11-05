@@ -2436,7 +2436,12 @@ namespace DOL.AI.Brain
             // support-only actor merely because a group exists.
             bool minstrelAtRange = !groupedSupport && !UsesMinstrelHybridCombat && (eCharacterClass)bot.CharacterClass.ID == eCharacterClass.Minstrel &&
                                     !IsUnderImmediateMeleePressure();
-            if (immediateCombat && !minstrelAtRange)
+            // A Skald's chants need no instrument and are instant: it keeps one going while it fights
+            // (BotSongTwistPolicy.SkaldCombatHold) instead of fighting silent.
+            bool skaldFighting = immediateCombat && (eCharacterClass)bot.CharacterClass.ID == eCharacterClass.Skald;
+            if (skaldFighting)
+                SwitchToUsableMeleeWeapon();
+            if (immediateCombat && !minstrelAtRange && !skaldFighting)
             {
                 StopTwistedSong();
                 SwitchToUsableMeleeWeapon();
@@ -2487,11 +2492,13 @@ namespace DOL.AI.Brain
             GameLiving[] audience = bot.Group?.GetMembersInTheGroup()
                 .Where(member => member.IsAlive && member.CurrentRegionID == bot.CurrentRegionID &&
                                  bot.IsWithinRadius(member, 2000)).ToArray() ?? [bot];
-            eSpellType? wanted = BotSongTwistPolicy.PerformerHold(_songTraveling, immediateCombat,
-                audience.Any(member => Short(member, m => m.MaxMana > 0 && m.ManaPercent < 85)),
-                audience.Any(member => Short(member, m => m.HealthPercent < 85)),
-                audience.Any(member => Short(member, m => m.EndurancePercent < 85)),
-                songsByType.Keys, activeType);
+            eSpellType? wanted = skaldFighting
+                ? BotSongTwistPolicy.SkaldCombatHold(songsByType.Keys, audience.Length == 0 ? bot.HealthPercent : audience.Min(member => (int)member.HealthPercent))
+                : BotSongTwistPolicy.PerformerHold(_songTraveling, immediateCombat,
+                    audience.Any(member => Short(member, m => m.MaxMana > 0 && m.ManaPercent < 85)),
+                    audience.Any(member => Short(member, m => m.HealthPercent < 85)),
+                    audience.Any(member => Short(member, m => m.EndurancePercent < 85)),
+                    songsByType.Keys, activeType);
             Spell song = wanted is { } type ? songsByType[type] : null;
             // Under live chant rules songs stay up once started, so nothing is recast: with the held song running the
             // bot adds the others it can pay for, one at a time. Travelling keeps the speed song alone.
@@ -2506,7 +2513,8 @@ namespace DOL.AI.Brain
                 return false;
             }
             // a held song stays at least HoldMilliseconds; starting to travel may always switch to speed
-            if (!liveChants && activePulse != null && now < _songHoldUntil && song.SpellType != eSpellType.SpeedEnhancement)
+            if (!liveChants && activePulse != null && now < _songHoldUntil && song.SpellType != eSpellType.SpeedEnhancement &&
+                !(skaldFighting && activeType != wanted))
             {
                 _nextSongTwistTick = Math.Min(_songHoldUntil, now + 1_000);
                 return false;
