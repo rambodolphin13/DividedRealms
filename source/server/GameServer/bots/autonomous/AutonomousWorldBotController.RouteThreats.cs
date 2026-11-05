@@ -78,13 +78,23 @@ namespace DOL.GS
         private bool GuardMeetupWalk(GameBot bot, Vector3 destination) =>
             GuardRoute(bot, destination, alone: true, out _, mayTurnBack: false);
 
-        private bool GuardRoute(GameBot bot, Vector3 destination, bool alone, out bool turnedBack, bool mayTurnBack = true)
+        /// <summary>
+        /// A frontier march to a keep (the RvR objective's own travel), scanned for PvE monsters like a lone walk: it goes
+        /// around one, pulls one it can take, or backs out of the reach of one it cannot and holds. Night 2026-11-04: route
+        /// threat scanning was off for every bot on an RvR objective, and levels 40-49 on frontier tours walked into purple
+        /// PvE monsters. Enemy players and bots are never route threats (IsExperienceMonster).
+        /// </summary>
+        private bool GuardRvrTravel(GameBot bot, Vector3 destination) =>
+            GuardRoute(bot, destination, alone: true, out _, rvrTravel: true);
+
+        private bool GuardRoute(GameBot bot, Vector3 destination, bool alone, out bool turnedBack, bool mayTurnBack = true,
+            bool rvrTravel = false)
         {
             turnedBack = false;
             if (!AutonomousRouteThreatPolicy.Enabled || bot.Brain is not BotBrain brain ||
                 bot.CurrentZone == null || bot.CurrentZone.IsDungeon || bot.CurrentRegion?.IsDungeon == true ||
                 bot.IsOnStableMasterRoute || bot.IsPlayerLedGroup || brain.HasAggro || bot.InCombat || bot.IsAttacking ||
-                AutonomousObjectiveAssignments.Is(bot, eAutonomousObjectiveKind.RvR) ||
+                !AutonomousRouteThreatPolicy.ScansFor(AutonomousObjectiveAssignments.Is(bot, eAutonomousObjectiveKind.RvR), rvrTravel) ||
                 AutonomousRealmRaid.GetView(bot.Group) != null)
                 return false;
             bool grouped = !alone && _groupDirective?.IsDynamic == true;
