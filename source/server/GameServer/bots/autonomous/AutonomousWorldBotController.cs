@@ -319,6 +319,15 @@ namespace DOL.GS
                     // A pocket with no real floor within reach: the normal escape handles it; do not re-search every 5 s.
                     if (stillInPocket) _nextPocketCheckTick = nowTick + 60_000;
                 }
+                // A raid that ended inside a dungeon takes its raiders out at once (AutonomousRealmRaid.TryTakeDungeonExit).
+                if (AutonomousRealmRaid.TryTakeDungeonExit(bot))
+                {
+                    _camp = null;
+                    ResetRouteOrderState();
+                    _nextPlanTick = 0;
+                    SetStatus(bot, "Left the raid dungeon", "Choose new work after the raid", "The raid ended inside the dungeon; back at the raid's muster town");
+                    return true;
+                }
                 // A solo siege force is released at most a couple of seconds
                 // after its event ends; no need to take the event lock each turn.
                 if (bot.Group == null && nowTick >= _nextRvrReleaseCheckTick)
@@ -1707,6 +1716,52 @@ namespace DOL.GS
             return true;
         }
 
+        // A party member with no legal region connection to its leader (night 2026-11-04: 431 of 1,232 group outcomes had
+        // members in different regions; 388 member entries ended on "No legal region connection currently reaches the
+        // party's warband leader", an Albion bot on the Hibernian frontier among them, and most 2-bot RvR groups sat the
+        // whole 72-minute task). After a minute it goes home to its capital and tries again from there; after another
+        // minute with no connection it leaves the party and chooses its own work.
+        private long _noPartyRouteSinceTick;
+        private bool _noPartyRouteRecalled;
+
+        private bool TryRecoverUnroutedPartyMember(GameBot bot, string destinationLabel)
+        {
+            long now = GameLoop.GameLoopTime;
+            if (_noPartyRouteSinceTick == 0)
+            {
+                _noPartyRouteSinceTick = now;
+                return false;
+            }
+            switch (AutonomousRouteRecoveryPolicy.UnroutedMemberStep(now - _noPartyRouteSinceTick, _noPartyRouteRecalled))
+            {
+                case AutonomousRouteRecoveryPolicy.UnroutedMemberAction.Recall:
+                    AutonomousStuckWatchdog.CapitalLocation capital = AutonomousStuckWatchdog.SafeCapitalFor(bot.Realm);
+                    if (capital.RegionId == 0 || bot.InCombat || !bot.IsAlive)
+                        return false;
+                    ushort fromRegion = bot.CurrentRegionID;
+                    int fromX = bot.X, fromY = bot.Y;
+                    bot.StopMovingOnPath();
+                    bot.StopMoving();
+                    if (!bot.MoveTo(capital.RegionId, capital.X, capital.Y, capital.Z, capital.Heading))
+                        return false;
+                    _noPartyRouteRecalled = true;
+                    _noPartyRouteSinceTick = now;
+                    ResetRouteOrderState();
+                    AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Recovery);
+                    Log.Info($"AUTONOMOUS_PARTY_NO_ROUTE_RECALL bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} " +
+                             $"from={fromRegion}:{fromX},{fromY} to={capital.RegionId} target=\"{destinationLabel}\"");
+                    SetStatus(bot, "Going home to rejoin the party", GoalText(), $"No legal way from here to the party's {destinationLabel}");
+                    return true;
+                case AutonomousRouteRecoveryPolicy.UnroutedMemberAction.Leave:
+                    _noPartyRouteSinceTick = 0;
+                    _noPartyRouteRecalled = false;
+                    return AutonomousBotGroupCoordinator.LeaveUnreachableParty(bot,
+                        $"No legal region connection reaches the party's {destinationLabel}");
+                default:
+                    return false;
+            }
+        }
+
         private bool TravelToGroupRegion(
             GameBot bot,
             AutonomousBotGroupCoordinator.Directive directive,
@@ -1731,10 +1786,13 @@ namespace DOL.GS
             DbZonePoint crossing = FindNextCrossing(bot, targetRegion, targetX, targetY);
             if (crossing == null)
             {
+                if (TryRecoverUnroutedPartyMember(bot, destinationLabel))
+                    return true;
                 SetStatus(bot, "Replanning group rendezvous", directive.SharedGoal,
                     $"No legal region connection currently reaches the party's {destinationLabel}");
                 return true;
             }
+            _noPartyRouteSinceTick = 0;
 
             if (FollowDarknessFallsHomeExit(bot, crossing)) return true;
             if (TryTownTeleportAcross(bot, crossing, targetRegion, targetX, targetY, bot.Z)) return true;
@@ -2770,6 +2828,9 @@ namespace DOL.GS
             // With no current target the brain still holds its aggro list: look at its top entry too.
             GameNPC target = bot.TargetObject as GameNPC ??
                 brain.HighestAggroTarget as GameNPC;
+            // An enemy realm's bot on another floor of a dungeon (see DropCrossFloorEnemy).
+            if (target is GameBot enemyBot && DropCrossFloorEnemy(brain, bot, enemyBot))
+                return true;
             // PvE monsters only: never an enemy realm's bot, guard, keep door or siege target.
             // Realm raids keep their own boss rules (immune phases are part of those encounters).
             if (target == null || !target.IsAlive || target.Realm != eRealm.None || target is GameBot ||
@@ -4944,6 +5005,7 @@ namespace DOL.GS
                         return false;
                     }
                     long seamNow = GameLoop.GameLoopTime;
+                    AutonomousZoneBoundaryRouting.Step? previousSeam = _lastSeamStep;
                     if (_lastSeamStep is { } lastSeam && seamNow - _lastSeamStepTick < 5 * 60_000 &&
                         Vector3.DistanceSquared(_lastSeamGoal, destination) < 500f * 500f &&
                         AutonomousZoneBoundaryRouting.IsReversal(lastSeam, resolved))
@@ -4966,6 +5028,14 @@ namespace DOL.GS
                                  $"position={bot.X},{bot.Y},{bot.Z} goalZone={destinationZone.ID} goal={(int)destination.X},{(int)destination.Y},{(int)destination.Z} " +
                                  $"step={(int)resolved.Inside.X},{(int)resolved.Inside.Y}>{(int)resolved.Outside.X},{(int)resolved.Outside.Y} " +
                                  $"activity=\"{bot.PersistentRecord?.Activity}\"");
+                        // Night 2026-11-04: 753 of 788 seam cycles were one Hibernian seam pair, region 200 384960/385088,385504
+                        // (zones 211/212): every goal past it planned the same two steps again. Both crossings of the cycle
+                        // count toward the seam quarantine (three bots bench them for two hours), so the planner takes another.
+                        foreach (AutonomousZoneBoundaryRouting.Step cycled in new[] { resolved, previousSeam ?? resolved })
+                            if (AutonomousSeamCrossingQuarantine.ReportFailure(bot.CurrentRegionID, cycled.Inside, bot.DatabaseID))
+                                Log.Warn($"AUTONOMOUS_SEAM_CROSSING_QUARANTINE region={bot.CurrentRegionID} " +
+                                         $"inside={(int)cycled.Inside.X},{(int)cycled.Inside.Y} bots={AutonomousSeamCrossingQuarantine.DistinctBotsToQuarantine} " +
+                                         $"hours={AutonomousSeamCrossingQuarantine.QuarantineDuration.TotalHours:0} reason=seam-cycle");
                         if (TryPlanCapitalTransit(bot, destination))
                             return HandleCapitalTransit(bot);
                         if (TryEscapeTerminalRoutePocket(bot, current))
@@ -5362,6 +5432,18 @@ namespace DOL.GS
             ushort failedSourceRegion = bot.CurrentRegionID;
             ushort failedSourceZone = bot.CurrentZone?.ID ?? 0;
             ushort failedTargetRegion = _camp?.RegionId ?? 0;
+            // Night 2026-11-04: 289 escapes from a capital spawn to the same capital spawn, one every 33 s for about 27
+            // minutes per bot: the goal (a merchant inside Darkness Falls) failed at once from the capital, and three
+            // terminal failures "escaped" the bot to where it stood. An escape to where the bot already is ends the
+            // between-task goal instead.
+            if (AutonomousRouteRecoveryPolicy.IsEscapeInPlace(failedSourceRegion, current, escapeRegion, escape))
+            {
+                DropOutOfRegionServiceGoal(bot, force: true);
+                ResetRepeatedRouteFailures();
+                Log.Info($"AUTONOMOUS_ROUTE_POCKET_ESCAPE_SKIPPED bot={bot.Name} id={bot.DatabaseID} " +
+                         $"at={failedSourceRegion}:{(int)current.X},{(int)current.Y},{(int)current.Z} terminalFailures={_terminalRouteFailuresInPocket}");
+                return false;
+            }
             bool moved = escapeRegion == bot.CurrentRegionID
                 ? bot.MoveInRegion(escapeRegion, (int)Math.Round(escape.X), (int)Math.Round(escape.Y),
                     (int)Math.Round(escape.Z), bot.Heading, true)
@@ -5371,6 +5453,9 @@ namespace DOL.GS
                 return false;
 
             ClearZonePointQuarantine(bot, failedSourceRegion, failedSourceZone, failedTargetRegion);
+            // A service, staging or idle destination left behind in the old region is chosen again from the new one.
+            if (escapeRegion != failedSourceRegion)
+                DropOutOfRegionServiceGoal(bot, force: false);
 
             Log.Warn($"AUTONOMOUS_ROUTE_POCKET_ESCAPE bot={bot.Name} id={bot.DatabaseID} " +
                      $"from={_lastTerminalRouteFailureRegion}:{(int)current.X},{(int)current.Y},{(int)current.Z} " +
@@ -5388,6 +5473,22 @@ namespace DOL.GS
                 $"Reached validated ground in {escapeName}; resuming the same goal",
                 _camp?.MonsterName ?? string.Empty, _camp?.ZoneName ?? escapeName, true);
             return true;
+        }
+
+        /// <summary>
+        /// Forgets the merchant or broker the bot was routing to, and a between-task camp (service, RvR staging, town
+        /// idle, craft) outside the bot's region, so the next turn chooses them again from where it now stands.
+        /// </summary>
+        private void DropOutOfRegionServiceGoal(GameBot bot, bool force)
+        {
+            if (_serviceNpc != null && (force || _serviceNpc.CurrentRegionID != bot.CurrentRegionID))
+            {
+                _serviceNpc = null;
+                _serviceKind = null;
+                _nextServiceSearchTick = 0;
+            }
+            if (_camp != null && AutonomousRouteRecoveryPolicy.IsBetweenTaskCamp(_camp.Id) && (force || _camp.RegionId != bot.CurrentRegionID))
+                _camp = null;
         }
 
         private static void ClearZonePointQuarantine(GameBot bot, ushort sourceRegion,
@@ -5756,7 +5857,7 @@ namespace DOL.GS
             npc is not GameMerchant && npc is not GameGuard && npc is not GameTaxi &&
             npc is not GameSummonedPet && npc is not GameKeepGuard && npc is not GameTrainer &&
             npc is not GameTeleporter && npc is not GameHealer && npc is not CraftNPC &&
-            !AutonomousNeutralTownPolicy.IsTownResident(npc);
+            !AutonomousNeutralTownPolicy.IsTownResident(npc) && !Quests.QuestTalkTruce.SparesBots(npc);
 
         private const double AtlantisNoRouteSeconds = 3_600;
 

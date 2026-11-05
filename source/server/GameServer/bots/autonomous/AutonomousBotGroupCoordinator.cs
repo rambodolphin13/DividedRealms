@@ -1367,6 +1367,71 @@ public static partial class AutonomousBotGroupCoordinator
             center.Y + (float)(Math.Sin(angle) * radius), center.Z);
     }
 
+    /// <summary>
+    /// Takes a raid member that cannot reach its raid out of the raid party (as the hub release does) so it chooses solo
+    /// work. False when the bot is in no raid party.
+    /// </summary>
+    public static bool ReleaseStrandedRaider(GameBot bot, string reason)
+    {
+        Group group = bot?.Group;
+        if (group == null || AutonomousRealmRaid.GetView(group) == null)
+            return false;
+        lock (Sync)
+        {
+            Sessions.TryGetValue(group, out Session session);
+            long memberKey = MemberKey(bot);
+            if (session != null)
+            {
+                session.ExpeditionRouteFailures.Remove(memberKey);
+                session.ExpeditionRouteRetry.Remove(memberKey);
+                session.HeldUnreachableMembers.Remove(memberKey);
+                if (session.PveRoles.Remove(memberKey, out BotPveGroupRole lostRole))
+                    session.ReleasedRaidRoles.Add(lostRole);
+            }
+            AutonomousRealmRaid.ReleasePartyMember(group, bot);
+            if (session != null) session.ProcessingAttendanceRemovals = true;
+            try
+            {
+                group.RemoveMember(bot, retainSingleRemainingMember: true);
+                AutonomousObjectiveAssignments.BeginSoloAfterGroupTask(bot, $"Released from the raid: {reason}");
+            }
+            finally
+            {
+                if (session != null) session.ProcessingAttendanceRemovals = false;
+            }
+            if (session != null) session.LockedSize = BotMembers(group).Length;
+            Log.Warn($"REALM_RAID_STRANDED_RELEASED group={session?.Id} bot={bot.Name} region={bot.CurrentRegionID} " +
+                     $"position={bot.X},{bot.Y},{bot.Z} reason={reason}");
+            return true;
+        }
+    }
+
+    /// <summary>A member of an ordinary (not raid) party leaves it to choose its own work. False when not in one.</summary>
+    public static bool LeaveUnreachableParty(GameBot bot, string reason)
+    {
+        Group group = bot?.Group;
+        if (group == null || AutonomousRealmRaid.GetView(group) != null)
+            return false;
+        lock (Sync)
+        {
+            Sessions.TryGetValue(group, out Session session);
+            if (session != null) session.ProcessingAttendanceRemovals = true;
+            try
+            {
+                group.RemoveMember(bot, retainSingleRemainingMember: true);
+                AutonomousObjectiveAssignments.BeginSoloAfterGroupTask(bot, $"Left the party: {reason}");
+            }
+            finally
+            {
+                if (session != null) session.ProcessingAttendanceRemovals = false;
+            }
+            if (session != null) session.LockedSize = BotMembers(group).Length;
+            Log.Info($"AUTONOMOUS_PARTY_NO_ROUTE_LEFT group={session?.Id} objective={session?.ObjectiveKind} bot={bot.Name} " +
+                     $"region={bot.CurrentRegionID} position={bot.X},{bot.Y},{bot.Z} reason={reason}");
+            return true;
+        }
+    }
+
     /// <summary>Stops reissuing an impossible route. One distinct coordinator
     /// reselection and one bounded retry are allowed; only a repeat failure
     /// shortens that member's ordinary fifteen-minute attendance window.</summary>

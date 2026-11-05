@@ -23,6 +23,12 @@ namespace DOL.GS
             "Gamebots look ahead along their route in open zones and pull, avoid or route around aggressive monsters before walking into them.", true)]
         public static bool Enabled = true;
 
+        /// <summary>
+        /// Whether a walk is scanned for PvE monsters: every walk of a bot on a PvE objective, and of a bot on an RvR
+        /// objective only its march to a keep (night 2026-11-04: levels 40-49 on frontier tours walked into purple camps).
+        /// </summary>
+        public static bool ScansFor(bool rvrObjective, bool rvrTravel) => !rvrObjective || rvrTravel;
+
         public const int ScanMilliseconds = 2_500;
         public const float LookAhead = 1_500f;
         public const int ScanRadius = 1_800;

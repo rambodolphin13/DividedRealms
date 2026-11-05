@@ -85,6 +85,9 @@ namespace DOL.GS
         /// Darkness Falls) killed 206 solo level 50s approaching their camps, 174 of them to three or more attackers. A bot with
         /// no camp (on its way out) or rejoining its leader still clears the corridor: that is the only way it has. Pure.
         /// </summary>
+        /// <summary>Turn-backs at one spot before the bot is taken out of the dungeon: two when it is only leaving.</summary>
+        public static int TurnBacksBeforeRelocation(bool leaving) => leaving ? 2 : 3;
+
         public static bool SoloTurnsBackFrom(bool grouped, bool hasCamp, bool rejoiningLeader, bool ownTarget, ConColor con, int nearbyAdds) =>
             !grouped && hasCamp && !rejoiningLeader && !ownTarget &&
             (con >= ConColor.RED || con == ConColor.ORANGE && nearbyAdds >= 2);

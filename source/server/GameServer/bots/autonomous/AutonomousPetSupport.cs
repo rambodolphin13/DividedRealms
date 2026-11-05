@@ -1953,8 +1953,27 @@ public static class AutonomousPetSupport
         if (strongest.Spell == null)
             return false;
 
-        return CommanderRank(commander.CommanderType) < strongest.Spell.Level;
+        return CommanderNeedsUpgrade(commander.CommanderType, (int)strongest.Spell.Value, strongest.Spell.Level);
     }
+
+    /// <summary>
+    /// Night 2026-11-04: seven level 50 Bonedancers stood frozen in Jordheim all night (209 of 759 watchdog rescues). The
+    /// class pass added Summon Dread Lord at level 50, but every Dread commander spell uses template 52, which resolves to
+    /// DreadCommander (rank 45), and 45 is below 50: the bot released its commander and summoned the same one again on
+    /// every think, and that turn never reached the world controller. The spell is measured by the commander it summons
+    /// (its template: 49 Returned, 50 Skeletal, 51 Bone, 52 Dread, as CommanderPet resolves them), not by its level.
+    /// </summary>
+    public static bool CommanderNeedsUpgrade(CommanderPet.eCommanderType current, int templateId, int spellLevel) =>
+        current != CommanderPet.eCommanderType.Unknown && CommanderRank(current) < SummonedCommanderRank(templateId, spellLevel);
+
+    private static int SummonedCommanderRank(int templateId, int spellLevel) => templateId switch
+    {
+        49 => 1,
+        50 => 15,
+        51 => 30,
+        52 => 45,
+        _ => spellLevel switch { >= 45 => 45, >= 30 => 30, >= 15 => 15, _ => 1 },
+    };
 
     private static int CommanderRank(CommanderPet.eCommanderType commanderType) => commanderType switch
     {

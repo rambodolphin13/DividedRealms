@@ -353,6 +353,12 @@ public static class AutonomousObjectiveAssignments
                         if (!weights.Allows((int)fallback))
                             fallback = AutonomousBotGoalPolicy.Choose(bot.Level, excludeGroup: true);
                     }
+                    // No frontier tour below 40 (Assign enforces it too): the log and the RvR count say what is assigned.
+                    if (fallback == eAutonomousObjectiveKind.RvR && !AutonomousBotGoalPolicy.LevelAllowsFrontierRvr(bot.Level))
+                    {
+                        fallback = eAutonomousObjectiveKind.SoloPve;
+                        useRvr = false;
+                    }
                     if (useRvr) currentRvr++;
                     DOL.Logging.LoggerManager.Create(typeof(AutonomousObjectiveAssignments)).Warn(
                         $"AUTONOMOUS_GROUP_MATCHMAKING_TIMEOUT bot=\"{bot.Name}\" id={bot.DatabaseID} " +

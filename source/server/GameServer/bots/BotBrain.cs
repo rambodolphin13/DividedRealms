@@ -2436,7 +2436,12 @@ namespace DOL.AI.Brain
             // support-only actor merely because a group exists.
             bool minstrelAtRange = !groupedSupport && !UsesMinstrelHybridCombat && (eCharacterClass)bot.CharacterClass.ID == eCharacterClass.Minstrel &&
                                     !IsUnderImmediateMeleePressure();
-            if (immediateCombat && !minstrelAtRange)
+            // A Skald's chants need no instrument and are instant: it keeps one going while it fights
+            // (BotSongTwistPolicy.SkaldCombatHold) instead of fighting silent.
+            bool skaldFighting = immediateCombat && (eCharacterClass)bot.CharacterClass.ID == eCharacterClass.Skald;
+            if (skaldFighting)
+                SwitchToUsableMeleeWeapon();
+            if (immediateCombat && !minstrelAtRange && !skaldFighting)
             {
                 StopTwistedSong();
                 SwitchToUsableMeleeWeapon();
@@ -2487,11 +2492,13 @@ namespace DOL.AI.Brain
             GameLiving[] audience = bot.Group?.GetMembersInTheGroup()
                 .Where(member => member.IsAlive && member.CurrentRegionID == bot.CurrentRegionID &&
                                  bot.IsWithinRadius(member, 2000)).ToArray() ?? [bot];
-            eSpellType? wanted = BotSongTwistPolicy.PerformerHold(_songTraveling, immediateCombat,
-                audience.Any(member => Short(member, m => m.MaxMana > 0 && m.ManaPercent < 85)),
-                audience.Any(member => Short(member, m => m.HealthPercent < 85)),
-                audience.Any(member => Short(member, m => m.EndurancePercent < 85)),
-                songsByType.Keys, activeType);
+            eSpellType? wanted = skaldFighting
+                ? BotSongTwistPolicy.SkaldCombatHold(songsByType.Keys, audience.Length == 0 ? bot.HealthPercent : audience.Min(member => (int)member.HealthPercent))
+                : BotSongTwistPolicy.PerformerHold(_songTraveling, immediateCombat,
+                    audience.Any(member => Short(member, m => m.MaxMana > 0 && m.ManaPercent < 85)),
+                    audience.Any(member => Short(member, m => m.HealthPercent < 85)),
+                    audience.Any(member => Short(member, m => m.EndurancePercent < 85)),
+                    songsByType.Keys, activeType);
             Spell song = wanted is { } type ? songsByType[type] : null;
             // Under live chant rules songs stay up once started, so nothing is recast: with the held song running the
             // bot adds the others it can pay for, one at a time. Travelling keeps the speed song alone.
@@ -2506,7 +2513,8 @@ namespace DOL.AI.Brain
                 return false;
             }
             // a held song stays at least HoldMilliseconds; starting to travel may always switch to speed
-            if (!liveChants && activePulse != null && now < _songHoldUntil && song.SpellType != eSpellType.SpeedEnhancement)
+            if (!liveChants && activePulse != null && now < _songHoldUntil && song.SpellType != eSpellType.SpeedEnhancement &&
+                !(skaldFighting && activeType != wanted))
             {
                 _nextSongTwistTick = Math.Min(_songHoldUntil, now + 1_000);
                 return false;
@@ -2800,6 +2808,9 @@ namespace DOL.AI.Brain
 
         private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<object, BotBuffReservations<GameLiving>> BuffClaims = new();
 
+        /// <summary>A point-blank realm buff (no range, a radius around the caster): its need is judged on group members only.</summary>
+        public static bool AreaBuffSkipsPets(Spell spell) => spell != null && spell.Target == eSpellTarget.REALM && spell.IsPBAoE;
+
         private GameLiving FindRandomMissingRealmBuffTarget(Spell spell, int minimumRange = 0) =>
             FindRandomMissingRealmBuffTargetWithTier(spell, minimumRange, out _);
 
@@ -2832,7 +2843,12 @@ namespace DOL.AI.Brain
             // nothing for (acuity on a non-list-caster) are skipped. Ties are picked at random so
             // several buffers in one group spread out instead of all aiming at the same member.
             List<GameLiving> best = new();
-            foreach (GameLiving target in members.Concat(BotGroupPetBuffTargets.Enumerate(BotBody, spell)))
+            // Night 2026-11-04: 1,600 of 2,482 BOT_BUFF_RECAST_LOOP lines were point-blank baseline buffs (Cleric 75007/75011,
+            // Druid 75095/75101, Shaman 75365/75366) recast for a pet or charmed monster they never held on to ("abomination",
+            // "grove protector", "hunter's avatar", "corrosive slime"). Such a buff is cast for the group's members; their
+            // pets within its radius take it along (SpellHandler.GetGroupAndPets), so a pet alone never calls for a recast.
+            IEnumerable<GameLiving> petTargets = AreaBuffSkipsPets(spell) ? [] : BotGroupPetBuffTargets.Enumerate(BotBody, spell);
+            foreach (GameLiving target in members.Concat(petTargets))
             {
                 if (target == null || !target.IsAlive || !Body.IsWithinRadius(target, range) ||
                     !NeedsBuff(target, spell) || (claims?.IsReserved(target, family, now) ?? false))
@@ -2903,6 +2919,8 @@ namespace DOL.AI.Brain
 
         private GameLiving FindMissingPartyPetBuffTarget(Spell spell)
         {
+            if (AreaBuffSkipsPets(spell))
+                return null;
             GameNPC pet = BotGroupPetBuffTargets.Enumerate(BotBody, spell)
                 .FirstOrDefault(candidate => !HasBuffForUpkeep(candidate, spell));
             // Native group spells fan out from the caster; realm buffs target one pet.
@@ -3962,6 +3980,36 @@ namespace DOL.AI.Brain
         }
 
         /// <summary>
+        /// Night playtest 2026-11-04 (first batch leftover): grouped Eldritch bots nuked until dry, pulled the monster off
+        /// the tank and then stood in melee with it. In an autonomous party with a tank, a list caster that is not the
+        /// party's puller holds its damage until the monster is on another member, and casts as before once it is (or when
+        /// the monster is on the caster itself). Pure.
+        /// </summary>
+        public static bool GroupCasterMayNuke(bool grouped, bool partyHasTank, bool isPuller, bool targetOnMe, bool targetOnOtherMember) =>
+            !grouped || !partyHasTank || isPuller || targetOnMe || targetOnOtherMember;
+
+        private bool ShouldWaitForTankThreat(GameLiving target)
+        {
+            GameBot bot = BotBody;
+            if (bot?.IsAutonomousWorldBot != true || bot.IsPlayerLedGroup || bot.CharacterClass == null ||
+                bot.CharacterClass.ClassType != eClassType.ListCaster ||
+                bot.CharacterClass.ID is (int)eCharacterClass.Valewalker or (int)eCharacterClass.Vampiir ||
+                target is not GameNPC || target is GameBot || bot.Group == null || bot.Group.MemberCount < 2)
+                return false;
+            GameLiving onWhom = target.TargetObject as GameLiving;
+            bool onOther = onWhom != null && onWhom != bot && (onWhom.Group == bot.Group ||
+                onWhom is GameNPC { Brain: IControlledBrain pet } && pet.GetLivingOwner()?.Group == bot.Group);
+            if (onWhom == bot || onOther)
+                return false;
+            bool hasTank = bot.Group.GetMembersInTheGroup().OfType<GameBot>().Any(member => member != bot && member.IsAlive &&
+                BotPartyRoles.IsTank(member) && member.CurrentRegionID == bot.CurrentRegionID && bot.IsWithinRadius(member, 2_500));
+            if (!hasTank)
+                return false;
+            bool puller = DOL.GS.AutonomousBotGroupCoordinator.PartyPuller(bot) == bot;
+            return !GroupCasterMayNuke(true, hasTank, puller, false, false);
+        }
+
+        /// <summary>
         /// A caster (pet classes included) with no power for any attack spell stays
         /// where it is, out of melee, while its pet keeps fighting; it casts again as
         /// soon as it can pay for a spell. It never walks in with its staff.
@@ -4523,6 +4571,19 @@ namespace DOL.AI.Brain
                     // its refusal for a reason to abandon ranged combat.
                     spellsToCast.RemoveAll(spell => !NeedsOffensiveSpellApplication((GameLiving)Body.TargetObject, spell));
                     if (spellsToCast.Count == 0) return Body.IsCasting;
+                    // A grouped caster lets its tank take the monster first (GroupCasterMayNuke).
+                    if (ShouldWaitForTankThreat(Body.TargetObject as GameLiving))
+                    {
+                        spellsToCast.RemoveAll(BotCasterPriority.IsDamage);
+                        if (spellsToCast.Count == 0) return Body.IsCasting;
+                    }
+                    // A Vampiir in melee reach casts only what outdamages its swing (ShamanBotCombatPolicy.VampiirCastsInMelee).
+                    if (BotBody.CharacterClass.ID == (int)eCharacterClass.Vampiir &&
+                        Body.IsWithinRadius(Body.TargetObject, ShamanBotCombatPolicy.VampiirMeleeReach))
+                    {
+                        spellsToCast.RemoveAll(spell => !ShamanBotCombatPolicy.VampiirCastsInMelee(spell, Body.ManaPercent));
+                        if (spellsToCast.Count == 0) return Body.IsCasting;
+                    }
                     // A point-blank spell (range 0, a radius around the caster) stays: it already passed its radius check.
                     if (PrefersCurrentSpellRange() &&
                         spellsToCast.Exists(spell => spell.Range > Body.MeleeAttackRange))

@@ -285,6 +285,11 @@ namespace DOL.GS
                 { why.Add($"{id}: not this realm's entrance"); continue; }
                 if (homeRegion != 0 && !RealmRaidStaging.TryDungeonPost(nav, outside, new(outer.SourceX, outer.SourceY, outer.SourceZ), 0, [], out _))
                 { why.Add($"{id}: no staging post outside"); continue; }
+                // Through an approach dungeon (Summoner's Hall): the walk from where the outer crossing lands to the inner
+                // crossing must exist. Night 2026-11-04: Hall of the Corrupt (277) has no such walk on its mesh, and 146
+                // Albion raiders were held there 72 minutes (1,105 route retries) before the raid ended unreached.
+                if (outer.Id != inner.Id && !ApproachDungeonConnects(nav, outer, inner))
+                { why.Add($"{id}: no proven walk through region {outer.TargetRegion} to its crossing"); continue; }
                 Vector3 raw = new(inner.TargetX, inner.TargetY, inner.TargetZ);
                 Vector3? floor = nav.GetClosestPoint(inside, raw, 48, 48, 64, nav.DefaultFilters);
                 if (!floor.HasValue) { why.Add($"{id}: no navmesh floor at the inside arrival point"); continue; }
@@ -301,6 +306,21 @@ namespace DOL.GS
             }
             LastFailure = why.Count == 0 ? "no entrance crossing into the region for this realm" : string.Join("; ", why);
             return false;
+        }
+
+        private static bool ApproachDungeonConnects(IPathfindingMgr nav, DbZonePoint outer, DbZonePoint inner)
+        {
+            Region through = WorldMgr.GetRegion(outer.TargetRegion);
+            Zone arrivalZone = through?.GetZone(outer.TargetX, outer.TargetY);
+            Zone exitZone = through?.GetZone(inner.SourceX, inner.SourceY);
+            if (arrivalZone == null || exitZone == null || !nav.HasNavmesh(arrivalZone))
+                return false;
+            // The walk is proven inside one zone's mesh; a crossing in another zone of the region is left to the bots' router.
+            if (arrivalZone != exitZone)
+                return true;
+            Vector3? arrival = nav.GetClosestPoint(arrivalZone, new(outer.TargetX, outer.TargetY, outer.TargetZ), 64, 64, 128, nav.DefaultFilters);
+            return arrival.HasValue && AutonomousZonePointApproach.TryResolve(nav, arrivalZone, arrival.Value,
+                new(inner.SourceX, inner.SourceY, inner.SourceZ), 220, out _);
         }
 
         /// <summary>

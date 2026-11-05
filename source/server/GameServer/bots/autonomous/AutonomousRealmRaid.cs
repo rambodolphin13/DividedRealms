@@ -1333,6 +1333,58 @@ namespace DOL.GS
             }
         }
 
+        /// <summary>
+        /// Night 2026-11-04: once a raid ended inside a dungeon nothing gave its raiders a way out. 128 Midgard raiders sat
+        /// 15 minutes in Summoner's Hall after the boss died, and 54 Hibernians stood at a Darkness Falls exit until the
+        /// fifteen-minute watchdog. A raider still inside a dungeon when its raid ends is taken to the raid's muster hub (its
+        /// realm's safe capital without one) on its next out-of-combat turn, within <see cref="DungeonExitWindowMilliseconds"/>.
+        /// </summary>
+        public const long DungeonExitWindowMilliseconds = 10 * 60_000;
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<long, (ushort Region, Vector3 Point, string Place, long Until)> DungeonExits = new();
+
+        private static void QueueDungeonExits(Raid raid, GameBot[] raiders, long now)
+        {
+            foreach (GameBot bot in raiders)
+            {
+                if (bot == null || bot.DatabaseID <= 0 || !InDungeon(bot)) continue;
+                if (raid.Hub != null)
+                    DungeonExits[bot.DatabaseID] = (raid.Hub.Region, raid.Hub.Center, raid.Hub.Name, now + DungeonExitWindowMilliseconds);
+                else if (AutonomousStuckWatchdog.SafeCapitalFor(bot.Realm) is { RegionId: > 0 } capital)
+                    DungeonExits[bot.DatabaseID] = (capital.RegionId, new(capital.X, capital.Y, capital.Z), capital.Name, now + DungeonExitWindowMilliseconds);
+            }
+        }
+
+        private static bool InDungeon(GameBot bot) => bot.CurrentRegion?.IsDungeon == true || bot.CurrentZone?.IsDungeon == true;
+
+        /// <summary>True when the bot was just taken out of the dungeon of a raid that ended (see QueueDungeonExits).</summary>
+        public static bool TryTakeDungeonExit(GameBot bot)
+        {
+            if (DungeonExits.IsEmpty || bot == null || !DungeonExits.TryGetValue(bot.DatabaseID, out var exit)) return false;
+            long now = GameLoop.GameLoopTime;
+            if (now > exit.Until || !InDungeon(bot) || GetView(bot.Group) != null)
+            {
+                DungeonExits.TryRemove(bot.DatabaseID, out _);
+                return false;
+            }
+            if (!bot.IsAlive || bot.InCombat || bot.IsAttacking || bot.Brain is BotBrain { HasAggro: true } || bot.IsCasting)
+                return false;
+            DungeonExits.TryRemove(bot.DatabaseID, out _);
+            ushort fromRegion = bot.CurrentRegionID;
+            int fromX = bot.X, fromY = bot.Y, fromZ = bot.Z;
+            bot.StopFollowing();
+            bot.StopMovingOnPath();
+            bot.StopMoving();
+            if (!bot.MoveTo(exit.Region, (int)exit.Point.X, (int)exit.Point.Y, (int)exit.Point.Z, bot.Heading))
+                return false;
+            AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Recovery);
+            Log.Info($"REALM_RAID_DUNGEON_EXIT bot={bot.Name} id={bot.DatabaseID} realm={bot.Realm} from={fromRegion}:{fromX},{fromY},{fromZ} " +
+                     $"to={exit.Region}:{(int)exit.Point.X},{(int)exit.Point.Y},{(int)exit.Point.Z} place=\"{exit.Place}\"");
+            return true;
+        }
+
+        /// <summary>Tests only.</summary>
+        public static int PendingDungeonExits => DungeonExits.Count;
+
         public static bool TryConsumeRelease(Group group, out string reason)
         {
             lock (Sync) return Released.Remove(group, out reason);
@@ -1369,6 +1421,8 @@ namespace DOL.GS
                     finalBoss?.Name ?? raid.Definition.BossType, raid.Definition.Name));
             }
             GameBot[] recipients = raid.Support.OfType<GameBot>().ToArray();
+            if (raid.Definition.IsDungeon)
+                QueueDungeonExits(raid, recipients, now);
             // A raid beaten to its final encounter has no share in its loot.
             foreach (GameNPC final in (raid.DungeonRoute?.FinalBosses ?? [raid.Boss]).Where(n => n != null && !n.IsAlive && outcome != BeatenPrefix))
             {

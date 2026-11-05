@@ -817,6 +817,10 @@ namespace DOL.AI.Brain
             if (realTarget is GamePlayer questPlayer && DOL.GS.Quests.QuestTalkTruce.Holds(Body, questPlayer))
                 return false;
 
+            // A quest giver or talk character leaves autonomous gamebots alone (QuestTalkTruce.SparesBots).
+            if (realTarget is GameBot { IsAutonomousWorldBot: true } && DOL.GS.Quests.QuestTalkTruce.SparesBots(Body))
+                return false;
+
             // If this npc have Faction return the AggroAmount to Player
             if (Body.Faction != null)
             {
