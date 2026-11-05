@@ -205,3 +205,18 @@ Install: build the edits from the stopped world (`storm_remake_edits.py <db> edi
 with the owner's OK. Undo with the id `apply` prints. Old hotbar buttons for removed styles and spells stop working:
 drag new ones from the style and spell lists. Characters who had the old Runic Ward or Runic Armament switched on keep
 those icons until they cancel them.
+
+## Second pass (2026-11-04, owner after first play)
+
+- **One Storm Wolf.** Recasting while a wolf lived replaced the pet link and left the old wolf in the world; it is now refused.
+- **Styles that kill still build Tempest.** The effect needs a living target, so one-shot kills built nothing.
+- **14 spell buttons** (from 19): Royal Thunder absorbs Lightning Spear; Stormbreak absorbs Chain of the Crown; Runic Armament
+  absorbs Runic Reversal (every parry or block returns lightning); Hunter's Mark and Sovereign's Challenge are cut (stealth
+  openers build Tempest, shield styles taunt). The list: Royal Presence, Armor of the Crown, Runic Armament, Veil of Winter,
+  Storm Wolf, Royal Decree, Rally to the Crown, Royal Thunder, Winter's Grasp, Hammerfall, Stormbreak, Eye of the Storm,
+  Storm Crown, Will of the Sovereign.
+- **Tempest pays for casts.** With any charge, Royal Thunder (2.5 s bolt from level 1) and Stormbreak (2.3 s burst from 31)
+  are instant, free and spend every charge (+20% each); Winter's Grasp and Hammerfall spend 1 charge instead of power.
+- **Stormslam** (Shields, level 12, anytime): a 9-second stun with normal stun immunity; builds 1 Tempest.
+- World: `storm_remake_edits.py <db> edits.json --update` takes a world with the first remake to this one;
+  without `--update` it builds the whole remake on an old-kit world. Both give identical class rows (checked on copies).

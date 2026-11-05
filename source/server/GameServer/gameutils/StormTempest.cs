@@ -69,6 +69,21 @@ namespace DOL.GS
             return spent;
         }
 
+        /// <summary>Spends up to <paramref name="amount"/> charges (Winter's Grasp, Hammerfall) and returns how many; free in Storm Crown.</summary>
+        public static int Take(GameLiving living, int amount)
+        {
+            var state = Get(living);
+            if (state == null || state.Charges == 0 || amount <= 0)
+                return 0;
+            int taken = Math.Min(amount, state.Charges);
+            if (StormforgedHeroicRules.HasAvatar(living))
+                return taken;
+            state.Charges -= taken;
+            Trace(living, $"spent {taken}", state.Charges);
+            Refresh(living, state);
+            return taken;
+        }
+
         public static void Set(GameLiving living, int charges)
         {
             if (living == null)

@@ -598,5 +598,15 @@
   "after": "Oathbinding",
   "growth": 1.6,
   "description": "Signature. Spends Tempest: a party ablative shield and a lightning blast within 350, +20% per charge."
+ },
+ {
+  "index": 60,
+  "line": "Shields",
+  "name": "Stormslam",
+  "level": 12,
+  "open": "anytime",
+  "after": null,
+  "growth": 0.3,
+  "description": "Anytime shield slam: a 9-second stun. Builds 1 Tempest."
  }
 ]

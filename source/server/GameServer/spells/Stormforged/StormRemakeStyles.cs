@@ -15,7 +15,7 @@ namespace DOL.GS.Spells
     {
         public const int FirstStyleId = 7100;
         public const int FirstEffectId = 63500;
-        public const int Count = 60;
+        public const int Count = 61;   // 20 per line, plus Stormslam (60), the Shields anytime stun
 
         // Damage at level 50 (lower levels scale down, never below level 10 strength).
         private const double Opener = 60, Step = 90, Finisher = 160, Capstone = 220, Signature = 260, Ambush = 150;
@@ -28,7 +28,7 @@ namespace DOL.GS.Spells
         /// </summary>
         public static int Builds(int index) => index switch
         {
-            0 or 3 or 20 or 24 or 40 or 51 or 56 => 1,
+            0 or 3 or 20 or 24 or 40 or 51 or 56 or 60 => 1,
             14 or 34 or 54 => 2,
             18 or 38 or 58 => StormTempest.MaxCharges,
             _ => 0
@@ -205,6 +205,7 @@ namespace DOL.GS.Spells
                     foreach (var enemy in Near(me, 350)) Hit(enemy, D(Finisher) * bonus);
                     break;
                 }
+                case 60: Stun(h, t, 9); Build(1); break;                                              // Stormslam (Slam-style anytime stun)
             }
         }
 

@@ -80,12 +80,12 @@ namespace DOL.UnitTests
         }
 
         [Test]
-        public void StyleTable_HasTwentyStylesPerLineAndAnEffectForEach()
+        public void StyleTable_HasTwentyStylesPerLinePlusStormslamAndAnEffectForEach()
         {
             var styles = Styles();
             Assert.That(styles, Has.Count.EqualTo(StormRemakeStyles.Count));
             Assert.That(styles.GroupBy(s => s.line).ToDictionary(g => g.Key, g => g.Count()),
-                Is.EquivalentTo(new Dictionary<string, int> { ["Hammer"] = 20, ["Axe"] = 20, ["Shields"] = 20 }));
+                Is.EquivalentTo(new Dictionary<string, int> { ["Hammer"] = 20, ["Axe"] = 20, ["Shields"] = 21 }));
             Assert.That(styles.Select(s => s.index), Is.EqualTo(Enumerable.Range(0, StormRemakeStyles.Count)));
             foreach (var style in styles)
             {
@@ -209,6 +209,41 @@ namespace DOL.UnitTests
             var handler = new StormSovereignHandler(owner, spell, new SpellLine("Combat Style Effects", "Combat Style Effects", "", false));
             handler.ApplyEffectOnTarget(corpse);
             Assert.That(StormTempest.Charges(owner), Is.EqualTo(charges));
+        }
+
+        [Test]
+        public void TempestPaidSpells_AreInstantAndFreeOnlyWithCharges()
+        {
+            var owner = NewPool();
+            int royalThunder = StormRemakeSpells.FirstId + 7 * 16 + StormRemakeSpells.RoyalThunder;
+            var spell = new Spell(new DbSpell { SpellID = royalThunder, Type = "StormSovereignAbility", Target = "Enemy", CastTime = 2.5, Power = 18, Range = 1500 }, 50);
+            var handler = new StormSovereignHandler(owner, spell, new SpellLine("Stormforged.Remake05", "Royal Thunder", "StormforgedCareer", true));
+            Assert.That(StormRemakeSpells.PaysWithTempest(royalThunder), Is.True);
+            Assert.That(handler.PowerCost(owner), Is.GreaterThan(0), "no Tempest: costs power");
+            StormTempest.Add(owner, 1);
+            Assert.That(handler.CalculateCastingTime(), Is.Zero);
+            Assert.That(handler.PowerCost(owner), Is.Zero);
+            foreach (int key in new[] { StormRemakeSpells.RoyalDecree, StormRemakeSpells.RallyToTheCrown, StormRemakeSpells.RunicArmament })
+                Assert.That(StormRemakeSpells.PaysWithTempest(StormRemakeSpells.FirstId + key), Is.False, $"key {key}");
+        }
+
+        [Test]
+        public void Tempest_TakeSpendsOnlyWhatItNeeds()
+        {
+            var owner = NewPool();
+            StormTempest.Add(owner, 3);
+            Assert.That(StormTempest.Take(owner, 1), Is.EqualTo(1));
+            Assert.That(StormTempest.Charges(owner), Is.EqualTo(2));
+            Assert.That(StormTempest.Take(owner, 5), Is.EqualTo(2));
+            Assert.That(StormTempest.Take(owner, 1), Is.Zero);
+        }
+
+        [Test]
+        public void Stormslam_IsAnAnytimeShieldStyleThatBuildsTempest()
+        {
+            var slam = Styles().Single(s => s.name == "Stormslam");
+            Assert.That((slam.line, slam.open, slam.index), Is.EqualTo(("Shields", "anytime", 60)));
+            Assert.That(StormRemakeStyles.Builds(60), Is.EqualTo(1));
         }
 
         [Test]

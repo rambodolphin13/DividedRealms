@@ -105,6 +105,16 @@ namespace DOL.GS.Spells
         public SummonStormWolf(GameLiving caster,Spell spell,SpellLine line):base(caster,spell,line) { }
         public override bool IsSummoningSpell=>true;
         public override string ShortDescription=>Spell.Description;
+        // One wolf: a recast used to replace the owner's pet link and leave the old wolf in the world, so wolves piled up.
+        public override bool CheckBeginCast(GameLiving selectedTarget,bool quiet)
+        {
+            if(Caster.ControlledBrain?.Body is { IsAlive: true, ObjectState: GameObject.eObjectState.Active })
+            {
+                if(!quiet) MessageToCaster("You already have a Storm Wolf. Release it first to call another.",DOL.GS.PacketHandler.eChatType.CT_SpellResisted);
+                return false;
+            }
+            return base.CheckBeginCast(selectedTarget,quiet);
+        }
         protected override IControlledBrain GetPetBrain(GameLiving owner)=>new StormWolfBrain(owner);
         protected override GameSummonedPet GetGamePet(INpcTemplate template)=>new StormWolf(template);
     }

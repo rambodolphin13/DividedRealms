@@ -7,7 +7,7 @@ namespace DOL.GS
 {
     public class StormSovereignEffect : MasterLevelEffect
     {
-        private long _lastProc;
+        private long _lastProc, _lastReversal;
         private GameLiving _marked;
         // Old royal keys; the Storm remake's Runic Armament, Runic Reversal and Hunter's Mark map onto 15, 18 and 17.
         private int Key => PendragonRules.IsRoyalRank(SpellHandler.Spell.ID) ? StormSovereignAbilities.Key(SpellHandler.Spell.ID) :
@@ -66,6 +66,11 @@ namespace DOL.GS
         {
             if(IsEnding || !IsActive || GameLoop.GameLoopTime<_lastProc || args is not AttackedByEnemyEventArgs { AttackData: var hit } ||
                 !hit.IsMeleeAttack || hit.Attacker==null || !hit.Attacker.IsAlive) return;
+            // Storm remake: Runic Armament carries Runic Reversal, so every parry or block returns lightning.
+            if(Remake && Key==15 && hit.AttackResult is eAttackResult.Parried or eAttackResult.Blocked && GameLoop.GameLoopTime>=_lastReversal) {
+                _lastReversal=GameLoop.GameLoopTime+1000;
+                StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2);
+            }
             if(Key==18 && (hit.AttackResult==eAttackResult.Parried || Remake && hit.AttackResult==eAttackResult.Blocked)) {
                 _lastProc=GameLoop.GameLoopTime+1000;
                 StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2);

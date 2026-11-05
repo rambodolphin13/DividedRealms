@@ -11,10 +11,14 @@ namespace DOL.GS.Spells
     public static class StormRemakeSpells
     {
         public const int FirstId = 63600;
-        public const int Keys = 7;
+        public const int Keys = 9;
 
+        // Runic Reversal (3) and Hunter's Mark (4) were merged away on 2026-11-04; their keys stay reserved.
         public const int RoyalDecree = 0, RallyToTheCrown = 1, RunicArmament = 2, RunicReversal = 3,
-            HuntersMark = 4, RoyalThunder = 5, Stormbreak = 6;
+            HuntersMark = 4, RoyalThunder = 5, Stormbreak = 6, WintersGrasp = 7, Hammerfall = 8;
+
+        /// <summary>With any Tempest these cast instantly and cost no power: the charges pay instead.</summary>
+        public static bool PaysWithTempest(int id) => Key(id) is RoyalThunder or Stormbreak or WintersGrasp or Hammerfall;
 
         public static bool Owns(int id) => id >= FirstId && id < FirstId + StormSovereignAbilities.Levels.Length * 16 && (id - FirstId) % 16 < Keys;
         public static int Key(int id) => Owns(id) ? (id - FirstId) % 16 : -1;
@@ -64,6 +68,19 @@ namespace DOL.GS.Spells
                         double damage = h.Spell.Damage * StormTempest.Bonus(StormTempest.Spend(h.Caster));
                         foreach (var enemy in h.Enemies(h.Caster, h.Spell.Radius))
                             StormSovereignAbilities.Strike(h, enemy, damage);
+                    });
+                case WintersGrasp:
+                    return Ability(false, (h, t) =>
+                    {
+                        StormTempest.Take(h.Caster, 1);
+                        StormSovereignAbilities.Strike(h, t, h.Spell.Damage, eDamageType.Cold);
+                        h.Cast(t, 1, eSpellType.SpeedDecrease, db => { db.Duration = 8; db.Value = 30; });
+                    });
+                case Hammerfall:
+                    return Ability(false, (h, t) =>
+                    {
+                        StormTempest.Take(h.Caster, 1);
+                        StormSovereignAbilities.Hammerfall((StormSovereignHandler)h, t);
                     });
                 default:
                     return Ability(true, (h, _) => h.Hold(h.Caster));

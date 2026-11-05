@@ -25,7 +25,7 @@ namespace DOL.GS.Spells
         public static int AbilityKey(int id) => StormRemakeSpells.Owns(id) ? 100 + StormRemakeSpells.Key(id) : Key(id);
         public static bool IsRankedAbility(int id) => PendragonRules.IsRoyalRank(id) || StormRemakeSpells.Owns(id);
         public static bool Toggle(int id) => PendragonRules.IsRoyalRank(id) && Key(id) is 6 or 13 or 14 or 15 or 22 || StormRemakeSpells.Toggle(id);
-        public static bool IsHammerfall(int id) => PendragonRules.IsRoyalRank(id) && Key(id) == 21;
+        public static bool IsHammerfall(int id) => PendragonRules.IsRoyalRank(id) && Key(id) == 21 || StormRemakeSpells.Key(id) == StormRemakeSpells.Hammerfall;
         public static bool HasVeil(GameLiving living) => living.effectListComponent.GetSpellEffects(eEffect.MasterLevel)
             .Any(effect => !effect.IsEnding && !effect.IsDisabled && PendragonRules.IsRoyalRank(effect.SpellHandler.Spell.ID) && Key(effect.SpellHandler.Spell.ID)==22);
         public static double Scale(int level) => Math.Clamp(level, 1, 50) / 50.0;
@@ -161,7 +161,7 @@ namespace DOL.GS.Spells
             new SovereignDamage(h.Caster,spell,h.SpellLine,critBonus).StartSpell(target);
         }
 
-        private static void Hammerfall(StormSovereignHandler h, GameLiving target)
+        internal static void Hammerfall(StormSovereignHandler h, GameLiving target)
         {
             var owner=h.Caster;
             if(target==null || !target.IsAlive || target.CurrentRegion!=owner.CurrentRegion ||
@@ -250,6 +250,10 @@ namespace DOL.GS.Spells
             Caster.Mana -= PowerCost(target);
             base.FinishSpellCast(target);
         }
+        // Storm remake: with Tempest, Royal Thunder, Stormbreak, Winter's Grasp and Hammerfall are instant and cost no power.
+        private bool TempestPays => StormRemakeSpells.PaysWithTempest(Spell.ID) && StormTempest.Charges(Caster) > 0;
+        public override int CalculateCastingTime() => TempestPays ? 0 : base.CalculateCastingTime();
+        public override int PowerCost(GameLiving target) => TempestPays ? 0 : base.PowerCost(target);
         public override void ApplyEffectOnTarget(GameLiving target)
         {
             // A Storm style whose hit already killed the target still builds its Tempest.
