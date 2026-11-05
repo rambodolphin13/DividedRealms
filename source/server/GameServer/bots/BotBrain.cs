@@ -2800,6 +2800,9 @@ namespace DOL.AI.Brain
 
         private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<object, BotBuffReservations<GameLiving>> BuffClaims = new();
 
+        /// <summary>A point-blank realm buff (no range, a radius around the caster): its need is judged on group members only.</summary>
+        public static bool AreaBuffSkipsPets(Spell spell) => spell != null && spell.Target == eSpellTarget.REALM && spell.IsPBAoE;
+
         private GameLiving FindRandomMissingRealmBuffTarget(Spell spell, int minimumRange = 0) =>
             FindRandomMissingRealmBuffTargetWithTier(spell, minimumRange, out _);
 
@@ -2832,7 +2835,12 @@ namespace DOL.AI.Brain
             // nothing for (acuity on a non-list-caster) are skipped. Ties are picked at random so
             // several buffers in one group spread out instead of all aiming at the same member.
             List<GameLiving> best = new();
-            foreach (GameLiving target in members.Concat(BotGroupPetBuffTargets.Enumerate(BotBody, spell)))
+            // Night 2026-11-04: 1,600 of 2,482 BOT_BUFF_RECAST_LOOP lines were point-blank baseline buffs (Cleric 75007/75011,
+            // Druid 75095/75101, Shaman 75365/75366) recast for a pet or charmed monster they never held on to ("abomination",
+            // "grove protector", "hunter's avatar", "corrosive slime"). Such a buff is cast for the group's members; their
+            // pets within its radius take it along (SpellHandler.GetGroupAndPets), so a pet alone never calls for a recast.
+            IEnumerable<GameLiving> petTargets = AreaBuffSkipsPets(spell) ? [] : BotGroupPetBuffTargets.Enumerate(BotBody, spell);
+            foreach (GameLiving target in members.Concat(petTargets))
             {
                 if (target == null || !target.IsAlive || !Body.IsWithinRadius(target, range) ||
                     !NeedsBuff(target, spell) || (claims?.IsReserved(target, family, now) ?? false))
@@ -2903,6 +2911,8 @@ namespace DOL.AI.Brain
 
         private GameLiving FindMissingPartyPetBuffTarget(Spell spell)
         {
+            if (AreaBuffSkipsPets(spell))
+                return null;
             GameNPC pet = BotGroupPetBuffTargets.Enumerate(BotBody, spell)
                 .FirstOrDefault(candidate => !HasBuffForUpkeep(candidate, spell));
             // Native group spells fan out from the caster; realm buffs target one pet.
