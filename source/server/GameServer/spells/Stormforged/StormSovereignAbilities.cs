@@ -115,7 +115,7 @@ namespace DOL.GS.Spells
                     return Ability(false, (h,_) => { foreach (var enemy in h.Enemies(h.Caster,h.Spell.Radius)) Strike(h,enemy,h.Spell.Damage); });
                 case 5:
                     return Ability(false, (h,_) => h.Field(new Point3D(h.Caster.X,h.Caster.Y,h.Caster.Z),new MasterLevelFieldOptions {
-                        Name=h.Spell.Name, Model=3457, RealmColour=true, Interval=3000, SuppressEffect=true, PulseEffect=h.Spell.ClientEffect,
+                        Name=h.Spell.Name, Model=3457, Interval=3000, SuppressEffect=true, PulseEffect=h.Spell.ClientEffect,
                         OnPulse=(f,t)=>Strike(f.Ability,t,f.Ability.Spell.Damage) }));
                 case 7:
                     return Ability(true, GroupBuff, MLMod.Speed(1.15));

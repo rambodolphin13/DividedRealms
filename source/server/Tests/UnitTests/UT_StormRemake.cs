@@ -275,16 +275,19 @@ namespace DOL.UnitTests
             Assert.That(StormRegalia.DefenseTempest(null), Is.EqualTo(1), "no set, one charge per block or parry");
         }
 
-        [Test]
-        public void EyeOfTheStorm_TakesTheCastersRealmColour()
+        [TestCase(eRealm.Albion)]
+        [TestCase(eRealm.Midgard)]
+        [TestCase(eRealm.Hibernia)]
+        public void GroundFields_TakeTheCastersRealmColour(eRealm realm)
         {
-            // Realm None drew the green Hibernian storm (storm_base_hib); a Midgard caster's storm is the blue storm_base_mid.
+            // Storms, wards and runes draw their colour by realm; realm None drew the green Hibernian look for everyone.
             var owner = NewPool();
-            owner.Realm = eRealm.Midgard;
+            owner.Realm = realm;
             var spell = new Spell(new DbSpell { SpellID = 62400 + 7 * 32 + 5, Type = "StormSovereignAbility", Target = "Self", Radius = 350, Duration = 30 }, 50);
             var handler = new StormSovereignHandler(owner, spell, new SpellLine("Stormforged.Sovereign05", "Eye of the Storm", "StormforgedCareer", true));
-            Assert.That(new MasterLevelField(owner, handler, new MasterLevelFieldOptions { RealmColour = true }).Realm, Is.EqualTo(eRealm.Midgard));
-            Assert.That(new MasterLevelField(owner, handler, new MasterLevelFieldOptions()).Realm, Is.EqualTo(eRealm.None), "other Master Level fields unchanged");
+            var field = new MasterLevelField(owner, handler, new MasterLevelFieldOptions { Model = 2583 });
+            Assert.That(field.Realm, Is.EqualTo(realm));
+            Assert.That(field.Flags.HasFlag(GameNPC.eFlags.PEACE), Is.True, "still untargetable");
         }
 
         [Test]

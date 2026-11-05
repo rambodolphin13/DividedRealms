@@ -1266,11 +1266,6 @@ namespace DOL.GS.Spells
     {
         public string Name { get; init; } = "Field";
         public ushort Model { get; init; } = 3457;
-        /// <summary>
-        /// Model 3457 (Storm Ground Target) draws its storm from the object's realm: storm_base_alb, _mid or _hib
-        /// (moneffectsets 60-62). Realm None draws the green Hibernian storm, so a caster's storm can take the caster's realm.
-        /// </summary>
-        public bool RealmColour { get; init; }
         public byte Size { get; init; }
         /// <summary>Pulse every this many ms; the spell's Frequency or 4 s when 0.</summary>
         public int Interval { get; init; }
@@ -1324,7 +1319,9 @@ namespace DOL.GS
             Model = options.Model;
             if (options.Size > 0)
                 Size = options.Size;
-            Realm = options.RealmColour ? owner.Realm : eRealm.None;
+            // The storm (3457), ward and rune objects draw their look from the object's realm (objects.csv realm effect
+            // sets, e.g. storm_base_alb/_mid/_hib); realm None drew the Hibernian green for everyone. PEACE keeps it untargetable.
+            Realm = owner.Realm;
             Flags |= eFlags.PEACE;
             if (options.Hidden)
                 Flags |= eFlags.STEALTH;
