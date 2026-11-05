@@ -909,7 +909,7 @@ namespace DOL.GS.PacketHandler
 			ushort heading = mount?.ObjectState is GameObject.eObjectState.Active ? mount.ObjectID :
 				!moving && target?.ObjectState is GameObject.eObjectState.Active ? bot.GetHeading(target) : bot.Heading;
 			byte action = (byte) (bot.IsStealthed ? PlayerPositionUpdateHandler.ActionFlags.DIVING_IN__STEALTHED_OUT : 0);
-			byte state = BotPlayerPresentation.StateFlags(!bot.IsAlive, mount != null, (bot.Flags & GameNPC.eFlags.FLYING) != 0, bot.IsUnderwater);
+			byte state = BotPlayerPresentation.StateFlags(!bot.IsAlive, mount != null, (bot.Flags & GameNPC.eFlags.FLYING) != 0, BotPlayerPresentation.Swimming(bot));
 			byte health = (byte) (bot.HealthPercent + (bot.attackComponent.AttackState ? 0x80 : 0));
 
 			if (udp)

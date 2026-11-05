@@ -46,6 +46,9 @@ namespace DOL.GS
         /// <summary>The session id clients know this bot by while it is shown as a player, 0 when it has none (BotPlayerPresentation).</summary>
         internal ushort PresentedSession { get; set; }
         internal ushort PresentedRegion { get; set; }
+        /// <summary>Where <see cref="SwimmingForClients"/> was last worked out, and the answer (BotPlayerPresentation.Swimming).</summary>
+        internal (ushort Zone, int X, int Y, int Z) SwimCheckedAt { get; set; }
+        internal bool SwimmingForClients { get; set; }
         public string ClassName { get; private set; }
         public new string InternalID { get; set; }
         public byte ClassId { get; set; }
