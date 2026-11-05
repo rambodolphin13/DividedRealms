@@ -56,6 +56,43 @@ public sealed partial class AutonomousWorldBotController
         return true;
     }
 
+    /// <summary>
+    /// Night 2026-11-04: 104 watchdog rescues in Darkness Falls (65 Hibernians, 39 Albions "Fighting" an enemy bot with
+    /// inCombat=False) and 5,538 AUTONOMOUS_UNREACHABLE_TARGET lines: the two sides stood on floors about 4,950 units
+    /// apart. DropStaleFight left every enemy bot alone, and the frontier threat scan picked them again after each
+    /// two-minute ignore. In a dungeon an enemy more than <see cref="CrossFloorHeight"/> above or below is not a target,
+    /// unless it is firing on this realm from at most <see cref="CrossFloorFiringHeight"/> away (a ledge, not a floor).
+    /// </summary>
+    public const int CrossFloorHeight = 300;
+    public const int CrossFloorFiringHeight = 1000;
+    private const long CrossFloorIgnoreMilliseconds = 10 * 60_000;
+
+    public static bool IsCrossFloorEnemy(bool inDungeon, int heightDifference, bool firingOnRealm) =>
+        inDungeon && Math.Abs(heightDifference) > CrossFloorHeight &&
+        !(firingOnRealm && Math.Abs(heightDifference) <= CrossFloorFiringHeight);
+
+    private static bool InDungeon(GameLiving living) => living.CurrentRegion?.IsDungeon == true || living.CurrentZone?.IsDungeon == true;
+
+    private bool DropCrossFloorEnemy(BotBrain brain, GameBot bot, GameLiving target)
+    {
+        if (target == null || !target.IsAlive || target.Realm == bot.Realm || target.Realm == eRealm.None ||
+            AutonomousRealmRaid.GetView(bot.Group) != null ||
+            !IsCrossFloorEnemy(InDungeon(bot), target.Z - bot.Z, FiringOnRealm(bot, target)))
+            return false;
+        long now = GameLoop.GameLoopTime;
+        _ignoredPvpTargets[target] = now + CrossFloorIgnoreMilliseconds;
+        brain.RemoveFromAggroList(target);
+        bot.StopAttack();
+        bot.StopMovingOnPath();
+        if (bot.TargetObject == target)
+            bot.TargetObject = null;
+        if (!brain.HasAggro && brain.FSM.GetCurrentState()?.StateType == eFSMStateType.AGGRO)
+            brain.FSM.SetCurrentState(eFSMStateType.IDLE);
+        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_CROSS_FLOOR_ENEMY bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} " +
+                 $"target=\"{target.Name}\" heightAbove={target.Z - bot.Z} region={bot.CurrentRegionID} position={bot.X},{bot.Y},{bot.Z}");
+        return true;
+    }
+
     private bool IsIgnoredPvpTarget(GameLiving target) =>
         _ignoredPvpTargets.TryGetValue(target, out long until) && until > GameLoop.GameLoopTime;
 
@@ -129,7 +166,8 @@ public sealed partial class AutonomousWorldBotController
         GameBot bot = brain?.BotBody;
         // L4: a relic carrier does not go looking for fights; Tick decides whether it is cornered.
         if (GameRelic.IsPlayerCarryingRelic(bot)) return false;
-        if (bot?.IsAutonomousWorldBot == true && IsBattleground(bot) && (BreakPvpStalemate(brain, bot) || BreakUnreachableTarget(brain, bot))) return false;
+        if (bot?.IsAutonomousWorldBot == true && IsBattleground(bot) && (DropCrossFloorEnemy(brain, bot, bot.TargetObject as GameLiving) ||
+            BreakPvpStalemate(brain, bot) || BreakUnreachableTarget(brain, bot))) return false;
         bool defending = AutonomousRvrDefense.IsCommittedDefender(bot);
         bool siegeFighter = AutonomousRvrDefense.IsCommittedSiegeFighter(bot);
         GameLiving previousEngine = defending ? bot.TargetObject as GameSiegeWeapon ?? _siegeWeapon?.TargetObject as GameSiegeWeapon : null;
@@ -144,7 +182,9 @@ public sealed partial class AutonomousWorldBotController
         if (!nav.IsAvailable || !nav.HasNavmesh(bot.CurrentZone)) return false;
         // Cheap rejections first (most nearby livings are friendly bots); the area lookup last
         // (IsSafeArea/GetAreasOfZone were ~64 MB per 40 s of allocations in run 11).
+        bool inDungeon = InDungeon(bot);
         bool Eligible(GameLiving target) => target != bot && !target.IsStealthed && !IsIgnoredPvpTarget(target) &&
+            !IsCrossFloorEnemy(inDungeon, target.Z - bot.Z, FiringOnRealm(bot, target)) &&
             target.ObjectState == GameObject.eObjectState.Active && target.IsAlive &&
             target.Realm != bot.Realm && target.Realm != eRealm.None && target.CurrentRegionID == bot.CurrentRegionID &&
             AutonomousRvrTargetPolicy.IsEligible(bot.Realm, target.Realm, target.IsAlive,

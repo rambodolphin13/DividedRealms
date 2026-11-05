@@ -2779,6 +2779,9 @@ namespace DOL.GS
             // With no current target the brain still holds its aggro list: look at its top entry too.
             GameNPC target = bot.TargetObject as GameNPC ??
                 brain.HighestAggroTarget as GameNPC;
+            // An enemy realm's bot on another floor of a dungeon (see DropCrossFloorEnemy).
+            if (target is GameBot enemyBot && DropCrossFloorEnemy(brain, bot, enemyBot))
+                return true;
             // PvE monsters only: never an enemy realm's bot, guard, keep door or siege target.
             // Realm raids keep their own boss rules (immune phases are part of those encounters).
             if (target == null || !target.IsAlive || target.Realm != eRealm.None || target is GameBot ||
