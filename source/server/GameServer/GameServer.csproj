@@ -6,6 +6,7 @@
     <ItemGroup>
         <EmbeddedResource Include="gameutils/modern-races-1130.json" LogicalName="DOL.GS.ModernRaceRegistrations.json" />
         <EmbeddedResource Include="gameutils/BotWatch.html" LogicalName="DOL.GS.BotWatch.html" />
+        <EmbeddedResource Include="world/data/zone_water.json" LogicalName="DOL.GS.ZoneWater.json" />
     </ItemGroup>
     <ItemGroup>
         <!-- The Passport Desk moves characters by the same rules as the launcher. -->
