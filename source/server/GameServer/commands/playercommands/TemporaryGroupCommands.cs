@@ -291,7 +291,7 @@ namespace DOL.GS.Commands
             eGender gender = Random.Shared.Next(2) == 0 ? eGender.Male : eGender.Female;
             AutonomousBotIdentityGenerator.Identity identity =
                 AutonomousBotIdentityGenerator.GenerateForClass(player.Realm, gender, characterClass);
-            byte gearLevel = player.Level == 50 ? (byte)50 :
+            byte gearLevel = player.Level >= 50 ? (byte)50 :
                 (byte)Random.Shared.Next(Math.Max(1, player.Level - 10), player.Level + 1);
             GameBot helper;
 
