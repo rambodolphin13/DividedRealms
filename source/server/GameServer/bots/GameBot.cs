@@ -3111,6 +3111,15 @@ namespace DOL.GS
             if (IsCasting || castingComponent.HasPendingSkillRequests)
                 return true;
 
+            if (BotArcheryShots.HoldShotUnderMeleePressure(IsBeingInterruptedByOther,
+                    attackComponent?.AttackerTracker?.Attackers?.OfType<GameLiving>().Any(attacker => attacker.IsAlive &&
+                        attacker != this && IsWithinRadius(attacker, MeleeAttackRange + 100)) == true) &&
+                Brain is BotBrain archerBrain)
+            {
+                archerBrain.RequestArcherMeleeFallback(GameLoop.GameLoopTime + BotArcheryShots.MeleePressureFallbackMilliseconds);
+                return true;
+            }
+
             Spell shot = BotArcheryShots.Choose(ArcheryShots, GetDistanceTo(target), Group != null, EndurancePercent,
                 spell => spell.CalculateEffectiveRange(this), spell => GetSkillDisabledDuration(spell) <= 0);
             if (shot == null)

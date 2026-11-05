@@ -4800,6 +4800,18 @@ namespace DOL.AI.Brain
             if (BotClassKitPolicy.Handles(spell))
                 return BotClassKitPolicy.UpkeepTarget(BotBody, spell) != null && Body.CastSpell(spell, m_mobSpellLine);
 
+            // A pet spell goes on the pet: none alive and near, no cast, and the pet (not the bot) is checked for it. Night
+            // playtest 2026-11-04: Hunters cast Wolfen Frenzy 23 times with no pet ("You must cast this spell on a creature
+            // you are controlling.").
+            GameLiving holder = Body;
+            if (IsPetTargetSpell(spell.Target))
+            {
+                GameLiving pet = Body.ControlledBrain?.Body;
+                if (!PetSpellHasHolder(pet?.IsAlive == true, pet != null && Body.IsWithinRadius(pet, Math.Max(350, spell.Range))))
+                    return false;
+                holder = pet;
+            }
+
             bool castSpell = false;
 
             switch (spell.SpellType)
@@ -4847,17 +4859,26 @@ namespace DOL.AI.Brain
                 case eSpellType.OffensiveProc:
                     if (spell.SpellType == eSpellType.CombatSpeedBuff)
                     {
-                        if (Body.TargetObject != null && !Body.IsWithinRadius(Body.TargetObject, Body.MeleeAttackRange))
+                        // The holder (the bot, or its pet for a pet haste) must be in melee with something.
+                        GameObject fightTarget = holder == Body ? Body.TargetObject : holder.TargetObject;
+                        if (holder != Body && fightTarget == null)
+                            break;
+                        if (fightTarget != null && !holder.IsWithinRadius(fightTarget, holder.MeleeAttackRange + (holder == Body ? 0 : 50)))
                             break;
                     }
 
-                    if (!LivingHasEffect(Body, spell))
+                    if (!LivingHasEffect(holder, spell))
                         castSpell = true;
                     break;
             }
 
             return castSpell && Body.CastSpell(spell, m_mobSpellLine);
         }
+
+        public static bool IsPetTargetSpell(eSpellTarget target) => target is eSpellTarget.PET or eSpellTarget.CONTROLLED;
+
+        /// <summary>A pet spell has someone to land on: a living pet within reach. Pure.</summary>
+        public static bool PetSpellHasHolder(bool petAlive, bool petInReach) => petAlive && petInReach;
 
         protected virtual bool CheckInstantOffensiveSpells(Spell spell)
         {
