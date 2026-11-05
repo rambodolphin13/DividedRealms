@@ -126,6 +126,19 @@ public static class AutonomousBotRealmPointRewards
                     $"at={victim.X},{victim.Y},{victim.Z}");
     }
 
+    /// <summary>
+    /// RVR_PLAYER_REWARD: what a real player got for a gamebot kill, and why it was nothing when it was. Discord report
+    /// 2026-11-05 (Abermenai): "no RPs or XP from any kill", and no log could say which rule stopped it.
+    /// </summary>
+    private static void LogPlayerReward(GameBot victim, GamePlayer player, string outcome, int realmPoints, int bountyPoints,
+        long experience, bool worth, double damagePercent, string reason)
+    {
+        if (!RvrLog.IsInfoEnabled) return;
+        RvrLog.Info($"RVR_PLAYER_REWARD player={player.Name} level={player.Level} victim={victim.Name} victimLevel={victim.Level} " +
+                    $"outcome={outcome} rp={realmPoints} bp={bountyPoints} xp={experience} worth={worth} " +
+                    $"damage={damagePercent * 100:0.#}% region={victim.CurrentRegionID}" + (reason == null ? "" : $" reason=\"{reason}\""));
+    }
+
     public static void Award(GameBot killedBot, GameObject killer)
     {
         LogRvrDeath(killedBot, killer);
@@ -158,6 +171,12 @@ public static class AutonomousBotRealmPointRewards
                 : pair.Value;
         }
 
+        // A hostile player fighting this bot with no damage on record (a full heal clears the list) gets nothing at all.
+        if (RvrLog.IsInfoEnabled)
+            foreach (GamePlayer nearby in killedBot.GetPlayersInRadius(WorldMgr.MAX_EXPFORKILL_DISTANCE))
+                if (nearby.Realm != killedBot.Realm && nearby.TargetObject == killedBot && !hostileContributors.ContainsKey(nearby))
+                    LogPlayerReward(killedBot, nearby, "uncredited", 0, 0, 0, isWorthRealmPoints, 0, "no damage on record");
+
         double totalDamage = hostileContributors.Sum(pair => pair.Value);
         if (totalDamage <= 0)
             return;
@@ -174,10 +193,13 @@ public static class AutonomousBotRealmPointRewards
             // Persistent gamebots remain part of the damage denominator, just
             // like another real participant, but this path only pays connected
             // players. Temporary companions have already resolved to the owner.
-            if (pair.Key is not GamePlayer player ||
-                player.ObjectState is not GameObject.eObjectState.Active ||
+            if (pair.Key is not GamePlayer player)
+                continue;
+            if (player.ObjectState is not GameObject.eObjectState.Active ||
                 !player.IsWithinRadius(killedBot, WorldMgr.MAX_EXPFORKILL_DISTANCE))
             {
+                LogPlayerReward(killedBot, player, "skipped", 0, 0, 0, isWorthRealmPoints, pair.Value / totalDamage,
+                    player.ObjectState is not GameObject.eObjectState.Active ? "not in the world" : "out of reward range");
                 continue;
             }
 
@@ -256,6 +278,8 @@ public static class AutonomousBotRealmPointRewards
                 bool soloKill = damagePercent >= 1.0 && contributorCount == 1;
                 player.UpdateKillStatsOnPlayerKill(killedBot.Realm, deathBlow, soloKill, realmPointsEarned);
                 BotTesterLog.PvpReward(killedBot, player, realmPointsEarned, bountyPointsPaid, experiencePaid, isWorthRealmPoints, damagePercent);
+                LogPlayerReward(killedBot, player, "paid", realmPointsEarned, bountyPointsPaid, experiencePaid, isWorthRealmPoints,
+                    damagePercent, !isWorthRealmPoints ? "killed recently" : realmPointsEarned == 0 ? "realm point share rounds to 0" : null);
             }
         }
     }
