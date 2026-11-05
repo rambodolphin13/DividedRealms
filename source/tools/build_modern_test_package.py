@@ -60,7 +60,9 @@ WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
 DARKNESS_FALLS_PROOFS = Path(__file__).resolve().parents[1] / 'server/GameServer/bots/autonomous/data/darkness_falls_navigation_proofs.json'
 # host-for-friends.json and the firewall script are the developer's Host for Friends state (friends' addresses, local paths).
 RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json',
-                      'host-for-friends.json', 'host-for-friends-firewall.cmd', 'serverconfig.before-host-for-friends.xml'}
+                      'host-for-friends.json', 'host-for-friends-firewall.cmd', 'serverconfig.before-host-for-friends.xml',
+                      # The developer's overlay choices: shipped, they would switch the fight card and panels off for everyone.
+                      'overlay.json'}
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json',
                   'Join Friend.cmd')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}
@@ -68,6 +70,20 @@ TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.cs
 # package's world doesn't. mount_67 rides mount 89, the saddled Chimera (tools/horses/install_chimera_mount.py adds it
 # to gamedata.mpk and figures/, neither of which client-patch.json patches).
 WITHHELD_MERCHANT_ITEMS = ('mount_67',)
+# Models only the developer's client has, for the same reason, mapped to the stock model the package's world uses instead,
+# and the settings that would swap them in. Empty since the fishing rod (objects 4927 and 4928) is in the client patch
+# (make_client_patch.py rod_entries); a new private model goes here until the patch adds it.
+PRIVATE_MODELS: dict[int, int] = {}
+STOCK_SERVER_PROPERTIES: dict[str, str] = {}
+
+
+def use_stock_models(con, models: dict | None = None, properties: dict | None = None) -> dict:
+    """Puts the stock look back on everything that names a private model, and the settings that would swap it in again."""
+    templates = sum(con.execute('UPDATE ItemTemplate SET Model = ? WHERE Model = ?', (stock, private)).rowcount
+                    for private, stock in (PRIVATE_MODELS if models is None else models).items())
+    changed = sum(con.execute('UPDATE ServerProperty SET Value = ? WHERE `Key` = ? AND Value <> ?', (value, key, value)).rowcount
+                     for key, value in (STOCK_SERVER_PROPERTIES if properties is None else properties).items())
+    return dict(item_templates=templates, server_properties=changed)
 
 START_CMD = r'''@echo off
 setlocal
@@ -136,6 +152,9 @@ def sha(path: Path) -> str:
 
 def keep_runtime(relative: Path) -> bool:
     if relative.parts[0] in RUNTIME_SKIP_DIRS or relative.name in RUNTIME_SKIP_NAMES:
+        return False
+    # Any other client copy (client-modern-armortest held a whole retail client) and the developer's own scripts for it.
+    if relative.parts[0].lower().startswith('client-') or 'test client' in relative.name.lower():
         return False
     return release.include(relative)
 
@@ -252,6 +271,7 @@ def build(install: Path, pristine: Path, classic: Path, repo: Path, out: Path, l
         sluaghbinder = remove_sluaghbinder.apply(con)
         withheld = {item: con.execute('DELETE FROM MerchantItem WHERE ItemTemplateID = ?', (item,)).rowcount
                     for item in WITHHELD_MERCHANT_ITEMS}
+        stock_models = use_stock_models(con)
         con.commit()
         world = release.verify_clean(con, policy, defaults)
     con.close()     # the world file is renamed below
@@ -319,7 +339,7 @@ def build(install: Path, pristine: Path, classic: Path, repo: Path, out: Path, l
     files = {p.relative_to(out).as_posix(): sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
     (out / 'PACKAGE MANIFEST.sha256').write_text(''.join(f'{h}  {n}\n' for n, h in files.items()), encoding='utf-8')
     report = dict(built_utc=datetime.now(timezone.utc).isoformat(), label=label, runtime_files_copied=len(copied),
-                  world=world, world_data=world_data, world_update={f'{previous} -> {release_version}': world_update}, sluaghbinder=sluaghbinder, withheld_merchant_items=withheld, replaced=replaced, dotnet=version,
+                  world=world, world_data=world_data, world_update={f'{previous} -> {release_version}': world_update}, sluaghbinder=sluaghbinder, withheld_merchant_items=withheld, stock_models=stock_models, replaced=replaced, dotnet=version,
                   client_patch={f['Path']: [f['InputSha256'], f['OutputSha256']] for f in patch['Files']}, files=len(files))
     return report
 

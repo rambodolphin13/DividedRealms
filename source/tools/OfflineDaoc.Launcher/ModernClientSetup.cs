@@ -17,6 +17,8 @@ public static class ModernClientSetup
     public const string IncompleteMarker = "setup-in-progress.txt";
     // The player's own client folder, so a later release can patch the copy again without asking.
     public const string SourceFile = "client-source.txt";
+    // The Eden client's own DLL: a folder with it has Eden's versions of game files the patch needs stock.
+    public const string EdenMarker = "eden.dll";
 
     // The same files source/tools/bundle_modern_client.py leaves out of a client copy.
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { "logs", "screenshots", "backups", "cache" };
@@ -26,12 +28,13 @@ public static class ModernClientSetup
 
     public sealed record Patch(int Format, string ClientVersion, PatchedFile[] Files);
     public sealed record PatchedFile(string Path, string InputSha256, string OutputSha256, long OutputSize, Edit[] Edits,
-        string? From = null, string? Member = null)
+        string? From = null, string? Member = null, MemberEdits[]? Members = null)
     {
         /// <summary>The stock file InputSha256 is the hash of.</summary>
         public string InputPath => From ?? Path;
     }
     public sealed record Edit(long At, long Remove, string Insert);
+    public sealed record MemberEdits(string Member, Edit[] Edits);
 
     public static Patch Load(string runtime)
     {
@@ -110,6 +113,67 @@ public static class ModernClientSetup
             File.WriteAllText(Path.Combine(client, SourceFile), Path.GetFullPath(source));
     }
 
+    /// <summary>
+    /// Repairs a client copy from the player's own client (<paramref name="source"/>, only read): every patched file is built
+    /// again from its pristine file, and every other game file that is missing or differs from the player's client is copied
+    /// again. Files only the copy has (the game's settings and character layouts, user.dat) are left alone. Every repaired
+    /// file is written beside its target and then swapped in. Returns how many files were patched again and restored.
+    /// </summary>
+    public static (int Repatched, int Restored) Repair(string client, string source, Patch patch,
+        IProgress<(long Done, long Total, string File)>? progress, CancellationToken cancel)
+    {
+        client = Path.GetFullPath(client);
+        source = Path.GetFullPath(source);
+        if (CheckSource(source, patch) is { } problem)
+            throw new InvalidDataException(problem);
+        var patched = new HashSet<string>(patch.Files.Where(f => f.From == null).Select(f => f.Path.Replace('/', '\\')),
+            StringComparer.OrdinalIgnoreCase);
+        var files = Files(source).ToList();
+        long total = files.Sum(f => new FileInfo(f).Length), done = 0;
+        int restored = 0, repatched = 0;
+        foreach (string path in files)
+        {
+            cancel.ThrowIfCancellationRequested();
+            string relative = Path.GetRelativePath(source, path);
+            progress?.Report((done, total, relative));
+            done += new FileInfo(path).Length;
+            if (patched.Contains(relative))
+                continue;
+            string target = Path.Combine(client, relative);
+            if (File.Exists(target) && new FileInfo(target).Length == new FileInfo(path).Length &&
+                Hash(target).Equals(Hash(path), StringComparison.OrdinalIgnoreCase))
+                continue;
+            Swap(target, File.ReadAllBytes(path));
+            restored++;
+        }
+        foreach (var file in patch.Files)
+        {
+            cancel.ThrowIfCancellationRequested();
+            string target = Path.Combine(client, file.Path);
+            if (File.Exists(target) && Hash(target).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
+                continue;
+            Swap(target, Apply(File.ReadAllBytes(Path.Combine(source, file.InputPath)), file));
+            repatched++;
+        }
+        if (Stale(client, patch).FirstOrDefault() is { } wrong)
+            throw new InvalidDataException($"The patched {wrong.Path} doesn't verify.");
+        File.WriteAllText(Path.Combine(client, SourceFile), source);
+        File.Delete(Path.Combine(client, IncompleteMarker));
+        progress?.Report((total, total, ""));
+        return (repatched, restored);
+    }
+
+    private static void Swap(string target, byte[] data)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        string temporary = target + ".repair";
+        File.WriteAllBytes(temporary, data);
+        if (File.Exists(target))
+            File.Replace(temporary, target, null);
+        else
+            File.Move(temporary, target);
+    }
+
     /// <summary>Null when <paramref name="source"/> is a pristine client this patch accepts, otherwise why it isn't.</summary>
     public static string? CheckSource(string source, Patch patch)
     {
@@ -121,8 +185,13 @@ public static class ModernClientSetup
             if (!File.Exists(path))
                 return $"That client has no {file.InputPath}.";
             if (!Hash(path).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
-                return $"That client's {file.InputPath} isn't the {patch.ClientVersion} build this game is made for, so it can't be patched. " +
-                       "It may be a newer or modified client. Nothing was changed.";
+                return File.Exists(Path.Combine(source, EdenMarker))
+                    ? $"That Dark Age of Camelot folder was changed by the Eden client: its {file.InputPath} (and other files) are Eden's " +
+                      "versions, and the live patcher doesn't put the originals back. Choose a folder with an unchanged " +
+                      $"{patch.ClientVersion} client, or install Dark Age of Camelot again into a new folder and choose that one. " +
+                      "Nothing was changed."
+                    : $"That client's {file.InputPath} isn't the {patch.ClientVersion} build this game is made for, so it can't be patched. " +
+                      "It may be a newer or modified client. Nothing was changed.";
         }
         return null;
     }
@@ -132,21 +201,32 @@ public static class ModernClientSetup
     {
         if (!Convert.ToHexString(SHA256.HashData(input)).Equals(file.InputSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"{file.InputPath} isn't the pristine client file.");
-        byte[] result = file.Member == null ? Splice(input, file) : WithMember(input, Splice(MemberOf(input, file.Member), file), file.Member);
+        byte[] result;
+        if (file.Members is { Length: > 0 })
+        {
+            // Several files inside one archive (the fishing rod's catalog rows), edited in order over the archive so far.
+            result = input;
+            foreach (var part in file.Members)
+                result = WithMember(result, Splice(MemberOf(result, part.Member), part.Edits, file.Path), part.Member);
+        }
+        else
+            result = file.Member == null ? Splice(input, file) : WithMember(input, Splice(MemberOf(input, file.Member), file), file.Member);
         if (result.Length != file.OutputSize ||
             !Convert.ToHexString(SHA256.HashData(result)).Equals(file.OutputSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Patching {file.Path} didn't give the expected file.");
         return result;
     }
 
-    private static byte[] Splice(byte[] input, PatchedFile file)
+    private static byte[] Splice(byte[] input, PatchedFile file) => Splice(input, file.Edits, file.Path);
+
+    private static byte[] Splice(byte[] input, Edit[] edits, string path)
     {
         using var output = new MemoryStream(input.Length);
         long position = 0;
-        foreach (var edit in file.Edits)
+        foreach (var edit in edits)
         {
             if (edit.At < position || edit.At + edit.Remove > input.Length)
-                throw new InvalidDataException($"The client patch for {file.Path} is damaged.");
+                throw new InvalidDataException($"The client patch for {path} is damaged.");
             output.Write(input, (int)position, (int)(edit.At - position));
             output.Write(Convert.FromBase64String(edit.Insert));
             position = edit.At + edit.Remove;

@@ -163,6 +163,10 @@ class ClientPatchTests(unittest.TestCase):
     def test_the_real_client_patch_rebuilds_the_test_client(self):
         if not (PRISTINE / 'game.dll').is_file() or not (CLASSIC / 'zones/zone276').is_dir():
             self.skipTest('No pristine 1.130 and classic clients on this machine')
+        try:
+            import numpy  # noqa: F401  (the fishing rod's mesh code)
+        except ImportError:
+            self.skipTest('No numpy for the fishing rod (run with the World Workshop build dependencies on PYTHONPATH)')
         patch = m.build(PRISTINE, CLASSIC)
         self.assertEqual([f['Path'] for f in patch['Files']],
                          ['game.dll', 'pregame/character_creation.xml', 'pregame/splash.mpk', 'zones/zones.mpk',
@@ -170,7 +174,22 @@ class ClientPatchTests(unittest.TestCase):
                           'zones/zone276/dat276.mpk', 'zones/zone276/sounds.dat',
                           'zones/zone000/dat000.mpk', 'zones/zone000/csv000.mpk',
                           'zones/zone003/dat003.mpk', 'zones/zone003/csv003.mpk',
-                          'zones/zone206/dat206.mpk', 'zones/zone206/csv206.mpk'])
+                          'zones/zone206/dat206.mpk', 'zones/zone206/csv206.mpk',
+                          'items/offline_fishrod01.nif', 'gamedata.mpk'])
+        # The fishing rod: only our vertex positions and our three catalog rows ship, and every other catalog is untouched.
+        rod, game = patch['Files'][-2:]
+        self.assertLess(sum(len(base64.b64decode(e['Insert'])) for e in rod['Edits']), 1000)
+        self.assertEqual([part['Member'] for part in game['Members']], ['objects.csv', 'items.csv'])
+        added = [line.split(',', 1)[0] for part in game['Members'] for e in part['Edits']
+                 for line in base64.b64decode(e['Insert']).decode('latin1').strip('\r\n').split('\r\n')]
+        self.assertEqual(added, ['4927', '4928', '3085'])
+        stock_game = (PRISTINE / 'gamedata.mpk').read_bytes()
+        patched_game = m.apply(stock_game, game)
+        archive.verify_memory_image(patched_game)
+        before, after = archive.read(stock_game)[1], archive.read(patched_game)[1]
+        self.assertEqual([e.name for e in before], [e.name for e in after])
+        self.assertEqual([e.data for e in before if e.name.lower() not in m.ROD_CATALOGS],
+                         [e.data for e in after if e.name.lower() not in m.ROD_CATALOGS])
         game = patch['Files'][0]
         self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '39d82bb0'))
         # The stock 1.130 loading screen in, the Divided Realms splash out, in one edit.
@@ -195,7 +214,8 @@ class ClientPatchTests(unittest.TestCase):
         self.assertLess(sum(f['OutputSize'] for f in patch['Files'][6:8]), 25000)
         if MODERN_TEST.is_dir():
             # The test client keeps its hand-installed classic zone table until it is set up from this patch.
-            for f in [f for f in patch['Files'] if f['Path'] != 'zones/zones.mpk' and f.get('Member') != m.BOUND]:
+            # Its gamedata.mpk got the rod rows from the hand installer (compressed differently, and with other private art).
+            for f in [f for f in patch['Files'] if f['Path'] not in ('zones/zones.mpk', m.GAMEDATA) and f.get('Member') != m.BOUND]:
                 self.assertEqual(hashlib.sha256((MODERN_TEST / f['Path']).read_bytes()).hexdigest(), f['OutputSha256'], f['Path'])
 
     def test_the_real_gates_open_and_nothing_else_moves(self):

@@ -102,6 +102,84 @@ public sealed class ModernClientSetupTests
         Assert.That(ModernClientSetup.Apply(stock, file), Is.EqualTo(output));
     }
 
+    [Test]
+    public void SeveralMembersOfOneArchiveAreEditedInTurn()
+    {
+        // The fishing rod adds rows to two catalogs of gamedata.mpk in one entry: the same as two single-member entries in turn.
+        byte[] stock = Convert.FromBase64String(StockZone);
+        // bound.csv's edit is the one AMemberOfALargerArchiveChangesAlone checks against the Python builder's bytes.
+        ModernClientSetup.Edit[] bound = [new(0, 3, Convert.ToBase64String("a new"u8.ToArray()))];
+        ModernClientSetup.Edit[] rows = [new(0, 0, Convert.ToBase64String("4927,rod\r\n"u8.ToArray()))];
+        byte[] afterBound = Convert.FromBase64String(PatchedZone);
+        byte[] zRows = Archive("MemberOf", afterBound, "z.csv");
+        byte[] edited = [.. "4927,rod\r\n"u8.ToArray(), .. zRows];
+        byte[] expected = Archive("WithMember", afterBound, edited, "z.csv");
+
+        var both = new ModernClientSetup.PatchedFile("zones/zone000/dat000.mpk", Hash(stock), Hash(expected), expected.Length, [],
+            Members: [new("bound.csv", bound), new("z.csv", rows)]);
+        Assert.That(ModernClientSetup.Apply(stock, both), Is.EqualTo(expected));
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Apply(afterBound, both), "only the pristine archive is accepted");
+    }
+
+    // The archive helpers are private to the launcher; the tests reach them as the launcher does.
+    private static dynamic Archive(string method, byte[] archive, params object[] rest) =>
+        typeof(ModernClientSetup).GetMethod(method, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+            .Invoke(null, [archive, .. rest])!;
+
+    [Test]
+    public void RepairRestoresDamagedFilesAndKeepsThePlayersOwn()
+    {
+        string client = PristineClient(), destination = Path.Combine(root, "game", "client-modern", "app");
+        var patch = TestPatch();
+        ModernClientSetup.Install(client, destination, patch, null, CancellationToken.None);
+        File.WriteAllText(Path.Combine(destination, "camelot.exe"), "damaged");
+        File.Delete(Path.Combine(destination, "pregame", "character_creation.xml"));
+        File.WriteAllText(Path.Combine(destination, "game.dll"), "overwritten by something");
+        File.WriteAllText(Path.Combine(destination, "user.dat"), "the player's settings");
+        File.WriteAllText(Path.Combine(destination, "server-Hero.ini"), "a character's window layout");
+
+        var (repatched, restored) = ModernClientSetup.Repair(destination, client, patch, null, CancellationToken.None);
+        Assert.That((repatched, restored), Is.EqualTo((2, 1)));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(PatchedGame));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "pregame", "character_creation.xml")), Is.EqualTo(PatchedLayout));
+        Assert.That(File.ReadAllText(Path.Combine(destination, "camelot.exe")), Is.EqualTo("exe"));
+        Assert.That(File.ReadAllText(Path.Combine(destination, "user.dat")), Is.EqualTo("the player's settings"));
+        Assert.That(File.ReadAllText(Path.Combine(destination, "server-Hero.ini")), Is.EqualTo("a character's window layout"));
+        Assert.That(File.Exists(Path.Combine(destination, "login.dat")), Is.False, "the player's own login stays out");
+        Assert.That(File.ReadAllBytes(Path.Combine(client, "game.dll")), Is.EqualTo(Game), "the player's own client is unchanged");
+        Assert.That(ModernClientSetup.Repair(destination, client, patch, null, CancellationToken.None), Is.EqualTo((0, 0)));
+    }
+
+    [Test]
+    public void RepairRefusesAClientItCantPatch()
+    {
+        string client = PristineClient(), destination = Path.Combine(root, "game", "client-modern", "app");
+        ModernClientSetup.Install(client, destination, TestPatch(), null, CancellationToken.None);
+        File.WriteAllText(Path.Combine(client, "game.dll"), "a newer client");
+        Assert.Throws<InvalidDataException>(() => ModernClientSetup.Repair(destination, client, TestPatch(), null, CancellationToken.None));
+        Assert.That(File.ReadAllBytes(Path.Combine(destination, "game.dll")), Is.EqualTo(PatchedGame), "nothing was touched");
+    }
+
+    [Test]
+    public void AClientTheEdenLauncherChangedIsNamedAsSuch()
+    {
+        string client = PristineClient();
+        File.WriteAllText(Path.Combine(client, "pregame", "character_creation.xml"), "Eden's layout");
+        Assert.That(ModernClientSetup.CheckSource(client, TestPatch()), Does.Contain("may be a newer or modified client"));
+        File.WriteAllText(Path.Combine(client, ModernClientSetup.EdenMarker), "eden");
+        Assert.That(ModernClientSetup.CheckSource(client, TestPatch()), Does.Contain("changed by the Eden client"));
+        File.WriteAllBytes(Path.Combine(client, "pregame", "character_creation.xml"), Layout);
+        Assert.That(ModernClientSetup.CheckSource(client, TestPatch()), Is.Null, "Eden's DLL alone beside stock files is fine");
+    }
+
+    [Test]
+    public void TheLauncherCarriesTheProgressTablesInsideItself()
+    {
+        var rules = OfflineDaoc.ProgressImport.ImportEngine.Rules;
+        Assert.That(rules.ProgressTables, Does.Contain("DOLCharacters").And.Contain("offline_fishing").And.Contain("Inventory"));
+        Assert.That(rules.OptionalProgressTables, Does.Contain("offline_artifact_progress"));
+    }
+
     // Set OFFLINE_DAOC_PRISTINE_1130 and OFFLINE_DAOC_CLIENT_PATCH (a folder with make_client_patch.py's client-patch.json)
     // to run the real patch through this code; every file is hash-checked against what the Python builder made.
     [Test]

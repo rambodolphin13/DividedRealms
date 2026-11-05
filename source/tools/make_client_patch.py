@@ -28,6 +28,11 @@ edits that swap the closing walls for the classic client's, whose ends meet the 
 An entry with From makes a new file from another stock file: Abermenai's terrain is Thidranki's with the archive renamed
 (add_abermenai_terrain.py).
 
+The private fishing rod (tools/pet-art/install_fishing_rod.py, the server's fishing_pole_model 4927 and 4928) comes two ways
+with nothing retail in it: items/offline_fishrod01.nif is made From the player's own quarterstaff NIF with only our vertex
+positions and bounding sphere, and one gamedata.mpk entry with Members adds our three rows to objects.csv and items.csv,
+one member after the other. Building the patch needs numpy (the rod's mesh code).
+
 Marfach Caverns (region 276) is the one exception to shipping nothing retail, by the owner's decision (2026-10-30): 1.130
 has no copy of its map, so dat276.mpk and its sounds.dat (about 20 KB, read from the classic client when the patch is
 built, never kept in Git) travel inside the patch as whole-file edits. The dungeon models it places are stock.
@@ -68,6 +73,10 @@ BOUND = 'bound.csv'
 # The stock zones the server uses under other regions: (zone, stock region, server region, the name to show).
 ZONE_REGIONS = [(250, 166, 250, b'Caledonia'), (251, 167, 251, b'Murdaigean'), (252, 168, 252, b'Thidranki')]
 # (new file, the stock file its edit replaces): the classic client's files, see the docstring.
+PET_ART = Path(__file__).resolve().parents[2] / 'tools/pet-art'
+ROD_SOURCE, ROD_PATH = 'items/b_st_quarterstaff01.nif', 'items/offline_fishrod01.nif'
+GAMEDATA = 'gamedata.mpk'
+ROD_CATALOGS = ('objects.csv', 'items.csv')
 MARFACH_FILES = [('zones/zone276/dat276.mpk', 'zones/zone247/dat247.mpk'), ('zones/zone276/sounds.dat', 'zones/zone247/sounds.dat')]
 # The sections the server's regions need and the stock table lacks, as the classic table has them.
 ADDED_SECTIONS = '''
@@ -235,20 +244,29 @@ def with_member(archive: bytes, data: bytes, member: str | None = None) -> bytes
             b''.join(payloads))
 
 
+def splice(source: bytes, changes: list) -> bytes:
+    out, position = bytearray(), 0
+    for edit in changes:
+        out += source[position:edit['At']]
+        out += base64.b64decode(edit['Insert'])
+        position = edit['At'] + edit['Remove']
+    return bytes(out + source[position:])
+
+
 def apply(original: bytes, entry: dict) -> bytes:
     """The launcher's algorithm, for the tests: check the input, rebuild the output, check it."""
     if sha(original) != entry['InputSha256']:
         raise ValueError(f"{entry.get('From', entry['Path'])}: not the pristine {CLIENT_VERSION} file")
     member = entry.get('Member')
-    source = member_of(original, member) if member else original
-    out, position = bytearray(), 0
-    for edit in entry['Edits']:
-        out += source[position:edit['At']]
-        out += base64.b64decode(edit['Insert'])
-        position = edit['At'] + edit['Remove']
-    out += source[position:]
-    if member:
-        out = with_member(original, bytes(out), member)
+    if entry.get('Members'):
+        # Several files inside one archive, edited in order, each over the archive the one before left.
+        out = original
+        for part in entry['Members']:
+            out = with_member(out, splice(member_of(out, part['Member']), part['Edits']), part['Member'])
+    elif member:
+        out = with_member(original, splice(member_of(original, member), entry['Edits']), member)
+    else:
+        out = splice(original, entry['Edits'])
     if len(out) != entry['OutputSize'] or sha(bytes(out)) != entry['OutputSha256']:
         raise ValueError(f"{entry['Path']}: the patched file doesn't match")
     return bytes(out)
@@ -350,6 +368,62 @@ def gate_wall_entry(client: Path, path: str, zone: int) -> dict:
     return entry
 
 
+def in_place_edits(original: bytes, patched: bytes):
+    """(at, remove, insert) for a same-size file changed in place, nearby changes merged."""
+    out, start, last = [], None, None
+    for offset in range(len(original)):
+        if original[offset] == patched[offset]:
+            continue
+        if start is not None and offset - last <= MERGE_GAP:
+            last = offset
+            continue
+        if start is not None:
+            out.append((start, last + 1 - start, patched[start:last + 1]))
+        start = last = offset
+    if start is not None:
+        out.append((start, last + 1 - start, patched[start:last + 1]))
+    return out
+
+
+def fishing_rod():
+    """The private rod's builder (tools/pet-art/install_fishing_rod.py; needs numpy), imported only when a patch is built."""
+    sys.path.insert(0, str(PET_ART))
+    import install_fishing_rod  # noqa: E402
+    return install_fishing_rod
+
+
+def rod_entries(client: Path) -> list:
+    """The fishing rod every player's client needs for the server's fishing_pole_model 4927 (and 4928): the rod NIF made
+    from the player's own quarterstaff (only the new vertex positions and bounding sphere ship), and our three catalog
+    rows added to gamedata.mpk's objects.csv and items.csv (only those rows ship)."""
+    rod = fishing_rod()
+    rod.ITEMS = client / 'items'
+    stock_nif = (client / ROD_SOURCE).read_bytes()
+    nif, _, _ = rod.build()
+    assert len(nif) == len(stock_nif)
+    nif_entry = dict(Path=ROD_PATH, From=ROD_SOURCE, InputSha256=sha(stock_nif), OutputSha256=sha(nif), OutputSize=len(nif),
+                     Edits=encoded(in_place_edits(stock_nif, nif)))
+    assert apply(stock_nif, nif_entry) == nif
+
+    game = (client / GAMEDATA).read_bytes()
+    catalogs = {name: member_of(game, name) for name in ROD_CATALOGS}
+    added = rod.new_rows(catalogs['objects.csv'], catalogs['items.csv'])
+    members, patched = [], game
+    for name in ROD_CATALOGS:
+        table = catalogs[name]
+        for row in added[name]:
+            table = rod.bs.add_row(table, row)
+        changes = changed_middle(catalogs[name], table)
+        inserted = b''.join(block for _, _, block in changes).decode('latin1').strip('\r\n').split('\r\n')
+        assert [line.split(',', 1)[0] for line in inserted] == [row[0] for row in added[name]], f'{name}: more than our rows'
+        members.append(dict(Member=name, Edits=encoded(changes)))
+        patched = with_member(patched, table, name)
+    game_entry = dict(Path=GAMEDATA, InputSha256=sha(game), OutputSha256=sha(patched), OutputSize=len(patched), Edits=[],
+                      Members=members)
+    assert apply(game, game_entry) == patched
+    return [nif_entry, game_entry]
+
+
 def build(client: Path, classic: Path, splash: Path = SPLASH) -> dict:
     game = (client / 'game.dll').read_bytes()
     layout = (client / 'pregame/character_creation.xml').read_bytes()
@@ -371,6 +445,7 @@ def build(client: Path, classic: Path, splash: Path = SPLASH) -> dict:
     files.extend(marfach_entry(client, classic, path, stock_path) for path, stock_path in MARFACH_FILES)
     files.extend(gate_wall_entry(client, path.format(zone), zone) for zone in sorted({wall[0] for wall in GATE_WALLS})
                  for path in GATE_ARCHIVES)
+    files.extend(rod_entries(client))
     return dict(Format=FORMAT, ClientVersion=CLIENT_VERSION, Files=files)
 
 
@@ -383,5 +458,6 @@ if __name__ == '__main__':
     patch = build(args.client, args.classic)
     args.output.write_text(json.dumps(patch, indent=1), encoding='utf-8')
     for entry in patch['Files']:
+        changes = [e for part in entry.get('Members') or [entry] for e in part['Edits']]
         print(entry['Path'], entry['InputSha256'][:12], '->', entry['OutputSha256'][:12],
-              len(entry['Edits']), 'edits,', sum(len(base64.b64decode(e['Insert'])) for e in entry['Edits']), 'bytes')
+              len(changes), 'edits,', sum(len(base64.b64decode(e['Insert'])) for e in changes), 'bytes')

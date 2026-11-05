@@ -130,10 +130,11 @@ def write_obj(path, verts, geom):
     path.write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
-def catalog():
-    name, entries, files, tables = bs.catalogs()
-    obj_rows = {r[0].strip(): r for r in bs.rows_of(files["objects.csv"]) if r and r[0].strip().isdigit()}
-    item_rows = {r[0].strip(): r for r in bs.rows_of(files["items.csv"]) if r and r[0].strip().isdigit()}
+def new_rows(objects_csv, items_csv):
+    """The rod's catalog rows ({"objects.csv": [spear hold, staff hold], "items.csv": [item]}) for these stock catalogs.
+    make_client_patch.py builds the players' client patch from the same rows."""
+    obj_rows = {r[0].strip(): r for r in bs.rows_of(objects_csv) if r and r[0].strip().isdigit()}
+    item_rows = {r[0].strip(): r for r in bs.rows_of(items_csv) if r and r[0].strip().isdigit()}
     bs.require(str(OBJECT_ID) not in obj_rows and str(ITEM_ID) not in item_rows, f"ID {OBJECT_ID}/{ITEM_ID} already used")
     bs.require(obj_rows[str(SOURCE_OBJECT)][1] == "Quarterstaff", "objects.csv 442 is not the Quarterstaff")
     orow = list(obj_rows[str(SOURCE_OBJECT)])
@@ -145,7 +146,13 @@ def catalog():
     orow[19], orow[20] = SPEAR_STANCE
     irow = list(item_rows[str(SOURCE_ITEM)])
     irow[0], irow[1], irow[2] = str(ITEM_ID), LABEL, PRIVATE_NIF.rsplit(".", 1)[0]
-    added = {"objects.csv": [orow, staff], "items.csv": [irow]}
+    return {"objects.csv": [orow, staff], "items.csv": [irow]}
+
+
+def catalog():
+    name, entries, files, tables = bs.catalogs()
+    added = new_rows(files["objects.csv"], files["items.csv"])
+    (orow, staff), (irow,) = added["objects.csv"], added["items.csv"]
     objects = bs.add_row(bs.add_row(files["objects.csv"], orow), staff)
     updates = {"objects.csv": objects, "items.csv": bs.add_row(files["items.csv"], irow)}
     blob = archive.write(name, [archive.Entry(e.name, updates.get(e.name.lower(), e.data), e.timestamp, e.flags)

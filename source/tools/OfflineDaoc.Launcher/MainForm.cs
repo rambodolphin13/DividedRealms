@@ -812,7 +812,11 @@ internal sealed partial class MainForm : Form
         var rvr = new TabPage("Active RvR") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
         rvr.Controls.Add(BuildActiveRvrPanel());
         var xpSettings = new TabPage("Options") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
+        xpSettings.AutoScroll = true;
         xpSettings.Controls.Add(BuildXpSettingsPanel());
+        var updateRepair = BuildUpdateRepairPanel();
+        xpSettings.Controls.Add(updateRepair);
+        updateRepair.BringToFront();  // docked last, so it sits under the options
         tabs.TabPages.Add(population);
         // Living Server fork (chris4aker/OfflineDAoC-SocialExpansion): its settings tab, second in the list (owner
         // 2026-10-28: it was second to last, after the Bot Goals tab). SocialExpansionSettingsControl.cs.
@@ -923,6 +927,212 @@ internal sealed partial class MainForm : Form
         layout.SetColumnSpan(_xpSettingsStatus, 3);
         surface.Controls.Add(layout);
         return surface;
+    }
+
+    private readonly Label _updateRepairStatus = new() { Dock = DockStyle.Fill, ForeColor = DaocTheme.Parchment, TextAlign = ContentAlignment.MiddleLeft,
+        Font = new Font("Georgia", 9f, FontStyle.Bold | FontStyle.Italic) };
+    private Button? _importProgressButton;
+    private Button? _repairClientButton;
+
+    /// <summary>IMPORT PROGRESS (saves from another folder) and REPAIR CLIENT (the client copy checked and patched again).</summary>
+    private Control BuildUpdateRepairPanel()
+    {
+        var surface = new InsetPanel { Dock = DockStyle.Top, Height = 230, Margin = new Padding(18), Padding = new Padding(20), Accent = DaocTheme.Gold };
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 4, BackColor = Color.Transparent };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 210));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        var title = new Label
+        {
+            AutoSize = true,
+            Text = "UPDATE AND REPAIR",
+            Font = new Font("Georgia", 13f, FontStyle.Bold),
+            ForeColor = DaocTheme.GoldLight,
+            Margin = new Padding(0, 8, 0, 0),
+        };
+        layout.Controls.Add(title, 0, 0);
+        layout.SetColumnSpan(title, 2);
+        _importProgressButton = ActionButton("IMPORT PROGRESS", Color.FromArgb(92, 120, 84));
+        _importProgressButton.Dock = DockStyle.Fill;
+        _importProgressButton.Margin = new Padding(0, 6, 12, 6);
+        _importProgressButton.Click += async (_, _) => await ImportProgressAsync();
+        layout.Controls.Add(_importProgressButton, 0, 1);
+        layout.Controls.Add(XpRateDescription("Installed this release in a new folder? Bring your account, characters, items, bots, houses, guilds, " +
+            "fishing and artifacts from your old folder. The old folder is only read, and this folder's world is backed up first."), 1, 1);
+        _repairClientButton = ActionButton("REPAIR CLIENT", Color.FromArgb(92, 84, 128));
+        _repairClientButton.Dock = DockStyle.Fill;
+        _repairClientButton.Margin = new Padding(0, 6, 12, 6);
+        _repairClientButton.Click += async (_, _) => await RepairClientAsync();
+        layout.Controls.Add(_repairClientButton, 0, 2);
+        layout.Controls.Add(XpRateDescription("The game crashes, art is missing, or a file was changed? Checks every file of the game's client copy " +
+            "against your Dark Age of Camelot folder, restores what differs and patches Divided Realms in again. Your game settings are kept."), 1, 2);
+        layout.Controls.Add(_updateRepairStatus, 0, 3);
+        layout.SetColumnSpan(_updateRepairStatus, 2);
+        surface.Controls.Add(layout);
+        return surface;
+    }
+
+    private void SetUpdateRepairBusy(bool busy)
+    {
+        if (_importProgressButton != null) _importProgressButton.Enabled = !busy;
+        if (_repairClientButton != null) _repairClientButton.Enabled = !busy;
+    }
+
+    private async Task ImportProgressAsync()
+    {
+        if (IsServerRunning() || FindExactServerProcess() is not null)
+        {
+            MessageBox.Show(this, "Stop the server first, then import.", "Import progress", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "Choose your OLD Divided Realms or Offline DAoC folder (the one you played in before)",
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = false,
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        string old = dialog.SelectedPath;
+        OfflineDaoc.ProgressImport.ImportSummary found;
+        try
+        {
+            OfflineDaoc.ProgressImport.ImportEngine.Release = "this version";
+            if (string.Equals(OfflineDaoc.ProgressImport.ImportEngine.LocateRuntime(old), Path.GetFullPath(_root), StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("That is this folder. Choose the folder you played in before.");
+            found = OfflineDaoc.ProgressImport.ImportEngine.Inspect(old);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Can't import from that folder", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+        if (MessageBox.Show(this, $"Found {found.Accounts:N0} account(s), {found.Characters:N0} character(s), {found.Bots:N0} bots and " +
+                $"{found.InventoryItems:N0} items in:\n{old}\n\nThis REPLACES the saved progress in this folder with that save. This folder's world " +
+                "is backed up first, and the old folder isn't changed.\n\nImport now?", "Import progress", MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question) != DialogResult.Yes)
+            return;
+        bool leaveBots = false;
+        if (found.SluaghbinderBots > 0)
+        {
+            if (MessageBox.Show(this, $"{found.SluaghbinderBots:N0} of the old bots are Sluaghbinders, a class this game no longer has. They and the " +
+                    "items they carry stay behind. Continue?", "Import progress", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+            leaveBots = true;
+        }
+        if (!PrepareWorld()) return;  // this folder needs its own world first, made from the clean one
+        SetUpdateRepairBusy(true);
+        try
+        {
+            string backup = await Task.Run(() => OfflineDaoc.ProgressImport.ImportEngine.Import(old, _root,
+                line => BeginInvoke(() => _updateRepairStatus.Text = line), leaveBots));
+            _updateRepairStatus.Text = "PROGRESS IMPORTED";
+            MessageBox.Show(this, "Your progress is in this folder now. Start the server and enter the realm as usual; your login is the old " +
+                $"folder's.\n\nThis folder's world from before the import is kept in:\n{backup}", "Progress imported",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            _updateRepairStatus.Text = "IMPORT FAILED: nothing was changed";
+            MessageBox.Show(this, "The import didn't finish, so this folder was left as it was:\n" + ex.Message, "Import failed",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            SetUpdateRepairBusy(false);
+        }
+    }
+
+    private async Task RepairClientAsync()
+    {
+        if (_modernClient == null)
+        {
+            MessageBox.Show(this, "This game uses the new client, which has no client copy to repair.", "Repair client",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        string client = _modernClient.ClientDirectory;
+        if (ClientRunningFrom(client))
+        {
+            MessageBox.Show(this, "Close the game first, then repair.", "Repair client", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        ModernClientSetup.Patch patch;
+        try { patch = ModernClientSetup.Load(_root); }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Client patch missing", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+        if (!ModernClientSetup.IsSetUp(_modernClient))
+        {
+            ModernClientSetupForm.EnsureSetUp(this, _modernClient, _root);  // never set up: the normal setup does it all
+            return;
+        }
+        string? source = ModernClientSetup.RememberedSource(client);
+        if (source == null || ModernClientSetup.CheckSource(source, patch) != null)
+        {
+            using var dialog = new FolderBrowserDialog
+            {
+                Description = $"Choose your Dark Age of Camelot {patch.ClientVersion} folder (with game.dll and camelot.exe). It is only read.",
+                UseDescriptionForTitle = true,
+                ShowNewFolderButton = false,
+            };
+            if (dialog.ShowDialog(this) != DialogResult.OK) return;
+            if (ModernClientSetup.CheckSource(dialog.SelectedPath, patch) is { } problem)
+            {
+                MessageBox.Show(this, problem, "Repair client", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            source = dialog.SelectedPath;
+        }
+        if (MessageBox.Show(this, $"Every game file in this game's client copy is checked against:\n{source}\n\nFiles that differ or are " +
+                "missing are copied again and Divided Realms' changes are patched in again. Your settings and character layouts are kept. " +
+                "Your own Dark Age of Camelot folder isn't changed. This can take a few minutes.\n\nRepair now?", "Repair client",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            return;
+        SetUpdateRepairBusy(true);
+        var progress = new Progress<(long Done, long Total, string File)>(p => _updateRepairStatus.Text =
+            p.File.Length == 0 ? "Checked." : $"Checking {p.Done * 100 / Math.Max(1, p.Total)}%: {p.File}");
+        try
+        {
+            var (repatched, restored) = await Task.Run(() => ModernClientSetup.Repair(client, source, patch, progress, CancellationToken.None));
+            _updateRepairStatus.Text = "CLIENT REPAIRED";
+            MessageBox.Show(this, repatched + restored == 0
+                    ? "Every file checked out: your client copy was already in order."
+                    : $"Repaired: {restored} game file(s) copied again and {repatched} Divided Realms file(s) patched again. Use PLAY as usual.",
+                "Client repaired", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            _updateRepairStatus.Text = "REPAIR FAILED";
+            MessageBox.Show(this, "The repair didn't finish:\n" + ex.Message + "\n\nRun it again; files it already repaired stay repaired.",
+                "Repair failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            SetUpdateRepairBusy(false);
+        }
+    }
+
+    /// <summary>True while a game process runs from <paramref name="client"/> (its files can't be replaced then).</summary>
+    private static bool ClientRunningFrom(string client)
+    {
+        string root = Path.GetFullPath(client).TrimEnd('\\') + "\\";
+        foreach (var process in Process.GetProcesses())
+        using (process)
+        {
+            if (process.ProcessName is not ("game" or "camelot" or "connect-local1130")) continue;
+            try
+            {
+                if (process.MainModule?.FileName is { } file && file.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            catch (System.ComponentModel.Win32Exception) { }  // another user's or an elevated process: not this game's
+        }
+        return false;
     }
 
     private static Label XpRateLabel(string text) => new()
