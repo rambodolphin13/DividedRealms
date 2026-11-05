@@ -24,6 +24,8 @@ Live walled off the frontier gates of Castle Sauvage, Snowdonia Fortress and Dru
 client enforces, closes the gate and the way out of the zone, so the gate opens and the player still can't walk through
 (issue #2, a bound wall exactly where the 2026-10-28 walk links cross). Those zones' dat and csv archives get Member
 edits that swap the closing walls for the classic client's, whose ends meet the neighbouring zones' unchanged walls.
+Live also put zone jumps at all six border keeps' frontier gates (a Frontier jump to New Frontiers and untargeted Border /
+artfix lines); GATE_JUMPS takes them out of those zones' zonejump.csv, so the gates lead into the old frontiers again.
 
 An entry with From makes a new file from another stock file: Abermenai's terrain is Thidranki's with the archive renamed
 (add_abermenai_terrain.py).
@@ -70,6 +72,19 @@ GATE_WALLS = [
 ]
 GATE_ARCHIVES = ['zones/zone{0:03}/dat{0:03}.mpk', 'zones/zone{0:03}/csv{0:03}.mpk']
 BOUND = 'bound.csv'
+# (zone, the zonejump.csv rows to drop, as "number,name"): live put a Frontier jump to New Frontiers just past each border
+# keep's frontier gate and untargeted Border / artfix lines around it; the classic tables have none of them. The server
+# has no such zone points, so the client stopped every player at the gate ("Invalid ZonePoint ... (ID: 191)" at
+# Vindsaul Faste, DR-dev-0.1a report 2026-11-05). The rows left are numbered 1, 2, ... again.
+GATE_JUMPS = [
+    (0, ['10,Border', '11,Border', '12,Frontier']),                                            # Castle Sauvage
+    (3, ['1,Frontier', '2,Border', '3,Border']),                                               # Snowdonia Fortress
+    (100, ['12,Border', '13,Border', '14,Border', '15,Border', '28,artfix967', '29,artfix967']),  # Svasud Faste
+    (102, ['1,Frontier', '2,Border', '3,Border', '4,Border', '5,Border']),                     # Vindsaul Faste
+    (206, ['3,Frontier', '4,Border', '5,Border', '6,Border', '7,Border', '12,artfix', '13,artfix']),  # Druim Cain
+    (207, ['10,Border', '11,Border', '12,Border', '13,Border', '24,ArtFix', '25,ArtFix', '26,ArtFix', '27,ArtFix']),  # Druim Ligen
+]
+ZONE_JUMP = 'zonejump.csv'
 # The stock zones the server uses under other regions: (zone, stock region, server region, the name to show).
 ZONE_REGIONS = [(250, 166, 250, b'Caledonia'), (251, 167, 251, b'Murdaigean'), (252, 168, 252, b'Thidranki')]
 # (new file, the stock file its edit replaces): the classic client's files, see the docstring.
@@ -393,15 +408,52 @@ def open_gate_walls(bound: bytes, zone: int) -> bytes:
     return b'\r\n'.join(lines)
 
 
-def gate_wall_entry(client: Path, path: str, zone: int) -> dict:
+def without_gate_jumps(table: bytes, zone: int) -> bytes:
+    """A zone's zonejump.csv without its GATE_JUMPS rows, the rest numbered again; another table is refused."""
+    drop = next(rows for jump_zone, rows in GATE_JUMPS if jump_zone == zone)
+    lines = table.split(b'\r\n')
+    found = [at for at, line in enumerate(lines) if any(line.startswith(row.encode('latin1') + b',') for row in drop)]
+    if len(found) != len(drop):
+        raise ValueError(f'zone{zone}: zonejump.csv is not the table this patch knows')
+    kept = [line for at, line in enumerate(lines) if at not in found]
+    number = 0
+    for at, line in enumerate(kept):
+        if line.strip():
+            number += 1
+            kept[at] = b'%d,%s' % (number, line.split(b',', 1)[1])
+    return b'\r\n'.join(kept)
+
+
+def has_member(archive: bytes, member: str) -> bool:
+    _, rows, _ = archive_parts(archive)
+    return any(row[:256].split(b'\0')[0].decode('latin1').lower() == member.lower() for row in rows)
+
+
+def gate_entry(client: Path, path: str, zone: int) -> dict:
+    """One border-keep zone archive: GATE_WALLS opens bound.csv, GATE_JUMPS takes the gate's zone jumps out of zonejump.csv."""
     stock = (client / path).read_bytes()
-    bound = member_of(stock, BOUND)
-    patched_bound = open_gate_walls(bound, zone)
-    patched = with_member(stock, patched_bound, BOUND)
-    entry = dict(Path=path, Member=BOUND, InputSha256=sha(stock), OutputSha256=sha(patched), OutputSize=len(patched),
-                 Edits=encoded(edits(bound, patched_bound)))
+    parts, patched = [], stock
+    if any(wall[0] == zone for wall in GATE_WALLS):
+        parts.append((BOUND, lambda table: open_gate_walls(table, zone)))
+    if any(jump[0] == zone for jump in GATE_JUMPS) and has_member(stock, ZONE_JUMP):
+        parts.append((ZONE_JUMP, lambda table: without_gate_jumps(table, zone)))
+    members = []
+    for member, change in parts:
+        table = member_of(patched, member)
+        new_table = change(table)
+        members.append(dict(Member=member, Edits=encoded(edits(table, new_table))))
+        patched = with_member(patched, new_table, member)
+    entry = dict(Path=path, InputSha256=sha(stock), OutputSha256=sha(patched), OutputSize=len(patched))
+    if len(members) == 1:
+        entry |= members[0]
+    else:
+        entry |= dict(Edits=[], Members=members)
     assert apply(stock, entry) == patched
     return entry
+
+
+def gate_zones() -> list:
+    return sorted({wall[0] for wall in GATE_WALLS} | {jump[0] for jump in GATE_JUMPS})
 
 
 def in_place_edits(original: bytes, patched: bytes):
@@ -482,8 +534,7 @@ def build(client: Path, classic: Path, splash: Path = SPLASH) -> dict:
     files.append(zone_table_entry((client / 'zones/zones.mpk').read_bytes()))
     files.extend(abermenai_entry(client, kind) for kind in add_abermenai_terrain.KINDS)
     files.extend(marfach_entry(client, classic, path, stock_path) for path, stock_path in MARFACH_FILES)
-    files.extend(gate_wall_entry(client, path.format(zone), zone) for zone in sorted({wall[0] for wall in GATE_WALLS})
-                 for path in GATE_ARCHIVES)
+    files.extend(gate_entry(client, path.format(zone), zone) for zone in gate_zones() for path in GATE_ARCHIVES)
     files.extend(rod_entries(client))
     return dict(Format=FORMAT, ClientVersion=CLIENT_VERSION, Files=files)
 
