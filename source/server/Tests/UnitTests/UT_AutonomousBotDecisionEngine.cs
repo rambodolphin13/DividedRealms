@@ -308,6 +308,7 @@ public class UT_AutonomousBotDecisionEngine
         DateTime now = DateTime.UtcNow;
         var record = new OfflineWorldBotRecord
         {
+            Level = 50, // frontier RvR starts at level 40
             ObjectiveKind = "RvR",
             ObjectiveExpiresUtc = now.AddMinutes(1).ToString("O"),
             ObjectiveRvrEligibleUtc = now.AddMinutes(30).ToString("O"),
