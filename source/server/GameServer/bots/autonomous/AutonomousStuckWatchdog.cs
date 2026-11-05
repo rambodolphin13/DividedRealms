@@ -498,7 +498,7 @@ public static class AutonomousStuckWatchdog
             var brain = bot.Brain as BotBrain;
             string own = $"moving={bot.IsMoving} casting={bot.IsCasting} inCombat={bot.InCombat} attacking={bot.IsAttacking} " +
                          $"aggro={brain?.HasAggro == true} resting={bot.IsRecoveryResting} riding={bot.IsOnStableMasterRoute} " +
-                         $"fsm={brain?.FSM?.GetCurrentState()?.StateType}";
+                         $"fsm={brain?.FSM?.GetCurrentState()?.StateType} brainActive={bot.Brain?.ServiceObjectId.IsSet == true}";
             if (bot.Group?.LivingLeader is not GameBot leader || leader == bot)
                 return own + (bot.Group != null ? " partyLeader=self" : string.Empty);
             var leaderBrain = leader.Brain as BotBrain;
@@ -512,6 +512,19 @@ public static class AutonomousStuckWatchdog
         {
             return $"state=unavailable({exception.GetType().Name})"; // a diagnostic must never block the rescue
         }
+    }
+
+    /// <summary>Starts a living, active bot's brain when it is not in the NPC service. True when it was restarted.</summary>
+    public static bool EnsureBrainRunning(GameBot bot)
+    {
+        DOL.AI.ABrain brain = bot?.Brain;
+        if (brain == null || !bot.IsAlive || bot.ObjectState != GameObject.eObjectState.Active ||
+            brain.ServiceObjectId.IsSet || brain.ServiceObjectId.IsPendingAddition)
+            return false;
+        bool started = brain.Start();
+        Log.Warn($"AUTONOMOUS_BRAIN_RESTART bot=\"{ForLog(bot.Name)}\" id={bot.DatabaseID} class=\"{ForLog(bot.ClassName)}\" started={started} " +
+                 $"at={bot.CurrentRegionID}:{bot.X},{bot.Y},{bot.Z}");
+        return started;
     }
 
     public static bool ReportsCampOnRescue(string logMarker, bool grouped, string campId) =>
@@ -585,6 +598,9 @@ public static class AutonomousStuckWatchdog
 
             if (!bot.MoveTo(capital.RegionId, capital.X, capital.Y, capital.Z, capital.Heading))
                 return false;
+            // The rescue must leave a thinking bot behind: a brain the NPC service stopped is not restarted until a
+            // player or bot comes near (GameNPC.OnUpdateOrCreateForPlayer), so restart it here.
+            EnsureBrainRunning(bot);
         }
         else
         {
