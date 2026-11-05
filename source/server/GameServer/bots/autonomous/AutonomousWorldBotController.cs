@@ -319,6 +319,15 @@ namespace DOL.GS
                     // A pocket with no real floor within reach: the normal escape handles it; do not re-search every 5 s.
                     if (stillInPocket) _nextPocketCheckTick = nowTick + 60_000;
                 }
+                // A raid that ended inside a dungeon takes its raiders out at once (AutonomousRealmRaid.TryTakeDungeonExit).
+                if (AutonomousRealmRaid.TryTakeDungeonExit(bot))
+                {
+                    _camp = null;
+                    ResetRouteOrderState();
+                    _nextPlanTick = 0;
+                    SetStatus(bot, "Left the raid dungeon", "Choose new work after the raid", "The raid ended inside the dungeon; back at the raid's muster town");
+                    return true;
+                }
                 // A solo siege force is released at most a couple of seconds
                 // after its event ends; no need to take the event lock each turn.
                 if (bot.Group == null && nowTick >= _nextRvrReleaseCheckTick)
