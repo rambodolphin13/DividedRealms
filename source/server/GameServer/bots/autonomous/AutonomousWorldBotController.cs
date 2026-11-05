@@ -5756,7 +5756,7 @@ namespace DOL.GS
             npc is not GameMerchant && npc is not GameGuard && npc is not GameTaxi &&
             npc is not GameSummonedPet && npc is not GameKeepGuard && npc is not GameTrainer &&
             npc is not GameTeleporter && npc is not GameHealer && npc is not CraftNPC &&
-            !AutonomousNeutralTownPolicy.IsTownResident(npc);
+            !AutonomousNeutralTownPolicy.IsTownResident(npc) && !Quests.QuestTalkTruce.SparesBots(npc);
 
         private const double AtlantisNoRouteSeconds = 3_600;
 
