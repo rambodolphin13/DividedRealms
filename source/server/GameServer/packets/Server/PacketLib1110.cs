@@ -246,8 +246,14 @@ namespace DOL.GS.PacketHandler
 
 						if (spell.HasSubSpell)
 						{
-							if (m_gameClient.CanSendTooltip(24, SkillBase.GetSpellByID(spell.SubSpellID).InternalID))
-								SendDelveInfo(DetailDisplayHandler.DelveSpell(m_gameClient, SkillBase.GetSpellByID(spell.SubSpellID)));
+							// SubSpellID can be 0 when the secondaries come from MultipleSubSpells.
+							foreach (int subSpellId in spell.MultipleSubSpells.Prepend(spell.SubSpellID))
+							{
+								Spell subSpell = subSpellId > 0 ? SkillBase.GetSpellByID(subSpellId) : null;
+
+								if (subSpell != null && m_gameClient.CanSendTooltip(24, subSpell.InternalID))
+									SendDelveInfo(DetailDisplayHandler.DelveSpell(m_gameClient, subSpell));
+							}
 						}
 
 						if (spell.SpellType == eSpellType.DefensiveProc || spell.SpellType == eSpellType.OffensiveProc)
