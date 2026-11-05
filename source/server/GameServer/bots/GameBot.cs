@@ -2730,7 +2730,11 @@ namespace DOL.GS
                 SpendSpecPoints(Level, 0); // fully trained on arrival, like a level-50 /spawn companion
             else
                 LoadPersistedSpecs(record.SerializedSpecs);
-            bool buildLocked = IsEpicSpecialForce || BotLifetimeBuild.Restore(BotSpec, record.SerializedBuildPlan);
+            // A saved plan for lines this class no longer has (the Storm Sovereign remake) is replaced by the fresh plan,
+            // and the bot's points are spent again on it below (AUTONOMOUS_BUILD_RESPEC).
+            bool savedPlanFits = IsEpicSpecialForce || BotLifetimeBuild.FitsClass(record.SerializedBuildPlan,
+                line => GetSpecializationByName(line) != null, BotSpec.SpecLines.Select(line => line.Spec));
+            bool buildLocked = IsEpicSpecialForce || savedPlanFits && BotLifetimeBuild.Restore(BotSpec, record.SerializedBuildPlan);
             if (!buildLocked)
                 BotLifetimeBuild.AlignWithInvestedWeapons(BotSpec, GetBaseSpecLevel);
             // A saved build can predate the Savage's trained weapon line. Its
@@ -2745,6 +2749,17 @@ namespace DOL.GS
             }
             m_leftOverSpecPoints = Math.Max(0, record.UnspentSpecPoints);
             _lastAutonomousTrainedLevel = IsEpicSpecialForce ? Level : ParseLastTrainedLevel(record.SerializedAbilities, Level, record.SerializedSpecs);
+            if (!savedPlanFits)
+            {
+                foreach (Specialization spec in GetSpecList().Where(spec => spec.Trainable))
+                    spec.Level = 1;
+                m_leftOverSpecPoints = 0;
+                SpendSpecPoints(Level, 0);
+                _lastAutonomousTrainedLevel = Level;
+                MarkAutonomousStateDirty();
+                log.Warn($"AUTONOMOUS_BUILD_RESPEC bot=\"{record.Name}\" id={record.BotId} class=\"{ClassName}\" level={Level} " +
+                         $"weapon={BotSpec.WeaponOneType} unspentBefore={record.UnspentSpecPoints} reason=\"saved plan trains lines the class no longer has\"");
+            }
             if (!IsEpicSpecialForce && NeedsTrainingOnArrival(record.SerializedAbilities, record.SerializedSpecs, Level))
             {
                 // Created above level 1 (the launcher's level-50 roster): spend every point now, like the
