@@ -6745,6 +6745,13 @@ namespace DOL.GS
                 if (useItem.Item_Type != Slot.RANGED && (slot != Slot.HORSE || type != 0))
                     Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.AttemptToUse", useItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
+                // Artifact credits used to stop at "You attempt to use ..." with no reason.
+                if (ArtifactCatalog.ArtifactOfCredit(useItem.Id_nb) is string creditFor)
+                {
+                    Out.SendMessage(ArtifactItem.CreditUseText(ArtifactCatalog.NameOf(creditFor)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    return;
+                }
+
                 switch (slot)
                 {
                     case Slot.HORSEARMOR:
@@ -6889,6 +6896,15 @@ namespace DOL.GS
                         break;
                     case Slot.FOURTHQUIVER: SwitchQuiver(eActiveQuiverSlot.Fourth, false);
                         break;
+                }
+
+                // A locked artifact ability reads as no spell at all, so the use did nothing and said nothing.
+                // (A plain click on a weapon slot only switches or fires, so it says nothing here.)
+                if (useItem is ArtifactItem artifact && (type > 0 || slot is not (Slot.RIGHTHAND or Slot.LEFTHAND or Slot.TWOHAND or Slot.RANGED))
+                    && artifact.LockedUseMessage(type) is string locked)
+                {
+                    Out.SendMessage(locked, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    return;
                 }
 
                 if (useItem.SpellID != 0 || useItem.SpellID1 != 0 || useItem.PoisonSpellID != 0)
