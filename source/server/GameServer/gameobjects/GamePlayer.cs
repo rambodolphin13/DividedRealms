@@ -4330,25 +4330,40 @@ namespace DOL.GS
             }
         }
 
+        /// <summary>
+        /// Applies the level floor to an experience change. Returns the change to add to
+        /// <paramref name="experience"/> so it never ends below <paramref name="floor"/>, and gives in
+        /// <paramref name="earned"/> the part that was really gained: a top-up that only lifts stored
+        /// experience back up to the floor (a level set directly, an old save) is not earned.
+        /// </summary>
+        public static long ApplyExperienceFloor(long experience, long change, long floor, out long earned)
+        {
+            long applied = experience + change < floor ? floor - experience : change;
+            earned = applied > change ? Math.Min(applied, Math.Max(change, 0)) : applied;
+            return applied;
+        }
+
+        /// <summary>
+        /// Sets the level directly (GM commands, level NPCs) and puts experience at that level's
+        /// floor, so the next kill does not "top up" a whole level of unearned experience.
+        /// </summary>
+        public virtual void SetLevelDirect(byte level)
+        {
+            Level = level;
+            IsLevelSecondStage = false;
+            Experience = GetExperienceNeededForLevel(level);
+            Out.SendUpdatePoints();
+        }
+
         public void ForceGainExperience(long expTotal)
         {
-            if (IsLevelSecondStage)
-            {
-                if (Experience + expTotal < ExperienceForCurrentLevelSecondStage)
-                {
-                    expTotal = ExperienceForCurrentLevelSecondStage - Experience;
-                }
-            }
-            else if (Experience + expTotal < ExperienceForCurrentLevel)
-            {
-                expTotal = ExperienceForCurrentLevel - Experience;
-            }
-
-            Experience += expTotal;
+            long applied = ApplyExperienceFloor(Experience, expTotal, IsLevelSecondStage ? ExperienceForCurrentLevelSecondStage : ExperienceForCurrentLevel, out long earned);
+            Experience += applied;
+            expTotal = earned;
 
             Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainExperience.YouGet", expTotal.ToString("N0", System.Globalization.NumberFormatInfo.InvariantInfo)), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 
-            if (expTotal >= 0)
+            if (applied >= 0)
             {
                 //Level up
                 if (Level >= 5 && !CharacterClass.HasAdvancedFromBaseClass())
@@ -4425,17 +4440,12 @@ namespace DOL.GS
             // Get Champion Experience too
             // GainChampionExperience(expTotal);
 
-            if (IsLevelSecondStage)
-            {
-                if (Experience + expTotal < ExperienceForCurrentLevelSecondStage)
-                {
-                    expTotal = ExperienceForCurrentLevelSecondStage - Experience;
-                }
-            }
-            else if (Experience + expTotal < ExperienceForCurrentLevel)
-            {
-                expTotal = ExperienceForCurrentLevel - Experience;
-            }
+            // The floor keeps a loss from dropping below the level (or half level). When the stored
+            // experience is already below the floor (a level set directly by a GM or an old save),
+            // it also tops the character up; that top-up was never earned, so only `earned` is
+            // reported and fed to Master Levels and artifacts.
+            long applied = ApplyExperienceFloor(Experience, expTotal, IsLevelSecondStage ? ExperienceForCurrentLevelSecondStage : ExperienceForCurrentLevel, out long earned);
+            expTotal = earned;
 
             if (arguments.SendMessage && expTotal > 0)
             {
@@ -4466,10 +4476,11 @@ namespace DOL.GS
                 Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
             }
 
-            Experience += expTotal;
-            ArtifactLevels.AddXp(this, (long) (expTotal / Math.Max(0.01, arguments.AllowMultiply ? LevelRangeXpRates.PlayerRate(Level, CurrentRegion.IsRvR || CurrentZone.IsRvR) : 1)));
+            Experience += applied;
+            if (expTotal > 0)
+                ArtifactLevels.AddXp(this, (long) (expTotal / Math.Max(0.01, arguments.AllowMultiply ? LevelRangeXpRates.PlayerRate(Level, CurrentRegion.IsRvR || CurrentZone.IsRvR) : 1)));
 
-            if (expTotal >= 0)
+            if (applied >= 0)
             {
                 //Level up
                 if (Level >= 5 && !CharacterClass.HasAdvancedFromBaseClass())
