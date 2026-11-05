@@ -4523,6 +4523,13 @@ namespace DOL.AI.Brain
                     // its refusal for a reason to abandon ranged combat.
                     spellsToCast.RemoveAll(spell => !NeedsOffensiveSpellApplication((GameLiving)Body.TargetObject, spell));
                     if (spellsToCast.Count == 0) return Body.IsCasting;
+                    // A Vampiir in melee reach casts only what outdamages its swing (ShamanBotCombatPolicy.VampiirCastsInMelee).
+                    if (BotBody.CharacterClass.ID == (int)eCharacterClass.Vampiir &&
+                        Body.IsWithinRadius(Body.TargetObject, ShamanBotCombatPolicy.VampiirMeleeReach))
+                    {
+                        spellsToCast.RemoveAll(spell => !ShamanBotCombatPolicy.VampiirCastsInMelee(spell, Body.ManaPercent));
+                        if (spellsToCast.Count == 0) return Body.IsCasting;
+                    }
                     // A point-blank spell (range 0, a radius around the caster) stays: it already passed its radius check.
                     if (PrefersCurrentSpellRange() &&
                         spellsToCast.Exists(spell => spell.Range > Body.MeleeAttackRange))
