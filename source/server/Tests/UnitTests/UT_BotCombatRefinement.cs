@@ -221,7 +221,8 @@ namespace DOL.UnitTests
             var low = Style(11, level: 2, growth: .7);
             var high = Style(11, level: 40, growth: .2);
             Assert.That(BotMeleeStylePolicy.IsEligible(low), Is.True);
-            Assert.That(BotMeleeStylePolicy.IsEligible(Style(11, opening: 2)), Is.False);
+            // Positional styles are eligible since 2026-11-05; StyleProcessor.CanUseStyle checks the position at the swing.
+            Assert.That(BotMeleeStylePolicy.IsEligible(Style(11, opening: 2)), Is.True);
             Assert.That(BotMeleeStylePolicy.IsEligible(Style(11, opening: 1)), Is.True);
             Assert.That(BotMeleeStylePolicy.Better(low, high), Is.True);
         }
@@ -263,6 +264,10 @@ namespace DOL.UnitTests
             var stealth = new Style(new DbStyle { Name = "stealth", ID = 92, SpecKeyName = Specs.Sword,
                 SpecLevelRequirement = 5, WeaponTypeRequirement = (int)eObjectType.Sword,
                 StealthRequirement = true, GrowthRate = 8 }, null);
+            // Positional styles are eligible since 2026-11-05 and StyleProcessor checks the bot's real position at the swing;
+            // this fixture has no movement component to place the two, so the positional one is above the bot's level here.
+            positional = Style((int)eObjectType.Sword,
+                opening: (int)DOL.GS.Styles.Style.eOpening.Positional, level: 52, growth: 5);
             bot.Styles = new List<Style> { positional, tooHigh, wrongWeapon, stealth, anytime };
 
             Assert.That(BotMeleeStylePolicy.Select(bot, null), Is.SameAs(anytime));
