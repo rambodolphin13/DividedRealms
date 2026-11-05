@@ -5005,6 +5005,7 @@ namespace DOL.GS
                         return false;
                     }
                     long seamNow = GameLoop.GameLoopTime;
+                    AutonomousZoneBoundaryRouting.Step? previousSeam = _lastSeamStep;
                     if (_lastSeamStep is { } lastSeam && seamNow - _lastSeamStepTick < 5 * 60_000 &&
                         Vector3.DistanceSquared(_lastSeamGoal, destination) < 500f * 500f &&
                         AutonomousZoneBoundaryRouting.IsReversal(lastSeam, resolved))
@@ -5027,6 +5028,14 @@ namespace DOL.GS
                                  $"position={bot.X},{bot.Y},{bot.Z} goalZone={destinationZone.ID} goal={(int)destination.X},{(int)destination.Y},{(int)destination.Z} " +
                                  $"step={(int)resolved.Inside.X},{(int)resolved.Inside.Y}>{(int)resolved.Outside.X},{(int)resolved.Outside.Y} " +
                                  $"activity=\"{bot.PersistentRecord?.Activity}\"");
+                        // Night 2026-11-04: 753 of 788 seam cycles were one Hibernian seam pair, region 200 384960/385088,385504
+                        // (zones 211/212): every goal past it planned the same two steps again. Both crossings of the cycle
+                        // count toward the seam quarantine (three bots bench them for two hours), so the planner takes another.
+                        foreach (AutonomousZoneBoundaryRouting.Step cycled in new[] { resolved, previousSeam ?? resolved })
+                            if (AutonomousSeamCrossingQuarantine.ReportFailure(bot.CurrentRegionID, cycled.Inside, bot.DatabaseID))
+                                Log.Warn($"AUTONOMOUS_SEAM_CROSSING_QUARANTINE region={bot.CurrentRegionID} " +
+                                         $"inside={(int)cycled.Inside.X},{(int)cycled.Inside.Y} bots={AutonomousSeamCrossingQuarantine.DistinctBotsToQuarantine} " +
+                                         $"hours={AutonomousSeamCrossingQuarantine.QuarantineDuration.TotalHours:0} reason=seam-cycle");
                         if (TryPlanCapitalTransit(bot, destination))
                             return HandleCapitalTransit(bot);
                         if (TryEscapeTerminalRoutePocket(bot, current))
