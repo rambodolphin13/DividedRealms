@@ -2747,6 +2747,15 @@ namespace DOL.GS.Spells
 
 		#region messages
 
+		/// <summary>
+		/// A caster-side line that reads right for a pet too: MessageToCaster sends a pet's lines to its owner, so
+		/// "You steal 40 hit points." looked like the owner's own lifetap. A pet's line is "Your bear steals ...".
+		/// </summary>
+		public static string CasterSentence(GameLiving caster, string youForm, string petForm) =>
+			caster is GamePlayer or null ? "You " + youForm : $"Your {caster.Name} {petForm}";
+
+		public static string Points(int amount, string what) => $"{amount} {what} point{(amount == 1 ? "" : "s")}";
+
 		/// <summary>The player who reads this caster's messages: the caster, or the owner of a controlled pet.</summary>
 		private GamePlayer CasterViewer() =>
 			Caster as GamePlayer ?? ((Caster as GameNPC)?.Brain as IControlledBrain)?.GetPlayerOwner();
@@ -2758,6 +2767,10 @@ namespace DOL.GS.Spells
 		/// </summary>
 		public void MessageToCaster(string message, eChatType type)
 		{
+            // Spells with an empty Message2 (Wrath of the Raven, Bainshee snares, Body Lock...) sent a blank line.
+            if (string.IsNullOrEmpty(message))
+                return;
+
             if (!Spell.IsHarmful)
                 CabalistRestDiagnostics.Message(Caster, Spell, message);
             BotTesterLog.SpellMessage(Caster, Spell, message);

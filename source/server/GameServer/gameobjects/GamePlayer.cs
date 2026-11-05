@@ -7655,6 +7655,9 @@ namespace DOL.GS
         /// <param name="chatType"></param>
         public override void MessageToSelf(string message, eChatType chatType)
         {
+            if (string.IsNullOrEmpty(message))
+                return; // an empty spell message is a blank line in the client
+
             Out.SendMessage(message, chatType, eChatLoc.CL_SystemWindow);
         }
 

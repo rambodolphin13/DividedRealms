@@ -1722,8 +1722,9 @@ namespace DOL.GS
 
 								if (ad.AttackResult is eAttackResult.HitStyle)
 								{
-									string damageAmount = $" (+{ad.StyleDamage}, GR: {ad.Style.GrowthRate})";
-									string message = LanguageMgr.GetTranslation(player.Client.Account.Language, "StyleProcessor.ExecuteStyle.PerformPerfectly", ad.Style.Name, damageAmount);
+									// The pet's style, not the owner's ("You perform your Plague perfectly!" read as the owner's own).
+									string damageAmount = $"(+{ad.StyleDamage}, GR: {ad.Style.GrowthRate})";
+									string message = LanguageMgr.GetTranslation(player.Client.Account.Language, "StyleProcessor.ExecuteStyle.PerformsPerfectly", ad.Attacker.Name, ad.Style.Name, damageAmount);
 									player.Out.SendMessage(message, eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
 								}
 
