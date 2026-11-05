@@ -1157,10 +1157,8 @@ namespace DOL.GS
                     continue;
                 if (member is GameBot bot && bot.ResurrectionSpell != null && bot.Mana >= bot.PowerCost(bot.ResurrectionSpell))
                     return true;
-                if (member is GamePlayer player && player.CharacterClass?.ID is
-                    (int)eCharacterClass.Cleric or (int)eCharacterClass.Friar or
-                    (int)eCharacterClass.Healer or (int)eCharacterClass.Shaman or
-                    (int)eCharacterClass.Druid or (int)eCharacterClass.Warden or (int)eCharacterClass.Bard)
+                // Any player who has learned a resurrection (a Heretic was left out of the old class list).
+                if (member is GamePlayer player && AutonomousLivingServer.CanRez(player))
                     return true;
             }
             return false;
