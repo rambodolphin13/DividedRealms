@@ -57,6 +57,14 @@ public static class AutonomousRouteRecoveryPolicy
         status == PathfindingStatus.PartialPathFound &&
         Vector3.DistanceSquared(origin, current) >= ForwardProgressRequired * ForwardProgressRequired;
 
+    public enum UnroutedMemberAction { Wait, Recall, Leave }
+    public const long UnroutedMemberMilliseconds = 60_000;
+
+    /// <summary>A party member with no legal connection to its leader: home after a minute, out of the party a minute later.</summary>
+    public static UnroutedMemberAction UnroutedMemberStep(long withoutRouteMilliseconds, bool recalled) =>
+        withoutRouteMilliseconds < UnroutedMemberMilliseconds ? UnroutedMemberAction.Wait
+        : recalled ? UnroutedMemberAction.Leave : UnroutedMemberAction.Recall;
+
     /// <summary>An escape that would put the bot within this of where it stands moves nothing.</summary>
     public const float EscapeInPlaceRadius = 300;
 

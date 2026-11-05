@@ -1716,6 +1716,52 @@ namespace DOL.GS
             return true;
         }
 
+        // A party member with no legal region connection to its leader (night 2026-11-04: 431 of 1,232 group outcomes had
+        // members in different regions; 388 member entries ended on "No legal region connection currently reaches the
+        // party's warband leader", an Albion bot on the Hibernian frontier among them, and most 2-bot RvR groups sat the
+        // whole 72-minute task). After a minute it goes home to its capital and tries again from there; after another
+        // minute with no connection it leaves the party and chooses its own work.
+        private long _noPartyRouteSinceTick;
+        private bool _noPartyRouteRecalled;
+
+        private bool TryRecoverUnroutedPartyMember(GameBot bot, string destinationLabel)
+        {
+            long now = GameLoop.GameLoopTime;
+            if (_noPartyRouteSinceTick == 0)
+            {
+                _noPartyRouteSinceTick = now;
+                return false;
+            }
+            switch (AutonomousRouteRecoveryPolicy.UnroutedMemberStep(now - _noPartyRouteSinceTick, _noPartyRouteRecalled))
+            {
+                case AutonomousRouteRecoveryPolicy.UnroutedMemberAction.Recall:
+                    AutonomousStuckWatchdog.CapitalLocation capital = AutonomousStuckWatchdog.SafeCapitalFor(bot.Realm);
+                    if (capital.RegionId == 0 || bot.InCombat || !bot.IsAlive)
+                        return false;
+                    ushort fromRegion = bot.CurrentRegionID;
+                    int fromX = bot.X, fromY = bot.Y;
+                    bot.StopMovingOnPath();
+                    bot.StopMoving();
+                    if (!bot.MoveTo(capital.RegionId, capital.X, capital.Y, capital.Z, capital.Heading))
+                        return false;
+                    _noPartyRouteRecalled = true;
+                    _noPartyRouteSinceTick = now;
+                    ResetRouteOrderState();
+                    AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Recovery);
+                    Log.Info($"AUTONOMOUS_PARTY_NO_ROUTE_RECALL bot={bot.Name} id={bot.DatabaseID} realm={GlobalConstants.RealmToName(bot.Realm)} " +
+                             $"from={fromRegion}:{fromX},{fromY} to={capital.RegionId} target=\"{destinationLabel}\"");
+                    SetStatus(bot, "Going home to rejoin the party", GoalText(), $"No legal way from here to the party's {destinationLabel}");
+                    return true;
+                case AutonomousRouteRecoveryPolicy.UnroutedMemberAction.Leave:
+                    _noPartyRouteSinceTick = 0;
+                    _noPartyRouteRecalled = false;
+                    return AutonomousBotGroupCoordinator.LeaveUnreachableParty(bot,
+                        $"No legal region connection reaches the party's {destinationLabel}");
+                default:
+                    return false;
+            }
+        }
+
         private bool TravelToGroupRegion(
             GameBot bot,
             AutonomousBotGroupCoordinator.Directive directive,
@@ -1740,10 +1786,13 @@ namespace DOL.GS
             DbZonePoint crossing = FindNextCrossing(bot, targetRegion, targetX, targetY);
             if (crossing == null)
             {
+                if (TryRecoverUnroutedPartyMember(bot, destinationLabel))
+                    return true;
                 SetStatus(bot, "Replanning group rendezvous", directive.SharedGoal,
                     $"No legal region connection currently reaches the party's {destinationLabel}");
                 return true;
             }
+            _noPartyRouteSinceTick = 0;
 
             if (FollowDarknessFallsHomeExit(bot, crossing)) return true;
             if (TryTownTeleportAcross(bot, crossing, targetRegion, targetX, targetY, bot.Z)) return true;

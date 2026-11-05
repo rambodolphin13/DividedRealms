@@ -1406,6 +1406,32 @@ public static partial class AutonomousBotGroupCoordinator
         }
     }
 
+    /// <summary>A member of an ordinary (not raid) party leaves it to choose its own work. False when not in one.</summary>
+    public static bool LeaveUnreachableParty(GameBot bot, string reason)
+    {
+        Group group = bot?.Group;
+        if (group == null || AutonomousRealmRaid.GetView(group) != null)
+            return false;
+        lock (Sync)
+        {
+            Sessions.TryGetValue(group, out Session session);
+            if (session != null) session.ProcessingAttendanceRemovals = true;
+            try
+            {
+                group.RemoveMember(bot, retainSingleRemainingMember: true);
+                AutonomousObjectiveAssignments.BeginSoloAfterGroupTask(bot, $"Left the party: {reason}");
+            }
+            finally
+            {
+                if (session != null) session.ProcessingAttendanceRemovals = false;
+            }
+            if (session != null) session.LockedSize = BotMembers(group).Length;
+            Log.Info($"AUTONOMOUS_PARTY_NO_ROUTE_LEFT group={session?.Id} objective={session?.ObjectiveKind} bot={bot.Name} " +
+                     $"region={bot.CurrentRegionID} position={bot.X},{bot.Y},{bot.Z} reason={reason}");
+            return true;
+        }
+    }
+
     /// <summary>Stops reissuing an impossible route. One distinct coordinator
     /// reselection and one bounded retry are allowed; only a repeat failure
     /// shortens that member's ordinary fifteen-minute attendance window.</summary>
