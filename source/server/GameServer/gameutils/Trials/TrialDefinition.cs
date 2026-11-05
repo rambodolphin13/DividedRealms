@@ -118,6 +118,8 @@ namespace DOL.GS.Trials
         public string Victory;
         /// <summary>Steps of the same Master Level to finish first. Step 10 of ML1-9 also needs 1-9 unless this is set.</summary>
         public int[] RequiresSteps;
+        /// <summary>A reason the leader may not start this trial at all, or null. Checked before the run begins.</summary>
+        public Func<GamePlayer, string> Refuse;
         /// <summary>Monster names imported from the world database that this trial replaces. Removed at runtime only.</summary>
         public string[] Replaces = Array.Empty<string>();
         /// <summary>Removes <see cref="Replaces"/> only this close to the anchor; 0 means the whole region.</summary>

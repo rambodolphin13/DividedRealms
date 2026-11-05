@@ -139,7 +139,7 @@ namespace DOL.GS.Trials
                 return $"The trials are for those of level {GamePlayer.MAX_LEVEL}.";
             if (MissingSteps(player, starter.Definition) is { Length: > 0 } missing)
                 return $"You must first finish step{(missing.Length > 1 ? "s" : "")} {string.Join(", ", missing)} of Master Level {starter.Definition.ML}.";
-            return null;
+            return starter.Definition.Refuse?.Invoke(player);
         }
 
         public static void Award(TrialRun run)

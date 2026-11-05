@@ -52,10 +52,12 @@ namespace DOL.GS
             bool empowered=StormforgedHeroicRules.HasAvatar(Owner);
             ushort model=empowered && PendragonRules.RealmOffset(Owner)==0?(ushort)650:_normalModel;
             if(Model!=model) Model=model;
-            Size=empowered?(byte)70:(byte)50;
+            byte size=SizeFor(empowered);
+            if(Size!=size) Size=size; // runs every brain tick: setting Size always broadcast a model+size packet
             DamageFactor=empowered?CrownDamage:NormalDamage;
             MaxSpeedBase = Owner.MaxSpeedBase;
         }
+        public static byte SizeFor(bool empowered)=>empowered?(byte)70:(byte)50;
         public override void Stealth(bool hidden)
         {
             if(IsStealthed==hidden) return;

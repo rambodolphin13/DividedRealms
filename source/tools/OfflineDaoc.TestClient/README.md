@@ -40,9 +40,8 @@ there (`.mcp.json` for Claude, `~/.codex/config.toml` for Codex). Scenarios are 
   stopped. That table is cached, so deleting it while the server runs does nothing.
 - `/mob`, `/item` and `/npc` can save world rows. World fixes still go through World Workshop.
 - After a dropped client the character is linkdead for 60 seconds. `login` waits that out.
-- `/player level` leaves Experience at 0, so the next XP change, a kill or a death's loss, lifts it to level 50's floor
-  (`GamePlayer.GainExperience`), about 170 billion, and that buys five Master Levels at once. Players levelling
-  normally never see it. A prepared character is ML5 after its first kill.
+- `/player level` puts Experience on the new level's floor (fix/server-night-1104). A `GameServer.dll` older than that
+  left it at 0, so the first kill or death topped up about 170 billion XP and five Master Levels (ML5 after one kill).
 - Use the `release` tool: during the countdown `/release` is a toggle and cancels auto-release.
 - Attacks fail during the PvP invulnerability timer after login. Wait about 30 seconds, away from aggressive mobs.
 - Testers share a log with `report_finding` and `read_findings` (`--shared-log`, one JSON object a line).

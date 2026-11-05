@@ -107,6 +107,9 @@ namespace DOL.GS
 			get { return m_size; }
 			set
 			{
+				if (m_size == value)
+					return; // same size: nothing to tell clients (pets that sync every tick sent a packet each time)
+
 				m_size = value;
 				if (ObjectState == eObjectState.Active)
 				{

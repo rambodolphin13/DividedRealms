@@ -652,12 +652,23 @@ namespace DOL.GS.ServerRules
             if (living == null || item == null)
                 return false;
 
-            GamePlayer player = living as GamePlayer;
-            IGamePlayer playerLike = living as IGamePlayer;
-
             // GMs can equip everything
-            if (player != null && player.Client.Account.PrivLevel > (uint)ePrivLevel.Player)
+            if (living is GamePlayer player && player.Client.Account.PrivLevel > (uint)ePrivLevel.Player)
                 return true;
+
+            return CheckClassAbilityToUseItem(living, item);
+        }
+
+        /// <summary>
+        /// Whether the living's realm, class and skills allow the item, without the GM pass
+        /// (artifact scholars offer a GM only the versions their class could use).
+        /// </summary>
+        public bool CheckClassAbilityToUseItem(GameLiving living, DbItemTemplate item)
+        {
+            if (living == null || item == null)
+                return false;
+
+            IGamePlayer playerLike = living as IGamePlayer;
 
             // allow usage of all house items
             if ((item.Object_Type == 0 || item.Object_Type >= (int)eObjectType._FirstHouse) && item.Object_Type <= (int)eObjectType._LastHouse)
@@ -1083,6 +1094,11 @@ namespace DOL.GS.ServerRules
             {
                 GamePlayer player = pair.Key;
 
+                // Live gave a player who died during the fight nothing for the kill. Their damage still
+                // counts toward their group's share, so the living members are paid as before.
+                if (!CanEarnNpcKillReward(player))
+                    continue;
+
                 lock (player.AwardLock)
                 {
                     AwardPlayerOnNpcKill(player, totalDamage, killedNpc, playerCountAndDamage, groupCountAndDamage, battlegroupCountAndDamage);
@@ -1136,7 +1152,8 @@ namespace DOL.GS.ServerRules
                 if (mostDamagingGroup != null)
                     itemOwners.Add(mostDamagingGroup);
 
-                if (mostDamagingPlayer?.Owner != null)
+                // A dead player doesn't auto-loot into their bags; their group (if any) still can.
+                if (mostDamagingPlayer?.Owner != null && (mostDamagingPlayer.Owner is not GamePlayer topPlayer || CanEarnNpcKillReward(topPlayer)))
                     itemOwners.Add(mostDamagingPlayer);
 
                 if (mostDamagingBot?.Owner != null)
@@ -1675,6 +1692,9 @@ namespace DOL.GS.ServerRules
         public static bool NoItemLoot(GameNPC killedNpc) =>
             killedNpc is Keeps.GameKeepGuard or GameBot ||
             killedNpc.Brain is IControlledBrain && AutonomousBotRealmPointRewards.ResolveRootRewardOwner(killedNpc) is GamePlayer or GameBot;
+
+        /// <summary>A player who is dead when the mob dies gets no experience, realm points or auto-loot from it.</summary>
+        public static bool CanEarnNpcKillReward(GamePlayer player) => player != null && player.IsAlive;
 
         public virtual void DropLoot(GameNPC killedNpc, GameObject killer, SortedSet<ItemOwnerTotalDamagePair> itemOwners)
         {
