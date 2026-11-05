@@ -1064,6 +1064,7 @@ namespace DOL.GS
             ShowDeadToViewers(killer);
             if (IsAutonomousWorldBot)
             {
+                AnnounceRvrDeath(killer);
                 AutonomousBotStatusPersistence.Queue(this);
                 AutonomousBotGuildSocial.OnBotDeath(this);
                 AutonomousBotVoices.OnBotDeath(this);
@@ -1201,6 +1202,12 @@ namespace DOL.GS
                 if (releaseZone == null || !AutonomousRealmBoundary.Allows(Realm, releaseRegion, releaseZone.ID))
                     release = null;
             }
+            // A battleground has no bind stones: a bot of the bracket releases at its realm's portal keep (outside the
+            // gate, on the field mesh), not at the capital a region away (Discord report 2026-11-04, Abermenai: a dead
+            // groupmate released and "had a far run back").
+            if (IsAutonomousWorldBot && release == null && BattlegroundBrackets.ForRegion(releaseRegion) is { } bracket &&
+                BattlegroundBrackets.Allows(bracket, Level) && BattlegroundBrackets.BotArrival(bracket, Realm) is { } portal)
+                release = new Point3D(portal.X, portal.Y, portal.Z);
             if (IsAutonomousWorldBot && release != null)
             {
                 long now = GameLoop.GameLoopTime;
@@ -1303,6 +1310,39 @@ namespace DOL.GS
                     viewer.Out.SendPlayerDied(this, killer);
                 else
                     RecreateFor(viewer);
+            }
+        }
+
+        /// <summary>
+        /// The region's kill spam for a gamebot killed by another realm, as GamePlayer.ProcessDeath sends it for a
+        /// player: "X was just killed by Y in Z." to the victim's realm and the killer's realm (Discord report
+        /// 2026-11-04, Abermenai: no kill spam for any bot death).
+        /// </summary>
+        private void AnnounceRvrDeath(GameObject killer)
+        {
+            GameLiving owner = AutonomousBotRealmPointRewards.ResolveRootRewardOwner(killer as GameLiving);
+            if (owner == null || owner.Realm == eRealm.None || owner.Realm == Realm || CurrentRegion == null)
+                return;
+            string location = CurrentAreas.Count > 0 && CurrentAreas[0] is AbstractArea { } area and not Area.BindArea
+                ? area.Description
+                : CurrentZone?.Description ?? string.Empty;
+            eChatType type = owner.Realm switch
+            {
+                eRealm.Albion => eChatType.CT_KilledByAlb,
+                eRealm.Midgard => eChatType.CT_KilledByMid,
+                eRealm.Hibernia => eChatType.CT_KilledByHib,
+                _ => eChatType.CT_PlayerDied,
+            };
+            bool killerIsPlayerLike = owner is GamePlayer || owner is GameBot { IsAutonomousWorldBot: true };
+            foreach (GamePlayer player in ClientService.Instance.GetPlayersOfRegion(CurrentRegion))
+            {
+                if (player.Realm != Realm && !(killerIsPlayerLike && player.Realm == owner.Realm) &&
+                    !(ServerProperties.Properties.DEATH_MESSAGES_ALL_REALMS && (killerIsPlayerLike || owner is Keeps.GameKeepGuard)))
+                    continue;
+                string language = player.Client?.Account?.Language;
+                player.Out.SendMessage(LanguageMgr.GetTranslation(language, "GamePlayer.Die.KilledByLocation",
+                    AutonomousNameMask.NameFor(player, this, 0, true, language),
+                    AutonomousNameMask.NameFor(player, owner, 1, false, language), location), type, eChatLoc.CL_SystemWindow);
             }
         }
 
