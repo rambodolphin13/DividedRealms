@@ -477,11 +477,16 @@ namespace DOL.GS
                     AutonomousObjectiveAssignments.Is(bot,eAutonomousObjectiveKind.RvR) && BotSiegeRuntime.HoldingPosition(bot))
                     return ExecuteRvr(brain,bot);
 
+                // A solo bot breaking off a fight it was losing keeps running (AutonomousSoloFightReadiness).
+                if (ContinueSoloFlee(brain, bot, nowTick))
+                    return true;
                 bool postCombatRecovery = BotRestRecovery.NeedsOrContinuesRest(bot) && !BotRestRecovery.BlocksRest(bot);
                 if (brain.HasAggro || (bot.InCombat && !postCombatRecovery) || bot.IsAttacking)
                 {
-                    if (DropStaleFight(brain, bot, nowTick) || TryGroupBreakOff(brain, bot, nowTick))
+                    if (DropStaleFight(brain, bot, nowTick) || TryGroupBreakOff(brain, bot, nowTick) ||
+                        TrySoloDisengage(brain, bot, nowTick))
                         return true;
+                    EndRoadRest(bot);
                     // Defense owns movement; do not resume an old dragon-ring
                     // waypoint from a different position after the fight.
                     _dragonRallyPlanning = null;

@@ -94,6 +94,10 @@ namespace DOL.GS
             // Still backing off from the last monster: the turn is spent, the reaction was already taken.
             if (alone && mayTurnBack && now < _loneWalkHoldUntilTick)
                 return true;
+            // A solo bot hurt in a fight on the road, or about to open a route pull without the health, power or
+            // endurance for it, rests where it stands first (AutonomousSoloFightReadiness).
+            if (!grouped && mayTurnBack && bot.Group == null && HoldRoadRest(bot, now))
+                return true;
             if (now < _nextRouteThreatScanTick)
                 return false;
             // Keep looking while walking a detour: the way to the sidestep is scanned too, and a
@@ -272,6 +276,15 @@ namespace DOL.GS
                                  $"at={blocker.X},{blocker.Y},{blocker.Z} zone=\"{zone.Description}\"");
                         return false;
                     }
+                    if (!grouped && !AutonomousSoloFightReadiness.ReadyForRoutePull(bot.HealthPercent, bot.ManaPercent,
+                            bot.EndurancePercent, bot.MaxMana > 0))
+                    {
+                        if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_PULL_REST bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
+                                 $"target=\"{blocker.Name}\" hp={bot.HealthPercent} power={bot.ManaPercent} endurance={bot.EndurancePercent} " +
+                                 $"dist={bot.GetDistanceTo(blocker)} zone=\"{zone.Description}\"");
+                        BeginRoadRest(bot, now, $"Resting before clearing {blocker.Name} from the route");
+                        return true;
+                    }
                     _routeThreatPullRepeats = blocker == _lastRouteThreatPull && now - _lastRouteThreatPullTick < 45_000
                         ? _routeThreatPullRepeats + 1 : 0;
                     _lastRouteThreatPull = blocker;
@@ -409,17 +422,19 @@ namespace DOL.GS
         /// </summary>
         private const int RetreatFloorSearch = 1536;
 
-        private void BackAwayFrom(GameBot bot, IPathfindingMgr nav, Zone zone, GameNPC threat, GameNPC[] pack, int margin,
-            GameNPC[] others)
+        /// <summary>True when the bot is walking away (or already clear); false when no way out was found.</summary>
+        private bool BackAwayFrom(GameBot bot, IPathfindingMgr nav, Zone zone, GameNPC threat, GameNPC[] pack, int margin,
+            GameNPC[] others, float minimumRadius = 0)
         {
             var members = new (Vector2 Position, int AggroRange)[pack.Length];
             for (int i = 0; i < pack.Length; i++)
                 members[i] = (new(pack[i].X, pack[i].Y), (pack[i].Brain as StandardMobBrain)?.AggroRange ?? 0);
             (Vector2 center, float radius) = AutonomousRouteThreatPolicy.PackRetreat(members, margin);
+            radius = Math.Max(radius, minimumRadius);
             Vector2 here = new(bot.X, bot.Y);
             float distance = Vector2.Distance(here, center);
             if (distance >= radius)
-                return;
+                return true;
             Vector3 start = new(bot.X, bot.Y, bot.Z);
             foreach (Vector2 candidate in AutonomousRouteThreatPolicy.RetreatCandidates(here, center, radius))
             {
@@ -444,11 +459,12 @@ namespace DOL.GS
                 if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=walking " +
                          $"target=\"{threat.Name}\" pack={pack.Length} from={distance:0} radius={radius:0} walk={walkDistance:0} " +
                          $"zone=\"{zone.Description}\" at={bot.X},{bot.Y},{bot.Z} to={floor.X:0},{floor.Y:0},{floor.Z:0}");
-                return;
+                return true;
             }
             if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_RETREAT bot={bot.Name} id={bot.DatabaseID} level={bot.Level} result=no_way_out " +
                      $"target=\"{threat.Name}\" pack={pack.Length} from={distance:0} radius={radius:0} " +
                      $"zone=\"{zone.Description}\" at={bot.X},{bot.Y},{bot.Z}");
+            return false;
         }
 
         private long _nextDangerBypassLogTick;
