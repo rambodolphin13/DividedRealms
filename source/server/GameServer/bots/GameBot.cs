@@ -4497,19 +4497,25 @@ namespace DOL.GS
             }
         }
 
-        // One-time promotion for helpers already present when their owner
-        // reaches 50. Run on the bot's normal turn, never in a player event or
-        // during combat/casting/horse travel. Preserve the existing build/group.
+        // Helpers level with their owner (Discord 2026-11-04: remaking the group
+        // every few levels), up to 50, and get the endgame kit at 50. Never
+        // lowers a helper (a GM-leveled owner spawns helpers above 50). Run on
+        // the bot's normal turn, never in a player event or during
+        // combat/casting/horse travel. Preserve the existing build/group.
         internal bool TryApplyEndgameCompanionUpgrade()
         {
-            if (!IsTemporaryGroupHelper || IsAccountCompanion || _endgameCompanionEquipped || Owner?.Level != 50 ||
+            if (!IsTemporaryGroupHelper || IsAccountCompanion || Owner == null ||
                 !IsAlive || IsCasting || InCombat || IsAttacking || IsOnStableMasterRoute ||
                 Brain is BotBrain { HasAggro: true } || ControlledBrain?.Body is { InCombat: true })
                 return false;
 
+            byte targetLevel = (byte)Math.Min((int)Owner.Level, 50);
+            if (Level > targetLevel || Level == targetLevel && (targetLevel < 50 || _endgameCompanionEquipped))
+                return false;
+
             byte previousLevel = Level;
             int healthPercent = HealthPercent, manaPercent = ManaPercent, endurancePercent = EndurancePercent;
-            Level = 50;
+            Level = targetLevel;
             for (int level = Math.Max(6, previousLevel + 1); level <= Level; level++)
                 ApplyLevelStatGrowth(level);
             if (previousLevel < Level)
@@ -4520,12 +4526,15 @@ namespace DOL.GS
             SetBotSpells();
             SortStyles();
             SortSpells();
-            EquipBot(50);
-            // Replace a pre-50 summon through its normal release lifecycle.
-            // In particular this preserves Necromancer shade cleanup.
-            AutonomousPetSupport.CancelPendingCharm(this);
-            AutonomousPetSupport.ReleaseFieldTurrets(this);
-            CommandNpcRelease();
+            EquipBot(targetLevel);
+            if (targetLevel == 50)
+            {
+                // Replace a pre-50 summon through its normal release lifecycle.
+                // In particular this preserves Necromancer shade cleanup.
+                AutonomousPetSupport.CancelPendingCharm(this);
+                AutonomousPetSupport.ReleaseFieldTurrets(this);
+                CommandNpcRelease();
+            }
             Health = Math.Max(1, MaxHealth * healthPercent / 100);
             Mana = MaxMana * manaPercent / 100;
             Endurance = MaxEndurance * endurancePercent / 100;

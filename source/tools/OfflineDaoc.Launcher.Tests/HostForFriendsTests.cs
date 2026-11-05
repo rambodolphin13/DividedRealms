@@ -126,6 +126,36 @@ public sealed class HostForFriendsTests
     public void TailscaleRange(string address, bool tailscale) =>
         Assert.That(HostForFriends.IsTailscale(IPAddress.Parse(address)), Is.EqualTo(tailscale));
 
+    private static HostForFriends.LocalAddress Local(string address, bool gateway = true) => new(IPAddress.Parse(address), gateway);
+
+    [Test]
+    public void InviteCarriesTailscaleThenInternetThenHome()
+    {
+        var local = new[] { Local("192.168.1.20"), Local("100.90.1.2", gateway: false), Local("172.20.0.1", gateway: false) };
+        var addresses = HostForFriends.InviteAddresses(IPAddress.Parse("203.0.113.7"), local);
+        Assert.That(addresses.Select(a => a.ToString()), Is.EqualTo(new[] { "100.90.1.2", "203.0.113.7", "192.168.1.20" }));
+    }
+
+    [Test]
+    public void PcOnTheInternetDirectlyIsItsOwnInternetAddress()
+    {
+        // Modem in bridge mode: no router to answer UPnP and no home address, which used to give no invite code.
+        var local = new[] { Local("203.0.113.7"), Local("172.20.0.1", gateway: false) };
+        IPAddress? direct = HostForFriends.DirectInternetAddress(local);
+        Assert.That(direct?.ToString(), Is.EqualTo("203.0.113.7"));
+        Assert.That(HostForFriends.InviteAddresses(direct, local).First().ToString(), Is.EqualTo("203.0.113.7"));
+    }
+
+    [Test]
+    public void HomeAddressWithoutAGatewayBeatsNone()
+    {
+        Assert.That(HostForFriends.InviteAddresses(null, [Local("192.168.1.20", gateway: false)]).Select(a => a.ToString()),
+            Is.EqualTo(new[] { "192.168.1.20" }));
+        Assert.That(HostForFriends.InviteAddresses(null, [Local("172.20.0.1", gateway: false), Local("10.0.0.5")]).Single().ToString(),
+            Is.EqualTo("10.0.0.5"));
+        Assert.That(HostForFriends.InviteAddresses(null, [Local("169.254.3.4")]), Is.Empty);
+    }
+
     [Test]
     public void InternetModeNeedsHostingAndOpensTheRouterWithoutChangingTheRegionAddress()
     {

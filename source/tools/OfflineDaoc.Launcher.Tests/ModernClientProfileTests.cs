@@ -83,7 +83,8 @@ public sealed class ModernClientProfileTests
         WriteProfile();
         var config = Path.Combine(root, "server", "config", "serverconfig.xml");
         File.WriteAllText(config, File.ReadAllText(config).Replace("127.0.0.1", "192.168.1.5"));
-        Assert.Throws<InvalidDataException>(() => ModernClientProfile.Load(root));
+        var error = Assert.Throws<InvalidDataException>(() => ModernClientProfile.Load(root))!;
+        Assert.That(error.Message, Does.Contain("<IP>192.168.1.5</IP>").And.Contain("HOST FOR FRIENDS"));
     }
 
     private ModernClientProfile WriteProfile()

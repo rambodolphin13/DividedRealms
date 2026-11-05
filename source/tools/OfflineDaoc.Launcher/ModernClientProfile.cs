@@ -43,11 +43,21 @@ public sealed record ModernClientProfile
         var connection = new DbConnectionStringBuilder { ConnectionString = server.Element("DBConnectionString")?.Value ?? "" };
         // A relative Data Source (the packages' ../data/opendaoc.sqlite3.db) is relative to the server folder.
         string database = connection.TryGetValue("Data Source", out object? value) ? Convert.ToString(value) ?? "" : "";
-        if (!HostForFriends.IsAllowedListenAddress(server.Element("IP")?.Value) || server.Element("Port")?.Value != Port.ToString() ||
-            server.Element("DBType")?.Value != "SQLITE" ||
+        const string config = @"runtime\server\config\serverconfig.xml";
+        string? ip = server.Element("IP")?.Value.Trim();
+        if (!HostForFriends.IsAllowedListenAddress(ip))
+            throw new InvalidDataException(
+                $"The server address in {config} is <IP>{ip}</IP>. It must be {HostForFriends.Loopback} (play alone) or " +
+                $"{HostForFriends.AllInterfaces} (Host for Friends). Set it back to {HostForFriends.Loopback} and use HOST FOR FRIENDS " +
+                "to let friends in. Your internet address, if you need one, goes in <PublicIP>, not <IP>.");
+        if (server.Element("Port")?.Value.Trim() != Port.ToString())
+            throw new InvalidDataException($"The server port in {config} is <Port>{server.Element("Port")?.Value.Trim()}</Port>. This client logs in on {Port}; set it back to {Port}.");
+        if (server.Element("DBType")?.Value != "SQLITE" ||
             !string.Equals(Path.GetFullPath(database, Path.GetFullPath(Path.Combine(runtime, "server"))),
                 Path.GetFullPath(Path.Combine(runtime, "data", "opendaoc.sqlite3.db")), StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Modern test profile must use its own SQLite database and loopback endpoint (or Host for Friends).");
+            throw new InvalidDataException(
+                $"{config} must use this install's own SQLite database (DBType SQLITE, Data Source ../data/opendaoc.sqlite3.db). " +
+                "Was the file copied from another install?");
     }
 
     // host: a friend's server address (Join Friend); null starts against this install's own server.

@@ -3,6 +3,17 @@
 The newest version is first. For the full detail of every earlier update, see
 [docs/history/CHANGELOG-0.3-to-0.32b.md](docs/history/CHANGELOG-0.3-to-0.32b.md).
 
+## DR-dev-0.1a — 2026-11-04
+
+Three fixes to the Fishing Update; it replaces DR-dev-0.1. The world is unchanged.
+
+- Client setup accepts any build of `gamedata.mpk` (DR-dev-0.1 refused every one but the stock copy, so newer live
+  installs couldn't set up). The fishing rod's catalog rows go in by ID; a build that already uses 4927/4928 (Eden's
+  does) is left as it is and its own object stands in for the rod.
+- Companions raise their player in stacked dungeons: monsters more than 400 units above or below, or out of sight in a
+  dungeon, no longer block a raise, an idle monster holds it at most 20 s, and a waiting companion says why in /group.
+- Host for Friends makes an invite code on a PC that holds a public address itself (modem in bridge mode).
+
 ## DR-dev-0.1, the Fishing Update — 2026-11-04
 
 The first build under the Divided Realms numbering, for the original 1.130 client. It carries everything below,

@@ -3254,7 +3254,23 @@ internal sealed partial class MainForm : Form
         // and the TCP listener coming online.  Without it, a second click can
         // start another CoreServer while the first one is still loading the
         // world, and both processes then contend for the same SQLite database.
-        if (_resettingKeepsRelics || _savingXpRates || _serverProcess is { HasExited: false } || IsServerRunning() || FindExactServerProcess() is not null) return;
+        if (_resettingKeepsRelics || _savingXpRates || _serverProcess is { HasExited: false }) return;
+        using (var ownServer = FindExactServerProcess())
+        {
+            if (ownServer is not null || IsServerRunning())
+            {
+                // Without a word here a second install's server (say an older version still open) made Start look dead.
+                _launchWhenReady = false;
+                int port = _modernClient?.Port ?? 10300;
+                MessageBox.Show(this, ownServer is not null
+                        ? "This folder's server is already running. Wait a moment for the dashboard to catch up, or press Stop Server first."
+                        : $"Another server is already using port {port}, so this one cannot start. Only one Divided Realms server " +
+                          "can run at a time: close the other version's launcher and end any CoreServer.exe left in Task Manager, then start again.",
+                    "Server already running", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _ = RefreshDashboardAsync();
+                return;
+            }
+        }
         if (_botGoalsSettings?.HasUnsavedChanges == true)
         {
             MessageBox.Show(this, "Save or undo your edits in Bot Goals Setting before starting the server.", "Unsaved bot goals");

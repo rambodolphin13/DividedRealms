@@ -253,9 +253,45 @@ def splice(source: bytes, changes: list) -> bytes:
     return bytes(out + source[position:])
 
 
+def row_id(line: str):
+    first = line.split(',', 1)[0].strip()
+    return int(first) if first.isascii() and first.isdigit() else None
+
+
+def with_rows(table: str, rows: list):
+    """The launcher's WithRows: each row before the first higher ID; None when one of our IDs holds another row."""
+    lines = table.split('\r\n')
+    for row in rows:
+        numbered = [(at, row_id(line)) for at, line in enumerate(lines) if row_id(line) is not None]
+        if not numbered:
+            return None
+        same = [lines[at] for at, n in numbered if n == row_id(row)]
+        if same:
+            if any(line != row for line in same):
+                return None
+            continue
+        lines.insert(next((at for at, n in numbered if n > row_id(row)), numbered[-1][0] + 1), row)
+    return '\r\n'.join(lines)
+
+
+def adapt(original: bytes, entry: dict) -> bytes:
+    """The launcher's Adapt: an AnyBuild archive that isn't the stock one gets the rows by ID, or stays as it is."""
+    out = original
+    for part in entry['Members']:
+        table = member_of(out, part['Member']).decode('latin1')
+        added = with_rows(table, part['Rows'])
+        if added is None:
+            return original
+        if added != table:
+            out = with_member(out, added.encode('latin1'), part['Member'])
+    return out
+
+
 def apply(original: bytes, entry: dict) -> bytes:
     """The launcher's algorithm, for the tests: check the input, rebuild the output, check it."""
     if sha(original) != entry['InputSha256']:
+        if entry.get('AnyBuild'):
+            return adapt(original, entry)
         raise ValueError(f"{entry.get('From', entry['Path'])}: not the pristine {CLIENT_VERSION} file")
     member = entry.get('Member')
     if entry.get('Members'):
@@ -416,11 +452,14 @@ def rod_entries(client: Path) -> list:
         changes = changed_middle(catalogs[name], table)
         inserted = b''.join(block for _, _, block in changes).decode('latin1').strip('\r\n').split('\r\n')
         assert [line.split(',', 1)[0] for line in inserted] == [row[0] for row in added[name]], f'{name}: more than our rows'
-        members.append(dict(Member=name, Edits=encoded(changes)))
+        members.append(dict(Member=name, Edits=encoded(changes), Rows=inserted))
         patched = with_member(patched, table, name)
+    # AnyBuild: players' gamedata.mpk is often not this one (live updates it without game.dll, other clients change it), so
+    # the launcher adds the Rows by ID to any build and only the stock one is hash-checked end to end.
     game_entry = dict(Path=GAMEDATA, InputSha256=sha(game), OutputSha256=sha(patched), OutputSize=len(patched), Edits=[],
-                      Members=members)
+                      Members=members, AnyBuild=True)
     assert apply(game, game_entry) == patched
+    assert adapt(game, game_entry) == patched, 'rows placed by ID differ from the stock edits'
     return [nif_entry, game_entry]
 
 
