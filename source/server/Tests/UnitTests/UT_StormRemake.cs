@@ -247,6 +247,35 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void Regalia_AbilitiesAreRegisteredAndShowTheirOwnTooltips()
+        {
+            foreach (int id in new[] { StormRegaliaSpells.CrownOfTempest, StormRegaliaSpells.Wolfmantle, StormRegaliaSpells.StormguardWard, StormRegaliaSpells.ThunderRebuke })
+            {
+                Assert.That(MasterLevelAbilities.For(id)?.Run, Is.Not.Null, id.ToString());
+                Assert.That(DOL.GS.PacketHandler.PacketLib1110.UsesOwnTooltipIdentity(id), Is.True, id.ToString());
+            }
+        }
+
+        [Test]
+        public void Regalia_CrownOfTempestFillsTheOrbs()
+        {
+            var owner = NewPool();
+            var spell = new Spell(new DbSpell { SpellID = StormRegaliaSpells.CrownOfTempest, Type = "StormSovereignAbility", Target = "Self" }, 50);
+            var handler = new StormSovereignHandler(owner, spell, new SpellLine("Item Effects", "Item Effects", "", false));
+            handler.Ability.Run(handler, owner);
+            Assert.That(StormTempest.Charges(owner), Is.EqualTo(StormTempest.MaxCharges));
+        }
+
+        [Test]
+        public void Regalia_TiersGrowWithPiecesAndTheFullSetIsSeven()
+        {
+            Assert.That(StormRegalia.Pieces, Has.Length.EqualTo(7).And.All.StartWith(StormRegalia.Prefix));
+            Assert.That(StormRegalia.Tiers.Select(t => t.Pieces), Is.EqualTo(new[] { 2, 4, 6, 7 }));
+            Assert.That(StormRegalia.Tiers.All(t => t.Mods.Length > 0), Is.True);
+            Assert.That(StormRegalia.DefenseTempest(null), Is.EqualTo(1), "no set, one charge per block or parry");
+        }
+
+        [Test]
         public void Tempest_EachChargeAddsTwentyPercent()
         {
             Assert.That(StormTempest.Bonus(0), Is.EqualTo(1.0));

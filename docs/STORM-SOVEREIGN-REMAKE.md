@@ -220,3 +220,23 @@ those icons until they cancel them.
 - **Stormslam** (Shields, level 12, anytime): a 9-second stun with normal stun immunity; builds 1 Tempest.
 - World: `storm_remake_edits.py <db> edits.json --update` takes a world with the first remake to this one;
   without `--update` it builds the whole remake on an old-kit world. Both give identical class rows (checked on copies).
+
+## Storm Regalia: the class armor as real items (2026-11-04)
+
+Seven level 51 pieces on the Stormforged art, Storm Sovereign only, not tradeable or sellable. Chain armor at
+AF 102 / 27% absorption (the best chain in the game); the hauberk draws the shoulder pads (extension 5).
+
+| Piece | Model | Highlights | Ability |
+|---|---|---|---|
+| Stormcrown of the Sovereign | 4942 | Str/Con 20, Pie 15, 60 hits, energy/spirit, Str/Con cap +5, Hammer/Axe +4 | Use: Crown of Tempest, Tempest to 5 (3 min) |
+| Hauberk of the Storm Sovereign | 4929 | Str/Con 22, Dex 15, 80 hits, crush/slash/thrust 10, +5% melee and style damage, Shields +4 | When struck (10%): Stormguard Ward, 200 storm shield |
+| Thunderbound Sleeves | 4931 | Str 18, Qui 15, Dex 12, 50 hits, heat/cold, Axe +4, 5% haste, Dex/Qui cap +5 | When struck (10%): Thunder Rebuke, lightning at the attacker |
+| Gauntlets of the Thunder King | 4932 | Str 15, Dex 18, Qui 15, 40 hits, matter/body, Hammer +4, all melee +3, 5% melee crit, Str cap +5 | |
+| Stormforged Leggings | 4930 | Con 22, Str/Pie 15, 70 hits, energy/body/spirit, Parry +4, Pie cap +5, hits cap +50 | |
+| Boots of the Rolling Thunder | 4933 | Dex 15, Qui 18, Con 15, 40 hits, cold/matter/heat, Shields +4, Qui cap +5, +3% style damage | |
+| Wolfmantle of the Storm King | 4937 | Str/Con/Pie 15, 50 hits, physical resists 5, +5% melee/spell damage, +5% absorption | Use: Wolfmantle, 20% absorption and haste 30 s (5 min) |
+
+Set bonus (`gameutils/StormRegalia.cs`, held while worn, re-read at login): 2 pieces +5% all resistances; 4 pieces +10% melee
+and style damage; 6 pieces +10% armor absorption and spell damage; all 7 +10% maximum health and every block or parry
+builds 2 Tempest. A level 50 Storm Sovereign whispers **Storm Regalia** to the Crownkeeper for any pieces they don't carry.
+World rows: `source/tools/sovereign/storm_regalia_edits.py` (7 items, 4 ability spells 63740-63743), through World Workshop.

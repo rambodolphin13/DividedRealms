@@ -5245,7 +5245,7 @@ namespace DOL.GS
             // Storm Sovereign: every melee blow you block or parry builds one Tempest charge.
             if (StormforgedRules.IsStormforged(CharacterClass.ID) && ad.IsMeleeAttack &&
                 ad.AttackResult is eAttackResult.Blocked or eAttackResult.Parried)
-                StormTempest.Add(this);
+                StormTempest.Add(this, StormRegalia.DefenseTempest(this));
 
             switch (ad.AttackResult)
             {
@@ -8958,6 +8958,9 @@ namespace DOL.GS
             if (item is IGameInventoryItem inventoryItem)
                 inventoryItem.OnEquipped(this);
 
+            if (StormRegalia.IsPiece(item))
+                StormRegalia.Refresh(this, arriving: item);
+
             if (item.Item_Type is >= Slot.RIGHTHAND and <= Slot.RANGED)
             {
                 if (item.Hand == 1) // 2h
@@ -9111,6 +9114,9 @@ namespace DOL.GS
         {
             if (item == null)
                 return;
+
+            if (StormRegalia.IsPiece(item))
+                StormRegalia.Refresh(this, leaving: item);
 
             if (item.Item_Type is >= Slot.RIGHTHAND and <= Slot.RANGED)
             {
