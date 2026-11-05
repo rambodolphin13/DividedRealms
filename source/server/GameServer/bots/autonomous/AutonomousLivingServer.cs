@@ -340,18 +340,24 @@ public static partial class AutonomousLivingServer
         return PlaceOf(living);
     }
 
-    /// <summary>A real player of a class that can resurrect in 2002-2003.</summary>
-    public static bool IsRezClass(GamePlayer player) => IsRezClassId(player?.CharacterClass?.ID ?? 0);
+    /// <summary>
+    /// A real player of a class that can resurrect, or of any class whose lines hold a resurrection it has learned.
+    /// Discord report 2026-11-05 (Abermenai): a Heretic, who learns Revive at level 10, was not on the 2002-2003 class
+    /// list, so a dead gamebot beside them released after 20 seconds instead of waiting for the rez.
+    /// </summary>
+    public static bool IsRezClass(GamePlayer player) => IsRezClassId(player?.CharacterClass?.ID ?? 0) || KnowsResurrection(player);
 
     public static bool IsRezClassId(int classId) => classId is
         (int)eCharacterClass.Cleric or (int)eCharacterClass.Friar or (int)eCharacterClass.Healer or
         (int)eCharacterClass.Shaman or (int)eCharacterClass.Druid or (int)eCharacterClass.Warden or
-        (int)eCharacterClass.Bard;
+        (int)eCharacterClass.Bard or (int)eCharacterClass.Heretic or (int)eCharacterClass.Valkyrie;
 
-    /// <summary>A real player of a rez class who has actually learned a resurrection spell.</summary>
-    public static bool CanRez(GamePlayer player)
+    /// <summary>A real player who has actually learned a resurrection spell.</summary>
+    public static bool CanRez(GamePlayer player) => KnowsResurrection(player);
+
+    private static bool KnowsResurrection(GamePlayer player)
     {
-        if (!IsRezClass(player))
+        if (player == null)
             return false;
         try
         {
