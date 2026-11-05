@@ -251,6 +251,31 @@ public static class AutonomousPopulationController
                 PlaceAtCapitalFallback(bot, record);
                 bot.SynchronizePositionForLoginValidation();
             }
+            // Night playtest 2026-11-04: a bot logged out dead was saved on its corpse with 1 health (the save keeps at least 1)
+            // and came back there alive: Caeloinlan logged in beside the pooka camp that had killed it and died 11 s later. It
+            // comes back as if it had released: at the nearest bind in that region (else its capital), with a third of its
+            // health, power and endurance.
+            if (LoggedOutDead(record))
+            {
+                Point3D bind = BotReleaseBindPoints.Nearest((ushort)record.RegionId, record.X, record.Y, (eRealm)record.Realm);
+                Zone bindZone = bind is { } point ? WorldMgr.GetRegion((ushort)record.RegionId)?.GetZone(point.X, point.Y) : null;
+                if (bind is { } spot && bindZone != null && AutonomousRealmBoundary.Allows((eRealm)record.Realm, (ushort)record.RegionId, bindZone.ID))
+                {
+                    bot.CurrentRegionID = (ushort)record.RegionId;
+                    bot.X = spot.X;
+                    bot.Y = spot.Y;
+                    bot.Z = spot.Z;
+                }
+                else
+                    PlaceAtCapitalFallback(bot, record);
+                bot.SynchronizePositionForLoginValidation();
+                bot.Health = Math.Max(1, bot.MaxHealth / 3);
+                bot.Mana = Math.Max(0, bot.MaxMana / 3);
+                bot.Endurance = Math.Max(0, bot.MaxEndurance / 3);
+                record.IsAlive = true;
+                Log.Info($"AUTONOMOUS_LOGIN_AFTER_DEATH bot=\"{record.Name}\" id={record.BotId} region={record.RegionId} " +
+                         $"corpse={record.X},{record.Y},{record.Z} at={bot.CurrentRegionID}:{bot.X},{bot.Y},{bot.Z}");
+            }
             // A beggar (bot_living_beggars) always logs in in its own capital.
             if (AutonomousBeggars.PlaceAtLogin(bot, record))
                 bot.SynchronizePositionForLoginValidation();
@@ -294,6 +319,10 @@ public static class AutonomousPopulationController
     public static bool IsFreshUnplacedLevelOneRecord(OfflineWorldBotRecord record) =>
         record != null && record.Level == 1 && record.Experience == 0 && record.RealmPoints == 0 &&
         record.RegionId == 0 && string.IsNullOrWhiteSpace(record.LastSavedUtc);
+
+    /// <summary>A record last saved while the bot lay dead (never-saved records are not: their IsAlive is just the default).</summary>
+    public static bool LoggedOutDead(OfflineWorldBotRecord record) =>
+        record != null && !record.IsAlive && record.RegionId != 0 && !string.IsNullOrWhiteSpace(record.LastSavedUtc);
 
     /// <summary>How close to a boss (an epic or a scripted named monster with its own tether) a saved spot may be.</summary>
     public const int LoginBossClearance = 2_500;
