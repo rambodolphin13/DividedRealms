@@ -5371,6 +5371,18 @@ namespace DOL.GS
             ushort failedSourceRegion = bot.CurrentRegionID;
             ushort failedSourceZone = bot.CurrentZone?.ID ?? 0;
             ushort failedTargetRegion = _camp?.RegionId ?? 0;
+            // Night 2026-11-04: 289 escapes from a capital spawn to the same capital spawn, one every 33 s for about 27
+            // minutes per bot: the goal (a merchant inside Darkness Falls) failed at once from the capital, and three
+            // terminal failures "escaped" the bot to where it stood. An escape to where the bot already is ends the
+            // between-task goal instead.
+            if (AutonomousRouteRecoveryPolicy.IsEscapeInPlace(failedSourceRegion, current, escapeRegion, escape))
+            {
+                DropOutOfRegionServiceGoal(bot, force: true);
+                ResetRepeatedRouteFailures();
+                Log.Info($"AUTONOMOUS_ROUTE_POCKET_ESCAPE_SKIPPED bot={bot.Name} id={bot.DatabaseID} " +
+                         $"at={failedSourceRegion}:{(int)current.X},{(int)current.Y},{(int)current.Z} terminalFailures={_terminalRouteFailuresInPocket}");
+                return false;
+            }
             bool moved = escapeRegion == bot.CurrentRegionID
                 ? bot.MoveInRegion(escapeRegion, (int)Math.Round(escape.X), (int)Math.Round(escape.Y),
                     (int)Math.Round(escape.Z), bot.Heading, true)
@@ -5380,6 +5392,9 @@ namespace DOL.GS
                 return false;
 
             ClearZonePointQuarantine(bot, failedSourceRegion, failedSourceZone, failedTargetRegion);
+            // A service, staging or idle destination left behind in the old region is chosen again from the new one.
+            if (escapeRegion != failedSourceRegion)
+                DropOutOfRegionServiceGoal(bot, force: false);
 
             Log.Warn($"AUTONOMOUS_ROUTE_POCKET_ESCAPE bot={bot.Name} id={bot.DatabaseID} " +
                      $"from={_lastTerminalRouteFailureRegion}:{(int)current.X},{(int)current.Y},{(int)current.Z} " +
@@ -5397,6 +5412,22 @@ namespace DOL.GS
                 $"Reached validated ground in {escapeName}; resuming the same goal",
                 _camp?.MonsterName ?? string.Empty, _camp?.ZoneName ?? escapeName, true);
             return true;
+        }
+
+        /// <summary>
+        /// Forgets the merchant or broker the bot was routing to, and a between-task camp (service, RvR staging, town
+        /// idle, craft) outside the bot's region, so the next turn chooses them again from where it now stands.
+        /// </summary>
+        private void DropOutOfRegionServiceGoal(GameBot bot, bool force)
+        {
+            if (_serviceNpc != null && (force || _serviceNpc.CurrentRegionID != bot.CurrentRegionID))
+            {
+                _serviceNpc = null;
+                _serviceKind = null;
+                _nextServiceSearchTick = 0;
+            }
+            if (_camp != null && AutonomousRouteRecoveryPolicy.IsBetweenTaskCamp(_camp.Id) && (force || _camp.RegionId != bot.CurrentRegionID))
+                _camp = null;
         }
 
         private static void ClearZonePointQuarantine(GameBot bot, ushort sourceRegion,
