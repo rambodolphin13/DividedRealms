@@ -98,6 +98,21 @@ namespace DOL.GS
 
         public int EpicBattlegroupDropMultiplier { get; init; } = 2;
 
+        /// <summary>
+        /// Personal loot (phase 5, owner 2026-11-05): in a group or battlegroup each member who rolls an item gets one made
+        /// for their own class, meant for them. Off: the old way, where the item is made for a random member's class and
+        /// goes to the kill's owners.
+        /// </summary>
+        public bool PersonalLoot { get; init; } = true;
+
+        /// <summary>
+        /// Bad-luck protection (phase 5): every roll a participant misses adds this many percent to their next roll, up to
+        /// BadLuckMax, until they get an item. 0 turns it off (the default, so drop rates stay as they were).
+        /// </summary>
+        public double BadLuckStep { get; init; } = 0;
+
+        public double BadLuckMax { get; init; } = 25;
+
         /// <summary>How strong a random item's bonuses are (phase 3). Off by default: the old roll-then-trim is used.</summary>
         public RandomItemBudgetRules Budget { get; init; } = new();
 
@@ -138,6 +153,8 @@ namespace DOL.GS
             LootRules.Range(BattlegroupChance, 0, 100, "RandomItems.BattlegroupChance");
             LootRules.Range(BattlegroupPlayersPerDrop, 1, 500, "RandomItems.BattlegroupPlayersPerDrop");
             LootRules.Range(EpicBattlegroupDropMultiplier, 1, 10, "RandomItems.EpicBattlegroupDropMultiplier");
+            LootRules.Range(BadLuckStep, 0, 50, "RandomItems.BadLuckStep");
+            LootRules.Range(BadLuckMax, 0, 100, "RandomItems.BadLuckMax");
             if (Budget == null)
                 throw new InvalidDataException("RandomItems.Budget must be present when it is written.");
             Budget.Validate();

@@ -1719,6 +1719,39 @@ namespace DOL.GS.ServerRules
             return order;
         }
 
+        /// <summary>
+        /// Attempts auto pick up in order; returns false when the item should be left on the ground. Every owner tried may
+        /// also pick it up by hand later. A blocked owner (full bags, out of range) stops the kill's owners from trying
+        /// further, as before. An intended owner who is blocked hands the item on to them. An intended player with autoloot
+        /// off keeps it (personal loot, phase 5): it stays on the ground for them alone to pick up. A bot that turns it
+        /// down hands it on, since a bot never picks up by hand.
+        /// </summary>
+        public static bool TryAutoPickUp(GameStaticItemTimed item, List<(IGameStaticItemOwner Owner, bool Intended)> itemOwners)
+        {
+            foreach ((IGameStaticItemOwner owner, bool intended) in itemOwners)
+            {
+                item.AddOwner(owner);
+                TryPickUpResult result = item.TryAutoPickUp(owner);
+
+                if (result is TryPickUpResult.Success)
+                    return true;
+                else if (result is TryPickUpResult.DoesNotWant)
+                {
+                    if (intended && owner is GamePlayer)
+                        return false;
+                    continue;
+                }
+                else if (result is TryPickUpResult.Blocked)
+                {
+                    if (intended)
+                        continue;
+                    break;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>A player who is dead when the mob dies gets no experience, realm points or auto-loot from it.</summary>
         public static bool CanEarnNpcKillReward(GamePlayer player) => player != null && player.IsAlive;
 
@@ -1794,29 +1827,6 @@ namespace DOL.GS.ServerRules
                 item.AddToWorld();
             }
 
-            // Attempt auto pick up. Every owner tried may also pick it up by hand later. A blocked owner (full bags, out of
-            // range) stops the kill's owners from trying further, as before; a blocked intended owner hands it on to them.
-            static bool TryAutoPickUp(GameStaticItemTimed item, List<(IGameStaticItemOwner Owner, bool Intended)> itemOwners)
-            {
-                foreach ((IGameStaticItemOwner owner, bool intended) in itemOwners)
-                {
-                    item.AddOwner(owner);
-                    TryPickUpResult result = item.TryAutoPickUp(owner);
-
-                    if (result is TryPickUpResult.Success)
-                        return true;
-                    else if (result is TryPickUpResult.DoesNotWant)
-                        continue;
-                    else if (result is TryPickUpResult.Blocked)
-                    {
-                        if (intended)
-                            continue;
-                        break;
-                    }
-                }
-
-                return false;
-            }
 
             static void NotifyNearbyPlayers(GameNPC killedNpc, GameStaticItemTimed item, List<GamePlayer> nearbyPlayers)
             {
