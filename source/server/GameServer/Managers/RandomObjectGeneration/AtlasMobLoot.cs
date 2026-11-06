@@ -27,14 +27,21 @@ namespace DOL.GS {
         /// <returns></returns>
         public override LootList GenerateLoot(GameNPC mob, GameObject killer)
         {
+            return GenerateLoot(LootContext.For(mob, killer));
+        }
+
+        public override LootList GenerateLoot(LootContext context)
+        {
+            GameNPC mob = context.Mob;
+            GameObject killer = context.Killer;
             LootList loot = base.GenerateLoot(mob, killer);
 
             try
             {
                 // BotBrain implements IControlledBrain but is NOT ControlledMobBrain.
                 // More importantly a persistent bot's class pet has no human owner.
-                // Resolve the actual player-like owner before any class/realm rolls.
-                GameLiving owner = ResolveEquipmentLootOwner(killer);
+                // The context resolved the actual player-like owner before any class/realm rolls.
+                GameLiving owner = context.Owner;
                 if (owner == null)
                 {
                     return loot;
@@ -183,27 +190,11 @@ namespace DOL.GS {
             return Util.Chance(chance);
         }
 
-        public static GameLiving ResolveEquipmentLootOwner(GameObject killer)
-        {
-            GameLiving owner = ResolveLootOwner(killer);
-            // Helpers never own loot; their real owner may receive the kill's
-            // normal loot through the existing reward-owner/pickup path.
-            if (owner is GameBot { IsTemporaryGroupHelper: true, IsAccountCompanion: false } helper)
-                owner = helper.Owner;
-            return IsLootParticipant(owner) ? owner : null;
-        }
+        public static GameLiving ResolveEquipmentLootOwner(GameObject killer) => LootContext.ResolveOwner(killer);
 
-        private static bool IsLootParticipant(GameLiving living)
-        {
-            // Account companions are real characters and roll for loot like any group member.
-            return living is GamePlayer || living is GameBot { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false } ||
-                   living is GameBot { IsAccountCompanion: true };
-        }
+        private static bool IsLootParticipant(GameLiving living) => LootContext.IsLootParticipant(living);
 
-        private static IEnumerable<GameLiving> GetLootParticipants(Group group)
-        {
-            return group.GetMembersInTheGroup().Where(IsLootParticipant);
-        }
+        private static IEnumerable<GameLiving> GetLootParticipants(Group group) => LootContext.GroupLootParticipants(group);
 
         private static eCharacterClass GetLootClass(GameLiving participant)
         {

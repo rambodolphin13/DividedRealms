@@ -1693,6 +1693,32 @@ namespace DOL.GS.ServerRules
             killedNpc is Keeps.GameKeepGuard or GameBot ||
             killedNpc.Brain is IControlledBrain && AutonomousBotRealmPointRewards.ResolveRootRewardOwner(killedNpc) is GamePlayer or GameBot;
 
+        private static readonly IGameStaticItemOwner.OwnerEqualityComparer _itemOwnerComparer = new();
+
+        /// <summary>
+        /// Who tries to auto-pick a drop up, in order (loot redesign phase 1): the participant the drop is meant for, then the
+        /// kill's owners by damage, each once. An autonomous raid share keeps its own split, and a dead player is skipped.
+        /// </summary>
+        public static List<(IGameStaticItemOwner Owner, bool Intended)> PickUpOrder(GameLiving intendedOwner, IEnumerable<ItemOwnerTotalDamagePair> itemOwners)
+        {
+            var order = new List<(IGameStaticItemOwner Owner, bool Intended)>();
+            var owners = itemOwners.Where(pair => pair?.Owner != null).Select(pair => pair.Owner).ToList();
+
+            if (intendedOwner is IGameStaticItemOwner intended && !owners.Any(owner => owner is RealmRaidLootOwner) &&
+                (intendedOwner is not GamePlayer player || CanEarnNpcKillReward(player)))
+            {
+                order.Add((intended, true));
+            }
+
+            foreach (IGameStaticItemOwner owner in owners)
+            {
+                if (!order.Any(entry => _itemOwnerComparer.Equals(entry.Owner, owner)))
+                    order.Add((owner, false));
+            }
+
+            return order;
+        }
+
         /// <summary>A player who is dead when the mob dies gets no experience, realm points or auto-loot from it.</summary>
         public static bool CanEarnNpcKillReward(GamePlayer player) => player != null && player.IsAlive;
 
@@ -1700,18 +1726,18 @@ namespace DOL.GS.ServerRules
         {
             List<GamePlayer> playersInRadius = killedNpc.GetPlayersInRadius(WorldMgr.INFO_DISTANCE);
 
-            DbItemTemplate[] drops = LootMgr.GetLoot(killedNpc, killer);
-            RunTelemetry.Loot(killedNpc, killer, drops);
+            LootDrop[] drops = LootMgr.GetDrops(killedNpc, killer);
+            RunTelemetry.Loot(killedNpc, killer, drops.Select(drop => drop.Item).ToArray());
 
-            foreach (DbItemTemplate itemTemplate in drops)
+            foreach (LootDrop drop in drops)
             {
-                if (GameMoney.IsItemMoney(itemTemplate.Name))
-                    CreateMoney(killedNpc, itemTemplate, itemOwners, playersInRadius);
+                if (GameMoney.IsItemMoney(drop.Item.Name))
+                    CreateMoney(killedNpc, drop.Item, PickUpOrder(drop.IntendedOwner, itemOwners), playersInRadius);
                 else
-                    CreateItem(killedNpc, itemTemplate, itemOwners, playersInRadius);
+                    CreateItem(killedNpc, drop.Item, PickUpOrder(drop.IntendedOwner, itemOwners), playersInRadius);
             }
 
-            static void CreateMoney(GameNPC killedNpc, DbItemTemplate itemTemplate, SortedSet<ItemOwnerTotalDamagePair> itemOwners, List<GamePlayer> playersInRadius)
+            static void CreateMoney(GameNPC killedNpc, DbItemTemplate itemTemplate, List<(IGameStaticItemOwner Owner, bool Intended)> itemOwners, List<GamePlayer> playersInRadius)
             {
                 GameMoney money = new(itemTemplate.Price, killedNpc)
                 {
@@ -1721,24 +1747,13 @@ namespace DOL.GS.ServerRules
 
                 NotifyNearbyPlayers(killedNpc, money, playersInRadius);
 
-                // Attempt auto pick up.
-                foreach (ItemOwnerTotalDamagePair itemOwner in itemOwners)
-                {
-                    money.AddOwner(itemOwner.Owner);
-                    TryPickUpResult result = money.TryAutoPickUp(itemOwner.Owner);
-
-                    if (result is TryPickUpResult.Success)
-                        return;
-                    else if (result is TryPickUpResult.DoesNotWant)
-                        continue;
-                    else if (result is TryPickUpResult.Blocked)
-                        break;
-                }
+                if (TryAutoPickUp(money, itemOwners))
+                    return;
 
                 money.AddToWorld();
             }
 
-            static void CreateItem(GameNPC killedNpc, DbItemTemplate itemTemplate, SortedSet<ItemOwnerTotalDamagePair> itemOwners, List<GamePlayer> nearbyPlayers)
+            static void CreateItem(GameNPC killedNpc, DbItemTemplate itemTemplate, List<(IGameStaticItemOwner Owner, bool Intended)> itemOwners, List<GamePlayer> nearbyPlayers)
             {
                 GameInventoryItem inventoryItem;
 
@@ -1773,21 +1788,34 @@ namespace DOL.GS.ServerRules
 
                 NotifyNearbyPlayers(killedNpc, item, nearbyPlayers);
 
-                // Attempt auto pick up.
-                foreach (ItemOwnerTotalDamagePair itemOwner in itemOwners)
+                if (TryAutoPickUp(item, itemOwners))
+                    return;
+
+                item.AddToWorld();
+            }
+
+            // Attempt auto pick up. Every owner tried may also pick it up by hand later. A blocked owner (full bags, out of
+            // range) stops the kill's owners from trying further, as before; a blocked intended owner hands it on to them.
+            static bool TryAutoPickUp(GameStaticItemTimed item, List<(IGameStaticItemOwner Owner, bool Intended)> itemOwners)
+            {
+                foreach ((IGameStaticItemOwner owner, bool intended) in itemOwners)
                 {
-                    item.AddOwner(itemOwner.Owner);
-                    TryPickUpResult result = item.TryAutoPickUp(itemOwner.Owner);
+                    item.AddOwner(owner);
+                    TryPickUpResult result = item.TryAutoPickUp(owner);
 
                     if (result is TryPickUpResult.Success)
-                        return;
+                        return true;
                     else if (result is TryPickUpResult.DoesNotWant)
                         continue;
                     else if (result is TryPickUpResult.Blocked)
+                    {
+                        if (intended)
+                            continue;
                         break;
+                    }
                 }
 
-                item.AddToWorld();
+                return false;
             }
 
             static void NotifyNearbyPlayers(GameNPC killedNpc, GameStaticItemTimed item, List<GamePlayer> nearbyPlayers)

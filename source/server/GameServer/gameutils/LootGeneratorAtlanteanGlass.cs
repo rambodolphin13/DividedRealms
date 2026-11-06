@@ -20,11 +20,17 @@ namespace DOL.GS
 
         public override LootList GenerateLoot(GameNPC mob, GameObject killer)
         {
-            LootList loot = base.GenerateLoot(mob, killer);
+            return GenerateLoot(LootContext.For(mob, killer));
+        }
+
+        public override LootList GenerateLoot(LootContext context)
+        {
+            GameNPC mob = context.Mob;
+            LootList loot = base.GenerateLoot(mob, context.Killer);
 
             try
             {
-                GameLiving owner = ROGMobGenerator.ResolveEquipmentLootOwner(killer);
+                GameLiving owner = context.Owner;
 
                 if (owner == null || _glass.Value == null || !InAtlantis(mob.CurrentRegionID) || mob.Level < ServerProperties.Properties.ARTIFACT_GLASS_MIN_LEVEL || owner.GetConLevel(mob) <= -3)
                     return loot;
@@ -56,10 +62,7 @@ namespace DOL.GS
             return _regions.Contains(region);
         }
 
-        private static bool IsNamed(GameNPC mob)
-        {
-            return mob is GameEpicNPC || !mob.Name.ToLower().Equals(mob.Name);
-        }
+        private static bool IsNamed(GameNPC mob) => LootContext.IsNamedMob(mob);
 
         /// <summary>Drop chance in percent.</summary>
         public static double DropChance(GameNPC mob)
