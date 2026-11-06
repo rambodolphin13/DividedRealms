@@ -214,7 +214,9 @@ namespace DOL.UnitTests
             foreach (GeneratedUniqueItem item in Build(300, 51, 0).Where(Magical))
             {
                 bool proc = item.ProcSpellID != 0 || item.ProcSpellID1 != 0;
-                double target = budget.Target(51, item.Quality, proc, 51 - 20);
+                // monster loot asks for a random floor of level - 15 to level - 20: use the one this item got
+                int floor = (int)typeof(GeneratedUniqueItem).GetField("m_utilityMinimum", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(item);
+                double target = budget.Target(51, item.Quality, proc, floor);
                 Assert.That(item.BountyUtility, Is.LessThanOrEqualTo(target + 5), item.Name);
             }
             double average = Build(300, 51, 0).Where(Magical).Average(item => item.BountyUtility);
@@ -252,7 +254,14 @@ namespace DOL.UnitTests
             for (int i = 0; i < 20; i++)
             {
                 item.GenerateItemQuality(3);
-                Assert.That(item.BountyUtility, Is.EqualTo(BudgetOn.RandomItems.Budget.Target(51, item.Quality, false, 0)).Within(5));
+                double target = BudgetOn.RandomItems.Budget.Target(51, item.Quality, false, 0);
+                Assert.That(item.BountyUtility, Is.LessThanOrEqualTo(target + 5));
+                // an item whose lines all sit at their caps cannot reach its target; every other one lands near it
+                (int Type, int Value)[] lines = [(item.Bonus1Type, item.Bonus1), (item.Bonus2Type, item.Bonus2), (item.Bonus3Type, item.Bonus3),
+                    (item.Bonus4Type, item.Bonus4), (item.Bonus5Type, item.Bonus5)];
+                bool roomLeft = lines.Any(l => l.Type != 0 && l.Value < GeneratedUniqueItem.LineCap(l.Type, 51, BudgetOn.RandomItems.Budget.LineCapFactor));
+                if (roomLeft)
+                    Assert.That(item.BountyUtility, Is.GreaterThanOrEqualTo(target - 5));
             }
         }
 
