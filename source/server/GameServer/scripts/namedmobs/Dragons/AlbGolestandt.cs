@@ -1000,7 +1000,7 @@ namespace DOL.GS
 		}
 		public override bool AddToWorld()
 		{
-			Model = 2386;
+			Model = 615;
 			Name = "Golestandt's messenger";
 			Size = 80;
 			Level = (byte)Util.Random(50, 55);
@@ -1317,9 +1317,9 @@ namespace DOL.GS
 			Name = adds_names[Util.Random(0, adds_names.Count - 1)];
 			switch (Name)
 			{
-				case "granite giant stonelord": Model = 2386; Size = (byte)Util.Random(150, 170); break;
-				case "granite giant pounder": Model = 2386; Size = (byte)Util.Random(130, 150); break;
-				case "granite giant outlooker": Model = 2386; Size = (byte)Util.Random(130, 140); break;
+				case "granite giant stonelord": Model = 616; Size = (byte)Util.Random(150, 170); break;
+				case "granite giant pounder": Model = 615; Size = (byte)Util.Random(130, 150); break;
+				case "granite giant outlooker": Model = 615; Size = (byte)Util.Random(130, 140); break;
 			}
 			Level = (byte)Util.Random(60, 64);
 			Faction = FactionMgr.GetFactionByID(31);

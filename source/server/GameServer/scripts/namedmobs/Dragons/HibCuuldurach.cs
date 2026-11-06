@@ -1004,7 +1004,7 @@ namespace DOL.GS
 		}
 		public override bool AddToWorld()
 		{
-			Model = 2389;
+			Model = 619;
 			Name = "Cuuldurach's messenger";
 			Size = 50;
 			Level = (byte)Util.Random(50, 55);
@@ -1321,9 +1321,9 @@ namespace DOL.GS
 			Name = adds_names[Util.Random(0, adds_names.Count - 1)];
 			switch (Name)
 			{
-				case "glimmer knight": Model = 2390; Size = (byte)Util.Random(50, 55); break;
-				case "glimmer deathwatcher": Model = 2389; Size = (byte)Util.Random(50, 55); break;
-				case "glimmer geist": Model = 2388; Size = (byte)Util.Random(50, 55); break;
+				case "glimmer knight": Model = 620; Size = (byte)Util.Random(50, 55); break;
+				case "glimmer deathwatcher": Model = 619; Size = (byte)Util.Random(50, 55); break;
+				case "glimmer geist": Model = 618; Size = (byte)Util.Random(50, 55); break;
 			}
 			Level = (byte)Util.Random(60, 64);
 			Faction = FactionMgr.GetFactionByID(83);

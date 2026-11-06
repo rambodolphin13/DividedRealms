@@ -71,7 +71,7 @@ namespace DOL.GS
 				log.Warn("Initializing Glacier Giant...");
 				GlacierGiant OF = new GlacierGiant();
 				OF.Name = "Glacier Giant";
-				OF.Model = 1384;
+				OF.Model = 121;
 				OF.Realm = 0;
 				OF.Level = 80;
 				OF.Size = 255;
