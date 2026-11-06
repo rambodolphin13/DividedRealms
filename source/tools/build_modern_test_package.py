@@ -62,7 +62,9 @@ DARKNESS_FALLS_PROOFS = Path(__file__).resolve().parents[1] / 'server/GameServer
 RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 'modern-client-setup-error.txt', 'client-patch.json',
                       'host-for-friends.json', 'host-for-friends-firewall.cmd', 'serverconfig.before-host-for-friends.xml',
                       # The developer's overlay choices: shipped, they would switch the fight card and panels off for everyone.
-                      'overlay.json'}
+                      'overlay.json',
+                      # The launcher's Bot AI diagnostics switch: a diagnostics file, which check_package refuses.
+                      'bot-diagnostics.on'}
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json',
                   'Join Friend.cmd')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}

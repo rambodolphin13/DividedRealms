@@ -3,6 +3,26 @@
 The newest version is first. For the full detail of every earlier update, see
 [docs/history/CHANGELOG-0.3-to-0.32b.md](docs/history/CHANGELOG-0.3-to-0.32b.md).
 
+## DR-dev-0.1b — 2026-11-05
+
+Fixes to the Fishing Update from the first Discord reports; it replaces DR-dev-0.1a.
+
+- Border keep gates: Castle Sauvage, Snowdonia Fortress, Svasud Faste, Vindsaul Faste and Druim Cain opened but held
+  the player in ("Invalid ZonePoint ... ID 191/193"). The client patch drops live's New Frontiers jumps past those
+  gates; the launcher patches the client copy again on its next start.
+- Battlegrounds: the Abermenai portal keeps had no guards or NPCs and the Murdaigean ones only Siege Masters; both now
+  have Thidranki's guards, Hastener, merchants and Siegemasters (world update). Gamebot deaths send the realm kill
+  messages, and gamebots that release in a battleground come back at their own portal keep, not their capital.
+- Realm points and experience for a gamebot kill count the gamebots in your group: a player grouped with gamebots got
+  nothing for the kills their bots made. The server log has an RVR_PLAYER_REWARD line for every such reward.
+- Heretics and Valkyries count as resurrecters: a dead gamebot beside one now waits for the rez instead of releasing
+  after 20 seconds.
+- A party member that falls behind is no longer moved to its leader while the leader is fighting.
+- Companions level with their owner (up to 50) on their next idle turn; /raid and the companion raid open at level 50
+  or higher, not only at exactly 50.
+- Launcher: says which serverconfig.xml value stops the server, and why START SERVER does nothing when another server
+  already uses the port.
+
 ## DR-dev-0.1a — 2026-11-04
 
 Three fixes to the Fishing Update; it replaces DR-dev-0.1. The world is unchanged.
