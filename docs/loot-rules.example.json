@@ -1,0 +1,31 @@
+// Loot tuning. Copy to runtime/server/loot-rules.json (beside bot-goals.json). The server re-reads it within
+// 10 seconds of a save; /lootrules shows what is in use and /lootrules reload reads it at once.
+// Leave a setting out to keep its default (the defaults are the drop rates from before this file existed).
+{
+  "Version": 1,
+  "RandomItems": {
+    // Owner 2026-11-05: about 1 in 8 solo random items instead of about 1 in 4. Groups are halved the same way.
+    "ChanceMultiplier": 0.5,
+    "NamedChanceMultiplier": 1.0,
+    "FrontierChanceMultiplier": 1.0,
+    "BaseChance": 14,
+    "ChancePerCon": 3,
+    "SoloBonus": 10,
+    "GroupLevelPenalties": [
+      { "AboveLevel": 27, "Chance": 3 },
+      { "AboveLevel": 40, "Chance": 3 }
+    ],
+    "GroupMembersPerDrop": 3,
+    "GroupMaxDrops": 3,
+    "GroupExtraDropAboveLevel": 65,
+    "GroupGuaranteedDropAboveLevel": 67,
+    "BattlegroupChance": 2,
+    "BattlegroupPlayersPerDrop": 50,
+    "EpicBattlegroupDropMultiplier": 2
+  },
+  "Coin": {
+    // On top of the money_drop server setting.
+    "Multiplier": 1.0,
+    "NamedMultiplier": 1.0
+  }
+}

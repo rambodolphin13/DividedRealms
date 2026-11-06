@@ -13,8 +13,7 @@ namespace DOL.GS {
     /// </summary>
     public class ROGMobGenerator : LootGeneratorBase {
 
-        //base chance in %
-        public static ushort BASE_ROG_CHANCE = 14;
+        //base chance in % is RandomItemLootRules.BaseChance (loot-rules.json)
         private static readonly Logger Log = LoggerManager.Create(typeof(ROGMobGenerator));
         private static long _nextErrorLogTick;
 
@@ -60,20 +59,23 @@ namespace DOL.GS {
                 if (owner.Group?.LivingLeader is GameLiving leader && IsLootParticipant(leader))
                     owner = leader;
 
-                // chance to get a RoG Item
-                int chance = BASE_ROG_CHANCE + ((killedcon < 0 ? killedcon + 1 : killedcon) * 3);
+                // chance to get a RoG Item; every number comes from loot-rules.json (defaults are the old constants)
+                RandomItemLootRules rules = LootRulesFile.Current.RandomItems;
+                bool named = context.IsNamed;
+                bool frontier = context.IsFrontier;
+                double chance = rules.BaseChance + ((killedcon < 0 ? killedcon + 1 : killedcon) * rules.ChancePerCon);
 
                 //chance = 100;
-                
+
                 BattleGroup bg = (owner as GamePlayer)?.TempProperties.GetProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY);
 
                 if (bg != null)
                 {
-                    var maxDropCap = bg.PlayerCount / 50;
+                    var maxDropCap = bg.PlayerCount / rules.BattlegroupPlayersPerDrop;
                     if (maxDropCap < 1) maxDropCap = 1;
                     if (mob is GameEpicNPC)
-                        maxDropCap *= 2;
-                    chance = 2;
+                        maxDropCap *= rules.EpicBattlegroupDropMultiplier;
+                    chance = rules.Scale(rules.BattlegroupChance, named, frontier);
 
                     int numDrops = 0;
                     foreach (GamePlayer bgMember in bg.Members.Keys)
@@ -94,17 +96,13 @@ namespace DOL.GS {
                 //or a valid class for one of their groupmates
                 else if (owner.Group != null)
                 {
-                    var MaxDropCap = Math.Round((decimal) (owner.Group.MemberCount)/3);
+                    var MaxDropCap = Math.Round((decimal) (owner.Group.MemberCount)/rules.GroupMembersPerDrop);
                     if (MaxDropCap < 1) MaxDropCap = 1;
-                    if (MaxDropCap > 3) MaxDropCap = 3;
-                    if (mob.Level > 65) MaxDropCap++; //increase drop cap beyond lvl 60
-                    int guaranteedDrop = mob.Level > 67 ? 1 : 0; //guarantee a drop for very high level mobs
-                    
-                    if (mob.Level > 27)
-                        chance -= 3;
+                    if (MaxDropCap > rules.GroupMaxDrops) MaxDropCap = rules.GroupMaxDrops;
+                    if (mob.Level > rules.GroupExtraDropAboveLevel) MaxDropCap++; //increase drop cap beyond lvl 60
+                    int guaranteedDrop = mob.Level > rules.GroupGuaranteedDropAboveLevel ? 1 : 0; //guarantee a drop for very high level mobs
 
-                    if (mob.Level > 40)
-                        chance -= 3;
+                    chance = rules.Scale(chance - rules.GroupLevelPenalty(mob.Level), named, frontier);
 
                     int numDrops = 0;
                     //roll for an item for each player in the group
@@ -141,8 +139,8 @@ namespace DOL.GS {
                         classForLoot = GetRandomClassFromRealm(owner.Realm);
                     }
 
-                    chance += 10; //solo drop bonus
-                    
+                    chance = rules.Scale(chance + rules.SoloBonus, named, frontier); //solo drop bonus
+
                     if (RollDropChance(chance))
                     {
                         DbItemTemplate item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon, false);
@@ -185,9 +183,10 @@ namespace DOL.GS {
         }
 
 
-        protected virtual bool RollDropChance(int chance)
+        /// <param name="chance">Percent, 0 to 100 (rules may make it fractional).</param>
+        protected virtual bool RollDropChance(double chance)
         {
-            return Util.Chance(chance);
+            return Util.Chance(chance / 100.0); // Util.Chance(double) takes a fraction
         }
 
         public static GameLiving ResolveEquipmentLootOwner(GameObject killer) => LootContext.ResolveOwner(killer);

@@ -87,7 +87,7 @@ namespace DOL.UnitTests
             public bool Drop = true;
             public int Rolls;
             public readonly List<eCharacterClass> Classes = new();
-            protected override bool RollDropChance(int chance) { Rolls++; return Drop; }
+            protected override bool RollDropChance(double chance) { Rolls++; return Drop; }
             protected override DbItemTemplate GenerateItemTemplate(GameLiving owner, eCharacterClass characterClass,
                 byte level, int con, bool adjustQuality = true)
             {
@@ -100,7 +100,7 @@ namespace DOL.UnitTests
         {
             // Force only the drop roll. Item stats, quality, class, realm and
             // unique-template creation still use the production item factory.
-            protected override bool RollDropChance(int chance) { return true; }
+            protected override bool RollDropChance(double chance) { return true; }
         }
 
         private GameServer _previousServer;
