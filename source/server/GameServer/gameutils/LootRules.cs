@@ -98,6 +98,9 @@ namespace DOL.GS
 
         public int EpicBattlegroupDropMultiplier { get; init; } = 2;
 
+        /// <summary>How strong a random item's bonuses are (phase 3). Off by default: the old roll-then-trim is used.</summary>
+        public RandomItemBudgetRules Budget { get; init; } = new();
+
         /// <summary>The final percent chance for a roll: the multipliers applied, kept from 0 to 100.</summary>
         public double Scale(double chance, bool named, bool frontier)
         {
@@ -135,6 +138,76 @@ namespace DOL.GS
             LootRules.Range(BattlegroupChance, 0, 100, "RandomItems.BattlegroupChance");
             LootRules.Range(BattlegroupPlayersPerDrop, 1, 500, "RandomItems.BattlegroupPlayersPerDrop");
             LootRules.Range(EpicBattlegroupDropMultiplier, 1, 10, "RandomItems.EpicBattlegroupDropMultiplier");
+            if (Budget == null)
+                throw new InvalidDataException("RandomItems.Budget must be present when it is written.");
+            Budget.Validate();
+        }
+    }
+
+    /// <summary>
+    /// Budget-first bonuses (loot redesign phase 3, owner 2026-11-05): a random item's total bonus strength (utility,
+    /// the same measure the old cap used) is chosen first from its level and quality, then split across the bonus
+    /// lines it rolled, so quality matters and nothing loops. The old roll-then-trim stays while Enabled is false.
+    /// </summary>
+    public sealed record RandomItemBudgetRules
+    {
+        public bool Enabled { get; init; } = false;
+
+        /// <summary>
+        /// The level budget is level * PerLevel - LevelOffset. The defaults were fitted so a quality 96 item matches the old
+        /// roll's average utility (measured 2026-11-06: about 4.5, 10.5, 21 and 35 at levels 10, 20, 35 and 51).
+        /// </summary>
+        public double PerLevel { get; init; } = 0.88;
+
+        public double LevelOffset { get; init; } = 6;
+
+        /// <summary>No item aims below this.</summary>
+        public int Floor { get; init; } = 5;
+
+        /// <summary>No item aims above this (the old cap's ceiling was 80).</summary>
+        public int Max { get; init; } = 80;
+
+        /// <summary>Quality at or below LowQuality gets LowQualityFactor of the level budget, at or above HighQuality
+        /// gets HighQualityFactor, in a straight line between. Random items roll 95 to 99 quality.</summary>
+        public int LowQuality { get; init; } = 95;
+        public double LowQualityFactor { get; init; } = 0.85;
+        public int HighQuality { get; init; } = 99;
+        public double HighQualityFactor { get; init; } = 1.05;
+
+        /// <summary>An item with a proc aims this much lower.</summary>
+        public double ProcFactor { get; init; } = 0.7;
+
+        /// <summary>One bonus line may reach this many times the most the old roll could give that line.</summary>
+        public double LineCapFactor { get; init; } = 1.5;
+
+        /// <summary>The total utility an item of this level and quality aims at.</summary>
+        public double Target(int level, int quality, bool hasProc, double utilityMinimum)
+        {
+            double ceiling = Math.Min(Max, Math.Max(Floor, level * PerLevel - LevelOffset));
+            double share = HighQuality <= LowQuality ? HighQualityFactor
+                : LowQualityFactor + (HighQualityFactor - LowQualityFactor) * Math.Clamp((quality - LowQuality) / (double)(HighQuality - LowQuality), 0, 1);
+            double target = ceiling * share;
+            // a promised floor (quest rewards, frontier kills) still holds, up to the best this level can reach
+            target = Math.Max(target, Math.Min(utilityMinimum, ceiling * Math.Max(LowQualityFactor, HighQualityFactor)));
+            if (hasProc)
+                target *= ProcFactor;
+            return Math.Min(target, Max);
+        }
+
+        internal void Validate()
+        {
+            LootRules.Range(PerLevel, 0.1, 5, "RandomItems.Budget.PerLevel");
+            LootRules.Range(LevelOffset, -100, 100, "RandomItems.Budget.LevelOffset");
+            LootRules.Range(Floor, 0, 200, "RandomItems.Budget.Floor");
+            LootRules.Range(Max, 1, 200, "RandomItems.Budget.Max");
+            if (Floor > Max)
+                throw new InvalidDataException("RandomItems.Budget.Floor must not be above Max.");
+            LootRules.Range(LowQuality, 0, 100, "RandomItems.Budget.LowQuality");
+            LootRules.Range(HighQuality, 0, 100, "RandomItems.Budget.HighQuality");
+            LootRules.Range(LowQualityFactor, 0, 3, "RandomItems.Budget.LowQualityFactor");
+            LootRules.Range(HighQualityFactor, 0, 3, "RandomItems.Budget.HighQualityFactor");
+            LootRules.Range(ProcFactor, 0, 3, "RandomItems.Budget.ProcFactor");
+            LootRules.Range(LineCapFactor, 0.5, 10, "RandomItems.Budget.LineCapFactor");
         }
     }
 

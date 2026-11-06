@@ -21,7 +21,22 @@
     "GroupGuaranteedDropAboveLevel": 67,
     "BattlegroupChance": 2,
     "BattlegroupPlayersPerDrop": 50,
-    "EpicBattlegroupDropMultiplier": 2
+    "EpicBattlegroupDropMultiplier": 2,
+    // Budget-first bonuses (phase 3). Set Enabled to true to use them: a mid quality item then matches the old average
+    // strength, low quality is a little weaker and high quality (orange and red kills) stronger.
+    "Budget": {
+      "Enabled": false,
+      "PerLevel": 0.88,
+      "LevelOffset": 6,
+      "Floor": 5,
+      "Max": 80,
+      "LowQuality": 95,
+      "LowQualityFactor": 0.85,
+      "HighQuality": 99,
+      "HighQualityFactor": 1.05,
+      "ProcFactor": 0.7,
+      "LineCapFactor": 1.5
+    }
   },
   "Coin": {
     // On top of the money_drop server setting.

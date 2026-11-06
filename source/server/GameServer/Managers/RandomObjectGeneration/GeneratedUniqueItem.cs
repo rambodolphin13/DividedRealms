@@ -133,7 +133,13 @@ namespace DOL.GS
             this.IsDropable = true;
             this.IsPickable = true;
             this.IsTradable = true;
-            this.CapUtility(this.Level, utilityMinimum);
+
+            RandomItemBudgetRules budget = LootRulesFile.Current.RandomItems.Budget;
+            if (!budget.Enabled)
+                this.CapUtility(this.Level, utilityMinimum);
+
+            m_budgetLevel = this.Level;
+            m_utilityMinimum = utilityMinimum;
 
             if (this.Level > 51)
             {
@@ -141,6 +147,10 @@ namespace DOL.GS
             }
 
             this.GenerateProc();
+
+            // after the proc, so a proc item aims lower (the old cap meant to, but ran before the proc was rolled)
+            if (budget.Enabled)
+                this.ApplyBudget(budget);
 
             //item bonus
             int temp = this.Level - 15;
@@ -191,7 +201,160 @@ namespace DOL.GS
             this.Price /= 8;
             if (this.Price <= 0)
                 this.Price = 2; // 2c as sell price is 50%
+
+            // a loot generator re-rolls quality with the real con after building the item: re-split its budget to match
+            if (m_budgeted)
+                ApplyBudget(LootRulesFile.Current.RandomItems.Budget);
         }
+
+        #region budget-first bonuses
+
+        // Loot redesign phase 3 (owner 2026-11-05). The level before it is clamped to 51, the floor the caller asked for,
+        // and whether the budget has split this item's lines yet.
+        private int m_budgetLevel;
+        private int m_utilityMinimum = 15;
+        private bool m_budgeted;
+
+        private static readonly int[] NoAllSkillLines = [163, 164, 167, 168, 213]; // no +all skills on rogs
+
+        /// <summary>
+        /// Sets the item's total utility to the budget for its level and quality, split across the lines it rolled in
+        /// proportion to what each line rolled. Lines with no utility (focus, cap bonuses) are left alone.
+        /// </summary>
+        private void ApplyBudget(RandomItemBudgetRules budget)
+        {
+            if (!budget.Enabled)
+                return;
+
+            int[] types = BonusTypeArray();
+            int[] values = BonusValueArray();
+            for (int i = 0; i < types.Length; i++)
+            {
+                if (Array.IndexOf(NoAllSkillLines, types[i]) >= 0)
+                {
+                    types[i] = 0;
+                    values[i] = 0;
+                }
+            }
+
+            bool hasProc = ProcSpellID != 0 || ProcSpellID1 != 0;
+            double target = budget.Target(m_budgetLevel, Quality, hasProc, m_utilityMinimum);
+            int[] split = SplitBudget(types, values, target, type => LineCap(type, m_budgetLevel, budget.LineCapFactor));
+            WriteBonusArrays(types, split);
+
+            if (!m_budgeted)
+            {
+                m_budgeted = true;
+                int utiLine = GetHighestUtilitySingleLine();
+                WriteMagicalName(GetPropertyFromBonusLine(utiLine));
+            }
+        }
+
+        /// <summary>
+        /// Splits a utility target across bonus lines in proportion to their rolled values, each kept under its cap and at
+        /// least 1. A line capped short hands its share to the others. Lines whose type has no utility keep their value.
+        /// </summary>
+        public static int[] SplitBudget(int[] types, int[] values, double target, Func<int, int> lineCap)
+        {
+            int count = types.Length;
+            double[] perPoint = new double[count];
+            double[] want = new double[count];
+            int[] result = (int[])values.Clone();
+
+            for (int i = 0; i < count; i++)
+            {
+                perPoint[i] = types[i] == 0 || values[i] <= 0 ? 0 : GetSingleUtility(types[i], 1);
+                want[i] = perPoint[i] > 0 ? values[i] : 0;
+            }
+
+            double rolled = 0;
+            for (int i = 0; i < count; i++)
+                rolled += want[i] * perPoint[i];
+            if (rolled <= 0 || target <= 0)
+                return result;
+
+            double scale = target / rolled;
+            for (int i = 0; i < count; i++)
+                want[i] *= scale;
+
+            bool[] capped = new bool[count];
+            for (int pass = 0; pass < count; pass++)
+            {
+                double cappedUtility = 0, freeUtility = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    if (perPoint[i] <= 0)
+                        continue;
+                    if (!capped[i] && want[i] > lineCap(types[i]))
+                    {
+                        want[i] = lineCap(types[i]);
+                        capped[i] = true;
+                    }
+                    if (capped[i])
+                        cappedUtility += want[i] * perPoint[i];
+                    else
+                        freeUtility += want[i] * perPoint[i];
+                }
+
+                if (freeUtility <= 0 || cappedUtility + freeUtility >= target - 0.01)
+                    break;
+
+                double grow = (target - cappedUtility) / freeUtility;
+                for (int i = 0; i < count; i++)
+                {
+                    if (perPoint[i] > 0 && !capped[i])
+                        want[i] *= grow;
+                }
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                if (perPoint[i] > 0)
+                    result[i] = Math.Max(1, Math.Min(lineCap(types[i]), (int)Math.Round(want[i])));
+            }
+
+            return result;
+        }
+
+        /// <summary>The most one line of this type may hold: the old roll's top value for the level, times factor.</summary>
+        public static int LineCap(int bonusType, int level, double factor)
+        {
+            eProperty property = (eProperty)bonusType;
+            int resist = (int)Math.Ceiling((level / 2.0 + 1) / 4);
+            int top = property switch
+            {
+                (>= eProperty.Stat_First and <= eProperty.Stat_Last) or eProperty.Acuity => (int)Math.Ceiling(level / 3.0),
+                eProperty.MaxHealth => level,
+                eProperty.MaxMana => resist,
+                >= eProperty.Resist_First and <= eProperty.Resist_Last => resist,
+                >= eProperty.Skill_First and <= eProperty.Skill_Last => 4,
+                _ => int.MaxValue,
+            };
+            return top == int.MaxValue ? int.MaxValue : Math.Max(1, (int)Math.Ceiling(top * factor));
+        }
+
+        private int[] BonusTypeArray() =>
+            [Bonus1Type, Bonus2Type, Bonus3Type, Bonus4Type, Bonus5Type, Bonus6Type, Bonus7Type, Bonus8Type, Bonus9Type, Bonus10Type, ExtraBonusType];
+
+        private int[] BonusValueArray() =>
+            [Bonus1, Bonus2, Bonus3, Bonus4, Bonus5, Bonus6, Bonus7, Bonus8, Bonus9, Bonus10, ExtraBonus];
+
+        private void WriteBonusArrays(int[] types, int[] values)
+        {
+            Bonus1Type = types[0]; Bonus1 = values[0];
+            Bonus2Type = types[1]; Bonus2 = values[1];
+            Bonus3Type = types[2]; Bonus3 = values[2];
+            Bonus4Type = types[3]; Bonus4 = values[3];
+            Bonus5Type = types[4]; Bonus5 = values[4];
+            Bonus6Type = types[5]; Bonus6 = values[5];
+            Bonus7Type = types[6]; Bonus7 = values[6];
+            Bonus8Type = types[7]; Bonus8 = values[7];
+            Bonus9Type = types[8]; Bonus9 = values[8];
+            Bonus10Type = types[9]; Bonus10 = values[9];
+            ExtraBonusType = types[10]; ExtraBonus = values[10];
+        }
+
+        #endregion
 
         private void GenerateItemStats()
         {
