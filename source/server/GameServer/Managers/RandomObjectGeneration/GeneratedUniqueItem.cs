@@ -4951,10 +4951,14 @@ namespace DOL.GS
             if (GetTotalUtility() > cap)
             {
                 int bestline = 1;
-                while (GetTotalUtility() > cap)
+                // Bounded: a line the reducer cannot lower used to spin this loop forever on the game loop thread.
+                int trimAttempts = 0;
+                while (GetTotalUtility() > cap && trimAttempts++ < 500)
                 {
                     //find highest utility line on the item
                     bestline = GetHighestUtilitySingleLine();
+                    if (bestline == 0)
+                        break;
 
                     //lower the value of it by
                     //1-5% for resist
@@ -5038,7 +5042,7 @@ namespace DOL.GS
             if (GetSingleUtility(Bonus6Type, Bonus6) > highestUti)
             {
                 highestUti = GetSingleUtility(Bonus6Type, Bonus6);
-                highestLine = 2;
+                highestLine = 6;
             }
 
             if (GetSingleUtility(Bonus7Type, Bonus7) > highestUti)
@@ -5105,7 +5109,7 @@ namespace DOL.GS
             if (GetSingleUtility(Bonus6Type, Bonus6) < lowestUti && IsValidUpscaleType(Bonus6Type))
             {
                 lowestUti = GetSingleUtility(Bonus6Type, Bonus6);
-                lowestLine = 2;
+                lowestLine = 6;
             }
 
             if (GetSingleUtility(Bonus7Type, Bonus7) < lowestUti && IsValidUpscaleType(Bonus7Type))
@@ -5182,7 +5186,7 @@ namespace DOL.GS
                 {
                     Bonus = Bonus - Util.Random(1, Math.Min(Bonus, 3)); //up to 6 uti reduction
                 }
-                else if (BonusType < 115)
+                else if (BonusType <= (int)eProperty.Skill_Last) // 115 is archery; < 115 left it uncuttable
                 {
                     Bonus = Bonus - Util.Random(1, Math.Min(Bonus, 1)); //up to 5 uti reduction
                 }
@@ -5231,7 +5235,7 @@ namespace DOL.GS
                 {
                     Bonus = Bonus + Util.Random(1, Math.Min(Bonus, 3)); //up to 6 uti reduction
                 }
-                else if (BonusType < 115)
+                else if (BonusType <= (int)eProperty.Skill_Last)
                 {
                     Bonus = Bonus + Util.Random(1, Math.Min(Bonus, 1)); //up to 5 uti reduction
                 }

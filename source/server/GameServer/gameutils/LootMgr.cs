@@ -95,6 +95,8 @@ namespace DOL.GS
 							continue;
 						}
 						generator = (ILootGenerator)Activator.CreateInstance(generatorType);
+						// The cache keys on class + priority, but the priority itself was never copied, so no generator was ever exclusive.
+						generator.ExclusivePriority = dbGenerator.ExclusivePriority;
 
 						PutGeneratorInCache(dbGenerator, generator);
 					}
@@ -109,7 +111,7 @@ namespace DOL.GS
 			}
 
 			// no loot generators loaded...
-			if (m_globalGenerators.Count == 0 && m_mobNameGenerators.Count == 0 && m_globalGenerators.Count == 0)
+			if (m_globalGenerators.Count == 0 && m_mobNameGenerators.Count == 0 && m_mobGuildGenerators.Count == 0 && m_mobRegionGenerators.Count == 0 && m_mobFactionGenerators.Count == 0)
 			{
 				ILootGenerator baseGenerator = new LootGeneratorMoney();
 				RegisterLootGenerator(baseGenerator, null, null, null, 0);

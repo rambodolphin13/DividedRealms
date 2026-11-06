@@ -191,19 +191,25 @@ namespace DOL.GS
 
             if (mxlts != null)
             {
+                // Replace the mob's rows instead of appending: every refresh used to add the same rows again, so
+                // tables other than the mob's own rolled once more per refresh.
+                var refreshed = new Dictionary<string, List<DbMobXLootTemplate>>();
+                foreach (DbMobXLootTemplate mxlt in mxlts)
+                {
+                    string key = mxlt.MobName.ToLower();
+                    if (!refreshed.TryGetValue(key, out List<DbMobXLootTemplate> rows))
+                        refreshed[key] = rows = new List<DbMobXLootTemplate>();
+                    rows.Add(mxlt);
+                }
+
                 lock (m_mobXLootTemplates)
                 {
+                    m_mobXLootTemplates.Remove(mob.Name.ToLower());
+                    foreach (var pair in refreshed)
+                        m_mobXLootTemplates[pair.Key] = pair.Value;
+
                     foreach (DbMobXLootTemplate mxlt in mxlts)
                     {
-                        List<DbMobXLootTemplate> mobxLootTemplates;
-                        if (!m_mobXLootTemplates.TryGetValue(mxlt.MobName.ToLower(), out mobxLootTemplates))
-                        {
-                            mobxLootTemplates = new List<DbMobXLootTemplate>();
-                            m_mobXLootTemplates[mxlt.MobName.ToLower()] = mobxLootTemplates;
-                        }
-
-                        mobxLootTemplates.Add(mxlt);
-
                         RefreshLootTemplate(mxlt.LootTemplateName);
 
 
@@ -314,7 +320,7 @@ namespace DOL.GS
 
                                     if (CanReceiveRealmDrop(lootOwner, drop))
                                     {
-                                        if (lootTemplate.Chance < 0 && player != null)
+                                        if (lootTemplate.Chance < 0 && player != null && !LootSimulator.IsSimulating) // a simulation never moves the XP item timer
                                         {
                                             timedDrops.Add(lootTemplate);
                                         }
@@ -455,7 +461,7 @@ namespace DOL.GS
                                     DbItemTemplate drop =
                                         GameServer.Database.FindObjectByKey<DbItemTemplate>(lootTemplate.ItemTemplateID);
 
-                                    if (lootTemplate.Chance < 0 && player != null)
+                                    if (lootTemplate.Chance < 0 && player != null && !LootSimulator.IsSimulating) // a simulation never moves the XP item timer
                                     {
                                         timedDrops.Add(lootTemplate);
                                     }
