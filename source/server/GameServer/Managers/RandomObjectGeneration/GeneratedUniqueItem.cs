@@ -16,7 +16,6 @@ namespace DOL.GS
         //The following properties are weights for each roll
         //It is *not* a direct chance to receive the item. It is instead
         //a chance for that item type to be randomly selected as a valid generation type
-        private static int ToaItemChance = Properties.ROG_TOA_ITEM_CHANCE;
         private static int ArmorWeight = Properties.ROG_ARMOR_WEIGHT;
         private static int JewelryWeight = Properties.ROG_MAGICAL_WEIGHT;
         private static int WeaponWeight = Properties.ROG_WEAPON_WEIGHT;
@@ -74,7 +73,7 @@ namespace DOL.GS
         }
 
         public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot, eDamageType dmg, int minUtility = 15)
-            : this(false, realm, charClass, level, type, slot, dmg, minUtility)
+            : this(ToaBonusesEnabled, realm, charClass, level, type, slot, dmg, minUtility)
         {
 
         }
@@ -781,11 +780,11 @@ namespace DOL.GS
             if (CanAddFocus())
                 return eBonusType.Focus;
             
-			// ToA allows stat cap bonuses
-			if (toa && Util.Chance(ToaItemChance))
-			{
-				return eBonusType.AdvancedStat;
-			}
+            // ToA bonuses (stat caps and the ToA percent lines), one roll per bonus line.
+            if (toa && this.Level >= ToaMinimumItemLevel && Util.Chance(Properties.ROG_TOA_ITEM_CHANCE))
+            {
+                return eBonusType.AdvancedStat;
+            }
 
             if (Level < 10)
             {
@@ -998,9 +997,11 @@ namespace DOL.GS
                         ArrayList validStats = new ArrayList();
                         foreach (eProperty property in AdvancedStats)
                         {
-                            if (!BonusExists(property) && StatIsValidForObjectType(property) && StatIsValidForRealm(property))
+                            if (!BonusExists(property) && StatIsValidForObjectType(property) && StatIsValidForRealm(property) && StatIsValidForClass(property))
                                 validStats.Add(property);
                         }
+                        if (validStats.Count == 0)
+                            return GetProperty(eBonusType.Stat);
                         return (eProperty)validStats[Util.Random(0, validStats.Count - 1)];
                     }
             }
@@ -1929,6 +1930,36 @@ namespace DOL.GS
             return true;
         }
 
+        // Class groups for the ToA lines (stat template classes, see ExpansionClassLoot.StatTemplate).
+        private static readonly HashSet<eCharacterClass> ToaNoPowerClasses =
+        [
+            eCharacterClass.Armsman, eCharacterClass.Mercenary, eCharacterClass.Infiltrator, eCharacterClass.Scout, eCharacterClass.Paladin,
+            eCharacterClass.Blademaster, eCharacterClass.Hero, eCharacterClass.Nightshade, eCharacterClass.Ranger,
+            eCharacterClass.Berserker, eCharacterClass.Warrior, eCharacterClass.Savage, eCharacterClass.Shadowblade,
+        ];
+
+        private static readonly HashSet<eCharacterClass> ToaPureCasters =
+        [
+            eCharacterClass.Cabalist, eCharacterClass.Necromancer, eCharacterClass.Sorcerer, eCharacterClass.Theurgist, eCharacterClass.Wizard,
+            eCharacterClass.Eldritch, eCharacterClass.Enchanter, eCharacterClass.Mentalist, eCharacterClass.Animist,
+            eCharacterClass.Runemaster, eCharacterClass.Spiritmaster, eCharacterClass.Bonedancer, eCharacterClass.Warlock, eCharacterClass.Bainshee,
+            eCharacterClass.Druid, eCharacterClass.Healer, eCharacterClass.Shaman,
+        ];
+
+        private static readonly HashSet<eCharacterClass> ToaDualWielders =
+        [
+            eCharacterClass.Mercenary, eCharacterClass.Infiltrator, eCharacterClass.Blademaster, eCharacterClass.Nightshade,
+            eCharacterClass.Ranger, eCharacterClass.Berserker, eCharacterClass.Shadowblade, eCharacterClass.Savage,
+        ];
+
+        private static readonly HashSet<eCharacterClass> ToaHealers =
+        [
+            eCharacterClass.Cleric, eCharacterClass.Friar, eCharacterClass.Druid, eCharacterClass.Warden, eCharacterClass.Bard,
+            eCharacterClass.Mentalist, eCharacterClass.Healer, eCharacterClass.Shaman,
+        ];
+
+        private static readonly HashSet<eCharacterClass> ToaArchers = [eCharacterClass.Scout, eCharacterClass.Hunter, eCharacterClass.Ranger];
+
         private bool StatIsValidForClass(eProperty property)
         {
             eCharacterClass charClass = ExpansionClassLoot.StatTemplate(this.charClass);
@@ -1953,6 +1984,33 @@ namespace DOL.GS
                         return false;
                     }
                     return true;
+
+                case eProperty.MeleeDamage:
+                case eProperty.MeleeSpeed:
+                case eProperty.StyleDamage:
+                case eProperty.Fatigue:
+                    return !ToaPureCasters.Contains(charClass);
+
+                case eProperty.OffhandDamageAndChance:
+                    return ToaDualWielders.Contains(charClass);
+
+                case eProperty.CastingSpeed:
+                case eProperty.SpellDamage:
+                case eProperty.SpellRange:
+                case eProperty.SpellDuration:
+                case eProperty.ResistPierce:
+                case eProperty.BuffEffectiveness:
+                case eProperty.DebuffEffectiveness:
+                    return !ToaNoPowerClasses.Contains(charClass);
+
+                case eProperty.HealingEffectiveness:
+                    return ToaHealers.Contains(charClass);
+
+                case eProperty.ArcherySpeed:
+                case eProperty.ArcheryRange:
+                case eProperty.RangedDamage:
+                case eProperty.ArrowRecovery:
+                    return ToaArchers.Contains(charClass);
 
                 case eProperty.Acuity:
                     if (charClass == eCharacterClass.Armsman ||
@@ -4855,6 +4913,8 @@ namespace DOL.GS
                             return Util.Random(5, 25); // cap is 400
                         else if (property == eProperty.PowerPoolCapBonus)
                             return Util.Random(1, 10); // cap is 50
+                        else if (ToaPercentBonusMax.TryGetValue(property, out int percentMax))
+                            return ToaPercentAmount(percentMax);
                         else
                             return Util.Random(1, 6); // cap is 26
                     }
@@ -5075,8 +5135,10 @@ namespace DOL.GS
         
         public int GetLowestUtilitySingleLine()
         {
-            double lowestUti = GetSingleUtility(Bonus1Type, Bonus1);
-            int lowestLine = lowestUti > 0 ? 1 : 0; //if line1 had a bonus, set it as highest line, otherwise default to 0
+            // Lines with no utility (ToA and cap bonuses) can't be raised, so they are never picked: the floor loop would spin on them.
+            bool firstValid = IsValidUpscaleType(Bonus1Type) && Bonus1 != 0;
+            double lowestUti = firstValid ? GetSingleUtility(Bonus1Type, Bonus1) : double.MaxValue;
+            int lowestLine = firstValid ? 1 : 0;
 
             if (GetSingleUtility(Bonus2Type, Bonus2) < lowestUti && IsValidUpscaleType(Bonus2Type))
             {
@@ -5147,7 +5209,8 @@ namespace DOL.GS
                    && BonusType != 164 
                    && BonusType != 167 
                    && BonusType != 168 
-                   && BonusType != 213;
+                   && BonusType != 213
+                   && GetSingleUtility(BonusType, 1) > 0;
         }
 
         private int ReduceSingleLineUtility(int BonusType, int Bonus)
@@ -10999,7 +11062,60 @@ namespace DOL.GS
 			//eProperty.ChaCapBonus,
 			eProperty.MaxHealthCapBonus,
             eProperty.AcuCapBonus,
+            // ToA percent lines; StatIsValidForClass keeps each to the classes that use it.
+            eProperty.MeleeDamage,
+            eProperty.MeleeSpeed,
+            eProperty.StyleDamage,
+            eProperty.Fatigue,
+            eProperty.OffhandDamageAndChance,
+            eProperty.CastingSpeed,
+            eProperty.SpellDamage,
+            eProperty.SpellRange,
+            eProperty.SpellDuration,
+            eProperty.ResistPierce,
+            eProperty.BuffEffectiveness,
+            eProperty.DebuffEffectiveness,
+            eProperty.HealingEffectiveness,
+            eProperty.ArcherySpeed,
+            eProperty.ArcheryRange,
+            eProperty.RangedDamage,
+            eProperty.ArrowRecovery,
         };
+
+        /// <summary>Largest roll at item level 50 for each ToA percent line (live caps are 10% or 25%, power pool 50%).</summary>
+        private static readonly Dictionary<eProperty, int> ToaPercentBonusMax = new()
+        {
+            [eProperty.MeleeDamage] = 5,
+            [eProperty.MeleeSpeed] = 5,
+            [eProperty.StyleDamage] = 5,
+            [eProperty.OffhandDamageAndChance] = 5,
+            [eProperty.CastingSpeed] = 5,
+            [eProperty.SpellDamage] = 5,
+            [eProperty.SpellRange] = 5,
+            [eProperty.ResistPierce] = 5,
+            [eProperty.ArcherySpeed] = 5,
+            [eProperty.ArcheryRange] = 5,
+            [eProperty.RangedDamage] = 5,
+            [eProperty.SpellDuration] = 10,
+            [eProperty.BuffEffectiveness] = 10,
+            [eProperty.DebuffEffectiveness] = 10,
+            [eProperty.HealingEffectiveness] = 10,
+            [eProperty.ArrowRecovery] = 10,
+            [eProperty.Fatigue] = 10,
+            [eProperty.PowerPool] = 10,
+        };
+
+        /// <summary>Items below this level never roll ToA bonuses.</summary>
+        public const int ToaMinimumItemLevel = 20;
+
+        /// <summary>Generated loot may roll ToA bonuses when `atlas_rog / rog_toa_item_chance` is above 0.</summary>
+        public static bool ToaBonusesEnabled => Properties.ROG_TOA_ITEM_CHANCE > 0;
+
+        private int ToaPercentAmount(int maxAtFifty)
+        {
+            int max = Math.Max(1, (int)Math.Round(maxAtFifty * Math.Min(this.Level, 50) / 50.0));
+            return Util.Random(Math.Max(1, max / 2), max);
+        }
 
         private static eProperty[] ResistBonus = new eProperty[]
         {
