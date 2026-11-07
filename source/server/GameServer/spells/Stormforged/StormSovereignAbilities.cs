@@ -162,6 +162,7 @@ namespace DOL.GS.Spells
 
         public static void Strike(MasterLevelAbilityHandler h, GameLiving target, double damage, eDamageType type=eDamageType.Energy, int critBonus=0)
         {
+            if(target==null || !target.IsAlive) return;
             var spell = new Spell(new DbSpell { SpellID=h.Spell.ID*1000+990,Name=h.Spell.Name,Type="DirectDamage",Target="Enemy",
                 Damage=damage,DamageType=(int)PendragonRules.RoyalDamage(h.Caster, type),ClientEffect=h.Spell.ClientEffect,Icon=h.Spell.Icon },50) { InternalID=h.Spell.InternalID };
             h.Caster.Stealth(false);
@@ -268,14 +269,18 @@ namespace DOL.GS.Spells
         public override int PowerCost(GameLiving target) => TempestPays ? 0 : base.PowerCost(target);
         public override void ApplyEffectOnTarget(GameLiving target)
         {
-            // A Storm style whose hit already killed the target still builds its Tempest.
-            if(target is { IsAlive: false } && StormRemakeStyles.OwnsEffect(Spell.ID))
-                StormTempest.Add(Caster,StormRemakeStyles.Builds(Spell.ID-StormRemakeStyles.FirstEffectId));
-            // A Pendragon style whose hit already killed the target still earns its Valor.
-            if(target is { IsAlive: false } && PendragonRemakeStyles.OwnsEffect(Spell.ID))
-                PendragonValor.Add(Caster,PendragonRemakeStyles.Builds(Spell.ID-PendragonRemakeStyles.FirstEffectId));
+            // A Sovereign style whose hit already killed the target still runs its whole effect: builds and spends,
+            // splash onto the others, self heals and wards. Its helpers skip the corpse. (Playtest 2026-11-07: Thor's
+            // Judgement did not arc or spend on a kill, a killing Pendragon Judgment did nothing.)
+            if(target is { IsAlive: false } && IsSovereignStyleEffect(Spell.ID))
+            {
+                RunAbility(target);
+                return;
+            }
             base.ApplyEffectOnTarget(target);
         }
+        public static bool IsSovereignStyleEffect(int spellId) =>
+            StormRemakeStyles.OwnsEffect(spellId) || PendragonRemakeStyles.OwnsEffect(spellId) || TuathaRemakeStyles.OwnsEffect(spellId);
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams init) =>
             ECSGameEffectFactory.Create(init,static(in i)=>new StormSovereignEffect(i));
     }

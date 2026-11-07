@@ -220,6 +220,18 @@ namespace DOL.GS
         /// <summary>The boss of the fight or of a stage, as opposed to one of a crowd of adds.</summary>
         public bool CastsSpells { get; set; } = true;
 
+        /// <summary>
+        /// Whether killing this mob pays XP and loot. Only the last stage does: every earlier form or split paid a full
+        /// kill (each Peridas form, each Gem stage), on top of the encounter's own reward.
+        /// </summary>
+        public bool Rewards { get; set; } = true;
+
+        public override long ExperienceValue => Rewards ? base.ExperienceValue : 0;
+
+        public override long GetExperienceValueForLevel(int level) => Rewards ? base.GetExperienceValueForLevel(level) : 0;
+
+        public override bool CanDropLoot => Rewards && base.CanDropLoot;
+
         private const int AddHealthDivisor = 5;
 
         private bool _calledForHelp;
@@ -479,7 +491,11 @@ namespace DOL.GS
             foreach (ArtifactSpawnDef spawn in stage.Spawns)
             {
                 for (int i = 0; i < spawn.Count; i++)
-                    spawned.Add(SpawnMob(spawn, lastStage && spawn.IsBoss));
+                {
+                    ArtifactBoss mob = SpawnMob(spawn, lastStage && spawn.IsBoss);
+                    mob.Rewards = lastStage;
+                    spawned.Add(mob);
+                }
             }
 
             if (stage.Gate)
@@ -588,6 +604,8 @@ namespace DOL.GS
             _credited.Clear();
         }
 
+        public static bool IsCaster(ArtifactSpawnDef spawn) => spawn.IsBoss;
+
         private ArtifactBoss SpawnMob(ArtifactSpawnDef spawn, bool givesCredit)
         {
             double angle = Util.RandomDouble() * Math.PI * 2;
@@ -599,7 +617,9 @@ namespace DOL.GS
                 ArtifactId = _encounter.ArtifactId,
                 GivesCredit = givesCredit,
                 IsStageBoss = spawn.IsBoss,
-                CastsSpells = spawn.IsBoss || spawn.Count == 1,
+                // Only bosses cast and take the encounter's health factor. "|| Count == 1" made every lone form of a
+                // solo encounter a 3x caster (Orion's Belt form 1 killed a plate Armsman; Night Terror stunned at stage 1).
+                CastsSpells = IsCaster(spawn),
                 Name = spawn.Name,
                 Model = (ushort) spawn.Model,
                 Size = (byte) spawn.Size,

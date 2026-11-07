@@ -56,7 +56,7 @@ namespace DOL.GS.Spells
             int level = me.Level;
             double D(double atFifty) => atFifty * StormSovereignAbilities.Scale(Math.Max(level, StormSovereignAbilities.StyleFloorLevel));
             void Hit(GameLiving target, double amount, int crit = 0) => StormSovereignAbilities.Strike(h, target, amount, eDamageType.Spirit, crit);
-            void Mark(GameLiving target, int n) { TuathaMarks.Add(me, target, n); if (TuathaCourt.IsUnseelie(me)) Rot(h, target); }
+            void Mark(GameLiving target, int n) { if (target == null || !target.IsAlive) return; TuathaMarks.Add(me, target, n); if (TuathaCourt.IsUnseelie(me)) Rot(h, target); }
             IEnumerable<GameLiving> Near(GameLiving center, int radius) => h.Enemies(center, radius);
             IEnumerable<GameLiving> Sweep(int extra) => new[] { t }.Concat(Near(t, 250).Where(e => e != t).Take(extra));
             // Detonate one enemy: +25% per mark, the court's rider; returns the marks it had.

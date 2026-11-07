@@ -212,6 +212,22 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void SpendingFinishers_StillSpendWhenTheirHitKilledTheTarget()
+        {
+            // Playtest 2026-11-07: Thor's Judgement killed an ettin and neither arced nor spent its 3 charges.
+            var owner = NewPool();
+            StormTempest.Add(owner, 3);
+            var corpse = new Corpse();
+            _actors.Add(corpse);
+            var spell = new Spell(new DbSpell { SpellID = StormRemakeStyles.FirstEffectId + 2, Type = "StormSovereignAbility", Target = "Enemy", Duration = 10 }, 50);
+            var handler = new StormSovereignHandler(owner, spell, new SpellLine("Combat Style Effects", "Combat Style Effects", "", false));
+            handler.ApplyEffectOnTarget(corpse);
+            Assert.That(StormTempest.Charges(owner), Is.Zero, "the finisher spent its charges");
+            Assert.That(StormSovereignHandler.IsSovereignStyleEffect(PendragonRemakeStyles.FirstEffectId), Is.True);
+            Assert.That(StormSovereignHandler.IsSovereignStyleEffect(TuathaRemakeStyles.FirstEffectId), Is.True);
+        }
+
+        [Test]
         public void TempestPaidSpells_AreInstantAndFreeOnlyWithCharges()
         {
             var owner = NewPool();

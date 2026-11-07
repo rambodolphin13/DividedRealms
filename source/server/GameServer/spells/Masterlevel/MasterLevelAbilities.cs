@@ -174,6 +174,12 @@ namespace DOL.GS.Spells
         {
             if (target == null || !target.IsAlive)
                 return;
+            RunAbility(target);
+        }
+
+        /// <summary>Runs the ability on a target, logging instead of throwing. Its helpers skip dead targets.</summary>
+        protected void RunAbility(GameLiving target)
+        {
             try
             {
                 Ability?.Run?.Invoke(this, target);
@@ -242,6 +248,8 @@ namespace DOL.GS.Spells
         /// <summary>Starts this ability's timed effect (its <see cref="MLAbility.Mods"/>) on the target.</summary>
         public void Hold(GameLiving target, int duration = 0)
         {
+            if (target == null || !target.IsAlive)
+                return;
             MasterLevelHold.Refresh(this, target, duration > 0 ? duration : Spell.Duration, Ability.OnCast != null);
         }
 
@@ -255,6 +263,9 @@ namespace DOL.GS.Spells
         /// <summary>Casts an internal spell of a stock type from the caster, with fixed variance.</summary>
         public void Cast(GameLiving target, int index, eSpellType type, Action<DbSpell> setup)
         {
+            // A style finisher still runs when its hit killed the target: its splash and self effects go on, the corpse is skipped.
+            if (target == null || !target.IsAlive)
+                return;
             Spell spell = _subSpells.GetOrAdd((Spell.ID, index), _ =>
             {
                 var db = new DbSpell
@@ -275,7 +286,7 @@ namespace DOL.GS.Spells
         /// <summary>Damage not known when the table was written (percent of health); not cached.</summary>
         public void DamageNow(GameLiving target, int amount, eDamageType type)
         {
-            if (amount <= 0)
+            if (amount <= 0 || target == null || !target.IsAlive)
                 return;
             var spell = new Spell(new DbSpell { SpellID = Spell.ID * 1000 + 999, Name = Spell.Name, Type = "DirectDamage", Target = "Enemy", Damage = amount, DamageType = (int)type, Icon = Spell.Icon }, 50)
                 { InternalID = Spell.InternalID };
@@ -321,7 +332,7 @@ namespace DOL.GS.Spells
 
         public void Provoke(GameLiving target, GameLiving onto, long amount)
         {
-            if (target is GameNPC { Brain: StandardMobBrain brain })
+            if (target is GameNPC { IsAlive: true, Brain: StandardMobBrain brain })
                 brain.AddToAggroList(onto, amount);
         }
 
