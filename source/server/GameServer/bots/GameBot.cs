@@ -2030,9 +2030,15 @@ namespace DOL.GS
 
             if (leveled)
             {
-                Health = MaxHealth;
-                Mana = MaxMana;
-                Endurance = MaxEndurance;
+                // Experience can arrive after the bot died (its group or pet finished the kill). A dead bot is not
+                // refilled: a full health bar made it look alive, its release timer stopped and it stood frozen where
+                // it fell (True165 a2de7bf85: 22 bots overnight). It levels now and rises on release.
+                if (IsAlive)
+                {
+                    Health = MaxHealth;
+                    Mana = MaxMana;
+                    Endurance = MaxEndurance;
+                }
                 AutonomousBotStatusPersistence.Queue(this, true);
                 if (IsAutonomousWorldBot)
                 {
