@@ -31,6 +31,13 @@ jobs:
           python tools/bot-voices/check_runtime_names.py
           python -m unittest discover -s tools/claude-version/tests -v
 
+      # The world, release and client tools. Tests that need the local-only daoc.gg data or the
+      # installed test world skip themselves here (setup review 2026-11-06).
+      - name: Test the Python tools
+        shell: bash
+        working-directory: source/tools
+        run: python -m unittest discover -s . -p "test_*.py"
+
       - name: Create local server config (build only needs it to exist)
         shell: bash
         run: cp source/server/CoreServer/config/serverconfig.example.xml source/server/CoreServer/config/serverconfig.xml

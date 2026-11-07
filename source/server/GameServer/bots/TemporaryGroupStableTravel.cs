@@ -110,7 +110,7 @@ public static class TemporaryGroupStableTravel
     /// <summary>Gamebots in the player's group within this distance of where the player left go along, as through the same portal.</summary>
     public const int GroupmateTravelRadius = 1_500;
 
-    private static readonly ConcurrentDictionary<GamePlayer, (ushort Region, int X, int Y, DateTime Utc)> TransferOrigins = new();
+    private static readonly WeakKeyMap<GamePlayer, (ushort Region, int X, int Y, DateTime Utc)> TransferOrigins = new();
 
     /// <summary>Called as a player's MoveTo starts. Only a living player's trip counts (a release is not one).</summary>
     public static void MarkTransferOrigin(GamePlayer player)
