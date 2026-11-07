@@ -5258,6 +5258,11 @@ namespace DOL.GS
                 ad.AttackResult is eAttackResult.Blocked or eAttackResult.Parried)
                 StormTempest.Add(this, StormRegalia.DefenseTempest(this));
 
+            // Tuatha Sovereign: every melee blow you block, parry or evade marks the attacker.
+            if (PendragonRules.IsTuatha(CharacterClass.ID) && ad.IsMeleeAttack && ad.Attacker != null &&
+                ad.AttackResult is eAttackResult.Blocked or eAttackResult.Parried or eAttackResult.Evaded)
+                TuathaMarks.Add(this, ad.Attacker, TaraRegalia.DefenseMarks(this));
+
             switch (ad.AttackResult)
             {
                 // is done in game living because of guard
@@ -8990,6 +8995,8 @@ namespace DOL.GS
 
             if (StormRegalia.IsPiece(item))
                 StormRegalia.Refresh(this, arriving: item);
+            else if (TaraRegalia.IsPiece(item))
+                TaraRegalia.Set.Refresh(this, arriving: item);
 
             if (item.Item_Type is >= Slot.RIGHTHAND and <= Slot.RANGED)
             {
@@ -9147,6 +9154,8 @@ namespace DOL.GS
 
             if (StormRegalia.IsPiece(item))
                 StormRegalia.Refresh(this, leaving: item);
+            else if (TaraRegalia.IsPiece(item))
+                TaraRegalia.Set.Refresh(this, leaving: item);
 
             if (item.Item_Type is >= Slot.RIGHTHAND and <= Slot.RANGED)
             {

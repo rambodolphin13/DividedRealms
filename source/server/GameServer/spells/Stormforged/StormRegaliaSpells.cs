@@ -43,4 +43,40 @@ namespace DOL.GS.Spells
             });
         }
     }
+
+    /// <summary>The Regalia of Tara's item abilities (spell IDs 63750-63753): two use abilities and two armor procs.</summary>
+    public static class TaraRegaliaSpells
+    {
+        public const int EyesOfTheSidhe = 63750;   // helm, use: every enemy within 1,000 gets 2 marks
+        public const int MantleOfMists = 63751;    // cloak, use: evade and speed
+        public const int Briarward = 63752;        // hauberk, struck: ward on the wearer
+        public const int BrambleSnare = 63753;     // sleeves, struck: the attacker is rooted and marked
+
+        public static bool Owns(int id) => id is >= EyesOfTheSidhe and <= BrambleSnare;
+
+        public static IEnumerable<(int Id, MLAbility Ability)> Build()
+        {
+            yield return (EyesOfTheSidhe, new MLAbility
+            {
+                Path = "TuathaSovereign", Level = 50, Positive = true, KeepsStealth = true, Describe = s => s.Description,
+                Run = (h, _) => { foreach (GameLiving enemy in h.Enemies(h.Caster, 1000)) TuathaMarks.Add(h.Caster, enemy, 2); }
+            });
+            yield return (MantleOfMists, new MLAbility
+            {
+                Path = "TuathaSovereign", Level = 50, Positive = true, KeepsStealth = true, Describe = s => s.Description,
+                Mods = new[] { new MLMod(eProperty.EvadeChance, MLCategory.Ability, 30), MLMod.Speed(1.3) },
+                Run = (h, _) => { h.Hold(h.Caster); h.Animate(h.Caster); }
+            });
+            yield return (Briarward, new MLAbility
+            {
+                Path = "TuathaSovereign", Level = 50, Positive = true, KeepsStealth = true, Describe = s => s.Description,
+                Run = (h, _) => h.Cast(h.Caster, 1, eSpellType.BothAblativeArmor, db => { db.Target = "Self"; db.Duration = 10; db.Damage = 50; db.Value = 200; })
+            });
+            yield return (BrambleSnare, new MLAbility
+            {
+                Path = "TuathaSovereign", Level = 50, Describe = s => s.Description,
+                Run = (h, t) => { h.Cast(t, 1, eSpellType.SpeedDecrease, db => { db.Value = 99; db.Duration = 6; }); TuathaMarks.Add(h.Caster, t, 1); }
+            });
+        }
+    }
 }

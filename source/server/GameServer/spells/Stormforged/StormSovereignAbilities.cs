@@ -18,13 +18,15 @@ namespace DOL.GS.Spells
             int normalized = PendragonRules.NormalizeSpell(id);
             return normalized >= FirstId && normalized < 62656 || normalized >= 62700 && normalized < 62735 ||
                 normalized == RR5SpellId || id is >= 64335 and <= 64341 or >= 73335 and <= 73341 ||
-                StormRemakeStyles.OwnsEffect(id) || StormRemakeSpells.Owns(id);
+                StormRemakeStyles.OwnsEffect(id) || StormRemakeSpells.Owns(id) ||
+                TuathaRemakeStyles.OwnsEffect(id) || TuathaRemakeSpells.Owns(id) || TaraRegaliaSpells.Owns(id);
         }
         public static int Key(int id) => (PendragonRules.NormalizeSpell(id) - FirstId) % 32;
         /// <summary>One number per ability across all its ranks: the royal key, or 100 + key for the Storm remake spells.</summary>
-        public static int AbilityKey(int id) => StormRemakeSpells.Owns(id) ? 100 + StormRemakeSpells.Key(id) : Key(id);
-        public static bool IsRankedAbility(int id) => PendragonRules.IsRoyalRank(id) || StormRemakeSpells.Owns(id);
-        public static bool Toggle(int id) => PendragonRules.IsRoyalRank(id) && Key(id) is 6 or 13 or 14 or 15 or 22 || StormRemakeSpells.Toggle(id);
+        public static int AbilityKey(int id) => StormRemakeSpells.Owns(id) ? 100 + StormRemakeSpells.Key(id) :
+            TuathaRemakeSpells.Owns(id) ? 200 + TuathaRemakeSpells.Key(id) : Key(id);
+        public static bool IsRankedAbility(int id) => PendragonRules.IsRoyalRank(id) || StormRemakeSpells.Owns(id) || TuathaRemakeSpells.Owns(id);
+        public static bool Toggle(int id) => PendragonRules.IsRoyalRank(id) && Key(id) is 6 or 13 or 14 or 15 or 22 || StormRemakeSpells.Toggle(id) || TuathaRemakeSpells.Toggle(id);
         public static bool IsHammerfall(int id) => PendragonRules.IsRoyalRank(id) && Key(id) == 21 || StormRemakeSpells.Key(id) == StormRemakeSpells.Hammerfall;
         public static bool HasVeil(GameLiving living) => living.effectListComponent.GetSpellEffects(eEffect.MasterLevel)
             .Any(effect => !effect.IsEnding && !effect.IsDisabled && PendragonRules.IsRoyalRank(effect.SpellHandler.Spell.ID) && Key(effect.SpellHandler.Spell.ID)==22);
@@ -252,7 +254,10 @@ namespace DOL.GS.Spells
         }
         // Storm remake: with Tempest, Royal Thunder, Stormbreak, Winter's Grasp and Hammerfall are instant and cost no power.
         private bool TempestPays => StormRemakeSpells.PaysWithTempest(Spell.ID) && StormTempest.Charges(Caster) > 0;
-        public override int CalculateCastingTime() => TempestPays ? 0 : base.CalculateCastingTime();
+        // Tuatha: Spirit Lance is instant on a target with 3 or more of your marks.
+        private bool MarkedLance => TuathaRemakeSpells.Key(Spell.ID) == TuathaRemakeSpells.SpiritLance &&
+            Caster.TargetObject is GameLiving target && TuathaMarks.Count(Caster, target) >= 3;
+        public override int CalculateCastingTime() => TempestPays || MarkedLance ? 0 : base.CalculateCastingTime();
         public override int PowerCost(GameLiving target) => TempestPays ? 0 : base.PowerCost(target);
         public override void ApplyEffectOnTarget(GameLiving target)
         {

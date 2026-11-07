@@ -63,6 +63,31 @@ namespace DOL.GS.RealmAbilities
         public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 3;
     }
 
+    /// <summary>Tuatha Sovereign: detonations +5/10/15% (read by TuathaMarks.Bonus).</summary>
+    public sealed class TuathaMorrigansEdge : SovereignPassive
+    {
+        public const string KeyName = "Tuatha_MorrigansEdge";
+        public TuathaMorrigansEdge(DbAbility ability, int level) : base(ability, level, Array.Empty<eProperty>()) { }
+        public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 5;
+    }
+
+    /// <summary>Tuatha Sovereign: marks last 20/30/40 seconds and detonations leave 0/1/2 (read by TuathaMarks).</summary>
+    public sealed class TuathaHeartOfTheCourt : SovereignPassive
+    {
+        public const string KeyName = "Tuatha_HeartOfTheCourt";
+        public TuathaHeartOfTheCourt(DbAbility ability, int level) : base(ability, level, Array.Empty<eProperty>()) { }
+        protected override string ValueUnit => " s";
+        public override int GetAmountForLevel(int level) => level <= 0 ? 0 : 20 + 10 * Math.Min(level - 1, 2);
+    }
+
+    /// <summary>Tuatha Sovereign: evade +3/6/9%; style thorns 10/20/30% stronger.</summary>
+    public sealed class TuathaEvasionOfTheSidhe : SovereignPassive
+    {
+        public const string KeyName = "Tuatha_EvasionOfTheSidhe";
+        public TuathaEvasionOfTheSidhe(DbAbility ability, int level) : base(ability, level, eProperty.EvadeChance) { }
+        public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 3;
+    }
+
     /// <summary>The existing Realm Abilities career automatically grants this free at RR5.</summary>
     public sealed class SovereignWrathOfTheCrown : RR5RealmAbility
     {

@@ -14,13 +14,13 @@ namespace DOL.GS
             eObjectType[] oneHanded = characterClass switch
             {
                 eCharacterClass.PendragonSovereign => [eObjectType.SlashingWeapon, eObjectType.CrushingWeapon, eObjectType.ThrustWeapon],
-                eCharacterClass.TuathaSovereign => [eObjectType.Blades, eObjectType.Blunt, eObjectType.Piercing],
+                eCharacterClass.TuathaSovereign => [eObjectType.Blades],
                 _ => [eObjectType.Hammer, eObjectType.Axe],
             };
             eObjectType[] twoHanded = characterClass switch
             {
                 eCharacterClass.PendragonSovereign => [eObjectType.TwoHandedWeapon, eObjectType.PolearmWeapon],
-                eCharacterClass.TuathaSovereign => [eObjectType.LargeWeapons, eObjectType.CelticSpear],
+                eCharacterClass.TuathaSovereign => [eObjectType.Scythe],
                 _ => [],
             };
             // Storm Sovereign's two-handed set-up is a two-handed hammer or axe, trained in the same line.

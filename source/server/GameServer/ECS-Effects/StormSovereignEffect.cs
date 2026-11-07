@@ -11,8 +11,10 @@ namespace DOL.GS
         private GameLiving _marked;
         // Old royal keys; the Storm remake's Runic Armament, Runic Reversal and Hunter's Mark map onto 15, 18 and 17.
         private int Key => PendragonRules.IsRoyalRank(SpellHandler.Spell.ID) ? StormSovereignAbilities.Key(SpellHandler.Spell.ID) :
-            StormRemakeSpells.Key(SpellHandler.Spell.ID) switch { StormRemakeSpells.RunicArmament => 15, StormRemakeSpells.RunicReversal => 18, StormRemakeSpells.HuntersMark => 17, _ => -1 };
-        private bool Remake => StormRemakeSpells.Owns(SpellHandler.Spell.ID);
+            StormRemakeSpells.Key(SpellHandler.Spell.ID) switch { StormRemakeSpells.RunicArmament => 15, StormRemakeSpells.RunicReversal => 18, StormRemakeSpells.HuntersMark => 17,
+                _ => TuathaRemakeSpells.Key(SpellHandler.Spell.ID) == TuathaRemakeSpells.WildwoodArmament ? 15 : -1 };
+        private bool Tuatha => TuathaRemakeSpells.Owns(SpellHandler.Spell.ID);
+        private bool Remake => StormRemakeSpells.Owns(SpellHandler.Spell.ID) || Tuatha;
         public StormSovereignEffect(in ECSGameEffectInitParams init) : base(init,StormSovereignAbilities.Toggle(init.SpellHandler.Spell.ID)) { }
         public override void OnStartEffect()
         {
@@ -41,6 +43,17 @@ namespace DOL.GS
             if(GameLoop.GameLoopTime<_lastProc || !Owner.Chance(RandomDeckEvent.OffensiveProcChance,20)) return;
             _lastProc=GameLoop.GameLoopTime+2000;
             eObjectType weapon=(eObjectType)(Owner.ActiveWeapon?.Object_Type??0);
+            if(Tuatha)
+            {
+                // Wildwood Armament: scythe hits mark one more enemy nearby, blade hits open a bleed.
+                TuathaMarks.Add(Owner,hit.Target,1);
+                if(weapon is eObjectType.Scythe)
+                    foreach(var enemy in Handler.Enemies(hit.Target,250).Where(t=>t!=hit.Target && t.InCombat).Take(1))
+                        TuathaMarks.Add(Owner,enemy,1);
+                else
+                    TuathaRemakeStyles.Wound(Handler,hit.Target,eDamageType.Body);
+                return;
+            }
             if(Remake)
             {
                 // Storm remake: hammers splash lightning, axes open a frost wound.
@@ -67,9 +80,11 @@ namespace DOL.GS
             if(IsEnding || !IsActive || GameLoop.GameLoopTime<_lastProc || args is not AttackedByEnemyEventArgs { AttackData: var hit } ||
                 !hit.IsMeleeAttack || hit.Attacker==null || !hit.Attacker.IsAlive) return;
             // Storm remake: Runic Armament carries Runic Reversal, so every parry or block returns lightning.
-            if(Remake && Key==15 && hit.AttackResult is eAttackResult.Parried or eAttackResult.Blocked && GameLoop.GameLoopTime>=_lastReversal) {
+            if((Remake && Key==15 && hit.AttackResult is eAttackResult.Parried or eAttackResult.Blocked || Tuatha && Key==15 && hit.AttackResult==eAttackResult.Evaded)
+                && GameLoop.GameLoopTime>=_lastReversal) {
+                // Runic Armament returns lightning; Wildwood Armament returns spirit thorns (evades too).
                 _lastReversal=GameLoop.GameLoopTime+1000;
-                StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2);
+                StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2,Tuatha?eDamageType.Spirit:eDamageType.Energy);
             }
             if(Key==18 && (hit.AttackResult==eAttackResult.Parried || Remake && hit.AttackResult==eAttackResult.Blocked)) {
                 _lastProc=GameLoop.GameLoopTime+1000;

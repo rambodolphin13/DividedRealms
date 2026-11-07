@@ -5691,8 +5691,8 @@ namespace DOL.GS
                         eObjectType.ThrustWeapon, eObjectType.TwoHandedWeapon, eObjectType.PolearmWeapon, eObjectType.Shield });
                     break;
                 case eCharacterClass.TuathaSovereign:
-                    weaponTypes.AddRange(new[] { eObjectType.Blades, eObjectType.Blunt, eObjectType.Piercing,
-                        eObjectType.LargeWeapons, eObjectType.CelticSpear, eObjectType.Shield });
+                    // Scythe, Blades and Shield only (2026-11-06 remake).
+                    weaponTypes.AddRange(new[] { eObjectType.Scythe, eObjectType.Blades, eObjectType.Scythe, eObjectType.Blades, eObjectType.Shield });
                     break;
                 case eCharacterClass.Armsman:
                     weaponTypes.Add(eObjectType.PolearmWeapon);
@@ -6158,8 +6158,8 @@ namespace DOL.GS
             {
                 // Hibernian drops for the Tuatha Sovereign come here, not to the Albion list.
                 case eCharacterClass.TuathaSovereign:
-                    weaponTypes.AddRange(new[] { eObjectType.Blades, eObjectType.Blunt, eObjectType.Piercing,
-                        eObjectType.LargeWeapons, eObjectType.CelticSpear, eObjectType.Shield });
+                    // Scythe, Blades and Shield only (2026-11-06 remake).
+                    weaponTypes.AddRange(new[] { eObjectType.Scythe, eObjectType.Blades, eObjectType.Scythe, eObjectType.Blades, eObjectType.Shield });
                     break;
                 // Match each starter trainer's guaranteed practice weapon.
                 case eCharacterClass.Guardian:

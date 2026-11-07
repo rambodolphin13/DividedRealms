@@ -19,6 +19,9 @@ namespace DOL.GS
             base.DealDamage(ad);
             int dealt=Math.Min(healthBefore,Math.Max(0,ad.Damage+ad.CriticalDamage));
             if(dealt>0 && IsAlive) ChangeHealth(this,eHealthChangeType.Spell,StormforgedRules.RestorePerHit(dealt,HealthSteal));
+            // The Tuatha's Faerie Drake: its breath (spells) marks what it hits for its owner.
+            if(dealt>0 && ad.SpellHandler!=null && Owner is GamePlayer owner && PendragonRules.IsTuatha(owner.CharacterClass.ID))
+                TuathaMarks.Add(owner,ad.Target,1);
         }
         public override double GetSpellScalingFactor() => Level / 50.0;
         public override void SortSpells()

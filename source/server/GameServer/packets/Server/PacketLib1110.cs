@@ -57,7 +57,7 @@ namespace DOL.GS.PacketHandler
 		/// Stormforged spells (62000-62239) have their own tooltips, as do and the offline Master Level and Champion abilities
 		/// (63000-63199) with the stock effects they apply (ability ID * 1000 + n),
 		/// and the Valkyrie test kit (64990-65150, tooltips 27000-27160; 65151+ are stock spells),
-		/// and the Storm Sovereign remake styles, spells and Storm Regalia item abilities (63500-63749) with their stock effects.
+		/// and the Storm and Tuatha Sovereign remake styles, spells and regalia item abilities (63500-63860, 65600-65727) with their stock effects.
 		/// Their icons are borrowed, so the icon's stock tooltip would be wrong.
 		/// </summary>
 		public static bool UsesOwnTooltipIdentity(int spellId)
@@ -68,7 +68,8 @@ namespace DOL.GS.PacketHandler
 		}
 
 		private static bool IsStormRemake(int spellId) =>
-			spellId is >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId and <= 63749 or >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId * 1000 and <= 63749999;
+			spellId is >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId and <= 63860 or >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId * 1000 and <= 63860999 ||
+			DOL.GS.Spells.TuathaRemakeSpells.Owns(spellId) || spellId is >= DOL.GS.Spells.TuathaRemakeSpells.FirstId * 1000 and <= 65727999;
 
         /// <summary>
 		/// New system in v1.110+ for delve info. delve is cached by client in extra file, stored locally.

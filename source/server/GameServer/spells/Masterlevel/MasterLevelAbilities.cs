@@ -492,6 +492,12 @@ namespace DOL.GS.Spells
                 _byId[id] = ability;
             foreach (var (id, ability) in StormRegaliaSpells.Build())
                 _byId[id] = ability;
+            foreach (var (id, ability) in TuathaRemakeStyles.Build())
+                _byId[id] = ability;
+            foreach (var (id, ability) in TuathaRemakeSpells.Build())
+                _byId[id] = ability;
+            foreach (var (id, ability) in TaraRegaliaSpells.Build())
+                _byId[id] = ability;
         }
 
         // ---------------- Banelord: shouts that cripple enemies around you ----------------
