@@ -31,6 +31,21 @@ textures: roll back, swap `textures/`, install again.
 
 ## Painters
 
-`paint_tara.py` and `paint_camelot.py` are kept for reference: they made `textures/` and the preview sheets. They need
-the Stormforged concept pipeline (`paint_v5`, `paint_v7`, `calib`, `render`, `bake_arrays`, `helm_fit` and its mesh
-bakes), which is not in the repository, so they don't run from here as they are.
+`tara/paint_tara.py` and `camelot/paint_camelot.py` paint `textures/` and the preview sheets. They paint in 3D body
+space on mesh bakes, using the pipeline in `pipeline/` (the Stormforged concept pipeline: `paint_sf`, `paint_sf_parts`,
+`paint_v5` Canvas with painted bevels, `paint_v7` helpers, `calib` mesh bakes, `render` preview renderer, `bake_arrays`,
+`helm_fit`). The pipeline's own helpers come from `tools/pet-art` and `source/new-client/pipeline`.
+
+```
+python tools/sovereign-art/pipeline/fetch_meshes.py           # once: meshes and the stock helm skin from the client
+python -u tools/sovereign-art/camelot/paint_camelot.py B      # about 15 minutes; Tara: tara/paint_tara.py A2
+python tools/sovereign-art/camelot/paint_camelot.py B only=render   # previews again from existing textures
+```
+
+Everything they write goes to `tools/sovereign-art/.work/` (git-ignored; `SOVEREIGN_ART_WORK` moves it): `nif/` and
+`tex/` from the fetch, `bakes/` (rebuilt from the meshes on first use, about 30 s), and `tara/out_A2/`,
+`camelot/out_B/` with the painted textures and the preview sheets. Copy a finished `out_*/` into the kit's `textures/`
+to install it. The client folder is `OFFLINE_DAOC_CLIENT`, else the owner's modern test client; it is only read.
+
+Checked 2026-11-07: the fetched meshes and rebuilt bakes are identical to the ones the installed art was painted from,
+and both painters reproduce the committed textures from the repository.

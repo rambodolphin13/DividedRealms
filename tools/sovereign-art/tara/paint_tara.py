@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 from scipy.ndimage import distance_transform_edt
 
-SF = Path(r"C:\Users\natex\AppData\Local\Temp\claude\C--Users-natex-Desktop-DAoC-Offline\aaead7fa-737a-4067-8593-5b9839b12a07\scratchpad\sf")
+SF = Path(__file__).resolve().parents[1] / "pipeline"         # the Sovereign art pipeline (tools/sovereign-art/pipeline)
 sys.path.insert(0, str(SF))
 from paint_sf import fbm3, smoothstep, lerp, rivets  # noqa: E402
 from paint_sf_parts import _seg  # noqa: E402
@@ -28,7 +28,9 @@ import bake_arrays  # noqa: E402
 import helm_fit  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-R.NIF = HERE / "nif"
+import paths  # noqa: E402
+WORK = paths.WORK / "tara"; WORK.mkdir(parents=True, exist_ok=True)
+R.NIF = paths.NIF
 R._cache.clear()
 helm_fit.PREFIX.update({"BC": "cel", "AES": "elf", "Lur": "lur", "Fir": "fir"})
 
@@ -657,7 +659,7 @@ def main(variant):
     global VARIANT
     POLISH["on"] = variant.endswith("2")
     VARIANT = variant[0]
-    out = HERE / f"out_{variant}"; out.mkdir(exist_ok=True)
+    out = WORK / f"out_{variant}"; out.mkdir(exist_ok=True)
     tex = {}
     for key, (bake_key, fn, size) in JOBS.items():
         tex[key] = fn(calib.bake(bake_key)).finish(size); tex[key].save(out / f"{key}.png"); print(variant, "painted", key)
@@ -674,11 +676,11 @@ def main(variant):
                  R.render(outfit("Lur", "m", tex), views=[V[0]], label="Lurikeen male"),
                  R.render(outfit("BC", "f", tex, cloak=1), views=[V[3]], label="Celt female + cloak"),
                  R.render(outfit("Fir", "f", tex), views=[V[0]], label="Firbolg female")])
-    R.stack([r1, r2, r3]).save(HERE / f"tara_{variant}.png")
+    R.stack([r1, r2, r3]).save(WORK / f"tara_{variant}.png")
     close = [R.render([("Body05_BC_m", tex["body_m"])], views=[V[0], V[1], V[3]], width=360, height=420, label="chest, pauldrons, back"),
              R.render([("Gloves06_BC_m", tex["gloves"]), ("Boots06_BC_m", tex["boots"]), ("Arms01_BC_m", tex["arms"]),
                        ("Legs01_BC_m", tex["legs"])], views=[V[0], V[1]], width=360, height=520, label="arms, legs, gloves, boots")]
-    R.stack(close).save(HERE / f"tara_{variant}_close.png")
+    R.stack(close).save(WORK / f"tara_{variant}_close.png")
     print("done", variant)
 
 

@@ -18,14 +18,20 @@ import paint_tara as T  # noqa: E402  (installs the polish patch on Canvas.layer
 from paint_tara import (np, Image, ImageDraw, distance_transform_edt, fbm3, smoothstep, lerp, rivets, P5, P7,  # noqa: E402
                         Canvas, ramp, lit, calib, R, bake_arrays, helm_fit, cast_shadow, facet, bezier, bezier_dist, hash2)
 
-R.NIF = HERE / "nif"
+import paths  # noqa: E402  (pipeline paths; paint_tara put the pipeline on sys.path)
+WORK = paths.WORK / "camelot"; WORK.mkdir(parents=True, exist_ok=True)
+R.NIF = paths.NIF
 R._cache.clear()
 helm_fit.PREFIX.update({"BC": "bri", "AES": "ava", "SFS": "sar", "Hig": "hig", "Inc": "inc", "Hal": "hal"})
 
 STEEL = [(9, 10, 12), (44, 47, 53), (102, 106, 114), (174, 178, 186), (240, 242, 246)]
-GILT = [(30, 22, 10), (92, 72, 34), (160, 132, 72), (214, 190, 128), (250, 238, 200)]          # variant B: gold-washed plate
+GILT = [(20, 11, 3), (74, 45, 13), (146, 100, 34), (212, 164, 74), (255, 236, 178)]           # variant B: burnished gilt plate
+BRASS_MAIL = [(7, 5, 3), (34, 25, 12), (82, 62, 30), (150, 120, 64), (222, 196, 136)]
+P5_GUNMETAL = P5.GUNMETAL
+NIELLO = [(3, 2, 2), (12, 9, 7), (26, 20, 15), (52, 42, 30)]                                    # black inlay inside the gold edges
 GOLD = T.GOLD
 CRIMSON = [(16, 2, 3), (58, 6, 10), (118, 14, 22), (178, 34, 40), (240, 128, 116)]
+CRIMSON_LEATHER = [(14, 2, 3), (46, 7, 10), (92, 16, 20), (142, 34, 36)]
 CLOTH = [(8, 1, 2), (34, 4, 7), (76, 10, 16), (126, 24, 30)]
 LEATHER = [(10, 7, 6), (30, 20, 16), (58, 40, 30), (92, 66, 50)]
 ERMINE = [(150, 146, 140), (196, 192, 186), (228, 226, 220), (244, 242, 238), (255, 255, 252)]
@@ -33,7 +39,7 @@ VARIANT = "A"
 
 P5.BRONZE = GOLD                                     # Canvas.stud: gold rivets
 T.EMERALD = CRIMSON
-T.METAL_STRENGTH.update({id(STEEL): 0.85, id(GILT): 0.80, id(CRIMSON): 0.35})
+T.METAL_STRENGTH.update({id(STEEL): 0.85, id(GILT): 0.92, id(CRIMSON): 0.35})
 
 
 def plate_stops():
@@ -161,18 +167,43 @@ def lozenge_band(C, mask, u, v, v0, v1, period, field=GOLD, gem=None):
     facet(C, band & (dl >= 0.45) & (dl < 0.86), fu, amt=0.22)
 
 
-def lames(C, mask, v, v_top, step, count, seed=20, edge=True, down=True):
-    """Overlapping plate lames: each band of 'step' along v, the upper (or outer) one casting its shadow on the next."""
+def flute(C, mask, coord, period, amt=0.30):
+    """Fluted plate (the Maximilian ridges): alternating lit ridges and shadowed hollows along 'coord', a bright crest line."""
+    if not mask.any():
+        return
+    s = np.sin(2 * np.pi * coord / period)
+    C.col = np.where(mask[..., None], C.col * (1 - amt * 0.5 * (1 - s))[..., None], C.col)
+    crest = mask & (s > 0.93)
+    C.col = np.where(crest[..., None], lerp(C.col, ramp(np.full(s.shape, 0.97), plate_stops()), 0.45), C.col)
+
+
+def niello(C, mask):
+    """Black inlay: the dark channel that sets every gold edge off the plate (gilded parade armour)."""
+    C.layer(mask, NIELLO, outline=0.2, rim=0.3, pillow=0.4, spec=0.5, rim_amt=0.4, seed=9)
+
+
+def trimmed_edge(C, region, v, v_edge, inward, w_gold, w_niello):
+    """Gold edge at v_edge, then a niello channel just inside it (inward = +1 if the lame lies at larger v)."""
+    dv = (v - v_edge) * inward
+    gold(C, region & (dv >= -0.02) & (dv < w_gold), 0.6)
+    niello(C, region & (dv >= w_gold) & (dv < w_gold + w_niello))
+
+
+def lames(C, mask, v, v_top, step, count, seed=20, edge=True, down=True, flutes=None):
+    """Overlapping plate lames: each band of 'step' along v, the upper (or outer) one casting its shadow on the next.
+    Each lame is fluted along flutes=(coord, period) and trimmed with a gold edge and a niello channel."""
     bands = []
     for i in range(count):
         v0 = v_top - (i + 1) * step if down else v_top + i * step
         lam = mask & (v >= v0) & (v < v0 + step)
         plate(C, lam, seed=seed + i, engrave=False)
+        if flutes is not None:
+            flute(C, lam, *flutes)
         bands.append((lam, v0))
     for lam, v0 in bands:
         if edge:
-            gold(C, lam & (np.abs(v - (v0 if down else v0 + step)) < 0.16 * step), 0.6)
-        cast_shadow(C, lam, reach=3.5, amt=0.55)
+            trimmed_edge(C, lam, v, v0 if down else v0 + step, 1 if down else -1, 0.13 * step, 0.11 * step)
+        cast_shadow(C, lam, reach=3.5, amt=0.6)
     return bands
 
 
@@ -194,8 +225,10 @@ def paint_body(tm, female=False):
     # the breastplate, with a raised medial ridge, and two fauld lames below it
     breast = torso & ~collar & (z >= 49.6)
     plate(C, breast, seed=11)
+    flute(C, breast & (np.abs(x) > 1.6), u, 1.6, amt=0.18)
     facet(C, breast & front, x, amt=0.20)
-    lames(C, torso & ~collar & (z < 49.6), z, 49.6, 2.1, 2, seed=12)
+    trimmed_edge(C, breast, z, 49.6, 1, 0.28, 0.24)
+    lames(C, torso & ~collar & (z < 49.6), z, 49.6, 2.1, 2, seed=12, flutes=(u, 1.6, 0.18))
     cast_shadow(C, breast, reach=5.0, amt=0.6)
 
     # crimson enamel bands sweeping from each shoulder down under the roundel, gold-edged, gold fleurons outward
@@ -241,9 +274,9 @@ def paint_body(tm, female=False):
     cast_shadow(C, pend, reach=3.0, amt=0.6)
 
     # chest and back: the dragon roundel
-    roundel(C, front & torso, np.where(front, x, -x), z - 52.6, 2.7)
-    roundel(C, ~front & torso, -x, z - 53.6, 3.4)
-    cast_shadow(C, front & torso & (np.hypot(x, z - 52.6) < 2.7) | ~front & torso & (np.hypot(x, z - 53.6) < 3.4), reach=6.0, amt=0.65)
+    roundel(C, front & torso, np.where(front, x, -x), z - 52.9, 3.1)
+    roundel(C, ~front & torso, -x, z - 53.9, 3.9)
+    cast_shadow(C, front & torso & (np.hypot(x, z - 52.9) < 3.1) | ~front & torso & (np.hypot(x, z - 53.9) < 3.9), reach=6.0, amt=0.7)
 
     # pauldrons: three scalloped lames, the upper with a crimson enamel band, gold rivets
     should = (ax > 10.4) & (z > 50.8) & ~collar
@@ -253,16 +286,26 @@ def paint_body(tm, female=False):
         edge = z0 - 0.7 * lobe ** 0.5
         lam = should & (z >= edge) & (z < (edge + 2.6 if i < 2 else 99))
         plate(C, lam, seed=40 + i)
+        flute(C, lam, pu, 1.3, amt=0.20)
         gold(C, lam & (z < edge + 0.32), 0.7)
+        niello(C, lam & (z >= edge + 0.32) & (z < edge + 0.56))
         if i > 0:
             cast_shadow(C, lam, reach=5.0, amt=0.65)
     enamel(C, should & (z > 57.0) & (z < 58.2), seed=45)
     gold(C, should & (np.abs(z - 56.85) < 0.12) | should & (np.abs(z - 58.35) < 0.12), 0.5)
     C.stud(rivets(pu, z, 2.0, 59.0, 0.2) * should)
+    cap = should & (n[..., 0] * np.sign(x) > 0.45)
+    boss_r = np.hypot(y - 1.3, z - 56.2)
+    boss = cap & (boss_r < 1.15)
+    gold(C, boss, 1.0, seed=46)
+    pet = np.arctan2(y - 1.3, z - 56.2)
+    C.layer(boss & (boss_r < 0.72 + 0.12 * np.cos(pet * 6)), CRIMSON, outline=0.3, rim=0.5, pillow=0.8, spec=0.95, seed=47)
+    gold(C, boss & (boss_r < 0.22), 0.5)
+    cast_shadow(C, boss, reach=3.5, amt=0.65)
 
     # belt: dark leather, gold plaques set with crimson, a gold buckle with the crown
     belt = (z > 42.4) & (z < 45.4)
-    C.layer(belt, LEATHER, outline=1.4, rim=1.8, pillow=6.0, spec=0.2, seed=51)
+    C.layer(belt, CRIMSON_LEATHER, outline=1.4, rim=1.8, pillow=6.0, spec=0.3, seed=51)
     C.stitch(belt, u)
     cell = ((u / 3.2) % 1.0) - 0.5
     plq = belt & (np.abs(cell) < 0.16) & (z > 42.9) & (z < 44.9) & (ax > 2.9)
@@ -288,9 +331,9 @@ def paint_body(tm, female=False):
     facet(C, cr, ta, amt=0.2)
     cast_shadow(C, cr, reach=3.0, amt=0.55)
     lozenge_band(C, tab, ta * 1.0, z, 29.6, 30.8, 1.2)
-    lames(C, sides, z, 42.4, 2.6, 5, seed=63)
+    lames(C, sides, z, 42.4, 4.3, 3, seed=63, flutes=(u, 1.6, 0.18))
     cast_shadow(C, belt, reach=4.0, amt=0.6)
-    T.leaf_points(C, low, u, -z, np.arange(0.7, 40.0, 1.4), -42.4, 1.5, 0.40, seed=66)
+    T.leaf_points(C, low, u, -z, np.arange(0.7, 40.0, 1.4), -42.4, 1.1, 0.36, seed=66)
 
     robe = z <= 29.4
     C.layer(robe, CLOTH, tone=0.28 + 0.4 * fold + 0.12 * lit(n), outline=0, rim=0, rim_amt=0, spec=0.05)
@@ -310,7 +353,7 @@ def paint_arms(tm):
     C.layer(C.cov, STEEL, tone=0.12 + 0.05 * lit(n), outline=0, rim=0, rim_amt=0, spec=0)
     C.chain(C.cov, np.arctan2(z - 50.5, -y) * 2.6, ax, period=0.8)
     sleeve = (ax > 9.6) & (ax < 15.4)
-    lames(C, sleeve, ax, 9.6, 1.15, 5, seed=82, down=False)
+    lames(C, sleeve, ax, 9.6, 1.15, 5, seed=82, down=False, flutes=(np.arctan2(z - 50.5, -y) * 2.6, 0.8, 0.20))
     cuff = (ax >= 15.4) & (ax < 16.9)
     plate(C, cuff, seed=83, engrave=False)
     enamel(C, cuff & (np.abs(ax - 16.15) < 0.25), 0.6)
@@ -327,7 +370,7 @@ def paint_legs(tm):
     C.layer(C.cov, STEEL, tone=0.12 + 0.05 * lit(n), outline=0, rim=0, rim_amt=0, spec=0)
     C.chain(C.cov, u, -z, period=0.8)
     cuisse = (np.abs(ang) < 1.15) & (z > 26.0) & (z < 36.0)
-    lames(C, cuisse & (z < 34.6), z, 34.6, 1.7, 5, seed=94)
+    lames(C, cuisse & (z < 34.6), z, 34.6, 1.7, 5, seed=94, flutes=(u, 1.0, 0.18))
     top = cuisse & (z >= 34.6)
     plate(C, top, seed=95, engrave=False)
     lozenge_band(C, top, u * 1.0, z, 34.75, 35.85, 1.0)
@@ -341,7 +384,7 @@ def paint_gloves(tm):
     C = Canvas(tm); p, n = C.p, C.n
     x, y, z = p[..., 0], p[..., 1], p[..., 2]
     ax = np.abs(x)
-    C.layer(C.cov, LEATHER, spec=0.15, rim_amt=0.2, seed=101)
+    plate(C, C.cov, seed=101)
     zc = 46.8 - (ax - 14.0) * 0.55
     vu = np.arctan2(z - zc, -(y - 1.5))
     cuff = (ax < 15.0) & (z > 43.5)
@@ -368,6 +411,8 @@ def paint_gloves(tm):
         plate(C, m, seed=107 + i, engrave=False)
         cast_shadow(C, m, reach=2.0, amt=0.45)
     gold(C, hand & back & (np.abs(z - 40.3) < 0.18), 0.5)
+    C.layer(hand & ~back, LEATHER, spec=0.15, rim_amt=0.2, seed=109)
+    flute(C, vam & (ax < 16.6), vu, 0.5, amt=0.18)
     return C
 
 
@@ -376,15 +421,17 @@ def paint_boots(tm):
     C = Canvas(tm); p, n = C.p, C.n
     x, y, z = p[..., 0], p[..., 1], p[..., 2]
     ax = np.abs(x); ang = np.arctan2(ax - 5.4, -(y - 2.6)); aa = np.abs(ang)
-    C.layer(C.cov, LEATHER, spec=0.15, rim_amt=0.2, seed=111)
+    plate(C, C.cov, seed=111)
     greave = (z > 4.2) & (z < 14.2)
     plate(C, greave, seed=112)
+    flute(C, greave & (aa > 0.34), ang * 3.0, 0.7, amt=0.20)
     facet(C, greave & (aa < 0.7), ang, amt=0.16)
     strip = greave & (aa < 0.30) & (z > 5.2) & (z < 13.4)
     enamel(C, strip, seed=113)
     lozenge_band(C, strip, z * 1.0, ang * 3.0, -0.75, 0.75, 1.1)
     cast_shadow(C, strip, reach=3.0, amt=0.5)
     gold(C, greave & (z < 4.9), 1.0)
+    niello(C, greave & (z >= 4.9) & (z < 5.25))
     cuff = (z >= 14.2) & (z < 18.4)
     plate(C, cuff, seed=114, engrave=False)
     lozenge_band(C, cuff, ang * 3.0, z, 14.9, 17.7, 1.6)
@@ -399,6 +446,7 @@ def paint_boots(tm):
     cast_shadow(C, ros, reach=4.0, amt=0.6)
     cast_shadow(C, knee, reach=4.0, amt=0.6)
     cast_shadow(C, cuff, reach=3.0, amt=0.5)
+    C.layer(C.cov & (z < 0.7), LEATHER, spec=0.15, rim_amt=0.2, seed=119)
     foot = (z <= 4.2) & (y < -0.5)
     sk = np.floor((-y - 0.5) / 1.1)
     for i in range(6):
@@ -447,7 +495,7 @@ def paint_cloak(tm):
 
 
 # ------------------------------------------------------------------ helm: stock Albion full plate helm (albHelm03), repainted
-STOCK_HELM = HERE / "tex" / "b_plt1_helm2.png"
+STOCK_HELM = paths.TEX / "b_plt1_helm2.png"                 # fetched by pipeline/fetch_meshes.py
 
 
 def helm_tm():
@@ -456,27 +504,87 @@ def helm_tm():
     return bake_arrays.bake(v, nn, uv, f, size=512), name
 
 
+def openings(shape):
+    """The stock helm's eye slot and breathing holes as a mask at the canvas size, without its thin dark seam lines:
+    dark connected regions in the face-plate rows, kept if blob-shaped (holes) or large (the eye slot)."""
+    from scipy.ndimage import label, find_objects
+    h, w = shape
+    stock = np.asarray(Image.open(STOCK_HELM).convert("RGB").resize((w, h), Image.LANCZOS), float)
+    dark = (stock.mean(-1) < 42) & (np.arange(h)[:, None] < h * 0.62)
+    lab, n = label(dark)
+    keep = np.zeros(shape, bool); slot = np.zeros(shape, bool)
+    k = (w / 256.0) ** 2
+    for i, sl in enumerate(find_objects(lab), 1):
+        hh, ww = sl[0].stop - sl[0].start, sl[1].stop - sl[1].start
+        area = int((lab[sl] == i).sum())
+        fill = area / float(hh * ww)
+        if area > 120 * k and fill > 0.5:                                  # the eye slot
+            slot |= lab == i
+        elif 3 * k <= area <= 60 * k and max(hh, ww) <= 2.6 * min(hh, ww) and fill > 0.4:
+            keep |= lab == i                                                # a breathing hole
+    return slot, keep
+
+
 def paint_helm(tm):
+    """The crowned great helm: fluted gilt skull, a gold cross on the face, a gold-framed eye slot, rivets, a jewelled
+    crown (lozenge band, crimson gems, ball-tipped points) over a crimson enamel band, black niello under every edge."""
     C = Canvas(tm); p, n = C.p, C.n
     x, y, z = p[..., 0], p[..., 1], p[..., 2]
     cov = C.cov
     zz = z[cov]; z0, z1 = np.percentile(zz, 2), np.percentile(zz, 98)
     hz = (z - z0) / max(z1 - z0, 1e-6)
     ang = np.arctan2(x, -y)
+    front = cov & (y < 0)
+    slot, holes = openings(C.col.shape[:2])
+    slot &= front; holes &= front & (hz < 0.6)
     plate(C, cov, seed=131)
-    facet(C, cov & (y < 0), x, amt=0.18)                                  # the helm's front ridge
-    # gold crown circlet round the brow, points rising above it, crimson enamel under it
+    flute(C, cov & ~front & (hz < 0.62) | cov & (np.abs(ang) > 1.25) & (hz < 0.62), ang * 3.0, 0.42, amt=0.24)
+    facet(C, front, x, amt=0.18)
+    top = np.percentile(hz[slot], 97) if slot.any() else 0.55
+    bot = np.percentile(hz[slot], 3) if slot.any() else 0.48
+    sx = np.percentile(np.abs(x[slot]), 97) if slot.any() else 3.0
+    # the gold cross on the face: an upright from the brow to the rim, a bar along the top of the eye slot
+    upright = front & (np.abs(x) < 0.055 * (z1 - z0)) & (hz < 0.64) & ~slot
+    bar = front & (hz > top + 0.012) & (hz < top + 0.045) & (np.abs(x) < sx * 1.12)
+    cross = upright | bar
+    niello(C, front & ~cross & ((np.abs(x) < 0.08 * (z1 - z0)) & (hz < 0.64) | (hz > top + 0.004) & (hz < top + 0.058) & (np.abs(x) < sx * 1.2)) & ~slot)
+    gold(C, cross, 1.0, seed=134)
+    facet(C, upright, x, amt=0.25)
+    facet(C, bar, hz - (top + 0.0285), amt=0.2)
+    C.stud(rivets(x * 6.0, hz * 60.0, 2.4, (top + 0.0285) * 60.0, 0.30) * bar + rivets(hz * 60.0, x * 6.0, 2.6, 0.0, 0.32) * upright)
+    cast_shadow(C, cross, reach=4.0, amt=0.65)
+    # a gold frame round the eye slot and each breathing hole
+    sight = front & (hz >= bot - 0.004) & (hz <= top + 0.004) & (np.abs(x) < sx * 1.06) & ~upright
+    if slot.any():
+        C.layer(sight, NIELLO, tone=0.03 + 0.03 * lit(n), outline=0, rim=0, rim_amt=0, spec=0)
+        cast_shadow(C, bar, reach=2.0, amt=0.5)
+        ring = (distance_transform_edt(~slot) < 1.1 * C.scale) & ~slot & cov & ~(hz > top)
+        gold(C, ring & ~cross, 0.6, seed=135)
+        cast_shadow(C, ring, reach=2.5, amt=0.5)
+        C.layer(slot, NIELLO, tone=0.02 + 0.03 * lit(n), outline=0, rim=0, rim_amt=0, spec=0)
+    if holes.any():
+        hr = (distance_transform_edt(~holes) < 0.9 * C.scale) & ~holes & cov
+        C.col = np.where(hr[..., None], lerp(C.col, ramp(np.full(z.shape, 0.92), GOLD), 0.7), C.col)
+        C.col = np.where(holes[..., None], np.array([6, 4, 3.0]), C.col)
+    # the crimson enamel band and the jewelled crown above it
+    trimmed_edge(C, cov, hz, 0.64, 1, 0.012, 0.012)
+    enamel(C, cov & (hz > 0.664) & (hz <= 0.70), 0.6)
     circ = cov & (hz > 0.70) & (hz < 0.80)
-    gold(C, circ, 1.0, seed=132)
+    lozenge_band(C, circ, ang * 4.0, hz * 10.0, 7.0, 8.0, 0.55)
     k = np.round(ang / (np.pi / 6)); du = ang - k * (np.pi / 6)
-    pts = cov & (hz >= 0.80) & (hz < 0.95) & (np.abs(du) < 0.16 * (1 - (hz - 0.80) / 0.15))
-    gold(C, pts, 0.8, seed=133)
-    facet(C, pts, du)
-    gem = circ & (np.hypot(du * 3.0, (hz - 0.75) * 6.0) < 0.22)
+    tall = (k % 2) == 0
+    peak = np.where(tall, 0.97, 0.89)
+    th = (hz - 0.80) / (peak - 0.80)
+    pts = cov & (hz >= 0.80) & (th < 1) & (np.abs(du) < 0.17 * (1 - th) ** 0.9)
+    ball = cov & (np.hypot(du * 2.2, hz - peak - 0.012) < 0.022)
+    C.layer(pts | ball, plate_stops(), outline=0.4, rim=0.6, pillow=1.0, spec=0.9, seed=133)
+    facet(C, pts, du, amt=0.22)
+    C.col = np.where((pts | ball)[..., None], lerp(C.col, ramp(np.full(z.shape, 0.62), plate_stops()), 0.35), C.col)
+    gem = circ & tall & (np.hypot(du * 3.0, (hz - 0.75) * 6.0) < 0.26)
     C.layer(gem, CRIMSON, outline=0.3, rim=0.4, pillow=0.6, spec=1.0)
-    cast_shadow(C, circ | pts, reach=4.0, amt=0.6)
-    enamel(C, cov & (hz > 0.64) & (hz <= 0.70), 0.6)
-    gold(C, cov & (hz < 0.04), 0.8)
+    gold(C, circ & tall & (np.abs(np.hypot(du * 3.0, (hz - 0.75) * 6.0) - 0.30) < 0.04), 0.4)
+    cast_shadow(C, circ | pts | ball, reach=4.0, amt=0.65)
+    trimmed_edge(C, cov, hz, 0.0, 1, 0.035, 0.02)
     return C
 
 
@@ -528,7 +636,8 @@ def main(variant, only=None):
     VARIANT = variant
     T.POLISH["on"] = True
     use_palette()
-    out = HERE / f"out_{variant}"; out.mkdir(exist_ok=True)
+    P5.GUNMETAL = BRASS_MAIL if variant == "B" else P5_GUNMETAL
+    out = WORK / f"out_{variant}"; out.mkdir(exist_ok=True)
     tex = {}
     for key, (bake_key, fn, size) in JOBS.items():
         if only == ["render"]:
@@ -542,7 +651,7 @@ def main(variant, only=None):
         tex["helm"] = Image.open(out / "helm.png").convert("RGB")
     else:
         htm, _ = helm_tm()
-        tex["helm"] = keep_openings(paint_helm(htm).finish((256, 256))); tex["helm"].save(out / "helm.png")
+        tex["helm"] = paint_helm(htm).finish((256, 256)); tex["helm"].save(out / "helm.png")
     V = R.VIEWS
     name = {"A": "A: royal steel (polished steel, crimson enamel, faceted gold)", "B": "B: gilded (gold-washed plate, crimson enamel)"}[variant]
     r1 = R.render(outfit("BC", "m", tex, helm=True), views=[V[0], V[1], V[3]], width=380, height=600,
@@ -553,11 +662,11 @@ def main(variant, only=None):
                  R.render(outfit("SFS", "m", tex), views=[V[0]], label="Saracen male"),
                  R.render(outfit("BC", "f", tex, cloak=1), views=[V[3]], label="Briton female + cloak"),
                  R.render(outfit("Inc", "f", tex), views=[V[0]], label="Inconnu female")])
-    R.stack([r1, r2, r3]).save(HERE / f"camelot_{variant}.png")
+    R.stack([r1, r2, r3]).save(WORK / f"camelot_{variant}.png")
     close = [R.render([("Body05_BC_m", tex["body_m"])], views=[V[0], V[1], V[3]], width=360, height=420, label="chest, pauldrons, back"),
              R.render([("Gloves06_BC_m", tex["gloves"]), ("Boots06_BC_m", tex["boots"]), ("Arms01_BC_m", tex["arms"]),
                        ("Legs01_BC_m", tex["legs"])], views=[V[0], V[1]], width=360, height=520, label="arms, legs, gloves, boots")]
-    R.stack(close).save(HERE / f"camelot_{variant}_close.png")
+    R.stack(close).save(WORK / f"camelot_{variant}_close.png")
     print("done", variant)
 
 
