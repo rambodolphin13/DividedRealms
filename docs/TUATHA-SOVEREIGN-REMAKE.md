@@ -212,3 +212,24 @@ first the client's animation code is traced for hover while moving, then one tes
 1. **Mark effects:** decided, effect flashes (the stock effects get picked and shown for a look before building).
 2. **Stealth:** kept. Say if the Tuatha should drop it.
 3. **Armor look:** the emerald and moonsilver Sidhe king above, or another theme.
+
+## As built (2026-11-06, commit 16ed6b453)
+
+| Part | Where |
+|---|---|
+| Style table (61) | `source/tools/sovereign/tuatha_remake_styles.json`; styles 7200-7260, effects 63800-63860 (`TuathaRemakeStyles.cs`) |
+| Sidhe Marks, courts, Regalia of Tara set | `gameutils/TuathaRemake.cs` (`TuathaMarks`, `TuathaCourt`, `TaraRegalia`); sets share `gameutils/RegaliaSet.cs` with the Storm |
+| Spells (65600 + tier x 16 + key; lines `Tuatha.Remake00-08`; courts 65609/65610) | `spells/Stormforged/TuathaRemakeSpells.cs` |
+| Regalia item abilities 63750-63753 | `TaraRegaliaSpells` in `StormRegaliaSpells.cs` |
+| Realm abilities (InternalID 1944-1946) | `TuathaMorrigansEdge`, `TuathaHeartOfTheCourt`, `TuathaEvasionOfTheSidhe` |
+| Block/parry/evade marks, drake breath marks, Wildwood procs | `GamePlayer.OnAttackedByEnemy`, `StormWolf.DealDamage`, `StormSovereignEffect` |
+| Loot and bots | Scythe, Blades, Shield only (`GeneratedUniqueItem`, `PendragonRules.IsTuathaSkill`, `SovereignBotSpec`) |
+| World edits | `tuatha_remake_edits.py` (495 rows) and `tara_regalia_edits.py` (11 rows), through World Workshop |
+| Hover | `TUATHA_HOVER` in `source/tools/classslots/patch_class_slots.py` (client, installed and confirmed 2026-11-06) |
+
+Mark flashes use stock effects 4501/4505/4509 (Ethereal Concussion, Detonation, Devastation) and 4510 for a detonation;
+change the constants in `TuathaMarks` to try others. The court rider on the Court of the Sidhe chant was not built (the
+courts carry their own bonuses instead): Seelie +10% evade and +5% absorption, Unseelie +10% melee and spell critical chance.
+The Regalia of Tara uses the stock osnadurtha scale models and a stock Hibernian cloak until the art pass.
+Tested: 5,976 unit tests; both world edits applied to a snapshot of the test world; a private copy booted 4 minutes with
+bots, no exceptions. Not played.
