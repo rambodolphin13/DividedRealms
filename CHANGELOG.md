@@ -3,6 +3,16 @@
 The newest version is first. For the full detail of every earlier update, see
 [docs/history/CHANGELOG-0.3-to-0.32b.md](docs/history/CHANGELOG-0.3-to-0.32b.md).
 
+## DR-dev-0.1c — 2026-11-06
+
+A fix for Atlantis movement; it replaces DR-dev-0.1b.
+
+- Atlantis: on land below sea level, and in the water, players stopped and snapped in place, and drowned standing on
+  dry land in the Stygian Delta and the Land of Atum. The server now puts water only where the client draws it (each
+  zone's river and sea shapes), and Hibernia's Stygian Delta allows diving like every other Atlantis zone (world
+  update).
+- Gamebots swim on the water surface in battlegrounds and Atlantis instead of hopping up and down.
+
 ## DR-dev-0.1b — 2026-11-05
 
 Fixes to the Fishing Update from the first Discord reports; it replaces DR-dev-0.1a.
