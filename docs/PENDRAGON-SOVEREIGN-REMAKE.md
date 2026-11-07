@@ -183,3 +183,25 @@ Players today: the owner's Yberrawin (level 1) and two AI tester characters at 5
 1. **Showing Valor:** a gold Valor buff icon whose name shows the count, plus a holy-light flash on you at 3 and at 5.
 2. **The transformation:** keep the Lion of Albion as the Stygian Lion (model 1193).
 3. **The pet:** the Royal Lion becomes the Black Lion (model 104, was 100, a plain Tan Lion).
+
+## As built (2026-11-06, commit 152e28821)
+
+- **Valor** (`gameutils/PendragonRemake.cs`, `PendragonValor`): 0-5, +1 per block or parry (2 with the full Regalia), +1
+  per melee hit taken (once every 3 s), guarded blows land on the Pendragon so they count; Judgments spend all of it.
+  The buff icon is one of seven tier-0 spell rows "Valor 1" to "Valor 7" (65809-65815, icon 1506); holy flashes are
+  1465 at 3 and 1506 at 5. Out of combat one point fades every 8 s. The Lion of Albion fills it and Judgments spend
+  none while it lasts (as the Storm Crown keeps Tempest).
+- **Code of Chivalry** became cap 6/6/7 with slower fading (8/12/16 s), so the icons stop at 7.
+- **Guard of the Crown** is an ally buff, not a damage redirect: 20% absorption and a ward of 10% of the ally's health
+  for 15 s, +1 Valor; **Knight's Guard** is block +3/6/9% and a 25/50/75% stronger ward. The class keeps the stock
+  Guard, Protect and Intercept abilities it already had.
+- **Pendragon's Shield** (signature) wards the party and gives it 20% absorption for 10 s (no damage transfer).
+- **16 buttons**, not 15: King's Advance stays the old key 21 (throw and teleport), so the old chant (key 6) is kept too.
+- Kept old keys: 6 chant, 12 Will, 13 Armor, 19 Royal Lion, 20 Lion of Albion, 21 King's Advance, 22 Veil of Avalon.
+- **Regalia of Camelot**: plate, AF 102 / 34% (Albion plate's own absorption), stock arcanium full plate models 86-90
+  and 93 and cloak 57 until the art pass; item abilities Crown of Camelot (fill Valor), Mercy of Avalon (party heal
+  20%), Holy Bulwark (ward + Valor when struck), Searing Rebuke (burn + taunt when struck).
+- World: `pendragon_remake_edits.py` (486 rows incl. the Royal Lion template -> model 104) and
+  `camelot_regalia_edits.py` (11). Tooltips 29610-29670 (styles), 29700-29827 (spells and icons), 29840-29843.
+- Checked: 5,985 unit tests; both edit sets applied to a private copy of the test world and a 5-minute private boot
+  (port 10379) with no new errors. Not installed, not played by the AI tester or the owner yet.
