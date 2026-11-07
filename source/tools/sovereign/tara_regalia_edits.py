@@ -1,7 +1,7 @@
 """Regalia of Tara (2026-11-06): the Tuatha Sovereign's armor and cloak as real items, as a World Workshop edits file.
 
 Seven level 51 pieces, scale AF 102 / 27%, class 67 only, no trade or sale. Art (owner picks 2026-11-06: concept A, emerald
-court scale, and the stag roundel cloak): private client objects 4950-4956 from Tara-armor-concepts/install-A/install_tara_set.py
+court scale, and the stag roundel cloak): private client objects 4950-4956 from tools/sovereign-art/tara/install_tara_set.py
 (hauberk drawn with extension 5 = Body05, as the Storm hauberk). A client without that install draws nothing for them. Two use abilities and
 two armor procs (TaraRegaliaSpells in C#, 63750-63753); the set bonus is code (TaraRegalia in TuathaRemake.cs); the Brehon
 of Tara gives missing pieces to a level 50 Tuatha who whispers "Regalia of Tara". Every piece has 11 lines: stats, resists,

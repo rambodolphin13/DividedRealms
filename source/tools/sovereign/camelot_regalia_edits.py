@@ -2,7 +2,7 @@
 
 Seven level 51 pieces, plate AF 102 / 34% (Albion plate's own absorption), class 65 only, no trade or sale. The art is
 the owner's pick B (gilded plate, crimson enamel, red dragon; 2026-11-07): client objects 4957-4963 from
-Camelot-armor-concepts/install-B/install_camelot_set.py (breastplate Extension 5 = Body05, as the Tara and Storm sets). Two use
+tools/sovereign-art/camelot/install_camelot_set.py (breastplate Extension 5 = Body05, as the Tara and Storm sets). Two use
 abilities and two armor procs (CamelotRegaliaSpells in C#, 63760-63763); the set bonus is code (CamelotRegalia in
 PendragonRemake.cs); the Pendragon trainer gives missing pieces to a level 50 Pendragon who whispers "Regalia of Camelot".
 Every piece has 11 lines: stats, resists, a skill and the ToA lines a Pendragon rolls on loot.
