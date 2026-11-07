@@ -226,15 +226,20 @@ those icons until they cancel them.
 Seven level 51 pieces on the Stormforged art, Storm Sovereign only, not tradeable or sellable. Chain armor at
 AF 102 / 27% absorption (the best chain in the game); the hauberk draws the shoulder pads (extension 5).
 
-| Piece | Model | Highlights | Ability |
-|---|---|---|---|
-| Stormcrown of the Sovereign | 4942 | Str/Con 20, Pie 15, 60 hits, energy/spirit, Str/Con cap +5, Hammer/Axe +4 | Use: Crown of Tempest, Tempest to 5 (3 min) |
-| Hauberk of the Storm Sovereign | 4929 | Str/Con 22, Dex 15, 80 hits, crush/slash/thrust 10, +5% melee and style damage, Shields +4 | When struck (10%): Stormguard Ward, 200 storm shield |
-| Thunderbound Sleeves | 4931 | Str 18, Qui 15, Dex 12, 50 hits, heat/cold, Axe +4, 5% haste, Dex/Qui cap +5 | When struck (10%): Thunder Rebuke, lightning at the attacker |
-| Gauntlets of the Thunder King | 4932 | Str 15, Dex 18, Qui 15, 40 hits, matter/body, Hammer +4, all melee +3, 5% melee crit, Str cap +5 | |
-| Stormforged Leggings | 4930 | Con 22, Str/Pie 15, 70 hits, energy/body/spirit, Parry +4, Pie cap +5, hits cap +50 | |
-| Boots of the Rolling Thunder | 4933 | Dex 15, Qui 18, Con 15, 40 hits, cold/matter/heat, Shields +4, Qui cap +5, +3% style damage | |
-| Wolfmantle of the Storm King | 4937 | Str/Con/Pie 15, 50 hits, physical resists 5, +5% melee/spell damage, +5% absorption | Use: Wolfmantle, 20% absorption and haste 30 s (5 min) |
+| Piece | Model | Stats | ToA lines | Ability |
+|---|---|---|---|---|
+| Stormcrown of the Sovereign | 4942 | Str/Con 18, Pie 15, 50 hits, energy/spirit | Str/Con cap +5, spell damage 5%, casting speed 5%, fatigue 5% | Use: Crown of Tempest, Tempest to 5 (3 min) |
+| Hauberk of the Storm Sovereign | 4929 | Str/Con 20, Dex 15, 70 hits, crush/slash/thrust 10, Shields +4 | melee 5%, style 5%, buff effectiveness 10% | When struck (10%): Stormguard Ward |
+| Thunderbound Sleeves | 4931 | Str 16, Qui 15, Dex 12, 45 hits, heat/cold, Axe +4 | melee speed 5%, Dex/Qui cap +5, resist pierce 5% | When struck (10%): Thunder Rebuke |
+| Gauntlets of the Thunder King | 4932 | Str 15, Dex 18, Qui 15, 40 hits, matter/body, Hammer +4 | melee speed 5%, resist pierce 5%, melee crit 5%, Str cap +5 | |
+| Stormforged Leggings | 4930 | Con 20, Str/Pie 15, 60 hits, energy/body, Parry +4 | Pie cap +5, hits cap +50, casting speed 5%, power pool 10% | |
+| Boots of the Rolling Thunder | 4933 | Dex 15, Qui 18, Con 15, 40 hits, cold/matter/heat | style 5%, Qui cap +5, fatigue 10%, debuff effectiveness 10% | |
+| Wolfmantle of the Storm King | 4937 | Str/Con/Pie 15, 50 hits, physical resists 5 | melee 5%, spell damage 5%, spell duration 10%, fatigue 10% | Use: Wolfmantle (5 min) |
+
+Set totals (2026-11-06, every ToA line generated loot can roll for this class): melee, style and spell damage, melee and
+casting speed, resist pierce 10% each; fatigue 25%; buff and debuff effectiveness, spell duration, power pool 10% each;
+Str/Qui cap +10, Con/Dex/Pie cap +5, hits cap +50. Each piece uses all 11 lines (the 11th is the item's extra bonus line).
+Existing worlds: `storm_regalia_edits.py <db> edits.json --update` rewrites only the bonus lines; owned pieces follow the template.
 
 Set bonus (`gameutils/StormRegalia.cs`, held while worn, re-read at login): 2 pieces +5% all resistances; 4 pieces +10% melee
 and style damage; 6 pieces +10% armor absorption and spell damage; all 7 +10% maximum health and every block or parry
