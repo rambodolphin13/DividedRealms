@@ -1,7 +1,8 @@
 """Regalia of Tara (2026-11-06): the Tuatha Sovereign's armor and cloak as real items, as a World Workshop edits file.
 
-Seven level 51 pieces, scale AF 102 / 27%, class 67 only, no trade or sale. Until the new art is made they use the stock
-Hibernian osnadurtha scale models and a stock Hibernian cloak (only Model/Extension change later). Two use abilities and
+Seven level 51 pieces, scale AF 102 / 27%, class 67 only, no trade or sale. Art (owner picks 2026-11-06: concept A, emerald
+court scale, and the stag roundel cloak): private client objects 4950-4956 from Tara-armor-concepts/install-A/install_tara_set.py
+(hauberk drawn with extension 5 = Body05, as the Storm hauberk). A client without that install draws nothing for them. Two use abilities and
 two armor procs (TaraRegaliaSpells in C#, 63750-63753); the set bonus is code (TaraRegalia in TuathaRemake.cs); the Brehon
 of Tara gives missing pieces to a level 50 Tuatha who whispers "Regalia of Tara". Every piece has 11 lines: stats, resists,
 a skill and the ToA lines a Tuatha rolls on loot, so the set reaches the ToA caps.
@@ -25,25 +26,25 @@ SET_TEXT = ("Regalia of Tara set: 2 pieces +5% all resistances; 4 pieces +10% me
 
 # id suffix, name, slot, model, extension, copy source, bonuses (11 lines), use (spell, reuse s), proc spell
 PIECES = (
-    ("helm", "Crown of the Sidhe King", 21, 840, 0, "arcanite_improved_osnadurtha_cap3",
+    ("helm", "Crown of the Sidhe King", 21, 4955, 0, "arcanite_improved_osnadurtha_cap3",
      dict(Str=18, Con=18, Pie=15, Hits=50, Spirit=10, Energy=10, StrCap=5, ConCap=5, SpellDamage=5, CastingSpeed=5, Fatigue=5),
      (63750, 180), 0),
-    ("hauberk", "Hauberk of Tir na Nog", 25, 428, 0, "arcanite_improved_osnadurtha_hauberk3",
+    ("hauberk", "Hauberk of Tir na Nog", 25, 4950, 5, "arcanite_improved_osnadurtha_hauberk3",
      dict(Str=20, Con=20, Dex=15, Hits=70, Crush=10, Slash=10, Thrust=10, Scythe=4, MeleeDamage=5, StyleDamage=5, BuffEffect=10),
      None, 63752),
-    ("sleeves", "Briarbound Sleeves", 28, 430, 0, "arcanite_improved_osnadurtha_sleeves3",
+    ("sleeves", "Briarbound Sleeves", 28, 4952, 0, "arcanite_improved_osnadurtha_sleeves3",
      dict(Str=16, Qui=15, Dex=12, Hits=45, Heat=10, Cold=10, Blades=4, MeleeSpeed=5, DexCap=5, QuiCap=5, ResistPierce=5),
      None, 63753),
-    ("gauntlets", "Gauntlets of Nuada", 22, 431, 0, "arcanite_improved_osnadurtha_gloves3",
+    ("gauntlets", "Gauntlets of Nuada", 22, 4953, 0, "arcanite_improved_osnadurtha_gloves3",
      dict(Str=15, Dex=18, Qui=15, Hits=40, Matter=10, Body=10, Shields=4, MeleeSpeed=5, ResistPierce=5, CritMelee=5, StrCap=5),
      None, 0),
-    ("leggings", "Greaves of the Fianna", 27, 429, 0, "arcanite_improved_osnadurtha_leggings3",
+    ("leggings", "Greaves of the Fianna", 27, 4951, 0, "arcanite_improved_osnadurtha_leggings3",
      dict(Con=20, Str=15, Pie=15, Hits=60, Energy=10, Body=10, Parry=4, PieCap=5, HitsCap=50, CastingSpeed=5, PowerPool=10),
      None, 0),
-    ("boots", "Boots of the Moonlit Path", 23, 432, 0, "arcanite_improved_osnadurtha_boots3",
+    ("boots", "Boots of the Moonlit Path", 23, 4954, 0, "arcanite_improved_osnadurtha_boots3",
      dict(Dex=15, Qui=18, Con=15, Hits=40, Cold=10, Matter=10, Heat=10, StyleDamage=5, QuiCap=5, Fatigue=10, DebuffEffect=10),
      None, 0),
-    ("cloak", "Mantle of the Moon and Stag", 26, 326, 0, "alltafearann14_supgee",
+    ("cloak", "Mantle of the Moon and Stag", 26, 4956, 0, "alltafearann14_supgee",
      dict(Str=15, Con=15, Pie=15, Hits=50, Crush=5, Slash=5, Thrust=5, MeleeDamage=5, SpellDamage=5, SpellDuration=10, Fatigue=10),
      (63751, 300), 0),
 )
