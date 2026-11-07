@@ -303,6 +303,26 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void APersonalItemIsTheOwnersOnAHandPickupInAGroup()
+        {
+            Player player = Inert<Player>();
+            FakeOwner group = new(), battleGroup = new();
+            WorldInventoryItem personal = Item();
+            personal.AddOwner(player);
+            Assert.That(personal.IsPersonalTo(player, group, battleGroup), Is.True, "skips the group autosplit");
+            Assert.That(personal.IsPersonalTo(player, null, null), Is.True);
+
+            WorldInventoryItem shared = Item();
+            shared.AddOwner(player);
+            shared.AddOwner(group);
+            Assert.That(shared.IsPersonalTo(player, group, battleGroup), Is.False, "a group drop still autosplits");
+
+            WorldInventoryItem someoneElses = Item();
+            someoneElses.AddOwner(group);
+            Assert.That(someoneElses.IsPersonalTo(player, group, null), Is.False);
+        }
+
+        [Test]
         public void ABotThatTurnsAPersonalItemDownHandsItOn()
         {
             FakeOwner bot = new() { Result = TryPickUpResult.DoesNotWant }, group = new() { Result = TryPickUpResult.Success };

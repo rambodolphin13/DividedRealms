@@ -9722,6 +9722,13 @@ namespace DOL.GS
 
                 BattleGroup battleGroup = TempProperties.GetProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY);
 
+                // Personal loot left on the ground for this player goes to this player, not into the group's autosplit.
+                if (floorItem.IsPersonalTo(this, Group, battleGroup))
+                {
+                    floorItem.TryPickUp(this, this);
+                    return;
+                }
+
                 if (battleGroup == null || floorItem.TryPickUp(this, battleGroup) is TryPickUpResult.DoesNotWant)
                 {
                     Group group = Group;

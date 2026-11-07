@@ -2130,6 +2130,7 @@ namespace DOL.GS
             {
                 case eProperty.MaxMana: //mana isn't a thing!! >:(
                 case eProperty.PowerPool:
+                case eProperty.PowerPoolCapBonus:
                     if (charClass == eCharacterClass.Armsman ||
                         charClass == eCharacterClass.Mercenary ||
                         charClass == eCharacterClass.Infiltrator ||
@@ -2176,6 +2177,7 @@ namespace DOL.GS
                     return ToaArchers.Contains(charClass);
 
                 case eProperty.Acuity:
+                case eProperty.AcuCapBonus:
                     if (charClass == eCharacterClass.Armsman ||
                         charClass == eCharacterClass.Mercenary ||
                         charClass == eCharacterClass.Paladin ||
@@ -5120,11 +5122,22 @@ namespace DOL.GS
                 int worstline = 1;
                 int numAttempts = 0;
                 int utiScaleAttempts = 25;
+                double floorLineCapFactor = LootRulesFile.Current?.RandomItems?.Budget?.LineCapFactor ?? 1.5;
                 while (GetTotalUtility() < utilityMinimum && numAttempts < utiScaleAttempts)
                 {
                     //find highest utility line on the item
                     worstline = GetLowestUtilitySingleLine();
                     numAttempts++;
+                    if (worstline == 0)
+                        break;
+
+                    // A line never rises past the old roll's top value for the level: an item that spent its other
+                    // lines on zero-utility ToA bonuses used to pour the whole floor into one stat (+72 Quickness).
+                    int lineIndex = worstline - 1;
+                    int lineType = BonusTypeArray()[lineIndex];
+                    int lineCap = LineCap(lineType, mobLevel, floorLineCapFactor);
+                    if (BonusValueArray()[lineIndex] >= lineCap)
+                        break;
 
                     //lower the value of it by
                     //1-5% for resist
@@ -5165,6 +5178,13 @@ namespace DOL.GS
                         case 11:
                             ExtraBonus = IncreaseSingleLineUtility(ExtraBonusType, ExtraBonus);
                             break;
+                    }
+
+                    int[] raisedValues = BonusValueArray();
+                    if (raisedValues[lineIndex] > lineCap)
+                    {
+                        raisedValues[lineIndex] = lineCap;
+                        WriteBonusArrays(BonusTypeArray(), raisedValues);
                     }
                     //then recalculate
                 }

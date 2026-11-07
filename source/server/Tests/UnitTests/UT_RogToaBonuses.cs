@@ -147,5 +147,50 @@ namespace DOL.UnitTests
                 Assert.That(bonus.Value, Is.InRange(1, max), bonus.Property.ToString());
             }
         }
+
+        [Test]
+        public void NoPowerOrAcuityCapLinesForClassesWithoutPower()
+        {
+            Properties.ROG_TOA_ITEM_CHANCE = 100;
+            foreach ((eRealm realm, eCharacterClass charClass) in new[]
+                     {
+                         (eRealm.Albion, eCharacterClass.Armsman), (eRealm.Hibernia, eCharacterClass.Hero),
+                         (eRealm.Midgard, eCharacterClass.Warrior), (eRealm.Midgard, eCharacterClass.Hunter),
+                     })
+            {
+                // Hunters have power (Dexterity casters), so only their Acuity lines are out.
+                bool hasPower = charClass == eCharacterClass.Hunter;
+                var rolled = Roll(realm, charClass, 50, 600);
+                Assert.That(rolled.Where(b => b.Property is eProperty.AcuCapBonus or eProperty.Acuity
+                                              || (!hasPower && b.Property is eProperty.PowerPoolCapBonus or eProperty.PowerPool or eProperty.MaxMana)),
+                    Is.Empty, charClass.ToString());
+            }
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void TheUtilityFloorNeverRaisesALinePastItsCap(bool toa)
+        {
+            // Mob loot asks for a floor of level - 15..20. An item whose other lines are zero-utility ToA bonuses used to
+            // pour the whole floor into one stat (+72 Quickness on a level 65 drop).
+            Properties.ROG_TOA_ITEM_CHANCE = toa ? 100 : 0;
+            foreach (byte level in new byte[] { 51, 60, 65 })
+            {
+                for (int i = 0; i < 700; i++)
+                {
+                    var item = new GeneratedUniqueItem(eRealm.Midgard, eCharacterClass.Berserker, level, level - 15);
+                    foreach (var bonus in Bonuses(item))
+                    {
+                        bool capped = (bonus.Property >= eProperty.Stat_First && bonus.Property <= eProperty.Stat_Last)
+                                      || bonus.Property is eProperty.Acuity or eProperty.MaxHealth
+                                      || (bonus.Property >= eProperty.Resist_First && bonus.Property <= eProperty.Resist_Last);
+                        if (!capped)
+                            continue;
+                        int cap = GeneratedUniqueItem.LineCap((int)bonus.Property, level, 1.5);
+                        Assert.That(bonus.Value, Is.LessThanOrEqualTo(cap), $"{bonus.Property} on a level {level} item");
+                    }
+                }
+            }
+        }
     }
 }
