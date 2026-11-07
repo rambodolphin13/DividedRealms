@@ -811,21 +811,25 @@ namespace DOL.AI.Brain
 		/// </summary>
 		protected virtual GameLiving CheckAttackOrderTarget()
 		{
-			if (m_orderAttackTarget != null && !CompanionEngagementMode.Allows(Body, m_orderAttackTarget))
-                m_orderAttackTarget = null;
-			if (m_orderAttackTarget == null)
+			// Read the order once. Attack(), Disengage() and the owner's bot logic set it from other threads, so it
+			// could turn null between the checks below (NullReferenceException 2026-11-06 19:21 crashed the NPC
+			// tick and removed a grove protector from the world). Only clear it if it is still the order we checked,
+			// so a new order given meanwhile is kept.
+			GameLiving target = m_orderAttackTarget;
+			if (target == null)
 				return null;
 
-			if (!m_orderAttackTarget.IsAlive ||
-				m_orderAttackTarget.ObjectState is not GameObject.eObjectState.Active ||
-				LosesStealthedTarget(m_orderAttackTarget) ||
-				!GameServer.ServerRules.IsAllowedToAttack(Body, m_orderAttackTarget, true))
+			if (!CompanionEngagementMode.Allows(Body, target) ||
+				!target.IsAlive ||
+				target.ObjectState is not GameObject.eObjectState.Active ||
+				LosesStealthedTarget(target) ||
+				!GameServer.ServerRules.IsAllowedToAttack(Body, target, true))
 			{
-				m_orderAttackTarget = null;
+				Interlocked.CompareExchange(ref m_orderAttackTarget, null, target);
 				return null;
 			}
 
-			return m_orderAttackTarget;
+			return target;
 		}
 
 		protected override GameLiving CalculateNextAttackTarget()
