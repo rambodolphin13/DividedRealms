@@ -78,5 +78,44 @@ namespace DOL.GS.Spells
                 Run = (h, t) => { h.Cast(t, 1, eSpellType.SpeedDecrease, db => { db.Value = 99; db.Duration = 6; }); TuathaMarks.Add(h.Caster, t, 1); }
             });
         }
-    }
-}
+    }
+
+    /// <summary>The Regalia of Camelot's item abilities (spell IDs 63760-63763): two use abilities and two armor procs.</summary>
+    public static class CamelotRegaliaSpells
+    {
+        public const int CrownOfCamelot = 63760;    // helm, use: fills your Valor
+        public const int MercyOfAvalon = 63761;     // cloak, use: heals your party 20%
+        public const int HolyBulwark = 63762;       // hauberk, struck: ward on the wearer, +1 Valor
+        public const int SearingRebuke = 63763;     // sleeves, struck: the attacker burns and is taunted
+
+        public static bool Owns(int id) => id is >= CrownOfCamelot and <= SearingRebuke;
+
+        public static IEnumerable<(int Id, MLAbility Ability)> Build()
+        {
+            yield return (CrownOfCamelot, new MLAbility
+            {
+                Path = "PendragonSovereign", Level = 50, Positive = true, KeepsStealth = true, Describe = s => s.Description,
+                Run = (h, _) => { PendragonValor.Set(h.Caster, PendragonValor.Max(h.Caster)); h.Animate(h.Caster); }
+            });
+            yield return (MercyOfAvalon, new MLAbility
+            {
+                Path = "PendragonSovereign", Level = 50, Positive = true, KeepsStealth = true, Describe = s => s.Description,
+                Run = (h, _) => { foreach (GameLiving member in h.Group(1500)) h.Heal(member, member.MaxHealth / 5); h.Animate(h.Caster); }
+            });
+            yield return (HolyBulwark, new MLAbility
+            {
+                Path = "PendragonSovereign", Level = 50, Positive = true, KeepsStealth = true, Describe = s => s.Description,
+                Run = (h, _) =>
+                {
+                    h.Cast(h.Caster, 1, eSpellType.BothAblativeArmor, db => { db.Target = "Self"; db.Duration = 10; db.Damage = 50; db.Value = 200; });
+                    PendragonValor.Add(h.Caster, 1);
+                }
+            });
+            yield return (SearingRebuke, new MLAbility
+            {
+                Path = "PendragonSovereign", Level = 50, Describe = s => s.Description,
+                Run = (h, t) => { PendragonRemakeStyles.Burn(h, t); h.Cast(t, 2, eSpellType.Taunt, db => db.Value = 400 + h.Caster.Level * 10); }
+            });
+        }
+    }
+}

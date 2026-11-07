@@ -69,7 +69,10 @@ namespace DOL.GS.PacketHandler
 
 		private static bool IsStormRemake(int spellId) =>
 			spellId is >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId and <= 63860 or >= DOL.GS.Spells.StormRemakeStyles.FirstEffectId * 1000 and <= 63860999 ||
-			DOL.GS.Spells.TuathaRemakeSpells.Owns(spellId) || spellId is >= DOL.GS.Spells.TuathaRemakeSpells.FirstId * 1000 and <= 65727999;
+			DOL.GS.Spells.TuathaRemakeSpells.Owns(spellId) || spellId is >= DOL.GS.Spells.TuathaRemakeSpells.FirstId * 1000 and <= 65727999 ||
+			// Pendragon remake: style effects 63900-63960, spells and Valor icons 65800-65927, with their stock effects.
+			spellId is >= DOL.GS.Spells.PendragonRemakeStyles.FirstEffectId and <= 63960 or >= DOL.GS.Spells.PendragonRemakeStyles.FirstEffectId * 1000 and <= 63960999 ||
+			spellId is >= DOL.GS.Spells.PendragonRemakeSpells.FirstId and <= 65927 or >= DOL.GS.Spells.PendragonRemakeSpells.FirstId * 1000 and <= 65927999;
 
         /// <summary>
 		/// New system in v1.110+ for delve info. delve is cached by client in extra file, stored locally.

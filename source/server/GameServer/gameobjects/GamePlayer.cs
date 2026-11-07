@@ -5258,6 +5258,16 @@ namespace DOL.GS
                 ad.AttackResult is eAttackResult.Blocked or eAttackResult.Parried)
                 StormTempest.Add(this, StormRegalia.DefenseTempest(this));
 
+            // Pendragon Sovereign: every melee blow you block or parry earns Valor (2 with the full Regalia), and a melee hit
+            // taken earns 1 (at most once every 3 seconds). Guarded blows land on the Pendragon, so they count too.
+            if (PendragonRules.IsPendragon(CharacterClass.ID) && ad.IsMeleeAttack)
+            {
+                if (ad.AttackResult is eAttackResult.Blocked or eAttackResult.Parried)
+                    PendragonValor.Add(this, CamelotRegalia.DefenseValor(this));
+                else if (ad.AttackResult is eAttackResult.HitUnstyled or eAttackResult.HitStyle)
+                    PendragonValor.AddFromHit(this);
+            }
+
             // Tuatha Sovereign: every melee blow you block, parry or evade marks the attacker.
             if (PendragonRules.IsTuatha(CharacterClass.ID) && ad.IsMeleeAttack && ad.Attacker != null &&
                 ad.AttackResult is eAttackResult.Blocked or eAttackResult.Parried or eAttackResult.Evaded)
@@ -8997,6 +9007,8 @@ namespace DOL.GS
                 StormRegalia.Refresh(this, arriving: item);
             else if (TaraRegalia.IsPiece(item))
                 TaraRegalia.Set.Refresh(this, arriving: item);
+            else if (CamelotRegalia.IsPiece(item))
+                CamelotRegalia.Set.Refresh(this, arriving: item);
 
             if (item.Item_Type is >= Slot.RIGHTHAND and <= Slot.RANGED)
             {
@@ -9156,6 +9168,8 @@ namespace DOL.GS
                 StormRegalia.Refresh(this, leaving: item);
             else if (TaraRegalia.IsPiece(item))
                 TaraRegalia.Set.Refresh(this, leaving: item);
+            else if (CamelotRegalia.IsPiece(item))
+                CamelotRegalia.Set.Refresh(this, leaving: item);
 
             if (item.Item_Type is >= Slot.RIGHTHAND and <= Slot.RANGED)
             {

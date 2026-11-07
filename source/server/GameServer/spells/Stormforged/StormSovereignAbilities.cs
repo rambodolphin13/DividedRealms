@@ -19,14 +19,19 @@ namespace DOL.GS.Spells
             return normalized >= FirstId && normalized < 62656 || normalized >= 62700 && normalized < 62735 ||
                 normalized == RR5SpellId || id is >= 64335 and <= 64341 or >= 73335 and <= 73341 ||
                 StormRemakeStyles.OwnsEffect(id) || StormRemakeSpells.Owns(id) ||
-                TuathaRemakeStyles.OwnsEffect(id) || TuathaRemakeSpells.Owns(id) || TaraRegaliaSpells.Owns(id);
+                TuathaRemakeStyles.OwnsEffect(id) || TuathaRemakeSpells.Owns(id) || TaraRegaliaSpells.Owns(id) ||
+                PendragonRemakeStyles.OwnsEffect(id) || PendragonRemakeSpells.Owns(id) || PendragonRemakeSpells.IsValorIcon(id) ||
+                CamelotRegaliaSpells.Owns(id);
         }
         public static int Key(int id) => (PendragonRules.NormalizeSpell(id) - FirstId) % 32;
         /// <summary>One number per ability across all its ranks: the royal key, or 100 + key for the Storm remake spells.</summary>
         public static int AbilityKey(int id) => StormRemakeSpells.Owns(id) ? 100 + StormRemakeSpells.Key(id) :
-            TuathaRemakeSpells.Owns(id) ? 200 + TuathaRemakeSpells.Key(id) : Key(id);
-        public static bool IsRankedAbility(int id) => PendragonRules.IsRoyalRank(id) || StormRemakeSpells.Owns(id) || TuathaRemakeSpells.Owns(id);
-        public static bool Toggle(int id) => PendragonRules.IsRoyalRank(id) && Key(id) is 6 or 13 or 14 or 15 or 22 || StormRemakeSpells.Toggle(id) || TuathaRemakeSpells.Toggle(id);
+            TuathaRemakeSpells.Owns(id) ? 200 + TuathaRemakeSpells.Key(id) :
+            PendragonRemakeSpells.Owns(id) ? 300 + PendragonRemakeSpells.Key(id) : Key(id);
+        public static bool IsRankedAbility(int id) => PendragonRules.IsRoyalRank(id) || StormRemakeSpells.Owns(id) || TuathaRemakeSpells.Owns(id) ||
+            PendragonRemakeSpells.Owns(id);
+        public static bool Toggle(int id) => PendragonRules.IsRoyalRank(id) && Key(id) is 6 or 13 or 14 or 15 or 22 || StormRemakeSpells.Toggle(id) || TuathaRemakeSpells.Toggle(id) ||
+            PendragonRemakeSpells.Toggle(id);
         public static bool IsHammerfall(int id) => PendragonRules.IsRoyalRank(id) && Key(id) == 21 || StormRemakeSpells.Key(id) == StormRemakeSpells.Hammerfall;
         public static bool HasVeil(GameLiving living) => living.effectListComponent.GetSpellEffects(eEffect.MasterLevel)
             .Any(effect => !effect.IsEnding && !effect.IsDisabled && PendragonRules.IsRoyalRank(effect.SpellHandler.Spell.ID) && Key(effect.SpellHandler.Spell.ID)==22);
@@ -257,13 +262,18 @@ namespace DOL.GS.Spells
         // Tuatha: Spirit Lance is instant on a target with 3 or more of your marks.
         private bool MarkedLance => TuathaRemakeSpells.Key(Spell.ID) == TuathaRemakeSpells.SpiritLance &&
             Caster.TargetObject is GameLiving target && TuathaMarks.Count(Caster, target) >= 3;
-        public override int CalculateCastingTime() => TempestPays || MarkedLance ? 0 : base.CalculateCastingTime();
+        // Pendragon: Crownfire Lance is instant with 3 or more Valor.
+        private bool ValorLance => PendragonRemakeSpells.Key(Spell.ID) == PendragonRemakeSpells.CrownfireLance && PendragonValor.Count(Caster) >= 3;
+        public override int CalculateCastingTime() => TempestPays || MarkedLance || ValorLance ? 0 : base.CalculateCastingTime();
         public override int PowerCost(GameLiving target) => TempestPays ? 0 : base.PowerCost(target);
         public override void ApplyEffectOnTarget(GameLiving target)
         {
             // A Storm style whose hit already killed the target still builds its Tempest.
             if(target is { IsAlive: false } && StormRemakeStyles.OwnsEffect(Spell.ID))
                 StormTempest.Add(Caster,StormRemakeStyles.Builds(Spell.ID-StormRemakeStyles.FirstEffectId));
+            // A Pendragon style whose hit already killed the target still earns its Valor.
+            if(target is { IsAlive: false } && PendragonRemakeStyles.OwnsEffect(Spell.ID))
+                PendragonValor.Add(Caster,PendragonRemakeStyles.Builds(Spell.ID-PendragonRemakeStyles.FirstEffectId));
             base.ApplyEffectOnTarget(target);
         }
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams init) =>

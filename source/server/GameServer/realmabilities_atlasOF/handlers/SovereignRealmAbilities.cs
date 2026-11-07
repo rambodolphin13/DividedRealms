@@ -80,6 +80,31 @@ namespace DOL.GS.RealmAbilities
         public override int GetAmountForLevel(int level) => level <= 0 ? 0 : 20 + 10 * Math.Min(level - 1, 2);
     }
 
+    /// <summary>Pendragon Sovereign: Valor cap 6/6/7, and Valor fades out of combat every 8/12/16 seconds (read by PendragonValor).</summary>
+    public sealed class PendragonCodeOfChivalry : SovereignPassive
+    {
+        public const string KeyName = "Pendragon_CodeOfChivalry";
+        public PendragonCodeOfChivalry(DbAbility ability, int level) : base(ability, level, Array.Empty<eProperty>()) { }
+        protected override string ValueUnit => " Valor";
+        public override int GetAmountForLevel(int level) => level <= 0 ? 5 : level >= 3 ? 7 : 6;
+    }
+
+    /// <summary>Pendragon Sovereign: block +3/6/9%; Guard of the Crown's ward 25/50/75% stronger (read by PendragonRemakeSpells).</summary>
+    public sealed class PendragonKnightsGuard : SovereignPassive
+    {
+        public const string KeyName = "Pendragon_KnightsGuard";
+        public PendragonKnightsGuard(DbAbility ability, int level) : base(ability, level, eProperty.BlockChance) { }
+        public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 3;
+    }
+
+    /// <summary>Pendragon Sovereign: Judgment heals and wards 25/50/75% stronger (read by PendragonValor.OnJudgment).</summary>
+    public sealed class PendragonGrailBlessing : SovereignPassive
+    {
+        public const string KeyName = "Pendragon_GrailBlessing";
+        public PendragonGrailBlessing(DbAbility ability, int level) : base(ability, level, Array.Empty<eProperty>()) { }
+        public override int GetAmountForLevel(int level) => Math.Clamp(level, 0, 3) * 25;
+    }
+
     /// <summary>Tuatha Sovereign: evade +3/6/9%; style thorns 10/20/30% stronger.</summary>
     public sealed class TuathaEvasionOfTheSidhe : SovereignPassive
     {

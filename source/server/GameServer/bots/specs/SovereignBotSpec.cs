@@ -13,13 +13,13 @@ namespace DOL.GS
 
             eObjectType[] oneHanded = characterClass switch
             {
-                eCharacterClass.PendragonSovereign => [eObjectType.SlashingWeapon, eObjectType.CrushingWeapon, eObjectType.ThrustWeapon],
+                eCharacterClass.PendragonSovereign => [eObjectType.SlashingWeapon],
                 eCharacterClass.TuathaSovereign => [eObjectType.Blades],
                 _ => [eObjectType.Hammer, eObjectType.Axe],
             };
             eObjectType[] twoHanded = characterClass switch
             {
-                eCharacterClass.PendragonSovereign => [eObjectType.TwoHandedWeapon, eObjectType.PolearmWeapon],
+                eCharacterClass.PendragonSovereign => [eObjectType.PolearmWeapon],
                 eCharacterClass.TuathaSovereign => [eObjectType.Scythe],
                 _ => [],
             };

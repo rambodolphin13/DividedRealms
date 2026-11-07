@@ -12,9 +12,11 @@ namespace DOL.GS
         // Old royal keys; the Storm remake's Runic Armament, Runic Reversal and Hunter's Mark map onto 15, 18 and 17.
         private int Key => PendragonRules.IsRoyalRank(SpellHandler.Spell.ID) ? StormSovereignAbilities.Key(SpellHandler.Spell.ID) :
             StormRemakeSpells.Key(SpellHandler.Spell.ID) switch { StormRemakeSpells.RunicArmament => 15, StormRemakeSpells.RunicReversal => 18, StormRemakeSpells.HuntersMark => 17,
-                _ => TuathaRemakeSpells.Key(SpellHandler.Spell.ID) == TuathaRemakeSpells.WildwoodArmament ? 15 : -1 };
+                _ => TuathaRemakeSpells.Key(SpellHandler.Spell.ID) == TuathaRemakeSpells.WildwoodArmament ||
+                     PendragonRemakeSpells.Key(SpellHandler.Spell.ID) == PendragonRemakeSpells.ConsecratedArmament ? 15 : -1 };
         private bool Tuatha => TuathaRemakeSpells.Owns(SpellHandler.Spell.ID);
-        private bool Remake => StormRemakeSpells.Owns(SpellHandler.Spell.ID) || Tuatha;
+        private bool Pendragon => PendragonRemakeSpells.Owns(SpellHandler.Spell.ID);
+        private bool Remake => StormRemakeSpells.Owns(SpellHandler.Spell.ID) || Tuatha || Pendragon;
         public StormSovereignEffect(in ECSGameEffectInitParams init) : base(init,StormSovereignAbilities.Toggle(init.SpellHandler.Spell.ID)) { }
         public override void OnStartEffect()
         {
@@ -43,6 +45,16 @@ namespace DOL.GS
             if(GameLoop.GameLoopTime<_lastProc || !Owner.Chance(RandomDeckEvent.OffensiveProcChance,20)) return;
             _lastProc=GameLoop.GameLoopTime+2000;
             eObjectType weapon=(eObjectType)(Owner.ActiveWeapon?.Object_Type??0);
+            if(Pendragon)
+            {
+                // Consecrated Armament: polearm hits splash holy fire on one enemy near the target, sword hits burn.
+                if(weapon is eObjectType.PolearmWeapon)
+                    foreach(var enemy in Handler.Enemies(hit.Target,250).Where(t=>t!=hit.Target && t.InCombat).Take(1))
+                        StormSovereignAbilities.Strike(Handler,enemy,Owner.Level*2,eDamageType.Heat);
+                else
+                    PendragonRemakeStyles.Burn(Handler,hit.Target);
+                return;
+            }
             if(Tuatha)
             {
                 // Wildwood Armament: scythe hits mark one more enemy nearby, blade hits open a bleed.
@@ -84,7 +96,7 @@ namespace DOL.GS
                 && GameLoop.GameLoopTime>=_lastReversal) {
                 // Runic Armament returns lightning; Wildwood Armament returns spirit thorns (evades too).
                 _lastReversal=GameLoop.GameLoopTime+1000;
-                StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2,Tuatha?eDamageType.Spirit:eDamageType.Energy);
+                StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2,Tuatha?eDamageType.Spirit:Pendragon?eDamageType.Heat:eDamageType.Energy);
             }
             if(Key==18 && (hit.AttackResult==eAttackResult.Parried || Remake && hit.AttackResult==eAttackResult.Blocked)) {
                 _lastProc=GameLoop.GameLoopTime+1000;

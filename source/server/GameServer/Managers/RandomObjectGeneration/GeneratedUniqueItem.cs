@@ -5687,8 +5687,9 @@ namespace DOL.GS
                     weaponTypes.Add(eObjectType.Shield);
                     break;
                 case eCharacterClass.PendragonSovereign:
-                    weaponTypes.AddRange(new[] { eObjectType.SlashingWeapon, eObjectType.CrushingWeapon,
-                        eObjectType.ThrustWeapon, eObjectType.TwoHandedWeapon, eObjectType.PolearmWeapon, eObjectType.Shield });
+                    // Sword, Polearm and Shield only (2026-11-06 remake).
+                    weaponTypes.AddRange(new[] { eObjectType.SlashingWeapon, eObjectType.PolearmWeapon, eObjectType.SlashingWeapon,
+                        eObjectType.PolearmWeapon, eObjectType.Shield });
                     break;
                 case eCharacterClass.TuathaSovereign:
                     // Scythe, Blades and Shield only (2026-11-06 remake).

@@ -498,6 +498,12 @@ namespace DOL.GS.Spells
                 _byId[id] = ability;
             foreach (var (id, ability) in TaraRegaliaSpells.Build())
                 _byId[id] = ability;
+            foreach (var (id, ability) in PendragonRemakeStyles.Build())
+                _byId[id] = ability;
+            foreach (var (id, ability) in PendragonRemakeSpells.Build())
+                _byId[id] = ability;
+            foreach (var (id, ability) in CamelotRegaliaSpells.Build())
+                _byId[id] = ability;
         }
 
         // ---------------- Banelord: shouts that cripple enemies around you ----------------
