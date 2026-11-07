@@ -57,7 +57,8 @@ COURTS = {
 }
 # Kept old key 20: seed_tuatha.py's renames left the Storm Crown's "Royal storm transformation" text on it.
 ASCENDANT_LINE = "Tuatha.Sovereign20"
-ASCENDANT = ("Sidhe lord form for one minute: +50% melee damage, double royal spell damage, royal spells cast in at most 0.25 seconds, "
+ASCENDANT_MODEL = 1904      # the Morrigan (1.130 monsters.csv); was 339, "Elf Male 6" (owner 2026-11-06: looked basic)
+ASCENDANT = ("The Morrigan's form for one minute: +50% melee damage, double royal spell damage, royal spells cast in at most 0.25 seconds, "
              "+20% absorption, +20% melee haste, 10% health/power/endurance every 4 seconds, 1.5x life/power/endurance steal and "
              "spirit pulses. Your marks land double and you hold both courts' riders at once. Three-minute reuse.")
 # Old Tuatha keys replaced, merged away or folded in (kept: 6 chant, 12 will, 13 armor, 19 drake, 20 ascendant, 22 veil).
@@ -157,7 +158,7 @@ def edits_for(db):
     for key in RETIRED_LINES:
         w.retire_line(f"Tuatha.Sovereign{key:02}")
     for r in ascendant_rows(w):
-        w.out.append({"table": "Spell", "key": r[0], "set": dict(Description=ASCENDANT)})
+        w.out.append({"table": "Spell", "key": r[0], "set": dict(Description=ASCENDANT, Value=ASCENDANT_MODEL)})
 
     # --- weapons: Scythe, Blades and Shields; Evade as a class ability ---
     for spec in RETIRED_SPECS:
@@ -190,7 +191,7 @@ def edits_for(db):
 
 def ascendant_rows(w):
     return w.rows("SELECT Spell_ID FROM Spell WHERE PackageID=? AND SpellID IN (SELECT SpellID FROM LineXSpell WHERE LineName=?) "
-                  "AND Description<>?", PACKAGE, ASCENDANT_LINE, ASCENDANT)
+                  "AND (Description<>? OR Value<>?)", PACKAGE, ASCENDANT_LINE, ASCENDANT, ASCENDANT_MODEL)
 
 
 def main():

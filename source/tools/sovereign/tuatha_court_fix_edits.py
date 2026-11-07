@@ -1,5 +1,5 @@
 """Tuatha fixes for a world that already has the remake (2026-11-06): the courts last COURT_SECONDS instead of forever,
-Turn of the Courts says so, and Otherworld Ascendant loses the Storm Crown's "storm" text. Text comes from
+Turn of the Courts says so, and Otherworld Ascendant becomes the Morrigan (model 1904, was a plain elf) with its own text. Text comes from
 tuatha_remake_edits.py, so fresh and patched worlds match.
 
     python tuatha_court_fix_edits.py <world.db> edits.json
@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from storm_remake_edits import World
-from tuatha_remake_edits import ASCENDANT, COURTS, COURT_SECONDS, FIRST_SPELL, PACKAGE, SPELLS, TURN_KEY, ascendant_rows
+from tuatha_remake_edits import ASCENDANT, ASCENDANT_MODEL, COURTS, COURT_SECONDS, FIRST_SPELL, PACKAGE, SPELLS, TURN_KEY, ascendant_rows
 
 
 def edits_for(db):
@@ -26,7 +26,7 @@ def edits_for(db):
                     PACKAGE, FIRST_SPELL, FIRST_SPELL + 16 * 8, FIRST_SPELL, TURN_KEY, turn):
         w.out.append({"table": "Spell", "key": r[0], "set": dict(Description=turn)})
     for r in ascendant_rows(w):
-        w.out.append({"table": "Spell", "key": r[0], "set": dict(Description=ASCENDANT)})
+        w.out.append({"table": "Spell", "key": r[0], "set": dict(Description=ASCENDANT, Value=ASCENDANT_MODEL)})
     return w.out
 
 

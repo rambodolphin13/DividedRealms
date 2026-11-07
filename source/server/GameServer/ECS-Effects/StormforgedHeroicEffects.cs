@@ -37,6 +37,10 @@ namespace DOL.GS
             _originalModel = Owner.Model;
             _avatarModel = (ushort)SpellHandler.Spell.Value;
             Owner.Model = _avatarModel;
+            // Tuatha: the Morrigan form bursts in with a major Ethereal flash (owner 2026-11-06: the old form looked basic).
+            if (PendragonRules.IsTuatha(Owner) && Owner.CurrentRegion != null)
+                foreach (GamePlayer viewer in Owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                    viewer.Out.SendSpellEffectAnimation(Owner, Owner, TuathaMarks.BurstFlash, 0, false, 1);
             if (StormSovereignAbilities.Owns(SpellHandler.Spell.ID))
             {
                 Owner.AbilityBonus[eProperty.ArmorAbsorption] += SovereignCrownAbsorption;
