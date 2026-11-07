@@ -47,9 +47,9 @@ class (as was done for the Tuatha).
 - You **spend** it with **Judgments** (finishing styles and the Judgment spells). Each Valor spent adds **+20% damage**
   and either **heals your party 3%** (sword and shield Judgments) or **wards your party** for 3% of its health
   (polearm Judgments), and at 5 Valor the Judgment also **stuns for 2 seconds**.
-- **Showing Valor (open choice, see the end):** recommended, a gold "Valor" buff icon on your bar whose name shows the
-  count (Valor 3), and a holy-light flash on you at 3 and again at 5 (stock paladin/cleric effects). No orbs: the
-  Warlock chamber orbs stay the Storm's.
+- **Showing Valor (owner's pick):** a gold "Valor" buff icon on your bar whose name shows the count (Valor 3), and a
+  holy-light flash on you at 3 and again at 5 (stock paladin/cleric effects). No orbs: the Warlock chamber orbs stay
+  the Storm's.
 
 ## Styles (61)
 
@@ -148,8 +148,8 @@ Unlock levels follow the Sovereign spacing (1, 3, 5, 8, 10 ... 48). Openers 0.85
 | 40 | Field of Judgement | Holy ground at your feet for 30 s: burns enemies, heals allies inside |
 | kept | Will of the Pendragon | Maintained party chant |
 | kept | Armor of the Crown | Armor buff |
-| kept | Royal Lion | The pet (one at a time, like the Storm Wolf) |
-| kept | Lion of Albion | The transformation (see the open choices) |
+| kept | Royal Lion | The pet (one at a time), now the Black Lion model |
+| kept | Lion of Albion | The transformation, stays the Stygian Lion |
 | kept | Veil of Avalon | Stealth |
 
 ## Realm abilities
@@ -178,11 +178,8 @@ Pendragon and a lion-crowned cloak, made the same way as Tara (concepts first, o
 
 Players today: the owner's Yberrawin (level 1) and two AI tester characters at 50.
 
-## Choices for the owner
+## Owner picks (2026-11-06)
 
-1. **Showing Valor:** a gold buff icon with the count plus a holy flash at 3 and 5 (recommended), or flashes only.
-2. **The transformation** (today model 1193, the Stygian Lion): keep it, or switch the way the Tuatha's became the
-   Morrigan. 1.130 candidates: 614 Albion Stone Dragon (revamped; "Pendragon" means chief dragon), 696 Winged Gryphon,
-   2122 Albion King, 1256 Starry Stygian Lion.
-3. **The pet:** keep the Royal Lion (today model 100, a plain Tan Lion), or give it a better model (Black Lion 104,
-   Sabertooth 694, Wingless Gryphon 698).
+1. **Showing Valor:** a gold Valor buff icon whose name shows the count, plus a holy-light flash on you at 3 and at 5.
+2. **The transformation:** keep the Lion of Albion as the Stygian Lion (model 1193).
+3. **The pet:** the Royal Lion becomes the Black Lion (model 104, was 100, a plain Tan Lion).
