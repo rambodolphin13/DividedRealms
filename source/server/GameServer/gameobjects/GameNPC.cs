@@ -3624,7 +3624,6 @@ namespace DOL.GS
 				case eSpellType.StyleTaunt:
 				case eSpellType.CurePoison:
 				case eSpellType.CureDisease:
-				case eSpellType.OffensiveProc:
 					return spell;
 				default:
 				{
