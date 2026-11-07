@@ -1,7 +1,8 @@
 """Regalia of Camelot (2026-11-06): the Pendragon Sovereign's armor and cloak as real items, as a World Workshop edits file.
 
-Seven level 51 pieces, plate AF 102 / 34% (Albion plate's own absorption), class 65 only, no trade or sale. Until the art
-pass they use stock Albion arcanium full plate and a stock Albion cloak (only Model/Extension change later). Two use
+Seven level 51 pieces, plate AF 102 / 34% (Albion plate's own absorption), class 65 only, no trade or sale. The art is
+the owner's pick B (gilded plate, crimson enamel, red dragon; 2026-11-07): client objects 4957-4963 from
+Camelot-armor-concepts/install-B/install_camelot_set.py (breastplate Extension 5 = Body05, as the Tara and Storm sets). Two use
 abilities and two armor procs (CamelotRegaliaSpells in C#, 63760-63763); the set bonus is code (CamelotRegalia in
 PendragonRemake.cs); the Pendragon trainer gives missing pieces to a level 50 Pendragon who whispers "Regalia of Camelot".
 Every piece has 11 lines: stats, resists, a skill and the ToA lines a Pendragon rolls on loot.
@@ -25,25 +26,25 @@ SET_TEXT = ("Regalia of Camelot set: 2 pieces +5% all resistances; 4 pieces +10%
 
 # id suffix, name, slot, model, extension, copy source, bonuses (11 lines), use (spell, reuse s), proc spell
 PIECES = (
-    ("helm", "Crown of the Pendragon", 21, 93, 0, "arcanium_full_plate_helm",
+    ("helm", "Crown of the Pendragon", 21, 4962, 0, "arcanium_full_plate_helm",
      dict(Str=18, Con=18, Pie=15, Hits=50, Spirit=10, Energy=10, StrCap=5, ConCap=5, SpellDamage=5, CastingSpeed=5, Fatigue=5),
      (63760, 180), 0),
-    ("hauberk", "Breastplate of Camelot", 25, 86, 0, "Ageless_Fluted_Protector",
+    ("hauberk", "Breastplate of Camelot", 25, 4957, 5, "Ageless_Fluted_Protector",
      dict(Str=20, Con=20, Dex=15, Hits=70, Crush=10, Slash=10, Thrust=10, Sword=4, MeleeDamage=5, StyleDamage=5, BuffEffect=10),
      None, 63762),
-    ("sleeves", "Vambraces of the Round Table", 28, 88, 0, "arcanium_full_plate_vambraces",
+    ("sleeves", "Vambraces of the Round Table", 28, 4959, 0, "arcanium_full_plate_vambraces",
      dict(Str=16, Qui=15, Dex=12, Hits=45, Heat=10, Cold=10, Polearm=4, MeleeSpeed=5, DexCap=5, QuiCap=5, ResistPierce=5),
      None, 63763),
-    ("gauntlets", "Gauntlets of Excalibur", 22, 89, 0, "arcanium_full_plate_gauntlets",
+    ("gauntlets", "Gauntlets of Excalibur", 22, 4960, 0, "arcanium_full_plate_gauntlets",
      dict(Str=15, Dex=18, Qui=15, Hits=40, Matter=10, Body=10, Shields=4, MeleeSpeed=5, ResistPierce=5, CritMelee=5, StrCap=5),
      None, 0),
-    ("leggings", "Greaves of Badon Hill", 27, 87, 0, "arcanium_full_plate_greaves",
+    ("leggings", "Greaves of Badon Hill", 27, 4958, 0, "arcanium_full_plate_greaves",
      dict(Con=20, Str=15, Pie=15, Hits=60, Energy=10, Body=10, Parry=4, PieCap=5, HitsCap=50, CastingSpeed=5, PowerPool=10),
      None, 0),
-    ("boots", "Sabatons of the Grail Knight", 23, 90, 0, "arcanium_full_plate_boots",
+    ("boots", "Sabatons of the Grail Knight", 23, 4961, 0, "arcanium_full_plate_boots",
      dict(Dex=15, Qui=18, Con=15, Hits=40, Cold=10, Matter=10, Heat=10, StyleDamage=5, QuiCap=5, Fatigue=10, DebuffEffect=10),
      None, 0),
-    ("cloak", "Mantle of the Red Dragon", 26, 57, 0, "Afanc_Hide_Cloak",
+    ("cloak", "Mantle of the Red Dragon", 26, 4963, 0, "Afanc_Hide_Cloak",
      dict(Str=15, Con=15, Pie=15, Hits=50, Crush=5, Slash=5, Thrust=5, MeleeDamage=5, SpellDamage=5, SpellDuration=10, Fatigue=10),
      (63761, 300), 0),
 )
