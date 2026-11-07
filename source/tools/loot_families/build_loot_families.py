@@ -183,18 +183,25 @@ def main():
     parser.add_argument("--db", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--summary")
+    parser.add_argument("--top-up", action="store_true",
+                        help="the world already has the family patch: only add tables for mobs it missed")
     args = parser.parse_args()
 
     db = sqlite3.connect(pathlib.Path(args.db).resolve().as_uri() + "?mode=ro", uri=True)
     q = lambda sql, *a: db.execute(sql, a).fetchall()
 
     items = {row[0].lower() for row in q("SELECT Id_nb FROM ItemTemplate")}
-    tabled = {row[0].lower() for row in q("SELECT TemplateName FROM LootTemplate")}
-    tabled |= {row[0].lower() for row in q("SELECT MobName FROM MobXLootTemplate")}
-    if any(t.startswith(TABLE_PREFIX) for t in tabled):
-        sys.exit("This world already has family tables: undo the earlier patch first.")
-    if q("SELECT 1 FROM ItemTemplate WHERE Id_nb LIKE 'loot_junk_%' LIMIT 1"):
-        sys.exit("This world already has loot_junk_ items: undo the earlier patch first.")
+    existing_tables = {row[0].lower() for row in q("SELECT DISTINCT TemplateName FROM LootTemplate")}
+    tabled = set(existing_tables)
+    # A MobXLootTemplate row only counts when its table has rows: 2,644 rows point at an empty or missing table,
+    # and the 2026-11-06 build skipped those mobs as "has a table", so 1,500+ hostile names dropped coin only.
+    tabled |= {row[0].lower() for row in q("SELECT MobName, LootTemplateName FROM MobXLootTemplate")
+               if (row[1] or "").lower() in existing_tables}
+    if not args.top_up:
+        if any(t.startswith(TABLE_PREFIX) for t in tabled):
+            sys.exit("This world already has family tables: undo the earlier patch first, or use --top-up.")
+        if q("SELECT 1 FROM ItemTemplate WHERE Id_nb LIKE 'loot_junk_%' LIMIT 1"):
+            sys.exit("This world already has loot_junk_ items: undo the earlier patch first, or use --top-up.")
 
     # A spawn linked to an NPC template takes its level (often "10-11" or "39;43;42"), race and body type from it.
     templates = {}
@@ -249,6 +256,8 @@ def main():
             for grade in range(len(GRADES)):
                 item_id = junk_id(family, key, grade)
                 junk_made.add(item_id.lower())
+                if item_id.lower() in items:
+                    continue  # --top-up: the junk item is already in the world
                 edits.append({"table": "ItemTemplate", "copy": "tattered_black_canine_pelt", "key": item_id, "set": {
                     "Name": name.format(g=GRADES[grade]), "Level": min(50, grade * 10 + 5), "Model": model,
                     "Weight": weight, "Price": GRADE_PRICE[grade], "MaxCount": 50, "PackSize": 1, "Realm": 0,
@@ -258,6 +267,8 @@ def main():
 
     missing = set()
     for table in sorted(tables_used):
+        if table.lower() in existing_tables:
+            continue  # --top-up: the table already has its rows
         family, tier = table[len(TABLE_PREFIX):].rsplit(" ", 1)
         tier = int(tier) - 1
         if family == "sea":

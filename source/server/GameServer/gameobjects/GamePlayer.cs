@@ -8561,6 +8561,10 @@ namespace DOL.GS
                     {
                         Out.SendTimerWindow("Holding Breath", 30);
                         m_holdBreathTimer.Start(30000);
+                        // The timer bar alone was easy to miss on the Atlantis sea floor, where many artifact sites are.
+                        Out.SendMessage(Region.IsAtlantis(CurrentRegionID)
+                            ? "You are holding your breath (30 seconds). Water-breathing potions are sold in the Havens."
+                            : "You are holding your breath (30 seconds).", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     }
 
                     break;
