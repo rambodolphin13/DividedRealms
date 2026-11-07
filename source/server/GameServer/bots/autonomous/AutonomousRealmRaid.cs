@@ -201,6 +201,13 @@ namespace DOL.GS
             if (group == null) return false;
             lock (Sync) return Membership.TryGetValue(group, out Raid raid) && !raid.Started && raid.Parties.ContainsKey(group);
         }
+        /// <summary>A member of any raid party, before or during its battle (RvR perception: it doesn't answer calls).</summary>
+        public static bool IsInRaidParty(GameBot bot)
+        {
+            Group group = bot?.Group;
+            if (group == null) return false;
+            lock (Sync) return Membership.ContainsKey(group);
+        }
         public static bool IsReservedFor(GameBot bot, string id) => bot != null && Reservations.GetValueOrDefault(bot.DatabaseID) == id;
         public static bool IsForcedExpedition(string id)
         {
