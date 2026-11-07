@@ -1233,6 +1233,10 @@ namespace DOL.GS
                         return true;
                     }
                 }
+                // Resolving the approach can drop the service (a region change or recovery clears it); the
+                // next turn chooses again. (NullReferenceException here twice on 2026-11-07.)
+                if (_serviceNpc == null)
+                    return true;
                 if (TryBeginFasterStableRoute(bot, point, _serviceNpc.Name))
                     return true;
                 IssuePath(bot, point, preciseArrival: true);

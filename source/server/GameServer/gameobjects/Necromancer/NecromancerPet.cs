@@ -502,6 +502,15 @@ namespace DOL.GS
                 loaded = inventoryTemplate.LoadFromDatabase(templateID);
             }
 
+            // The world has no NPCEquipment rows for these stock templates, so the zombie servant and greater
+            // necroservant had no weapon: no weapon stats and no Stun / Poison proc (log, 2026-11-07: "Failed loading
+            // NPC inventory template: barehand_weapon" on every summon). Bare hands stand in.
+            if (!loaded && templateID is "barehand_weapon" or "necroservant")
+            {
+                inventoryTemplate = new();
+                loaded = inventoryTemplate.AddNPCEquipment(eInventorySlot.RightHandWeapon, 0);
+            }
+
             if (loaded)
             {
                 Inventory = new GameNPCInventory(inventoryTemplate);
