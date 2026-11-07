@@ -6,8 +6,8 @@ namespace DOL.GS.Spells
 {
     /// <summary>
     /// Tuatha Sovereign (class 67) remake spells: ID = FirstId + tier * 16 + key (65600-65727, clear of the Storm's 63600 range
-    /// and the old royal table). Seelie and Unseelie Court are the two maintained court effects (tier 0 only, not in the
-    /// spellbook); Turn of the Courts swaps them.
+    /// and the old royal table). Seelie and Unseelie Court are the two court effects (tier 0 only, not in the spellbook);
+    /// Turn of the Courts seats the Tuatha in the other one for <see cref="CourtSeconds"/> (owner 2026-11-06: not permanent).
     /// </summary>
     public static class TuathaRemakeSpells
     {
@@ -18,10 +18,12 @@ namespace DOL.GS.Spells
             FaerieStep = 5, WildwoodArmament = 6, OtherworldBurst = 7, FairyRing = 8, SeelieKey = 9, UnseelieKey = 10;
 
         public const int SeelieCourt = FirstId + SeelieKey, UnseelieCourt = FirstId + UnseelieKey;
+        public const int CourtSeconds = 60;
 
         public static bool Owns(int id) => id >= FirstId && id < FirstId + StormSovereignAbilities.Levels.Length * 16 && (id - FirstId) % 16 < Keys;
         public static int Key(int id) => Owns(id) ? (id - FirstId) % 16 : -1;
-        public static bool Toggle(int id) => Key(id) is WildwoodArmament or SeelieKey or UnseelieKey;
+        // The courts are timed, not maintained: a toggle effect never expires.
+        public static bool Toggle(int id) => Key(id) == WildwoodArmament;
 
         public static IEnumerable<(int Id, MLAbility Ability)> Build()
         {
@@ -54,15 +56,15 @@ namespace DOL.GS.Spells
                         Spell court = SkillBase.GetSpellByID(toUnseelie ? UnseelieCourt : SeelieCourt);
                         if (court == null)
                             return;
-                        new StormSovereignHandler(h.Caster, court, h.SpellLine).Hold(h.Caster);
-                        h.MessageToCasterPublic(toUnseelie ? "You take your seat in the Unseelie Court." : "You take your seat in the Seelie Court.");
+                        new StormSovereignHandler(h.Caster, court, h.SpellLine).Hold(h.Caster, CourtSeconds * 1000);
+                        h.MessageToCasterPublic($"You take your seat in the {(toUnseelie ? "Unseelie" : "Seelie")} Court for {CourtSeconds} seconds.");
                     });
                 case SeelieKey:
                     // Summer: evade and a little absorption; detonations heal, style wards are stronger (TuathaCourt).
-                    return Ability(true, (h, _) => h.Hold(h.Caster), new MLMod(eProperty.EvadeChance, MLCategory.Ability, 10), MLMod.Buff(eProperty.ArmorAbsorption, 5));
+                    return Ability(true, (h, _) => h.Hold(h.Caster, CourtSeconds * 1000), new MLMod(eProperty.EvadeChance, MLCategory.Ability, 10), MLMod.Buff(eProperty.ArmorAbsorption, 5));
                 case UnseelieKey:
                     // Winter: critical chance; marks rot and detonations drain (TuathaCourt, TuathaRemakeStyles).
-                    return Ability(true, (h, _) => h.Hold(h.Caster),
+                    return Ability(true, (h, _) => h.Hold(h.Caster, CourtSeconds * 1000),
                         new MLMod(eProperty.CriticalMeleeHitChance, MLCategory.Other, 10), new MLMod(eProperty.CriticalSpellHitChance, MLCategory.Ability, 10));
                 case BrambleBind:
                     return Ability(false, (h, t) =>

@@ -25,11 +25,12 @@ POSITION = {"back": 0, "side": 1, "front": 2}
 RESULT = {"chain": 7, "parry": 3, "block": 4, "evade": 5}
 
 # key: name, unlock, target, settings at level 50 (damage scales by rank), description. Keys match TuathaRemakeSpells.
+TURN_KEY = 1
 SPELLS = {
     0: ("Spirit Lance", 1, "Enemy", dict(Range=1500, Damage=250, CastTime=2.5, Power=18, ClientEffect=5433),
         "Spirit bolt that detonates your Sidhe Marks on its target (+25% each). Instant on a target with 3 or more marks."),
-    1: ("Turn of the Courts", 10, "Self", dict(RecastDelay=10, Power=0, ClientEffect=5445),
-        "Take your seat in the other faerie court. Seelie: detonations heal your party, wards are stronger, +10% evade. "
+    TURN_KEY: ("Turn of the Courts", 10, "Self", dict(RecastDelay=10, Power=0, ClientEffect=5445),
+        "Take your seat in the other faerie court for 60 seconds. Seelie: detonations heal your party, wards are stronger, +10% evade. "
         "Unseelie: marks rot, detonations drain, +10% critical chance. 10-second reuse."),
     2: ("Bramble Bind", 11, "Enemy", dict(Range=1500, Radius=300, RecastDelay=30, Power=15, ClientEffect=5439),
         "Roots the target and enemies within 300 for 15 seconds and marks each once. 30-second reuse."),
@@ -47,11 +48,18 @@ SPELLS = {
     8: ("Fairy Ring", 45, "Self", dict(Radius=350, Damage=100, Duration=30, RecastDelay=30, Power=20, ClientEffect=11338),
         "A ring at your feet for 30 seconds: in the Seelie Court it heals allies inside, in the Unseelie Court it drains enemies."),
 }
-# The two court effects (tier 0 only, not in the spellbook; Turn of the Courts starts them).
+# The two court effects (tier 0 only, not in the spellbook; Turn of the Courts starts them for COURT_SECONDS, as
+# TuathaRemakeSpells.CourtSeconds in C#; owner 2026-11-06: not permanent).
+COURT_SECONDS = 60
 COURTS = {
-    9: ("Seelie Court", "Summer court: detonations heal your party 3% per mark, style wards 50% stronger, +10% evade, +5% absorption.", 5445),
-    10: ("Unseelie Court", "Winter court: your marks rot their enemies, detonations drain half their damage to you, +10% critical chance.", 11008),
+    9: ("Seelie Court", "Summer court for 60 seconds: detonations heal your party 3% per mark, style wards 50% stronger, +10% evade, +5% absorption.", 5445),
+    10: ("Unseelie Court", "Winter court for 60 seconds: your marks rot their enemies, detonations drain half their damage to you, +10% critical chance.", 11008),
 }
+# Kept old key 20: seed_tuatha.py's renames left the Storm Crown's "Royal storm transformation" text on it.
+ASCENDANT_LINE = "Tuatha.Sovereign20"
+ASCENDANT = ("Sidhe lord form for one minute: +50% melee damage, double royal spell damage, royal spells cast in at most 0.25 seconds, "
+             "+20% absorption, +20% melee haste, 10% health/power/endurance every 4 seconds, 1.5x life/power/endurance steal and "
+             "spirit pulses. Your marks land double and you hold both courts' riders at once. Three-minute reuse.")
 # Old Tuatha keys replaced, merged away or folded in (kept: 6 chant, 12 will, 13 armor, 19 drake, 20 ascendant, 22 veil).
 RETIRED_LINES = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21)
 RETIRED_SPECS = ("Blunt", "Piercing", "Large Weapons", "Celtic Spear")
@@ -144,10 +152,12 @@ def edits_for(db):
     for key, (name, description, effect) in COURTS.items():
         spell_id = FIRST_SPELL + key
         w.copy("Spell", spell_src, dict(base, SpellID=spell_id, Spell_ID=f"tuatha-remake-{spell_id}", Name=name, Description=description,
-                                        Type="StormSovereignAbility", Target="Self", Duration=65535, SpellGroup=FIRST_SPELL + key,
+                                        Type="StormSovereignAbility", Target="Self", Duration=COURT_SECONDS, SpellGroup=FIRST_SPELL + key,
                                         ClientEffect=effect, Icon=effect, TooltipId=SPELL_TOOLTIP + key, PackageID=PACKAGE))
     for key in RETIRED_LINES:
         w.retire_line(f"Tuatha.Sovereign{key:02}")
+    for r in ascendant_rows(w):
+        w.out.append({"table": "Spell", "key": r[0], "set": dict(Description=ASCENDANT)})
 
     # --- weapons: Scythe, Blades and Shields; Evade as a class ability ---
     for spec in RETIRED_SPECS:
@@ -178,6 +188,11 @@ def edits_for(db):
     return w.out
 
 
+def ascendant_rows(w):
+    return w.rows("SELECT Spell_ID FROM Spell WHERE PackageID=? AND SpellID IN (SELECT SpellID FROM LineXSpell WHERE LineName=?) "
+                  "AND Description<>?", PACKAGE, ASCENDANT_LINE, ASCENDANT)
+
+
 def main():
     db_path, out_path = Path(sys.argv[1]), Path(sys.argv[2])
     with sqlite3.connect(db_path.resolve().as_uri() + "?mode=ro", uri=True) as db:
@@ -185,7 +200,7 @@ def main():
     out_path.write_text(json.dumps(edits, indent=1))
     counts = {}
     for e in edits:
-        op = "delete" if "delete" in e else "insert"
+        op = "delete" if "delete" in e else "insert" if "copy" in e else "update"
         counts[(e["table"], op)] = counts.get((e["table"], op), 0) + 1
     for (table, op), n in sorted(counts.items()):
         print(f"{op:7} {n:4}  {table}")

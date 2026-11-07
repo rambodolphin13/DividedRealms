@@ -155,7 +155,7 @@ namespace DOL.UnitTests
                 var keys = Enumerable.Range(0, StormSovereignAbilities.Levels.Length)
                     .Select(tier => StormSovereignAbilities.AbilityKey(TuathaRemakeSpells.FirstId + tier * 16 + key)).Distinct();
                 Assert.That(keys, Is.EqualTo(new[] { 200 + key }));
-                bool toggle = key is TuathaRemakeSpells.WildwoodArmament or TuathaRemakeSpells.SeelieKey or TuathaRemakeSpells.UnseelieKey;
+                bool toggle = key is TuathaRemakeSpells.WildwoodArmament;   // the courts are timed (owner 2026-11-06)
                 Assert.That(StormSovereignAbilities.Toggle(TuathaRemakeSpells.FirstId + key), Is.EqualTo(toggle), $"key {key}");
             }
         }

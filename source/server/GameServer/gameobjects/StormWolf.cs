@@ -113,9 +113,10 @@ namespace DOL.GS.Spells
         // One wolf: a recast used to replace the owner's pet link and leave the old wolf in the world, so wolves piled up.
         public override bool CheckBeginCast(GameLiving selectedTarget,bool quiet)
         {
-            if(Caster.ControlledBrain?.Body is { IsAlive: true, ObjectState: GameObject.eObjectState.Active })
+            if(Caster.ControlledBrain?.Body is { IsAlive: true, ObjectState: GameObject.eObjectState.Active } pet)
             {
-                if(!quiet) MessageToCaster("You already have a Storm Wolf. Release it first to call another.",DOL.GS.PacketHandler.eChatType.CT_SpellResisted);
+                // The pet's own name: the Pendragon's Royal Lion and the Tuatha's Faerie Drake use this handler too.
+                if(!quiet) MessageToCaster($"You already have a {pet.Name}. Release it first to call another.",DOL.GS.PacketHandler.eChatType.CT_SpellResisted);
                 return false;
             }
             return base.CheckBeginCast(selectedTarget,quiet);
