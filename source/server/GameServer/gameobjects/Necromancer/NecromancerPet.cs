@@ -84,7 +84,8 @@ namespace DOL.GS
                         item.ProcSpellID = (int)Procs.Poison;
                     break;
                 case "abomination":
-                    LoadEquipmentTemplate("abomination_fiery_sword");
+                    // The world data has no "abomination_fiery_sword" row; the plain "abomination" two-hander stands in.
+                    LoadEquipmentTemplate("abomination_fiery_sword", "abomination");
                     break;
                 default:
                     LoadEquipmentTemplate("barehand_weapon");
@@ -484,15 +485,24 @@ namespace DOL.GS
         /// Load equipment for the pet.
         /// </summary>
         /// <param name="templateID">Equipment Template ID.</param>
+        /// <param name="fallbackTemplateID">Template tried when the first one is not in the database.</param>
         /// <returns>True on success, else false.</returns>
-        private bool LoadEquipmentTemplate(string templateID)
+        private bool LoadEquipmentTemplate(string templateID, string fallbackTemplateID = null)
         {
             if (templateID.Length <= 0)
                 return false;
 
             GameNpcInventoryTemplate inventoryTemplate = new();
+            bool loaded = inventoryTemplate.LoadFromDatabase(templateID);
 
-            if (inventoryTemplate.LoadFromDatabase(templateID))
+            if (!loaded && !string.IsNullOrEmpty(fallbackTemplateID))
+            {
+                templateID = fallbackTemplateID;
+                inventoryTemplate = new();
+                loaded = inventoryTemplate.LoadFromDatabase(templateID);
+            }
+
+            if (loaded)
             {
                 Inventory = new GameNPCInventory(inventoryTemplate);
                 DbInventoryItem item;
@@ -504,6 +514,7 @@ namespace DOL.GS
 
                     switch (templateID)
                     {
+                        case "abomination": // stands in for the missing fiery sword template
                         case "abomination_fiery_sword":
                         case "abomination_flaming_mace":
                             item.ProcSpellID = (int)Procs.Heat;

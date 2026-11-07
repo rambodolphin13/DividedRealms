@@ -2933,6 +2933,29 @@ namespace DOL.AI.Brain
                 item?.Object_Type == (int)eObjectType.Instrument &&
                 (requiredInstrument <= 0 || item.DPS_AF == requiredInstrument);
 
+            // The best instrument of the type it carries: a real one before a training one (owner 2026-11-05: given a
+            // Melodic Lute, a Minstrel kept playing her training lute), then the higher level and quality.
+            DbInventoryItem best = bot.Inventory?.AllItems.Where(item => item != null && CorrectInstrument(item) &&
+                    (item.SlotPosition is (int)eInventorySlot.DistanceWeapon or (int)eInventorySlot.TwoHandWeapon ||
+                     item.SlotPosition >= (int)eInventorySlot.FirstBackpack && item.SlotPosition <= (int)eInventorySlot.LastBackpack))
+                .OrderBy(item => BotStarterInstruments.IsTraining(item) ? 1 : 0)
+                .ThenByDescending(item => item.Level).ThenByDescending(item => item.Quality).FirstOrDefault();
+            if (best != null && CorrectInstrument(bot.ActiveWeapon) &&
+                (bot.ActiveWeapon == best || !BotStarterInstruments.IsTraining(bot.ActiveWeapon) || BotStarterInstruments.IsTraining(best)))
+                return true;
+            if (best != null && best.SlotPosition >= (int)eInventorySlot.FirstBackpack && best.SlotPosition <= (int)eInventorySlot.LastBackpack &&
+                bot.Inventory.MoveItem((eInventorySlot)best.SlotPosition, eInventorySlot.TwoHandWeapon, best.Count))
+            {
+                bot.SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+                return CorrectInstrument(bot.ActiveWeapon);
+            }
+            if (best != null && best != bot.ActiveWeapon &&
+                best.SlotPosition is (int)eInventorySlot.DistanceWeapon or (int)eInventorySlot.TwoHandWeapon)
+            {
+                bot.SwitchWeapon(best.SlotPosition == (int)eInventorySlot.DistanceWeapon ? eActiveWeaponSlot.Distance : eActiveWeaponSlot.TwoHanded);
+                return CorrectInstrument(bot.ActiveWeapon);
+            }
+
             if (CorrectInstrument(bot.ActiveWeapon))
                 return true;
 
@@ -4226,10 +4249,11 @@ namespace DOL.AI.Brain
                 .Concat(Body.GetNPCsInRadius(2600).Cast<GameLiving>())
                 .Concat(Body.GetPlayersInRadius(2600).Cast<GameLiving>())
                 .Distinct();
+            // A mesmerized monster still points at its last victim: never protect against it (that broke the mez).
             return candidates
                 .Where(candidate => candidate?.IsAlive == true &&
                                     candidate.TargetObject is GameLiving victim &&
-                                    protectedMembers.Contains(victim) &&
+                                    IsProtectionThreat(protectedMembers.Contains(victim), IsBreakablyControlled(candidate)) &&
                                     CanAggroTarget(candidate))
                 .OrderByDescending(candidate => candidate.TargetObject == leader)
                 .ThenByDescending(candidate => candidate.TargetObject is GameBot bot && bot.Brain is BotBrain { IsHealer: true })
@@ -4237,9 +4261,14 @@ namespace DOL.AI.Brain
                 .FirstOrDefault();
         }
 
+        /// <summary>A monster on a group member is a protection threat unless it is mesmerized or rooted (don't break mez).</summary>
+        public static bool IsProtectionThreat(bool targetsProtectedMember, bool breakablyControlled) =>
+            targetsProtectedMember && !breakablyControlled;
+
         private bool TryPriorityTaunt(GameLiving target)
         {
             if (!IsTankClass || target?.TargetObject is not GameLiving victim || Body.Group == null ||
+                IsBreakablyControlled(target) ||
                 victim.Group != Body.Group || !Body.Group.IsInTheGroup(victim) ||
                 victim.CurrentRegionID != Body.CurrentRegionID ||
                 !Body.IsWithinRadius(victim, GROUP_DEFENSE_ASSIST_RADIUS))
