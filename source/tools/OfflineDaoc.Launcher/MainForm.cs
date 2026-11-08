@@ -285,6 +285,10 @@ internal sealed partial class MainForm : Form
             ScheduleNextAutoRefresh();
             UpdateAutoRefreshCountdown();
             _autoRefresh.Start();
+            // The last update's result once, then one quiet look for a newer release (at most once a day; the player
+            // can turn it off; never in a folder that isn't a release package).
+            ShowLastUpdateResult();
+            await CheckForUpdatesAsync(asked: false);
         };
         FormClosing += (_, _) =>
         {
@@ -302,6 +306,7 @@ internal sealed partial class MainForm : Form
             _autoRefresh.Dispose();
             _serverReadinessPoll.Dispose();
             _helpTip.Dispose();
+            _releaseWeb?.Dispose();
         }
         base.Dispose(disposing);
     }
@@ -937,11 +942,12 @@ internal sealed partial class MainForm : Form
     /// <summary>IMPORT PROGRESS (saves from another folder) and REPAIR CLIENT (the client copy checked and patched again).</summary>
     private Control BuildUpdateRepairPanel()
     {
-        var surface = new InsetPanel { Dock = DockStyle.Top, Height = 230, Margin = new Padding(18), Padding = new Padding(20), Accent = DaocTheme.Gold };
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 4, BackColor = Color.Transparent };
+        var surface = new InsetPanel { Dock = DockStyle.Top, Height = 296, Margin = new Padding(18), Padding = new Padding(20), Accent = DaocTheme.Gold };
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 5, BackColor = Color.Transparent };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 210));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 66));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -955,21 +961,28 @@ internal sealed partial class MainForm : Form
         };
         layout.Controls.Add(title, 0, 0);
         layout.SetColumnSpan(title, 2);
+        // CHECK FOR UPDATES and its "check automatically" setting (MainForm.Updates.cs).
+        _checkUpdatesButton = ActionButton("CHECK FOR UPDATES", Color.FromArgb(150, 112, 52));
+        _checkUpdatesButton.Dock = DockStyle.Fill;
+        _checkUpdatesButton.Margin = new Padding(0, 6, 12, 14);
+        _checkUpdatesButton.Click += async (_, _) => await CheckForUpdatesAsync(asked: true);
+        layout.Controls.Add(_checkUpdatesButton, 0, 1);
+        layout.Controls.Add(BuildUpdateCheckDescription(), 1, 1);
         _importProgressButton = ActionButton("IMPORT PROGRESS", Color.FromArgb(92, 120, 84));
         _importProgressButton.Dock = DockStyle.Fill;
         _importProgressButton.Margin = new Padding(0, 6, 12, 6);
         _importProgressButton.Click += async (_, _) => await ImportProgressAsync();
-        layout.Controls.Add(_importProgressButton, 0, 1);
+        layout.Controls.Add(_importProgressButton, 0, 2);
         layout.Controls.Add(XpRateDescription("Installed this release in a new folder? Bring your account, characters, items, bots, houses, guilds, " +
-            "fishing and artifacts from your old folder. The old folder is only read, and this folder's world is backed up first."), 1, 1);
+            "fishing and artifacts from your old folder. The old folder is only read, and this folder's world is backed up first."), 1, 2);
         _repairClientButton = ActionButton("REPAIR CLIENT", Color.FromArgb(92, 84, 128));
         _repairClientButton.Dock = DockStyle.Fill;
         _repairClientButton.Margin = new Padding(0, 6, 12, 6);
         _repairClientButton.Click += async (_, _) => await RepairClientAsync();
-        layout.Controls.Add(_repairClientButton, 0, 2);
+        layout.Controls.Add(_repairClientButton, 0, 3);
         layout.Controls.Add(XpRateDescription("The game crashes, art is missing, or a file was changed? Checks every file of the game's client copy " +
-            "against your Dark Age of Camelot folder, restores what differs and patches Divided Realms in again. Your game settings are kept."), 1, 2);
-        layout.Controls.Add(_updateRepairStatus, 0, 3);
+            "against your Dark Age of Camelot folder, restores what differs and patches Divided Realms in again. Your game settings are kept."), 1, 3);
+        layout.Controls.Add(_updateRepairStatus, 0, 4);
         layout.SetColumnSpan(_updateRepairStatus, 2);
         surface.Controls.Add(layout);
         return surface;
@@ -979,6 +992,7 @@ internal sealed partial class MainForm : Form
     {
         if (_importProgressButton != null) _importProgressButton.Enabled = !busy;
         if (_repairClientButton != null) _repairClientButton.Enabled = !busy;
+        if (_checkUpdatesButton != null) _checkUpdatesButton.Enabled = !busy && !_updating;
     }
 
     private async Task ImportProgressAsync()
