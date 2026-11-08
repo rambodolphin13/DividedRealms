@@ -1043,6 +1043,8 @@ namespace DOL.GS
         public string LastDeathKillerName { get; private set; } = string.Empty;
         /// <summary>The last death was to an enemy realm (player, bot, their pet or a guard), not a PvE monster.</summary>
         public bool LastDeathByEnemyRealm { get; private set; }
+        /// <summary>The last death was to an epic monster (a raid or dragon boss): no lesson about solo camps.</summary>
+        public bool LastDeathByEpic { get; private set; }
 
         public override void ProcessDeath(GameObject killer)
         {
@@ -1059,6 +1061,7 @@ namespace DOL.GS
 
             LastDeathKillerName = killer?.Name ?? string.Empty;
             LastDeathByEnemyRealm = AutonomousDeathDiagnostics.IsEnemyRealmKill(Realm, killer);
+            LastDeathByEpic = killer is IGameEpicNpc;
             if (IsAutonomousWorldBot && PersistentRecord != null)
             {
                 AutonomousDeathDiagnostics.Record(this, killer, PersistentRecord.Activity);
@@ -2896,6 +2899,19 @@ namespace DOL.GS
                 return false;
 
             WatchLeaderRegionChanges(leader);
+            // A gamebot joins mid-trip: its stable-master or frontier-porter ride and its walk end here, or it stays
+            // "Boarding frontier teleporter" ~1,900 away and never counts as available for the player's fights
+            // (playtest 2026-11-07, after a leader's GM jump). The controller does not run for a player-led bot.
+            if (IsAutonomousWorldBot && !IsTemporaryGroupHelper)
+            {
+                if (IsOnStableMasterRoute)
+                    CompleteStableMasterRoute();
+                if (movementComponent != null)
+                    StopMovingOnPath();
+                EndReturnJourney();
+                if (PersistentRecord != null)
+                    PersistentRecord.Activity = "Following the player's group";
+            }
             PlayerGroupLeader = leader;
             if (Brain is BotBrain brain)
             {

@@ -124,6 +124,11 @@ namespace DOL.GS.Trials
         public string[] Replaces = Array.Empty<string>();
         /// <summary>Removes <see cref="Replaces"/> only this close to the anchor; 0 means the whole region.</summary>
         public int ReplaceRadius;
+        /// <summary>
+        /// Aggressive world monsters (realm 0) this close to the anchor are removed at runtime, so the starter doesn't
+        /// stand in a camp (playtest 2026-11-07: 29 of 86 anchors had one within 500). 0 keeps the camp.
+        /// </summary>
+        public int ClearRadius = TrialManager.DefaultClearRadius;
         public int TimeLimitSeconds = 1800;
         public int ResetSeconds = 120;
         /// <summary>Participants this far away count as having left.</summary>

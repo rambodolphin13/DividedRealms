@@ -63,6 +63,26 @@ namespace DOL.GS.Spells
         public override ushort Icon => 15197;
         public override bool HasPositiveEffect => false;
         public override void OnEffectPulse() => Flee(Owner as GameNPC, _caster);
+        // A monster's own brain re-engaged between the once-a-second pulses, so Malefic Horror scared nothing
+        // (playtest 2026-11-07). Like the stock fear spell, a monster runs on a fear brain for the duration; a pet keeps
+        // its controlled brain (its master loses control through the pulse).
+        private FleeBrain _fleeBrain;
+        public override void OnStartEffect()
+        {
+            if (Owner is GameNPC npc && npc.Brain is not IControlledBrain && _caster != null)
+            {
+                _fleeBrain = new FleeBrain(_caster);
+                npc.AddBrain(_fleeBrain);
+                _fleeBrain.Think();
+            }
+        }
+        /// <summary>Runs from one living (the caster) and never attacks, until removed.</summary>
+        public sealed class FleeBrain(GameObject from) : StandardMobBrain
+        {
+            public GameObject From { get; } = from;
+            public override int ThinkInterval => 1000;
+            public override void Think() => Flee(Body, From);
+        }
         public static void Flee(GameNPC pet, GameObject from)
         {
             if (pet == null || !pet.IsAlive || from == null) return;
@@ -73,6 +93,11 @@ namespace DOL.GS.Spells
         }
         public override void OnStopEffect()
         {
+            if (_fleeBrain != null && Owner is GameNPC npc)
+            {
+                npc.RemoveBrain(_fleeBrain);
+                _fleeBrain = null;
+            }
             if (!Owner.IsAlive || !_grantsImmunity) return;
             ECSGameEffectFactory.Create(new(Owner, WarlockPetFearHandler.ImmunityMs, 1),
                 static (in ECSGameEffectInitParams i) => new WarlockPetFearImmunityEffect(i));

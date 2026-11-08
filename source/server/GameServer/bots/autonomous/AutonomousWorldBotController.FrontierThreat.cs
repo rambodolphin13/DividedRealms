@@ -161,6 +161,14 @@ public sealed partial class AutonomousWorldBotController
     // Called before optional upkeep and the world controller's rendezvous,
     // recovery and follow returns. Assignment/level do not restrict defense.
     // It starts real combat without replacing the bot's durable task or event.
+    public const int RvrObjectiveRadius = 2500;
+
+    private static bool NearRvrObjective(GameBot bot, CampDestination objective) =>
+        IsNearRvrObjective(objective != null && objective.RegionId == bot.CurrentRegionID, bot.X, bot.Y, objective?.X ?? 0, objective?.Y ?? 0);
+
+    public static bool IsNearRvrObjective(bool sameRegion, int x, int y, int objectiveX, int objectiveY) =>
+        sameRegion && (long)(x - objectiveX) * (x - objectiveX) + (long)(y - objectiveY) * (y - objectiveY) <= (long)RvrObjectiveRadius * RvrObjectiveRadius;
+
     public bool TryEngageFrontierThreat(BotBrain brain)
     {
         GameBot bot = brain?.BotBody;
@@ -204,6 +212,9 @@ public sealed partial class AutonomousWorldBotController
             .ThenBy(bot.GetDistanceTo).ToArray();
         AutonomousLivingServer.ObserveEnemies(bot, nearby);
         RvrAwarenessProfile rvrProfile = RvrProfile();
+        // Defenders and siege bots count as "at the objective" (no reaction delay) only near it, not for the whole march:
+        // a marching Bainshee killed a still player from 3,240 units with no notice (playtest 2026-11-07).
+        bool atObjective = (defending || siegeFighter) && NearRvrObjective(bot, _rvrDestination);
         bool Visible(GameLiving target) => FiringOnRealm(bot, target) || nav.HasLineOfSight(bot.CurrentZone,
             new(bot.X, bot.Y, bot.Z + 48), new(target.X, target.Y, target.Z + 48), nav.BlockingDoorAvoidanceFilters);
         var visible = siegeFighter
@@ -211,11 +222,11 @@ public sealed partial class AutonomousWorldBotController
                 nearby.OfType<GameSiegeWeapon>().Cast<GameLiving>().ToArray(), Visible)
             : _frontierThreat.Visible(nearby, target => FiringOnRealm(bot, target) ||
                 // RvR perception: no ray for a player this bot couldn't notice on this scan anyway (observer cap, range).
-                !RvrSkipsLineOfSight(bot, target, defending, rvrProfile, GameLoop.GameLoopTime) && nav.HasLineOfSight(bot.CurrentZone,
+                !RvrSkipsLineOfSight(bot, target, atObjective, rvrProfile, GameLoop.GameLoopTime) && nav.HasLineOfSight(bot.CurrentZone,
                 new(bot.X, bot.Y, bot.Z), new(target.X, target.Y, target.Z), nav.DefaultFilters));
         var visibleTargets=visible.ToArray();
         // RvR perception (owner 2026-11-01): enemy players, companions and pets only once noticed and after a reaction delay.
-        visibleTargets = PerceiveRvrTargets(bot, visibleTargets, defending || siegeFighter);
+        visibleTargets = PerceiveRvrTargets(bot, visibleTargets, atObjective);
         var operatorThreats=visibleTargets.Where(target=>target.IsAttacking && target.TargetObject is GameBot friendly &&
             friendly.Realm==bot.Realm && bot.IsWithinRadius(friendly,1000) && BotSiegeRuntime.HoldingPosition(friendly)).ToArray();
         GameLiving enemy = SelectDistributedRvrTarget(bot, operatorThreats.Length>0 ? operatorThreats : visibleTargets);

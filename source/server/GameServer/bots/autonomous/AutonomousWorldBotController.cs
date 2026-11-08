@@ -3719,7 +3719,7 @@ namespace DOL.GS
                         MathF.Min(cell.DarknessFallsMidgardDistance, cell.DarknessFallsHiberniaDistance));
                     if (!AutonomousDarknessFallsNavigation.CanUseOrdinaryCamp(bot.Realm,
                             cell.DarknessFallsWing, validLevels.Min(), entryDistance,
-                            nearestEntranceDistance)) continue;
+                            nearestEntranceDistance, solo: !sharedGroup)) continue;
                     darknessFallsRoutes[cell.Id] = (cell.DarknessFallsWing, entryDistance,
                         AutonomousDarknessFallsPolicy.EntranceGap(cell.DarknessFallsAlbionDistance,
                             cell.DarknessFallsMidgardDistance, cell.DarknessFallsHiberniaDistance));
@@ -4310,7 +4310,9 @@ namespace DOL.GS
             // Killed by another realm (player, bot, pet or guard): nothing to learn about PvE. Night playtest 2026-11-04: an
             // enemy bot's kill was logged as a failed PvE camp with new_max_con=GREEN, and the bot hopped goals and died again
             // and again. The camp, the con ceiling and the camp/target memories stay as they were; the bot only recovers.
-            if (bot.LastDeathByEnemyRealm)
+            // A raid member or an epic's victim learned nothing about solo camps either: 28 Xanxicar deaths gave 20 solo
+            // replans down to blue or green (playtest 2026-11-07).
+            if (bot.LastDeathByEnemyRealm || bot.LastDeathByEpic || AutonomousRealmRaid.IsReserved(bot) || AutonomousRealmRaid.IsInRaidParty(bot))
             {
                 _observedDeathCount = deathCount;
                 _lastEngagedCon = null;
@@ -4319,7 +4321,7 @@ namespace DOL.GS
                          $"killer=\"{bot.LastDeathKillerName}\" kept_target=\"{_camp?.MonsterName}\" max_con={MaximumTargetCon(groupSize)} " +
                          $"region={bot.CurrentRegionID} position={bot.X},{bot.Y},{bot.Z}");
                 SetStatus(bot, "Recovering from defeat", GoalText(),
-                    $"Killed by {bot.LastDeathKillerName} of another realm; keeping the current goal", bot.LastDeathKillerName,
+                    bot.LastDeathByEnemyRealm ? $"Killed by {bot.LastDeathKillerName} of another realm; keeping the current goal" : $"Killed by {bot.LastDeathKillerName} in a raid; keeping the current goal", bot.LastDeathKillerName,
                     forceSave: true);
                 return;
             }

@@ -1579,6 +1579,24 @@ public static partial class AutonomousBotGroupCoordinator
         Vector2.DistanceSquared(new(previous.X, previous.Y), new(candidate.X, candidate.Y)) >= 128 * 128 ||
         MathF.Abs(previous.Z - candidate.Z) >= 160;
 
+    /// <summary>
+    /// Whether this bot leaving its locked PvE party (3 or more) would end the party's task: the rest would have no tank,
+    /// healer or hitter left. A player's /invite waits then (playtest 2026-11-07: one invite ended a task for 5 bots).
+    /// </summary>
+    public static bool LeavingEndsLockedParty(GameBot bot)
+    {
+        lock (Sync)
+        {
+            if (bot?.Group == null || !TryGetSession(bot.Group, out Session session) || session.Ending ||
+                session.ObjectiveKind != eAutonomousObjectiveKind.GroupPve)
+                return false;
+            GameBot[] members = BotMembers(bot.Group);
+            if (members.Length < 3)
+                return false;
+            return !HasViablePveComposition(session, members.Where(member => member != bot).ToArray());
+        }
+    }
+
     public static void OnMemberRemoved(Group group, GameLiving living)
     {
         if (living is not GameBot bot || !bot.IsAutonomousWorldBot || bot.IsTemporaryGroupHelper)

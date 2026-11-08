@@ -535,11 +535,14 @@ public static class AutonomousDarknessFallsNavigation
     /// A higher-level spawn can also be used from a genuinely shared interior
     /// corridor, but never because it is merely a same-name copy beside the
     /// opposite realm's entrance.</summary>
+    // Playtest 2026-11-07: solo bots on another realm's wing made 134 attempts, 3 arrived, 113 died. A solo bot keeps to
+    // its own wing or a neutral room; parties may still cross deep inside.
     public static bool CanUseOrdinaryCamp(eRealm realm, eRealm nearestWing, int level,
-        float ownEntranceDistance, float nearestEntranceDistance) =>
+        float ownEntranceDistance, float nearestEntranceDistance, bool solo = false) =>
         realm != eRealm.None && float.IsFinite(ownEntranceDistance) &&
         float.IsFinite(nearestEntranceDistance) &&
-        (nearestWing == realm || level >= 30 && nearestEntranceDistance >= 15_000 &&
+        (nearestWing == realm || solo && nearestWing == eRealm.None ||
+            !solo && level >= 30 && nearestEntranceDistance >= 15_000 &&
             ownEntranceDistance - nearestEntranceDistance <= 18_000);
 
     public static bool IsNearbySameWingCamp(eRealm realm, eRealm wing,
