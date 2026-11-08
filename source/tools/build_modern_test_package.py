@@ -90,6 +90,28 @@ def use_stock_models(con, models: dict | None = None, properties: dict | None = 
                      for key, value in (STOCK_SERVER_PROPERTIES if properties is None else properties).items())
     return dict(item_templates=templates, server_properties=changed)
 
+def private_models_without_art(con, pristine: Path, patch: dict) -> list:
+    """(item, model) for every item drawn with an object above the stock objects.csv's last ID that the client patch doesn't
+    add. DR-dev-0.1d shipped the Storm Regalia on objects 4929-4942, which only the developer's client has."""
+    import make_client_patch as m
+    stock = {m.row_id(line) for line in m.member_of((pristine / m.GAMEDATA).read_bytes(), 'objects.csv').decode('latin1').split('\r\n')}
+    stock.discard(None)
+    game = next(f for f in patch['Files'] if f['Path'] == m.GAMEDATA)
+    added = {m.row_id(row) for part in game['Members'] if part['Member'] == 'objects.csv' for row in part['Rows']}
+    return models_without_art(con, max(stock), added)
+
+
+def models_without_art(con, last_stock_object: int, added: set) -> list:
+    return [(item, model) for item, model in con.execute('SELECT Id_nb, Model FROM ItemTemplate WHERE Model > ? ORDER BY Id_nb',
+                                                          (last_stock_object,))
+            if model not in added and model not in LATER_LIVE_OBJECTS]
+
+
+# Live objects newer than the pristine copy the patch is built from: the 25th-anniversary cloaks (live patch 2026-10-26).
+# A current live client draws them; they are not private art.
+LATER_LIVE_OBJECTS = {4924, 4925, 4926}
+
+
 START_CMD = r'''@echo off
 setlocal
 cd /d "%~dp0"
@@ -297,6 +319,10 @@ def build(install: Path, pristine: Path, classic: Path, repo: Path, out: Path, l
         withheld = {item: con.execute('DELETE FROM MerchantItem WHERE ItemTemplateID = ?', (item,)).rowcount
                     for item in WITHHELD_MERCHANT_ITEMS}
         stock_models = use_stock_models(con)
+        unknown = private_models_without_art(con, pristine, patch)
+        if unknown:
+            raise SystemExit('Items name private models the client patch does not add (map them in PRIVATE_MODELS or add the '
+                             f'art to make_client_patch.py): {unknown[:20]}')
         con.commit()
         world = release.verify_clean(con, policy, defaults)
     con.close()     # the world file is renamed below

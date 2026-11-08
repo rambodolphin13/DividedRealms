@@ -30,6 +30,7 @@ import regalia_client as S  # noqa: E402  (need, table, add_row, client_closed, 
 
 HERE = Path(__file__).resolve().parent
 TEX = HERE / "textures"
+LABEL = "Camelot"  # pskins row names: "<LABEL> <texture>"
 PSKIN_ARC, MSKIN_ARC = 63, 72
 need = S.need
 
@@ -63,48 +64,7 @@ OBJECTS = [(4957, "428", "Regalia of Camelot Breastplate", {66: "5819", 67: "582
 
 
 def build(client: Path):
-    game = client / "gamedata.mpk"
-    name, entries = S.archive.read(game.read_bytes())
-    files = {e.name.lower(): e.data for e in entries}
-    T = {k: S.table(files[k]) for k in ("pskins.csv", "mskins.csv", "objects.csv")}
-    upd = {k: files[k] for k in ("pskins.csv", "mskins.csv", "objects.csv")}
-    for mid, tex, _, _ in MSKINS:
-        row = list(T["mskins.csv"]["2327"]); row[0], row[1], row[2], row[4], row[5] = str(mid), tex, tex, str(MSKIN_ARC), "0"
-        upd["mskins.csv"] = S.add_row(upd["mskins.csv"], row)
-    for pid, tex, _, _, stock, base, _ in PSKINS:
-        row = list(T["pskins.csv"][stock])
-        row += [""] * max(0, 7 - len(row))
-        row[0], row[1], row[2], row[4], row[5], row[6] = str(pid), "Camelot " + tex[:-4], tex, str(PSKIN_ARC), "0", str(base)
-        upd["pskins.csv"] = S.add_row(upd["pskins.csv"], row)
-    for oid, stock, label, changes in OBJECTS:
-        row = list(T["objects.csv"][stock]); row += [""] * (98 - len(row))
-        row[0], row[1] = str(oid), label
-        for c, v in changes.items():
-            row[c] = v
-        upd["objects.csv"] = S.add_row(upd["objects.csv"], row)
-    blob = S.archive.write(name, [S.archive.Entry(e.name, upd.get(e.name.lower(), e.data), e.timestamp, e.flags) for e in entries])
-    S.archive.verify_memory_image(blob)
-    _, dec = S.archive.read(blob)
-    for old, new in zip(entries, dec):
-        if old.name.lower() not in upd:
-            need(old.data == new.data, f"unrelated entry changed: {old.name}")
-    for k in upd:
-        old_rows = files[k].decode("latin1").split("\r\n")
-        new_rows = upd[k].decode("latin1").split("\r\n")
-        need([l for l in new_rows if l in set(old_rows)] == old_rows, f"stock {k} line changed")
-        need(len(new_rows) - len(old_rows) == {"mskins.csv": 6, "pskins.csv": 9, "objects.csv": 7}[k], f"{k}: unexpected row count")
-    ref = next(e.data for e in S.archive.read((client / "items/pskins/pskin008.mpk").read_bytes())[1]
-               if e.name.lower().endswith(".dds") and e.data[84:88] == b"DXT1")
-    ref3 = next(e.data for e in S.archive.read((client / "items/pskins/pskin001.mpk").read_bytes())[1] if e.name.lower() == "cloak.dds")
-    stamp = int(time.time())
-    ptex = sorted(((t, S.encode_dxt3(img(src, size), ref3) if dxt3 else S.encode_dds(img(src, size), ref))
-                   for _, t, src, size, _, _, dxt3 in PSKINS), key=lambda x: x[0].lower())
-    mtex = sorted(((t, S.encode_dds(img(src, size), ref)) for _, t, src, size in MSKINS), key=lambda x: x[0].lower())
-    pak = S.archive.write(f"pskin{PSKIN_ARC:03d}.mpk".encode(), [S.archive.Entry(n, d, stamp, 4) for n, d in ptex])
-    mpak = S.archive.write(f"mskin{MSKIN_ARC:03d}.mpk".encode(), [S.archive.Entry(n, d, stamp, 4) for n, d in mtex])
-    for b in (pak, mpak):
-        S.archive.verify_memory_image(b)
-    return blob, pak, mpak
+    return S.build(client, sys.modules[__name__], int(time.time()))
 
 
 def targets(client):
