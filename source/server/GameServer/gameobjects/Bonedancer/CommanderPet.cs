@@ -896,7 +896,7 @@ namespace DOL.GS
 
 			base.SortSpells();
 
-			if (HarmfulSpells != null && HarmfulSpells.Count < 1)
+			if (HarmfulSpells == null || HarmfulSpells.Count < 1)
 				return;
 
 			if (CommanderType != eCommanderType.DreadGuardian && CommanderType != eCommanderType.DreadLich)
