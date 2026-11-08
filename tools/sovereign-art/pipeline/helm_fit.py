@@ -44,7 +44,9 @@ STEM_SCALE = {"midrp04": {"dwa_m": 102}}
 
 def helm(race, sex, stem="toahelm_winged"):
     prefix = f"{PREFIX[race]}_{sex}"
-    path = next(p for p in (CLIENT / "items").iterdir() if p.name.lower() == f"{stem}_{prefix}.nif")
+    race3 = PREFIX[race]                          # most helms are <stem>_<race>_<sex>, the Lug helmet <stem>_<sex>_<race>
+    names = {f"{stem}_{prefix}.nif".lower(), f"{stem}_{sex}_{race3}.nif".lower()}
+    path = next(p for p in (CLIENT / "items").iterdir() if p.name.lower() in names)
     shapes, _ = nif_static.collect(read_nif(path.read_bytes()))
     M = head_world(prefix); sc = (STEM_SCALE[stem] if stem in STEM_SCALE else SCALE).get(prefix, 100) / 100.0
     vs, uvs, fs, off = [], [], [], 0

@@ -6,7 +6,7 @@ pointed at the new objects by the World Workshop edit scripts in `source/tools/s
 
 | Kit | Class | Look | Client IDs | Server edits |
 |---|---|---|---|---|
-| `tara/` | Tuatha Sovereign (67) | emerald court scale, moon-and-stag roundel, polished like the new epics (A2) | pskin062, mskin071; mskins 2750-2755, pskins 5810-5818, objects 4950-4956 | `tara_regalia_edits.py --update` |
+| `tara/` | Tuatha Sovereign (67) | emerald court leaf scale, moon-and-stag roundel, Crown of Lugh helm (pass 3, 2026-11-08) | pskin062, mskin071; mskins 2750-2755, pskins 5810-5818 and 5828, objects 4950-4956 and 4964, items 44-55 with 12 refitted Lug helmet copies (`items/Tara_helm01_*.nif`) | `tara_regalia_edits.py --update` |
 | `storm/` | Storm Sovereign (64) | Stormforged v20 Rune-Warlord plate and storm cloak (polish passes 2026-11-04) | pskin061, mskin070; mskins 2740-2745, pskins 5790-5797, objects 4929-4933, 4937 | `storm_regalia_edits.py` |
 | `camelot/` | Pendragon Sovereign (65) | gilded plate, crimson enamel, red dragon, crowned great helm (B, polish pass 4) | pskin063, mskin072; mskins 2756-2761, pskins 5819-5827, objects 4957-4963 | `camelot_regalia_edits.py --update` |
 
@@ -21,7 +21,9 @@ python -B tools/sovereign-art/camelot/install_camelot_set.py install  <client ap
 python -B tools/sovereign-art/camelot/install_camelot_set.py rollback <client app folder> <backup folder>
 ```
 
-(`tara/install_tara_set.py` works the same way.) The installers refuse the real client folders and accept the owner's
+(`tara/install_tara_set.py` works the same way, and also has `update <client app folder> [--modern-test]`: over an
+earlier Tara install it adds the new rows, rebuilds the two skin archives and adds the helm meshes, with its own backup
+and rollback.) The installers refuse the real client folders and accept the owner's
 modern test client only with `--modern-test`, and only while the game client is closed. `install` writes a backup
 (`runtime/backups/client-<set>-set-<time>`) holding the old `gamedata.mpk` and a manifest. `rollback` restores the
 catalog only if nothing else changed it since, then removes the two archives. To replace installed art with new
@@ -45,6 +47,13 @@ painters are not in the repository. **Owner's exception (2026-11-08):** the wing
 retail-derived texture ships in the patch, as Marfach's map does. Left out: the Storm Crown, wolf cloaks and wolf helm (4934-4936,
 4941), which no item uses (custom meshes and fig3map edits). The Camelot helm keeps the stock full
 plate helm's eye slot and breathing holes (its near-black texels, darkened: `keep_openings` in `paint_camelot.py`).
+
+**Tara's Crown of Lugh (pass 3, 2026-11-08)** is the stock Lug helmet (objects 4827), made for the Lugh NPC's head: on
+player heads it sat too far back and too small. `pipeline/fit_lugh.py` works out a refit (1.2x, 1.5 units forward) and
+writes it into each per-race mesh's own transform, so each private copy differs from its stock NIF in 52 bytes; the
+installer and the client patch make the copies from the player's stock files (only those bytes ship). The helm is a new
+object, 4964, not a changed 4955: the launcher keeps rows a client already has, so changing 4955 would leave DR-dev-0.1e
+clients drawing the old mesh with the new skin. 4955 and its skin 5818 stay as shipped; the server helm points at 4964.
 
 `regalia_client.py` holds the shared helpers (catalog rows, skin archives and the whole build, used by both installers and
 the client patch; DDS encoders from `tools/pet-art`, the archive tool from `tools/asset-tool`).

@@ -1,7 +1,8 @@
 """Regalia of Tara (2026-11-06): the Tuatha Sovereign's armor and cloak as real items, as a World Workshop edits file.
 
 Seven level 51 pieces, scale AF 102 / 27%, class 67 only, no trade or sale. Art (owner picks 2026-11-06: concept A, emerald
-court scale, and the stag roundel cloak): private client objects 4950-4956 from tools/sovereign-art/tara/install_tara_set.py
+court scale, and the stag roundel cloak): private client objects 4950-4954, 4956 and the helm 4964 (the Crown of Lugh, pass 3
+2026-11-08; 4955 was the first helm) from tools/sovereign-art/tara/install_tara_set.py
 (hauberk drawn with extension 5 = Body05, as the Storm hauberk). A client without that install draws nothing for them. Two use abilities and
 two armor procs (TaraRegaliaSpells in C#, 63750-63753); the set bonus is code (TaraRegalia in TuathaRemake.cs); the Brehon
 of Tara gives missing pieces to a level 50 Tuatha who whispers "Regalia of Tara". Every piece has 11 lines: stats, resists,
@@ -26,7 +27,7 @@ SET_TEXT = ("Regalia of Tara set: 2 pieces +5% all resistances; 4 pieces +10% me
 
 # id suffix, name, slot, model, extension, copy source, bonuses (11 lines), use (spell, reuse s), proc spell
 PIECES = (
-    ("helm", "Crown of the Sidhe King", 21, 4955, 0, "arcanite_improved_osnadurtha_cap3",
+    ("helm", "Crown of the Sidhe King", 21, 4964, 0, "arcanite_improved_osnadurtha_cap3",
      dict(Str=18, Con=18, Pie=15, Hits=50, Spirit=10, Energy=10, StrCap=5, ConCap=5, SpellDamage=5, CastingSpeed=5, Fatigue=5),
      (63750, 180), 0),
     ("hauberk", "Hauberk of Tir na Nog", 25, 4950, 5, "arcanite_improved_osnadurtha_hauberk3",

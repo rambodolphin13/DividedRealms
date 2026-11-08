@@ -523,8 +523,9 @@ def regalia_kit(name: str):
 
 
 def regalia_entries(client: Path) -> tuple:
-    """The Sovereign Regalia art (Tara, Camelot): each kit's two skin archives, made From a stock archive and shipped whole
-    (our painted textures only; the stock DDS lends its header layout), and its catalog rows for gamedata_entry."""
+    """The Sovereign Regalia art (Storm, Tara, Camelot): each kit's two skin archives, made From a stock archive and shipped
+    whole (our painted textures only; the stock DDS lends its header layout), its private mesh copies (Tara's refitted Lug
+    helmets: only the changed transform bytes ship), and its catalog rows for gamedata_entry."""
     game = (client / GAMEDATA).read_bytes()
     files = {name: member_of(game, name) for name in GAMEDATA_CATALOGS}
     stock = (client / REGALIA_FROM).read_bytes()
@@ -535,6 +536,11 @@ def regalia_entries(client: Path) -> tuple:
             entry = dict(Path=path, From=REGALIA_FROM, InputSha256=sha(stock), OutputSha256=sha(ours), OutputSize=len(ours),
                          Edits=encoded(replace_whole(stock, ours)))
             assert apply(stock, entry) == ours
+            entries.append(entry)
+        for path, source, stock_nif, ours in kit.S.mesh_files(client, kit):   # private mesh copies (Tara's Crown of Lugh)
+            entry = dict(Path=path, From=source, InputSha256=sha(stock_nif), OutputSha256=sha(ours), OutputSize=len(ours),
+                         Edits=encoded(in_place_edits(stock_nif, ours)))
+            assert apply(stock_nif, entry) == ours
             entries.append(entry)
         for catalog, added in kit.S.catalog_rows(files, kit).items():
             rows.setdefault(catalog, []).extend(added)

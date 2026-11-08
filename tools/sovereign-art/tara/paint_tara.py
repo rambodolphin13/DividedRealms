@@ -26,6 +26,7 @@ import calib  # noqa: E402
 import render as R  # noqa: E402
 import bake_arrays  # noqa: E402
 import helm_fit  # noqa: E402
+import fit_lugh  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 import paths  # noqa: E402
@@ -40,6 +41,7 @@ GOLD = [(34, 24, 8), (100, 76, 32), (172, 142, 76), (224, 200, 138), (252, 242, 
 LEATHER = [(9, 9, 6), (28, 25, 16), (54, 47, 30), (88, 77, 52)]
 CLOTH = [(2, 7, 4), (5, 19, 12), (14, 40, 26), (32, 72, 48)]
 FUR = [(46, 45, 43), (102, 100, 96), (156, 154, 148), (206, 204, 198), (242, 240, 234)]
+GREEN_LEATHER = [(3, 10, 6), (10, 30, 19), (24, 58, 38), (52, 96, 68)]
 VARIANT = "A"
 
 # the v7 painters' helpers read these module globals
@@ -51,7 +53,7 @@ P7.plait.__defaults__ = (GOLD, 0.16)
 # ------------------------------------------------------------------ v2 polish: the new epics' look (owner 2026-11-06)
 # The 1.130 new epics (Thane, Blademaster in mskin049) paint their shine and depth into the colour: a chrome sky/horizon
 # reflection on metal, crisp bright inner edges, and every raised piece casting a dark contact shadow on the layer below.
-POLISH = {"on": False}
+POLISH = {"on": False, "v3": False}      # v3 = pass 3 (owner 2026-11-08): leaf scales, clean plate, Crown of Lugh helm
 _base_layer = P5.Canvas.layer
 METAL_STRENGTH = {}
 
@@ -177,23 +179,30 @@ def scales(C, mask, u, v, w, h, radius=0.72, variant=None, seed=7, small=False):
         return
     variant = variant or VARIANT
     U, V = u / w, v / h
+    leafy = POLISH["v3"] and not small
+
+    def metric(du, dv):
+        """Round scales; pass 3 narrows each scale's lower half to a point, so the rows read as overlapping leaves."""
+        if not leafy:
+            return np.hypot(du, dv)
+        return np.hypot(du / (1 - 0.48 * np.clip(dv / radius, 0, 1) ** 1.2), dv)
     out_r = np.full(U.shape, np.inf); fu = np.zeros(U.shape); fv = np.zeros(U.shape); cxs = np.zeros(U.shape)
     base = np.floor(V)
     for dr in (-1, 0, 1, 2):
         rr = base + dr - 1
         off = 0.5 * (np.mod(rr, 2))
         cx = np.round(U - off) + off
-        d = np.hypot(U - cx, (V - rr) * 1.0)
+        d = metric(U - cx, (V - rr) * 1.0)
         take = (d < radius) & (rr < out_r)
         out_r = np.where(take, rr, out_r); fu = np.where(take, U - cx, fu); fv = np.where(take, V - rr, fv); cxs = np.where(take, cx, cxs)
     got = np.isfinite(out_r) & mask
     rr = np.where(got, out_r, 0)
-    d = np.hypot(fu, fv)
+    d = metric(fu, fv)
     edge = radius - d                                           # cell units to the scale's rim
     # shadow under the row above
     up = rr - 1; off = 0.5 * np.mod(up, 2)
     cu = np.round(U - off) + off
-    s = np.min([np.hypot(U - (cu + k), V - up) for k in (-1, 0, 1)], axis=0) - radius
+    s = np.min([metric(U - (cu + k), V - up) for k in (-1, 0, 1)], axis=0) - radius
     shadow = 1 - smoothstep(0.0, 0.22, s)
     dome = np.sqrt(np.clip(1 - (d / radius) ** 2, 0, 1))
     hl = np.clip(0.55 - 0.55 * fv / radius - 0.25 * fu / radius, 0, 1)
@@ -220,6 +229,13 @@ def scales(C, mask, u, v, w, h, radius=0.72, variant=None, seed=7, small=False):
     if variant == "B" and not small:                                   # green enamel midrib leaf
         leaf = (np.abs(fu) < 0.075 * (1 - np.clip((fv + 0.1) / 0.55, 0, 1)) + 0.012) & (fv > -0.35) & (fv < 0.42)
         col = np.where(leaf[..., None], ramp(0.45 + 0.4 * hl, EMERALD), col)
+    elif leafy:                                                        # gold midrib vein, the tip deeper green
+        col = np.where((~rimm)[..., None], col * (1 - 0.35 * np.clip(fv / radius, 0, 1) ** 1.5)[..., None], col)
+        rib = (np.abs(fu) < 0.028 * (1 - 0.6 * np.clip(fv / radius, 0, 1))) & (fv > -0.30) & (fv < 0.56)
+        col = np.where(rib[..., None], ramp(0.45 + 0.4 * hl - 0.2 * shadow, GOLD), col)
+        for sgn in (-1, 1):                                            # two side veins
+            vein = (np.abs(fu - sgn * (fv + 0.25) * 0.35) < 0.018) & (fv > -0.12) & (fv < 0.30) & (sgn * fu > 0)
+            col = np.where(vein[..., None], col * 0.7, col)
     elif not small:                                                    # silver midrib with a rivet
         rib = (np.abs(fu) < 0.035) & (fv > 0.05) & (fv < 0.55)
         col = np.where(rib[..., None], ramp(0.35 + 0.3 * hl - 0.2 * shadow, MOON), col)
@@ -378,8 +394,10 @@ def paint_body(tm, female=False):
 
     # belt: green leather, triquetra plaques, a crescent-moon buckle
     belt = (z > 42.4) & (z < 45.4)
-    C.layer(belt, LEATHER, outline=1.4, rim=1.8, pillow=6.0, spec=0.2, seed=51)
+    C.layer(belt, GREEN_LEATHER if POLISH["v3"] else LEATHER, outline=1.4, rim=1.8, pillow=6.0, spec=0.2, seed=51)
     C.stitch(belt, u)
+    if POLISH["v3"]:                                     # gold edge lines along the belt
+        C.layer(belt & ((np.abs(z - 42.75) < 0.16) | (np.abs(z - 45.05) < 0.16)), GOLD, outline=0.3, rim=0.4, pillow=0.6, spec=0.95)
     cell = ((u / 4.0) % 1.0) - 0.5
     plq = belt & (np.abs(cell) < 0.17) & (z > 42.85) & (z < 44.95) & (ax > 2.9)
     triquetra_plaque(C, plq, cell * 4.0, z - 43.9, 0.95)
@@ -399,7 +417,13 @@ def paint_body(tm, female=False):
     tv = np.where(front, aang, np.pi - aang)
     P7.plait(C, tab, z * 1.0, tv * 7.5, 1.85, 2.75, 1.6, stops=GOLD)
     ta = np.where(front, x, -x)
-    vine(C, tab & (z > 31.6) & (z < 41.6) & (np.abs(ta) < 1.6), ta, z, period=3.2)
+    if POLISH["v3"]:
+        vine(C, tab & (z > 31.6) & (z < 37.6) & (np.abs(ta) < 1.6), ta, z, period=3.2)
+        emblem(C, tab & front, ta, z - 39.6, 1.4)
+        cast_shadow(C, tab & front & (np.hypot(ta, z - 39.6) < 1.4), reach=4.0, amt=0.6)
+        C.layer(tab & (np.abs(np.abs(tv * 7.5) - 2.95) < 0.10) & (z > 31.3), GOLD, outline=0.3, rim=0.4, pillow=0.6, spec=0.9)
+    else:
+        vine(C, tab & (z > 31.6) & (z < 41.6) & (np.abs(ta) < 1.6), ta, z, period=3.2)
     hem = tab & (z < 31.2)
     scales(C, hem, np.abs(ta), -z, 0.9, 0.7, variant="B", small=True, seed=64)
     C.layer(tab & (np.abs(z - 31.3) < 0.18), GOLD, outline=0.3, rim=0.4, pillow=0.6, spec=0.9)
@@ -473,7 +497,8 @@ def paint_gloves(tm):
     plate(C, leafcuff, seed=103, engrave=False)
     vam = (ax >= 14.4) & (ax < 18.8) & (z > 40.5) & ~cuff
     plate(C, vam, seed=104, engrave=False)
-    C.scroll(vam, vu * 4.0, ax * 1.6, inset=6.0)
+    if not POLISH["v3"]:
+        C.scroll(vam, vu * 4.0, ax * 1.6, inset=6.0)
     P7.plait(C, vam, vu * 3.2, ax, 15.4, 16.4, 1.55, stops=GOLD)
     C.layer(vam & (ax > 16.9) & (ax < 17.9) & (np.abs(vu) < 0.9), EMERALD, outline=0.6, rim=0.8, pillow=1.2, spec=0.95, seed=105)
     C.layer(vam & (ax > 18.35), GOLD, outline=0.8, rim=1.2, pillow=2.0)
@@ -504,7 +529,7 @@ def paint_boots(tm):
     C.layer(C.cov, LEATHER, spec=0.15, rim_amt=0.2, seed=111)
     C.stitch(C.cov & (z <= 4.2), y * 1.5 + ang)
     greave = (z > 4.2) & (z < 14.2)
-    plate(C, greave, seed=112)
+    plate(C, greave, seed=112, engrave=not POLISH["v3"])
     C.groove(greave)
     front = greave & (aa < 0.62)
     C.layer(front & (z > 5.2) & (z < 13.4), EMERALD, outline=0.8, rim=1.2, pillow=2.2, spec=0.9, seed=113)
@@ -515,7 +540,7 @@ def paint_boots(tm):
     C.layer(cuff, EMERALD, outline=1.0, rim=1.4, pillow=3.0, spec=0.8, seed=114)
     P7.plait(C, cuff, ang * 3.0, z, 14.8, 17.8, 1.7, stops=GOLD)
     knee = z >= 18.4
-    plate(C, knee, seed=115)
+    plate(C, knee, seed=115, engrave=not POLISH["v3"])
     kc = 21.3
     C.layer(knee & (np.hypot(ang * 3.2, z - kc) < 1.6), MOON, outline=1.0, rim=1.6, pillow=3.5, spec=0.8, seed=116)
     C.layer(knee & P7.triquetra(ang * 3.2, z - kc, 1.15, 0.15), GOLD, outline=0.5, rim=0.7, pillow=1.2, spec=0.8)
@@ -597,6 +622,132 @@ def paint_helm(tm):
     return C
 
 
+# ------------------------------------------------------------------ helm, pass 3: the Crown of Lugh
+# The stock Lug helmet (objects 4827, items Lum_helm01_<sex>_<race>, every Hibernian race): an open-faced Sidhe helm with
+# a tall crest and swept cheek blades, made for the Lugh NPC's head; the kit ships refitted copies (pipeline/fit_lugh.py). Its UVs are mirrored (both sides share texels), in six islands:
+# 0/1 crest front/back, 2 cheek blades, 3 brow rim, 4 bowl, 5 neck flare.
+LUGH = "lum_helm01"
+
+
+def crown(race, sex):
+    """The Crown of Lugh as the game draws it: the refitted copy (pipeline/fit_lugh.py) on this race's head."""
+    return fit_lugh.fitted(helm_fit.PREFIX[race], sex)
+
+
+def helm_tm_lugh():
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+    name = helm_fit.helm("BC", "m", LUGH)       # painted in the stock mesh's space (the refit keeps the UVs)
+    v, nn, uv, f = R.mesh(name)
+    tm = bake_arrays.bake(v, nn, uv, f, size=512)
+    key = np.round(uv * 2000).astype(np.int64)
+    _, weld = np.unique(key[:, 0] * 100000 + key[:, 1], return_inverse=True)
+    weld = weld.ravel()
+    e = np.r_[f[:, [0, 1]], f[:, [1, 2]], f[:, [2, 0]]]
+    a, b = weld[e[:, 0]], weld[e[:, 1]]
+    k, lab = connected_components(coo_matrix((np.ones(len(a)), (a, b)), shape=(weld.max() + 1,) * 2), directed=False)
+    # name the islands by what they are, not by their order in the file
+    stats = []
+    for i in range(k):
+        m = lab[weld] == i
+        stats.append((i, m.sum(), v[m][:, 2].min(), v[m][:, 2].max(), np.abs(v[m][:, 0]).max()))
+    part = {}
+    for i, cnt, z0, z1, xm in stats:
+        if xm < 2.4 and z1 > 74:
+            part[i] = "crest"
+        elif z1 - z0 < 1.0:
+            part[i] = "rim"
+        elif z0 < 61:
+            part[i] = "blade"
+        elif z1 < 67:
+            part[i] = "flare"
+        else:
+            part[i] = "bowl"
+    im = Image.new("L", (512, 512), 0); dr = ImageDraw.Draw(im)
+    codes = {"crest": 1, "blade": 2, "rim": 3, "bowl": 4, "flare": 5}
+    for t in f:
+        dr.polygon([tuple(uv[j] * 511) for j in t], fill=codes[part[lab[weld[t[0]]]]])
+    labels = np.asarray(im)
+    # texels the polygons missed (padding) take the nearest island
+    miss = labels == 0
+    if miss.any():
+        _, (iy, ix) = distance_transform_edt(miss, return_indices=True)
+        labels = labels[iy, ix]
+    tm.part = {k_: (labels == c) & tm.covered for k_, c in codes.items()}
+    return tm, name
+
+
+def paint_helm_lugh(tm):
+    """Moonsilver bowl with emerald leaf panels framed in gold, a faceted gold crest, gold cheek blades with an emerald
+    enamel leaf down each, leaf scales on the neck flare, a moonstone on the brow."""
+    C = Canvas(tm); p, n = C.p, C.n
+    x, y, z = p[..., 0], p[..., 1], p[..., 2]
+    ax = np.abs(x)
+    P = tm.part
+    th = np.abs(np.arctan2(x, -y))                         # 0 at the front, pi at the back (both sides share texels)
+    C.layer(C.cov, MOON, outline=0, rim=0, rim_amt=0)
+    # bowl: polished moonsilver, gold rim and centre ridge, three emerald leaves a side and one at the back
+    bowl = P["bowl"]
+    plate(C, bowl, seed=131, engrave=False)
+    db = C.dist(bowl)
+    if bowl.any():
+        # depth: darker toward the lower edge and the back, soft flutes running up to the crest, bright crest-line ridges
+        zb0, zb1 = np.percentile(z[bowl], 2), np.percentile(z[bowl], 98)
+        hz = np.clip((z - zb0) / max(zb1 - zb0, 1e-6), 0, 1)
+        shade = 0.62 + 0.38 * smoothstep(0.0, 0.75, hz) - 0.10 * (th / np.pi)
+        fl = np.sin(2 * np.pi * th / 0.30)
+        shade = shade * (1 - 0.16 * (1 - fl))
+        C.col = np.where(bowl[..., None], C.col * shade[..., None], C.col)
+        C.col = np.where((bowl & (fl > 0.94) & (hz > 0.15))[..., None], lerp(C.col, ramp(np.full(z.shape, 0.97), MOON), 0.45), C.col)
+        # the lower tier: an emerald band with a gold plait
+        tier = bowl & (hz < 0.17) & (db > 3.0)
+        C.layer(tier, EMERALD, outline=0.5, rim=0.7, pillow=1.2, spec=0.9, seed=143)
+        P7.plait(C, tier, th * 6.0, hz * 12.0, 0.35, 1.75, 1.0, stops=GOLD, width=0.2)
+        cast_shadow(C, tier, reach=3.0, amt=0.5)
+    for c_th, z0, z1, wmax in ((0.95, 64.4, 70.2, 0.30), (1.85, 63.6, 70.0, 0.30), (2.80, 63.4, 69.6, 0.26)):
+        t = np.clip((z - z0) / (z1 - z0), 0, 1)
+        half = wmax * np.sin(np.pi * t) ** 0.8 * (1 - 0.35 * t)
+        leaf = bowl & (z > z0) & (z < z1) & (np.abs(th - c_th) < half)
+        frame = bowl & (z > z0 - 0.35) & (z < z1 + 0.35) & (np.abs(th - c_th) < half + 0.07) & ~leaf
+        C.layer(frame, GOLD, outline=0.3, rim=0.5, pillow=0.8, spec=0.95, seed=132)
+        C.layer(leaf, EMERALD, outline=0.6, rim=0.8, pillow=1.4, spec=0.95, seed=133)
+        vein = leaf & (np.abs(th - c_th) < 0.018 + 0.01 * (1 - t))
+        C.col = np.where(vein[..., None], ramp(np.full(z.shape, 0.75), GOLD), C.col)
+        cast_shadow(C, frame | leaf, reach=3.0, amt=0.5)
+    C.layer(bowl & (db < 2.6), GOLD, outline=0.4, rim=0.6, pillow=1.0, spec=0.95, seed=134)
+    C.layer(bowl & (db >= 3.2) & (db < 4.0), GOLD, outline=0.2, rim=0.3, pillow=0.4, spec=0.9, seed=135)
+    cast_shadow(C, bowl & (db < 2.6), reach=3.0, amt=0.5)
+    # crest: faceted gold with a moonsilver edge
+    crest = P["crest"]
+    dc = C.dist(crest)
+    C.layer(crest, GOLD, outline=0.5, rim=0.8, pillow=1.6, spec=0.95, seed=136)
+    C.layer(crest & (dc < 1.6) & (z > 68.0), MOON, outline=0.3, rim=0.4, pillow=0.6, spec=0.9, seed=137)
+    # cheek blades: gold, an emerald leaf inlaid down the middle with a gold vein
+    blade = P["blade"]
+    dbl = C.dist(blade)
+    C.layer(blade, GOLD, outline=0.5, rim=0.8, pillow=1.6, spec=0.95, seed=138)
+    inlay = blade & (dbl > 0.55 * (dbl[blade].max() if blade.any() else 1.0))
+    C.layer(inlay, EMERALD, outline=0.6, rim=0.8, pillow=1.4, spec=0.95, seed=139)
+    di = C.dist(inlay)
+    ridge = inlay & (di > np.percentile(di[inlay], 82) if inlay.any() else inlay)
+    C.col = np.where(ridge[..., None], lerp(C.col, ramp(np.full(z.shape, 0.8), GOLD), 0.85), C.col)
+    cast_shadow(C, blade & ~inlay, reach=2.0, amt=0.4)
+    # brow rim: gold; neck flare: small leaf scales with a gold edge
+    C.layer(P["rim"], GOLD, outline=0.4, rim=0.6, pillow=1.0, spec=0.95, seed=140)
+    flare = P["flare"]
+    scales(C, flare, th * 3.2, -z, 0.62, 0.50, variant="B", small=True, seed=141)
+    df = C.dist(flare)
+    C.layer(flare & (df < 2.4), GOLD, outline=0.3, rim=0.5, pillow=0.8, spec=0.95, seed=142)
+    # moonstone on the brow, under the crest
+    if bowl.any():
+        fz = np.percentile(z[bowl & (th < 0.25)], 8) if (bowl & (th < 0.25)).any() else 66.5
+        stone = bowl & (np.hypot(x * 1.0, z - (fz + 1.2)) < 0.75) & (th < 0.6)
+        C.layer(stone, MOON, tone=0.55 + 0.4 * lit(n), outline=0.4, rim=0.5, pillow=0.8, spec=1.0, rim_amt=0.4)
+        C.col = np.where(stone[..., None], lerp(C.col, np.array([214, 240, 236.0]), 0.35), C.col)
+        C.layer(bowl & (np.abs(np.hypot(x, z - (fz + 1.2)) - 0.88) < 0.14) & (th < 0.6), GOLD, outline=0.2, rim=0.3, pillow=0.4, spec=0.95)
+    return C
+
+
 def antlers(name, head_top, scale):
     """Preview-only antler geometry (tubes) on the helm, to show the antlered silhouette. Returns a mesh name."""
     vs, fs, uvs, off = [], [], [], 0
@@ -641,7 +792,9 @@ def outfit(race, sex, tex, cloak=None, helm=False):
         parts.append((HEADS[(race, sex)], SKIN))
     if cloak:
         parts.append((f"Cloak{cloak:02d}_{CLOAK[race]}_{sex}@1", tex["cloak"]))
-    if helm:
+    if helm and POLISH["v3"]:
+        parts += [(HEADS[(race, sex)], SKIN), (crown(race, sex), tex["helm"])]
+    elif helm:
         name = helm_fit.helm(race, sex, "hibhelm03")
         v = R.mesh(name)[0]
         top = (0.0, float(np.median(v[:, 1])), float(np.percentile(v[:, 2], 92)))
@@ -655,21 +808,36 @@ JOBS = {"body_m": ("body_m", paint_body, (512, 1024)), "body_f": ("body_f", lamb
         "gloves": ("g6", paint_gloves, (512, 256)), "boots": ("bt6", paint_boots, (512, 256)), "cloak": ("cloak", paint_cloak, (512, 1024))}
 
 
-def main(variant):
+def main(variant, only=()):
+    """only: paint just these JOBS keys (and the helm), reuse the rest from out_<variant>/; ("render",) paints nothing."""
+    only_render = "render" in only
     global VARIANT
-    POLISH["on"] = variant.endswith("2")
+    POLISH["on"] = variant[-1] in "23"
+    POLISH["v3"] = variant.endswith("3")
     VARIANT = variant[0]
     out = WORK / f"out_{variant}"; out.mkdir(exist_ok=True)
     tex = {}
     for key, (bake_key, fn, size) in JOBS.items():
+        if only_render or (only and key not in only):
+            if (out / f"{key}.png").exists():
+                tex[key] = Image.open(out / f"{key}.png"); continue
         tex[key] = fn(calib.bake(bake_key)).finish(size); tex[key].save(out / f"{key}.png"); print(variant, "painted", key)
-    htm, _ = helm_tm()
-    tex["helm"] = paint_helm(htm).finish((256, 256)); tex["helm"].save(out / "helm.png")
+    if only_render:
+        tex = {k: Image.open(out / f"{k}.png") for k in JOBS}
+        tex["helm"] = Image.open(out / ("helm_lugh.png" if POLISH["v3"] else "helm.png"))
+    elif POLISH["v3"]:
+        htm, _ = helm_tm_lugh()
+        tex["helm"] = paint_helm_lugh(htm).finish((256, 256)); tex["helm"].save(out / "helm_lugh.png")   # pskins 5828
+    else:
+        htm, _ = helm_tm()
+        tex["helm"] = paint_helm(htm).finish((256, 256)); tex["helm"].save(out / "helm.png")
     V = R.VIEWS
     name = {"A": "A: emerald court (green enamel scales, moonsilver rims)", "B": "B: moonsilver (silver scales, green enamel leaf ribs)",
-            "A2": "A polished like the new epics (layered bands, cast shadows, chrome, faceted gold)"}[variant]
+            "A2": "A polished like the new epics (layered bands, cast shadows, chrome, faceted gold)",
+            "A3": "A pass 3 (leaf scales, clean plate, tabard roundel)"}[variant]
+    helm_note = "Crown of Lugh (stock Lug helmet mesh)" if POLISH["v3"] else "antlered helm (antlers are a preview mock-up)"
     r1 = R.render(outfit("BC", "m", tex, helm=True), views=[V[0], V[1], V[3]], width=380, height=600,
-                  label=f"Regalia of Tara, concept {name}  |  Celt male, antlered helm (antlers are a preview mock-up)")
+                  label=f"Regalia of Tara, concept {name}  |  Celt male, {helm_note}")
     r2 = P7.row([R.render(outfit("BC", "m", tex, cloak=1), views=[V[1], V[3]], label="with the Mantle of the Moon and Stag"),
                  R.render(outfit("AES", "f", tex), views=[V[0], V[1]], label="Elf female")])
     r3 = P7.row([R.render(outfit("Fir", "m", tex), views=[V[1]], label="Firbolg male"),
@@ -681,9 +849,20 @@ def main(variant):
              R.render([("Gloves06_BC_m", tex["gloves"]), ("Boots06_BC_m", tex["boots"]), ("Arms01_BC_m", tex["arms"]),
                        ("Legs01_BC_m", tex["legs"])], views=[V[0], V[1]], width=360, height=520, label="arms, legs, gloves, boots")]
     R.stack(close).save(WORK / f"tara_{variant}_close.png")
+    if POLISH["v3"]:
+        heads = [R.render([(HEADS[(r, sx)], SKIN), (crown(r, sx), tex["helm"])], views=[V[0], V[1], V[2], V[3]],
+                          width=230, height=250, label=f"Crown of Lugh, {lab}")
+                 for r, sx, lab in (("BC", "m", "Celt male"), ("AES", "f", "Elf female"))]
+        heads += [P7.row([R.render([(HEADS[(r, sx)], SKIN), (crown(r, sx), tex["helm"])], views=[V[1]], width=230,
+                                   height=250, label=lab) for r, sx, lab in (("Fir", "m", "Firbolg m"), ("Lur", "m", "Lurikeen m"),
+                                                                              ("Fir", "f", "Firbolg f"), ("Lur", "f", "Lurikeen f"))])]
+        R.stack(heads).save(WORK / f"tara_{variant}_helm.png")
     print("done", variant)
 
 
 if __name__ == "__main__":
-    for v in (sys.argv[1:] or ["A"]):
-        main(v)
+    args = sys.argv[1:] or ["A"]
+    only = tuple(a.split("=", 1)[1] for a in args if a.startswith("only="))
+    only = tuple(k for o in only for k in o.split(","))
+    for v in (a for a in args if not a.startswith("only=")):
+        main(v, only)

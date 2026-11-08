@@ -217,10 +217,12 @@ class ClientPatchTests(unittest.TestCase):
                           'zones/zone207/dat207.mpk', 'zones/zone207/csv207.mpk',
                           'items/offline_fishrod01.nif',
                           'items/pskins/pskin061.mpk', 'figures/Mskins/mskin070.mpk',
-                          'items/pskins/pskin062.mpk', 'figures/Mskins/mskin071.mpk',
-                          'items/pskins/pskin063.mpk', 'figures/Mskins/mskin072.mpk', 'gamedata.mpk'])
+                          'items/pskins/pskin062.mpk', 'figures/Mskins/mskin071.mpk'] +
+                         [f'items/Tara_helm01_{sex}_{race}.nif' for race in ('cel', 'elf', 'lur', 'fir', 'syl', 'sha')
+                          for sex in 'MF'] +
+                         ['items/pskins/pskin063.mpk', 'figures/Mskins/mskin072.mpk', 'gamedata.mpk'])
         # The fishing rod: only our vertex positions ship.
-        rod, game = patch['Files'][-8], patch['Files'][-1]
+        rod, game = next(f for f in patch['Files'] if f['Path'] == 'items/offline_fishrod01.nif'), patch['Files'][-1]
         self.assertLess(sum(len(base64.b64decode(e['Insert'])) for e in rod['Edits']), 1000)
         # The rod's three catalog rows and the Storm, Tara and Camelot Regalia rows ship, and every other catalog is untouched.
         self.assertEqual([part['Member'] for part in game['Members']], list(m.GAMEDATA_CATALOGS))
@@ -228,9 +230,9 @@ class ClientPatchTests(unittest.TestCase):
                                   for line in base64.b64decode(e['Insert']).decode('latin1').strip('\r\n').split('\r\n')]
                  for part in game['Members']}
         self.assertEqual(added, {'objects.csv': ['4927', '4928', '4929', '4930', '4931', '4932', '4933', '4937', '4942'] +
-                                                [str(n) for n in range(4950, 4964)],
-                                 'items.csv': ['3085'],
-                                 'pskins.csv': [str(n) for n in range(5790, 5798)] + ['5800'] + [str(n) for n in range(5810, 5828)],
+                                                [str(n) for n in range(4950, 4965)],
+                                 'items.csv': [str(n) for n in range(44, 56)] + ['3085'],
+                                 'pskins.csv': [str(n) for n in range(5790, 5798)] + ['5800'] + [str(n) for n in range(5810, 5829)],
                                  'mskins.csv': [str(n) for n in range(2740, 2746)] + [str(n) for n in range(2750, 2762)]})
         stock_game = (PRISTINE / 'gamedata.mpk').read_bytes()
         patched_game = m.apply(stock_game, game)
@@ -241,7 +243,13 @@ class ClientPatchTests(unittest.TestCase):
                          [e.data for e in after if e.name.lower() not in m.GAMEDATA_CATALOGS])
         # The Regalia skin archives hold only our textures, the same ones the test client's installers put in (its Storm
         # archive has more concept textures, and its classic cloak came from an older Pillow: the same image, other DXT3 bits).
-        for skins in patch['Files'][-7:-1]:
+        # The Crown of Lugh: the stock Lug helmets with only their 52 transform bytes changed (pipeline/fit_lugh.py).
+        lugh = [f for f in patch['Files'] if f['Path'].startswith('items/Tara_helm01_')]
+        self.assertEqual(len(lugh), 12)
+        for mesh in lugh:
+            self.assertTrue(mesh['From'].startswith('items/Lum_helm01_'))
+            self.assertLessEqual(sum(len(base64.b64decode(e['Insert'])) for e in mesh['Edits']), 52)
+        for skins in [f for f in patch['Files'] if f.get('From') == m.REGALIA_FROM]:
             ours = m.apply((PRISTINE / skins['From']).read_bytes(), skins)
             archive.verify_memory_image(ours)
             self.assertTrue(all(e.name.lower().startswith(('sf_rw_', 'sf_wolfcloak', 'sf_wingedhelm', 'tara_', 'camelot_'))
@@ -279,6 +287,7 @@ class ClientPatchTests(unittest.TestCase):
             gate_archives = {template.format(zone) for zone in m.gate_zones() for template in m.GATE_ARCHIVES}
             # The Regalia archives were stamped when they were installed there (their contents are compared above).
             regalia = {f['Path'] for f in patch['Files'] if f.get('From') == m.REGALIA_FROM}
+            regalia |= {f['Path'] for f in lugh if not (MODERN_TEST / f['Path']).exists()}  # until the Tara kit is reinstalled
             for f in [f for f in patch['Files'] if f['Path'] not in ('zones/zones.mpk', m.GAMEDATA) and f['Path'] not in gate_archives
                       and f['Path'] not in regalia]:
                 self.assertEqual(hashlib.sha256((MODERN_TEST / f['Path']).read_bytes()).hexdigest(), f['OutputSha256'], f['Path'])
