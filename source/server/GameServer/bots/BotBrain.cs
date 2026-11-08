@@ -3431,7 +3431,7 @@ namespace DOL.AI.Brain
                 {
                     _brain.PerformGroupSupport();
                 }
-                else if (_brain.IsHealer)
+                else if (_brain.HealsBeforeFighting())
                 {
                     if (!_brain.CheckHeals())
                         _brain.AttackMostWanted();
@@ -4221,6 +4221,27 @@ namespace DOL.AI.Brain
         }
 
         private bool IsTankClass => BotPartyRoles.IsTank(BotBody);
+
+        /// <summary>
+        /// A healer heals before it attacks; a Paladin in a player's party holds the monsters first and heals only when a
+        /// member drops below half (DR-122: three giants beat the player for 65 s while its Paladin cast heal after heal).
+        /// </summary>
+        internal bool HealsBeforeFighting()
+        {
+            if (!IsHealer)
+                return false;
+            GameBot bot = BotBody;
+            Group group = Body?.Group;
+            if (bot?.CharacterClass == null || group == null)
+                return true;
+            int lowest = 100;
+            foreach (GameLiving member in group.GetMembersInTheGroup())
+            {
+                if (member != null && member.IsAlive && (member == Body || InSupportReach(member)))
+                    lowest = Math.Min(lowest, member.HealthPercent);
+            }
+            return BotPartyRoles.HealsBeforeFighting((eCharacterClass)bot.CharacterClass.ID, bot.IsPlayerLedGroup, group.MemberCount, lowest);
+        }
 
         public bool TryAssistAutonomousPveCombat()
         {

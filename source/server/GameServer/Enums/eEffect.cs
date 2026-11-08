@@ -252,6 +252,7 @@ namespace DOL.GS
         ArtifactStunFeedback,
         ArtifactCheatDeath,
         ArtifactMorph,
-        CampRest
+        CampRest,
+        CostFreeChance
     }
 }

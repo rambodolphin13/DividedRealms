@@ -163,6 +163,8 @@ namespace DOL.GS
                     return eEffect.PhysicalAbsorptionBuff;
                 case eSpellType.SiegeProtection:
                     return eEffect.SiegeProtection;
+                case eSpellType.CostFreeChance:
+                    return eEffect.CostFreeChance;
                 case eSpellType.CrowdControlGuard:
                     return eEffect.CrowdControlGuard;
                 case eSpellType.DamageReflection:

@@ -540,5 +540,6 @@ namespace DOL.GS
         ArtifactShatter,
         ArtifactProcPet,
         ArtifactSummonItems,
+        CostFreeChance,
     }
 }

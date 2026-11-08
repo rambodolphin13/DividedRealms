@@ -1777,7 +1777,7 @@ public static class AutonomousPetSupport
                 entry.Line,
                 PetLevel: BonedancerSubPetLevel(owner.Level, entry.Spell),
                 Preferred: IsPreferredBonedancerSubPet(owner is GameBot bot ? bot.BotSpec?.SpecType ?? eSpecType.None : eSpecType.None, entry.Spell)))
-            .Where(entry => entry.PetLevel > 0 && entry.PetLevel <= 75)
+            .Where(entry => entry.PetLevel > 0 && entry.PetLevel <= BonedancerMinionLevelBudget(owner.Level))
             .ToArray();
         if (candidates.Length == 0)
             return default;
@@ -1796,7 +1796,7 @@ public static class AutonomousPetSupport
         }
 
         int slotsToFill = Math.Min(desiredCount, commander.SubPetCapacity) - activeCount;
-        int remainingBudget = 75 - activeLevels;
+        int remainingBudget = BonedancerMinionLevelBudget(owner.Level) - activeLevels;
         if (slotsToFill <= 0 || remainingBudget <= 0)
             return default;
 
@@ -1812,20 +1812,20 @@ public static class AutonomousPetSupport
         void Search(int depth, int total, int preferred, int rankScore,
             (Spell Spell, SpellLine Line) first)
         {
-            if (depth == slotsToFill)
+            // Every partial composition counts: with full-level subpets (owner 2026-11-01: Damage -100) a third
+            // slot can never fit the budget, and demanding exactly slotsToFill members then chose nothing at all
+            // (DR-097: level 50 bots summoned no subpets).
+            if (depth > 0 && total <= remainingBudget &&
+                (total > bestTotal || total == bestTotal && preferred > bestPreferred ||
+                 total == bestTotal && preferred == bestPreferred && rankScore > bestRank))
             {
-                if (total > remainingBudget)
-                    return;
-                if (total > bestTotal || total == bestTotal && preferred > bestPreferred ||
-                    total == bestTotal && preferred == bestPreferred && rankScore > bestRank)
-                {
-                    best = first;
-                    bestTotal = total;
-                    bestPreferred = preferred;
-                    bestRank = rankScore;
-                }
-                return;
+                best = first;
+                bestTotal = total;
+                bestPreferred = preferred;
+                bestRank = rankScore;
             }
+            if (depth == slotsToFill)
+                return;
 
             foreach (var candidate in candidates)
             {
@@ -1841,6 +1841,13 @@ public static class AutonomousPetSupport
         Search(0, 0, 0, 0, default);
         return best;
     }
+
+    /// <summary>
+    /// The total of subpet levels a commander controls. Upstream's 75 fit two subpets at 75% of a level 50 caster; the
+    /// owner's 2026-11-01 decision made subpets 100% (Value 50, Damage -100), so 75 left a level 50 Bonedancer one subpet
+    /// where live runs a commander and two (DR-097). Two full-level subpets always fit; 75 stays the floor below level 38.
+    /// </summary>
+    public static int BonedancerMinionLevelBudget(int ownerLevel) => Math.Max(75, 2 * Math.Max(0, ownerLevel));
 
     public static int BonedancerSubPetLevel(int ownerLevel, Spell spell)
     {
@@ -1953,8 +1960,13 @@ public static class AutonomousPetSupport
         if (strongest.Spell == null)
             return false;
 
-        return CommanderNeedsUpgrade(commander.CommanderType, (int)strongest.Spell.Value, strongest.Spell.Level);
+        // The summoned template is LifeDrainReturn (SummonSpellHandler); Value is the level cap, which only matched
+        // template 52 by chance for the level 52 Dread Lord.
+        return CommanderNeedsUpgrade(commander.CommanderType, strongest.Spell.LifeDrainReturn, strongest.Spell.Level);
     }
+
+    /// <summary>The NpcTemplate Summon Dread Lord (77280) uses: a copy of the dread commander named "dread lord" (world fix open-issues-1108).</summary>
+    public const int DreadLordTemplateId = 89;
 
     /// <summary>
     /// Night 2026-11-04: seven level 50 Bonedancers stood frozen in Jordheim all night (209 of 759 watchdog rescues). The
@@ -1972,6 +1984,10 @@ public static class AutonomousPetSupport
         50 => 15,
         51 => 30,
         52 => 45,
+        // The dread commanders' own templates (DR-097): guardian, lich and archer rank with the dread commander; the
+        // level 52 Dread Lord outranks it, so a Bonedancer 50 trades its commander up once and then keeps the lord.
+        211 or 212 or 213 => 45,
+        DreadLordTemplateId => 50,
         _ => spellLevel switch { >= 45 => 45, >= 30 => 30, >= 15 => 15, _ => 1 },
     };
 
@@ -1985,7 +2001,7 @@ public static class AutonomousPetSupport
         CommanderPet.eCommanderType.DreadArcher => 45,
         CommanderPet.eCommanderType.DreadGuardian => 45,
         CommanderPet.eCommanderType.DreadLich => 45,
-        CommanderPet.eCommanderType.DreadLord => 45,
+        CommanderPet.eCommanderType.DreadLord => 50,
         _ => 0
     };
 
