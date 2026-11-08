@@ -68,3 +68,17 @@ Per-item before/after: `items.csv`. Built spells: `spells.csv`. Counts: `summary
 
 Server stopped, owner's OK: `python cli.py --profile modern plan <edits> --out <patch>` again if the world
 changed, then `apply <patch>`; record the undo id. Reaches players only through the next release's world step.
+
+## Sandbox test, 2026-11-08 17:30-17:40
+
+Branch commit d7822adee (6,187 server tests pass) deployed to sandbox `toa-drops` (copy of the test world), all
+three patches applied there (sandbox undo ids 20261108-173114-0fef4fb7, 173119-8de12bf4, 173124-8a6ae2da), booted
+with bots for about 7 minutes: up in 12 s, 0 exceptions, no spell, item or loot errors. AI tester (Albion
+Armsman, level 50):
+- `/mob viewloot sim 400`: Azar drops its 3 Albion shields (about 12-14 per 100 kills each); Kraken its 6
+  jewels (10-15 each); classic Agidad its restored table (Lava Forged Sword 20, Blackened Granite Shield 7,
+  Greater Staff of Dominance 7 ...). Family junk, coin, glass and random items still drop alongside.
+- Xanxicar Remnant Cloak use: Heal All Over Time icon, 30 s, a pulse every 5 s. Kraken Beak Necklace use: Str/Con
+  buff 75 for 10 min. Equip messages show the official bonus lines.
+- Not checked: Medusa and Cetus (not seen after teleporting into their dungeons, a dungeon loading matter), a
+  real kill, weapon or armor procs firing, Midgard and Hibernia drops, bots looting the new items.
