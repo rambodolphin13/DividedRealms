@@ -89,6 +89,12 @@ namespace OfflineDaoc.TestClient
                 ("count", "integer", "Default 1")));
             All.Add(Make("interact", "Right-click a living or object.", Interact, new[] { "who" }, ("who", "string", ""), ("wait_ms", "integer", "Default 800")));
             All.Add(Make("pick_up", "Pick up an object on the ground.", PickUp, new[] { "who" }, ("who", "string", "")));
+            All.Add(Make("house_enter", "Enter (or leave) a house through its door, as the client does: stand within 1000 of it.", HouseEnter,
+                new[] { "house" }, ("house", "integer", "House number"), ("enter", "boolean", "Default true; false leaves")));
+            All.Add(Make("house_place", "Drop a backpack item on a house hookpoint or floor, as dragging it in decorate mode does.", HousePlace,
+                new[] { "slot", "house", "position" }, ("slot", "integer", "Backpack slot of the item"), ("house", "integer", "House number"),
+                ("position", "integer", "Hookpoint id (or garden tile)"), ("method", "integer", "Client placement mode, default 5 (hookpoint)"),
+                ("x", "integer", "Indoor x, default 0"), ("y", "integer", "Indoor y, default 0")));
             All.Add(Make("buy", "Buy from the open merchant window.", Buy, new[] { "item_slot" }, ("item_slot", "integer", ""),
                 ("count", "integer", "Default 1"), ("menu", "integer", "Default 0")));
             All.Add(Make("answer_dialog", "Answer the open yes / no dialog.", AnswerDialog, none, ("response", "integer", "1 yes (default), 0 no")));
@@ -622,6 +628,23 @@ namespace OfflineDaoc.TestClient
             long since = s.LastSeq;
             s.PickUp(e.Oid);
             return Collect(s, since, 800);
+        }
+
+        object HouseEnter(JsonObject a)
+        {
+            TestSession s = Session(a);
+            long since = s.LastSeq;
+            s.HouseEnter(Whole(a, "house", 0), a["enter"] == null || bool.Parse(a["enter"].ToString()));
+            return Collect(s, since, 1200);
+        }
+
+        object HousePlace(JsonObject a)
+        {
+            TestSession s = Session(a);
+            long since = s.LastSeq;
+            s.HousePlace(Whole(a, "slot", 0), Whole(a, "house", 0), Whole(a, "position", 0), Whole(a, "method", 5),
+                Whole(a, "x", 0), Whole(a, "y", 0));
+            return Collect(s, since, 1200);
         }
 
         object Buy(JsonObject a)
