@@ -97,6 +97,11 @@ public static class BotGroupInvite
                 ChatUtil.SendSystemMessage(player, $"{bot.Name} is already following another player-led group.");
                 return false;
             }
+            if (AutonomousBotGroupCoordinator.LeavingEndsLockedParty(bot))
+            {
+                ChatUtil.SendSystemMessage(player, $"{bot.Name} is in the middle of a camp with a group that needs them. Ask again after this camp.");
+                return false;
+            }
 
             bot.Group.RemoveMember(bot);
             if (!invitedByBot)

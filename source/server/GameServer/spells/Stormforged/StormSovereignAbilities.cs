@@ -59,10 +59,41 @@ namespace DOL.GS.Spells
             double crown = StormforgedHeroicRules.HasAvatar(owner) ? CrownStealMultiplier : 1.0;
             int health = (int)((melee ? MeleeHealthSteal : SpellHealthSteal) * crown);
             int resource = (int)((melee ? MeleeResourceSteal : SpellResourceSteal) * crown);
+            int before = owner.Health;
             owner.ChangeHealth(owner, eHealthChangeType.Spell, StormforgedRules.RestorePerHit(dealt, health));
             owner.ChangeMana(owner, eManaChangeType.Spell, StormforgedRules.RestorePerHit(dealt, resource));
             owner.ChangeEndurance(owner, eEnduranceChangeType.Spell, StormforgedRules.RestorePerHit(dealt, resource));
+            if (owner is GamePlayer player)
+                NoteSiphon(player, owner.Health - before, GameLoop.GameLoopTime);
         }
+
+        // The siphon was silent, so a Pendragon saw ~half of a Judgment's damage come back with no line (playtest
+        // 2026-11-07). One line per second, the health of every hit in it summed.
+        private sealed class SiphonNote { public long LastMessage = long.MinValue / 2; public int Pending; }
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<GamePlayer, SiphonNote> _siphonNotes = new();
+        public const int SiphonMessageIntervalMs = 1000;
+
+        /// <summary>Adds restored health to the player's siphon line; returns the text sent now, or null while it waits.</summary>
+        public static string NoteSiphon(GamePlayer player, int restored, long now)
+        {
+            if (restored <= 0)
+                return null;
+            var note = _siphonNotes.GetOrCreateValue(player);
+            lock (note)
+            {
+                note.Pending += restored;
+                if (now - note.LastMessage < SiphonMessageIntervalMs)
+                    return null;
+                string text = SiphonText(player, note.Pending);
+                note.Pending = 0;
+                note.LastMessage = now;
+                player.Out?.SendMessage(text, eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+                return text;
+            }
+        }
+
+        public static string SiphonText(GameLiving owner, int amount) =>
+            $"Your {(PendragonRules.IsPendragon(owner) ? "holy fire" : PendragonRules.IsTuatha(owner) ? "spirit" : "lightning")} restores {amount} health.";
 
         public static IEnumerable<(int Id, MLAbility Ability)> Build()
         {
@@ -281,6 +312,11 @@ namespace DOL.GS.Spells
         }
         public static bool IsSovereignStyleEffect(int spellId) =>
             StormRemakeStyles.OwnsEffect(spellId) || PendragonRemakeStyles.OwnsEffect(spellId) || TuathaRemakeStyles.OwnsEffect(spellId);
+        /// <summary>
+        /// An internal spell a Sovereign style effect casts: its strikes (Strike, id x 1000 + 990) and its stock sub-spells
+        /// (Cast, id x 1000 + index). These are unresistable, like the style itself.
+        /// </summary>
+        public static bool IsSovereignStyleSubSpell(int spellId) => spellId >= 1000 && IsSovereignStyleEffect(spellId / 1000);
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams init) =>
             ECSGameEffectFactory.Create(init,static(in i)=>new StormSovereignEffect(i));
     }

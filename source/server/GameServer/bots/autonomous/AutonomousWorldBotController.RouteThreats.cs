@@ -174,6 +174,13 @@ namespace DOL.GS
                 if (Vector2.Distance(new(position.X, position.Y), new(destination.X, destination.Y)) <=
                     AutonomousRouteThreatPolicy.CampSkipRadius)
                     continue;
+                // The walk's destination is often an approach point or a sidestep, not the camp: the camp's own monsters
+                // and the camp's own species at yellow or lower are the work, not a reason to give the camp up
+                // (playtest 2026-11-07: 578 give-ups were to the bot's own target).
+                if (_camp != null && _camp.RegionId == bot.CurrentRegionID &&
+                    (Vector2.Distance(new(position.X, position.Y), new(_camp.X, _camp.Y)) <= AutonomousRouteThreatPolicy.CampSkipRadius ||
+                     AutonomousRouteThreatPolicy.IsCampWork(npc.Name, ConLevels.GetConColor(bot.GetConLevel(npc)), _camp.MonsterName)))
+                    continue;
                 // The monster this detour is already going around.
                 if (detouring && _routeThreatDetours.ContainsKey(npc))
                     continue;

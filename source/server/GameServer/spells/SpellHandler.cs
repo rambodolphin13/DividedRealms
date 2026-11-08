@@ -2629,7 +2629,9 @@ namespace DOL.GS.Spells
                 return true;
             }
 
-			double spellResistChance = CalculateSpellResistChance(target);
+			// Sovereign style effects (Storm, Pendragon, Tuatha) land like the style that carries them: no resist roll
+			// (owner, playtest 2026-11-07). Immunities and wards above still apply.
+			double spellResistChance = StormSovereignHandler.IsSovereignStyleSubSpell(Spell.ID) ? 0 : CalculateSpellResistChance(target);
 
 			if (spellResistChance > 0)
 			{
