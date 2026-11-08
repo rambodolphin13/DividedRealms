@@ -1286,6 +1286,10 @@ namespace DOL.GS.Spells
 			if (syphon > 0 && Util.Chance(syphon))
 				return 0;
 
+			// 1.129 Champion Valor auras: a 2-10% chance for a spell to cost no power (DR-101).
+			if (CostFreeChance.Rolls(Caster))
+				return 0;
+
 			if (Caster is GameBot botCaster)
 				return BotSpellPower.Cost(botCaster, Spell, SpellLine);
 
