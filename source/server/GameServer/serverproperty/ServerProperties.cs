@@ -2598,6 +2598,13 @@ namespace DOL.GS.ServerProperties
 		public static bool BOT_WATCH;
 
 		/// <summary>
+		/// Bot Watch developer endpoints (/api/admin/...): live bot detail, stalled bots, players, summary (gameutils/BotWatchAdmin.cs).
+		/// Read-only, on the same 127.0.0.1-only listener. Off by default, so release worlds never have it.
+		/// </summary>
+		[ServerProperty("bots", "bot_watch_admin", "Add read-only developer endpoints (/api/admin/...) to Bot Watch: live bot detail, stalled bots, players. Needs bot_watch. This PC only.", false)]
+		public static bool BOT_WATCH_ADMIN;
+
+		/// <summary>
 		/// Floating combat numbers: hits, heals and avoided attacks streamed to the launcher overlay (gameutils/CombatNumbers.cs).
 		/// </summary>
 		[ServerProperty("server", "combat_numbers", "Stream floating combat numbers (your, your pets' and your group's hits and heals, and what is done to you) to the launcher overlay at http://127.0.0.1:<login port + 30>/combat. It listens on this PC only.", true)]

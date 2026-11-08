@@ -56,6 +56,7 @@ namespace DOL.GS
                 _app.MapGet("/", Page);
                 _app.MapGet("/api/regions", () => Results.Json(Regions(), Json));
                 _app.MapGet("/api/region/{id}", (ushort id) => Region(id) is { } view ? Results.Json(view, Json) : Results.NotFound());
+                BotWatchAdmin.Map(_app);
                 _app.StartAsync().GetAwaiter().GetResult();
 
                 if (log.IsInfoEnabled)
