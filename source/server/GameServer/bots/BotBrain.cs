@@ -6283,6 +6283,12 @@ namespace DOL.AI.Brain
                 enemyBlocked ? AutonomousSiegeResurrection.Check.EnemyByCorpse : AutonomousSiegeResurrection.Check.NoCorpse);
             if (corpse == null)
                 return false;
+            // A higher-level corpse costs more than CanRaise priced; the native check would refuse it silently.
+            if (BotBody.Mana < BotSpellPower.ResurrectCost(BotBody, corpse))
+            {
+                AutonomousSiegeResurrection.Note(AutonomousSiegeResurrection.Check.CannotCast);
+                return false;
+            }
             int range = BotBody.castingComponent.CalculateSpellRange(resurrection);
             if (!BotBody.IsWithinRadius(corpse, range) || !BotGroupSupport.HasCorpseLineOfSight(BotBody, corpse))
             {

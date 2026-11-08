@@ -1235,13 +1235,15 @@ namespace DOL.GS
                 }
                 // Resolving the approach can drop the service (a region change or recovery clears it); the
                 // next turn chooses again. (NullReferenceException here twice on 2026-11-07.)
+                // IssuePath can clear it as well (overnight run 2026-11-08 05:54), so keep the name in a local.
                 if (_serviceNpc == null)
                     return true;
-                if (TryBeginFasterStableRoute(bot, point, _serviceNpc.Name))
+                string serviceName = _serviceNpc.Name;
+                if (TryBeginFasterStableRoute(bot, point, serviceName))
                     return true;
                 IssuePath(bot, point, preciseArrival: true);
-                SetStatus(bot, $"Traveling to {_serviceNpc.Name}", ServiceGoal(needed.Value),
-                    "Routing to a real world service before resuming progression", _serviceNpc.Name, destination.ZoneName);
+                SetStatus(bot, $"Traveling to {serviceName}", ServiceGoal(needed.Value),
+                    "Routing to a real world service before resuming progression", serviceName, destination.ZoneName);
                 return true;
             }
 
