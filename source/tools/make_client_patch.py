@@ -39,8 +39,8 @@ The Sovereign Regalia art (tools/sovereign-art: Storm Regalia objects 4929-4933,
 Camelot 4950-4963) is our painted skins on stock meshes: each kit's two skin archives (pskin061/mskin070, pskin062/mskin071,
 pskin063/mskin072) are made From a stock skin archive and ship whole, since every texture in them is ours, and its
 pskins.csv, mskins.csv and objects.csv rows join the rod's in the one gamedata.mpk entry. The archives use a fixed member
-time, so the same textures give the same bytes. Building them needs Pillow. The Storm winged helm's skin is
-storm/paint_storm_helm.py's (wings painted from the mesh; the concept skin's were the stock helm's feathers recoloured).
+time, so the same textures give the same bytes. Building them needs Pillow. One texture is not only ours, by the owner's
+decision (2026-11-08): the Storm winged helm's wings are the stock ToA winged helm skin's feathers recoloured.
 
 Marfach Caverns (region 276) is the one exception to shipping nothing retail, by the owner's decision (2026-10-30): 1.130
 has no copy of its map, so dat276.mpk and its sounds.dat (about 20 KB, read from the classic client when the patch is

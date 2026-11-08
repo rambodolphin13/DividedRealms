@@ -14,9 +14,10 @@ with our skins. Private data under new IDs:
   mskins.csv 2740-2745, pskins.csv 5790-5797 and 5800, objects.csv 4929-4933, 4937 and 4942: NEW rows (no stock row changes)
 objects: 4929 hauberk, 4930 legs, 4931 sleeves, 4932 gauntlets, 4933 boots (cloned from 3370-3374, the server's hauberk uses
 Extension 5), 4937 cloak (326, Cloak# 1; named for the attachment test it began as, its attachment cleared), 4942 winged
-helm (2224 ToA Winged Helm (Mid), its per-race toaHelm_Winged meshes). The helm's skin is paint_storm_helm.py's: the concept
-skin's shell with wings painted from the mesh (the concept wings were the stock skin's feathers recoloured), so it differs
-from the test client's sf_wingedhelm.dds. Left out: the Storm Crown 4934, wolf cloaks 4935/4936 and wolf helm 4941 (no item
+helm (2224 ToA Winged Helm (Mid), its per-race toaHelm_Winged meshes). The helm's skin is the concept kit's
+(paint_wingedhelm_v24.py): our shell, brow band, gem and crest, and wings that are the stock helm skin's feather drawing
+recoloured. Shipping it is the owner's decision (2026-11-08), the second exception to shipping no retail art after Marfach.
+Left out: the Storm Crown 4934, wolf cloaks 4935/4936 and wolf helm 4941 (no item
 uses them; custom meshes and fig3map edits). The server items are storm_regalia_* (source/tools/sovereign/storm_regalia_edits.py)."""
 from __future__ import annotations
 

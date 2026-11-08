@@ -240,8 +240,7 @@ class ClientPatchTests(unittest.TestCase):
         self.assertEqual([e.data for e in before if e.name.lower() not in m.GAMEDATA_CATALOGS],
                          [e.data for e in after if e.name.lower() not in m.GAMEDATA_CATALOGS])
         # The Regalia skin archives hold only our textures, the same ones the test client's installers put in (its Storm
-        # archive has more concept textures, its classic cloak came from an older Pillow: the same image, other DXT3 bits,
-        # and its winged helm still has the concept wings, made from the stock skin's feathers).
+        # archive has more concept textures, and its classic cloak came from an older Pillow: the same image, other DXT3 bits).
         for skins in patch['Files'][-7:-1]:
             ours = m.apply((PRISTINE / skins['From']).read_bytes(), skins)
             archive.verify_memory_image(ours)
@@ -250,7 +249,7 @@ class ClientPatchTests(unittest.TestCase):
             if MODERN_TEST.is_dir():
                 installed = {e.name: e.data for e in archive.read((MODERN_TEST / skins['Path']).read_bytes())[1]}
                 for e in archive.read(ours)[1]:
-                    if e.name not in ('sf_wolfcloak256.dds', 'sf_wingedhelm.dds'):
+                    if e.name != 'sf_wolfcloak256.dds':
                         self.assertEqual(installed.get(e.name), e.data, e.name)
         game = patch['Files'][0]
         self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', 'f6660890'))  # 2c7e306e0 (Vampiir hover); the test client and DR-dev-0.1d match
