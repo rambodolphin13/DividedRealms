@@ -43,6 +43,9 @@ namespace DOL.GS
             app.MapGet("/api/admin/stalled", (int? minutes, int? limit) =>
                 Results.Json(Stalled(TimeSpan.FromMinutes(minutes ?? 15), limit ?? 100)));
             app.MapGet("/api/admin/players", () => Results.Json(Players()));
+            app.MapGet("/api/admin/bot/{key}/timeline", (string key) =>
+                FindBotId(key) is { } id ? Results.Json(new { botId = id, events = BotTimeline.For(id) }) : Results.NotFound());
+            BotTimeline.Start();
         }
 
         // ------------------------------------------------------------ pure helpers (unit tested)
@@ -155,6 +158,14 @@ namespace DOL.GS
             return new BotRow(rec?.BotId ?? bot.ObjectID, bot.Name, RealmName(bot.Realm), bot.CharacterClass?.Name ?? "",
                 bot.Level, bot.CurrentRegionID, bot.CurrentZone?.Description ?? "", bot.IsAlive, bot.InCombat,
                 rec?.Activity ?? "", rec?.CurrentGoal ?? "", MinutesSinceProgress(rec, now) is { } m ? Math.Round(m, 1) : null);
+        }
+
+        public static long? FindBotId(string key)
+        {
+            bool byId = long.TryParse(key, out long id);
+            GameBot bot = Bots().FirstOrDefault(b => byId ? b.PersistentRecord?.BotId == id
+                : b.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
+            return bot?.PersistentRecord?.BotId ?? (byId ? id : null);
         }
 
         public static BotDetail GetBot(string key)
