@@ -3,6 +3,34 @@
 The newest version is first. For the full detail of every earlier update, see
 [docs/history/CHANGELOG-0.3-to-0.32b.md](docs/history/CHANGELOG-0.3-to-0.32b.md).
 
+## DR-dev-0.1e — 2026-11-08
+
+Bots at every level, the Regalia armor art, and the fixes from an overnight run of DR-dev-0.1d with 3,600 bots. It
+replaces DR-dev-0.1d. A DR-dev-0.1d folder can install it from the launcher (Options > Update and repair > CHECK FOR
+UPDATES); older folders update by hand once.
+
+- **Level spread (new, off by default):** the Bot Goals tab can keep bots at every level. Set what share of the
+  gamebots stop gaining experience at 1-9, 10-19, 20-34 or 35-49, and what share go on to 50 (defaults 10/10/15/15/50).
+  A held bot keeps playing, looting, questing and earning realm points; it just doesn't level. Each bot keeps the
+  same stop level every start. Bots already past their stop keep their level. Your character and /spawn companions are
+  never held back.
+- **+ Lv.25 bots:** the Bots page has a + Lv.25 button beside + Lv.1 and + Lv.50 (Shift adds 10, Ctrl 100). They
+  start in their capital with 50 gold and no armor, trained for their level.
+- **Regalia art:** the Storm, Tara and Camelot Regalia now look as designed. The client patch adds their armor and
+  cloaks; in DR-dev-0.1d the Storm Regalia drew nothing on a release client, and Tara and Camelot used stock armor.
+- **Alchemy:** 243 potion recipes the client lists but the world lacked (the Potion and Draught tiers and the Greater
+  and Superior elixirs) can be made now, and a recipe your realm can't make says why instead of failing silently.
+- **Bot resurrection:** bots counted a rez's power cost wrong, so their raises started and were then refused without
+  a message. They now pay what the spell really costs.
+- **Bot Animist turrets:** turrets fired at targets out of their range (85-95% of casts refused); they now pick
+  targets in range and wait out an interrupt.
+- **Stability:** Krackenschtein no longer crashes and disappears from the world, and a crash in the bots' trips to
+  merchants and trainers is gone.
+- **Bots:** two deaths at a far camp no longer send a levelling bot back to its capital; bots let go of stale fight
+  targets and call their pets off; group buffs aren't recast over and over; a lone keep march walks on instead of
+  turning back from the same pack forever.
+- **Warlock:** Spell of Creation targets a corpse, as it should.
+
 ## DR-dev-0.1d — 2026-11-07
 
 The Sovereign remakes, a launcher that updates itself, and the fixes from a full day of playtesting. It replaces
