@@ -9,14 +9,15 @@ This is the part of the Stormforged concept kit (DAoC Offline\Stormforged-armor-
 and its follow-ups) that the Storm Regalia items use, with the same IDs and rows the owner's modern test client got from it;
 that client already has it (and more), so the installer refuses it. No meshes are added: the pieces draw stock meshes
 with our skins. Private data under new IDs:
-  items\\pskins\\pskin061.mpk      NEW  pskins textures (cata armor, cata cloak, classic DXT3 cloak)
+  items\\pskins\\pskin061.mpk      NEW  pskins textures (cata armor, cata cloak, classic DXT3 cloak, winged helm)
   figures\\Mskins\\mskin070.mpk    NEW  mskins textures (cata armor BaseTex, read by /hood)
-  mskins.csv 2740-2745, pskins.csv 5790-5797, objects.csv 4929-4933 and 4937: NEW rows (no stock row changes)
+  mskins.csv 2740-2745, pskins.csv 5790-5797 and 5800, objects.csv 4929-4933, 4937 and 4942: NEW rows (no stock row changes)
 objects: 4929 hauberk, 4930 legs, 4931 sleeves, 4932 gauntlets, 4933 boots (cloned from 3370-3374, the server's hauberk uses
-Extension 5), 4937 cloak (326, Cloak# 1; named for the attachment test it began as, its attachment cleared).
-Left out of the release: the winged helm 4942 (its wings are the stock ToA winged helm's feathers recoloured, so it isn't
-only our art), the Storm Crown 4934, wolf cloaks 4935/4936 and wolf helm 4941 (no item uses them; custom meshes and fig3map
-edits). The server items are storm_regalia_* (source/tools/sovereign/storm_regalia_edits.py)."""
+Extension 5), 4937 cloak (326, Cloak# 1; named for the attachment test it began as, its attachment cleared), 4942 winged
+helm (2224 ToA Winged Helm (Mid), its per-race toaHelm_Winged meshes). The helm's skin is paint_storm_helm.py's: the concept
+skin's shell with wings painted from the mesh (the concept wings were the stock skin's feathers recoloured), so it differs
+from the test client's sf_wingedhelm.dds. Left out: the Storm Crown 4934, wolf cloaks 4935/4936 and wolf helm 4941 (no item
+uses them; custom meshes and fig3map edits). The server items are storm_regalia_* (source/tools/sovereign/storm_regalia_edits.py)."""
 from __future__ import annotations
 
 import hashlib
@@ -54,14 +55,16 @@ PSKINS = [(5790, "sf_rw_body_m.dds", "body_m.png", (256, 512), "5364", 2740, Fal
           (5794, "sf_rw_gloves.dds", "gloves.png", (512, 256), "5336", 2744, False),
           (5795, "sf_rw_boots.dds", "boots.png", (512, 256), "5365", 2745, False),
           (5796, "sf_wolfcloak.dds", "cloak.png", (512, 1024), "4972", 0, False),       # cata cloak, UV set 1
-          (5797, "sf_wolfcloak256.dds", "cloak.png", (256, 256), "618", 0, True)]        # classic col 11 (hooded mantle), DXT3
+          (5797, "sf_wolfcloak256.dds", "cloak.png", (256, 256), "618", 0, True),        # classic col 11 (hooded mantle), DXT3
+          (5800, "sf_wingedhelm.dds", "helm.png", (512, 256), "2683", 0, False)]         # winged helm (paint_storm_helm.py)
 # objects: id, stock row cloned, name, column changes
 OBJECTS = [(4929, "3370", "Stormforged Rune-Warlord Hauberk", {66: "5790", 67: "5791", 73: "6"}),
            (4930, "3371", "Stormforged Rune-Warlord Legs", {70: "5793"}),
            (4931, "3372", "Stormforged Rune-Warlord Sleeves", {68: "5792"}),
            (4932, "3373", "Stormforged Rune-Warlord Gauntlets", {69: "5794", 74: "6"}),
            (4933, "3374", "Stormforged Rune-Warlord Boots", {71: "5795", 75: "6"}),
-           (4937, "326", "Stormforged Wolf Cloak (attachment test)", {11: "5797", 16: "1", 72: "5796", 78: "0"})]
+           (4937, "326", "Stormforged Wolf Cloak (attachment test)", {11: "5797", 16: "1", 72: "5796", 78: "0"}),
+           (4942, "2224", "Stormforged Winged Helm", {12: "5800", 22: "5800"})]
 
 
 def build(client: Path):

@@ -39,10 +39,13 @@ DR-dev-0.1d shipped Tara and Camelot on stock art, and the Storm Regalia on obje
 `storm/` is taken from the Stormforged concept kit (`DAoC Offline\Stormforged-armor-concepts\v20-polished-set`): its final
 textures and the rows its installers wrote for the pieces the Storm Regalia uses, checked against the test client (every
 row and texture the same; the classic DXT3 cloak differs only in compression bits, from an older Pillow). The concept kit's
-painters are not in the repository. **Left out:** the winged helm (4942, skin pskins 5800): its painter recolours the stock
-ToA Winged Helm (Mid)'s feather drawing, so the skin isn't only our art. Release worlds draw the stock helm 2224 instead
-(`PRIVATE_MODELS`); repaint the wings without the stock texture to ship it. Also left out: the Storm Crown, wolf cloaks and
-wolf helm (4934-4936, 4941), which no item uses (custom meshes and fig3map edits). The Camelot helm keeps the stock full
+painters are not in the repository. The winged helm (4942, pskins 5800) is the exception: the concept painter recoloured the
+stock ToA Winged Helm (Mid)'s feather drawing for the wings, so `storm/paint_storm_helm.py` keeps the concept skin's shell
+side (`textures/helm_shell.png`, all ours, the wing side blanked) and paints new wings from the mesh: each wing part fans
+out from its base in polished silver feather plates with grooves, quills and barbs, with the gold edge. No stock texture is
+read. Run it with the painters' Python (numpy, scipy, Pillow); it writes `textures/helm.png` and a preview to
+`.work/storm/`. The test client keeps the concept helm. Left out: the Storm Crown, wolf cloaks and wolf helm (4934-4936,
+4941), which no item uses (custom meshes and fig3map edits). The Camelot helm keeps the stock full
 plate helm's eye slot and breathing holes (its near-black texels, darkened: `keep_openings` in `paint_camelot.py`).
 
 `regalia_client.py` holds the shared helpers (catalog rows, skin archives and the whole build, used by both installers and
