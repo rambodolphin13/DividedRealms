@@ -72,6 +72,7 @@ namespace DOL.GS
         [GameServerStoppedEvent]
         public static void Stop(DOLEvent e, object sender, EventArgs args)
         {
+            BotTimeline.Stop();
             WebApplication app = Interlocked.Exchange(ref _app, null);
             app?.StopAsync().GetAwaiter().GetResult();
         }
