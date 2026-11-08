@@ -215,23 +215,38 @@ class ClientPatchTests(unittest.TestCase):
                           'zones/zone102/dat102.mpk', 'zones/zone102/csv102.mpk',
                           'zones/zone206/dat206.mpk', 'zones/zone206/csv206.mpk',
                           'zones/zone207/dat207.mpk', 'zones/zone207/csv207.mpk',
-                          'items/offline_fishrod01.nif', 'gamedata.mpk'])
-        # The fishing rod: only our vertex positions and our three catalog rows ship, and every other catalog is untouched.
-        rod, game = patch['Files'][-2:]
+                          'items/offline_fishrod01.nif',
+                          'items/pskins/pskin062.mpk', 'figures/Mskins/mskin071.mpk',
+                          'items/pskins/pskin063.mpk', 'figures/Mskins/mskin072.mpk', 'gamedata.mpk'])
+        # The fishing rod: only our vertex positions ship.
+        rod, game = patch['Files'][-6], patch['Files'][-1]
         self.assertLess(sum(len(base64.b64decode(e['Insert'])) for e in rod['Edits']), 1000)
-        self.assertEqual([part['Member'] for part in game['Members']], ['objects.csv', 'items.csv'])
-        added = [line.split(',', 1)[0] for part in game['Members'] for e in part['Edits']
-                 for line in base64.b64decode(e['Insert']).decode('latin1').strip('\r\n').split('\r\n')]
-        self.assertEqual(added, ['4927', '4928', '3085'])
+        # The rod's three catalog rows and the Regalia of Tara and Camelot rows ship, and every other catalog is untouched.
+        self.assertEqual([part['Member'] for part in game['Members']], list(m.GAMEDATA_CATALOGS))
+        added = {part['Member']: [line.split(',', 1)[0] for e in part['Edits']
+                                  for line in base64.b64decode(e['Insert']).decode('latin1').strip('\r\n').split('\r\n')]
+                 for part in game['Members']}
+        self.assertEqual(added, {'objects.csv': ['4927', '4928'] + [str(n) for n in range(4950, 4964)],
+                                 'items.csv': ['3085'],
+                                 'pskins.csv': [str(n) for n in range(5810, 5828)],
+                                 'mskins.csv': [str(n) for n in range(2750, 2762)]})
         stock_game = (PRISTINE / 'gamedata.mpk').read_bytes()
         patched_game = m.apply(stock_game, game)
         archive.verify_memory_image(patched_game)
         before, after = archive.read(stock_game)[1], archive.read(patched_game)[1]
         self.assertEqual([e.name for e in before], [e.name for e in after])
-        self.assertEqual([e.data for e in before if e.name.lower() not in m.ROD_CATALOGS],
-                         [e.data for e in after if e.name.lower() not in m.ROD_CATALOGS])
+        self.assertEqual([e.data for e in before if e.name.lower() not in m.GAMEDATA_CATALOGS],
+                         [e.data for e in after if e.name.lower() not in m.GAMEDATA_CATALOGS])
+        # The Regalia skin archives hold only our textures, the same ones the test client's installers put in.
+        for skins in patch['Files'][-5:-1]:
+            ours = m.apply((PRISTINE / skins['From']).read_bytes(), skins)
+            archive.verify_memory_image(ours)
+            self.assertTrue(all(e.name.lower().startswith(('tara_', 'camelot_')) for e in archive.read(ours)[1]), skins['Path'])
+            if MODERN_TEST.is_dir():
+                installed = archive.read((MODERN_TEST / skins['Path']).read_bytes())[1]
+                self.assertEqual([(e.name, e.data) for e in archive.read(ours)[1]], [(e.name, e.data) for e in installed])
         game = patch['Files'][0]
-        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', '39d82bb0'))
+        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', 'f6660890'))  # 2c7e306e0 (Vampiir hover); the test client and DR-dev-0.1d match
         # The stock 1.130 loading screen in, the Divided Realms splash out, in one edit.
         splash = patch['Files'][2]
         self.assertEqual(splash['InputSha256'][:8], '9348c3a6')
@@ -256,7 +271,10 @@ class ClientPatchTests(unittest.TestCase):
             # The test client keeps its hand-installed classic zone table until it is set up from this patch.
             # Its gamedata.mpk got the rod rows from the hand installer (compressed differently, and with other private art).
             gate_archives = {template.format(zone) for zone in m.gate_zones() for template in m.GATE_ARCHIVES}
-            for f in [f for f in patch['Files'] if f['Path'] not in ('zones/zones.mpk', m.GAMEDATA) and f['Path'] not in gate_archives]:
+            # The Regalia archives were stamped when they were installed there (their contents are compared above).
+            regalia = {f['Path'] for f in patch['Files'] if f.get('From') == m.REGALIA_FROM}
+            for f in [f for f in patch['Files'] if f['Path'] not in ('zones/zones.mpk', m.GAMEDATA) and f['Path'] not in gate_archives
+                      and f['Path'] not in regalia]:
                 self.assertEqual(hashlib.sha256((MODERN_TEST / f['Path']).read_bytes()).hexdigest(), f['OutputSha256'], f['Path'])
 
     def test_the_real_gates_open_and_nothing_else_moves(self):

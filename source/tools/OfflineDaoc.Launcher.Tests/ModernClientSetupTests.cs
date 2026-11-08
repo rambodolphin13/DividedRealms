@@ -287,16 +287,21 @@ public sealed class ModernClientSetupTests
             List<string> after = Encoding.Latin1.GetString((byte[])Archive("MemberOf", output, part.Member)).Split("\r\n").ToList();
             if (added)
             {
-                Assert.That(after.Where(line => !part.Rows!.Contains(line)), Is.EqualTo(before), part.Member);
+                // An older release's client already holds some of our rows (DR-dev-0.1d's has the rod's, not the Regalia's).
+                Assert.That(after.Where(line => !part.Rows!.Contains(line)), Is.EqualTo(before.Where(line => !part.Rows!.Contains(line))),
+                    part.Member);
                 Assert.That(part.Rows, Is.SubsetOf(after), part.Member);
             }
         }
         if (!added)
         {
-            // Left alone only because one of our IDs holds another row there.
-            var ids = file.Members!.SelectMany(p => p.Rows!.Select(r => (p.Member, Id: r.Split(',')[0], Row: r)));
-            Assert.That(ids.Any(x => Encoding.Latin1.GetString((byte[])Archive("MemberOf", input, x.Member)).Split("\r\n")
-                .Any(line => line.Split(',')[0].Trim() == x.Id && line != x.Row)), Is.True, "an ID of ours is taken");
+            // Left alone only because one of our IDs holds another row there, or because every row of ours already is
+            // (the developer's test client, where the art installers put the same rows).
+            var ids = file.Members!.SelectMany(p => p.Rows!.Select(r => (p.Member, Id: r.Split(',')[0], Row: r))).ToList();
+            List<string> Lines(string member) => Encoding.Latin1.GetString((byte[])Archive("MemberOf", input, member)).Split("\r\n").ToList();
+            bool taken = ids.Any(x => Lines(x.Member).Any(line => line.Split(',')[0].Trim() == x.Id && line != x.Row));
+            bool allThere = ids.All(x => Lines(x.Member).Contains(x.Row));
+            Assert.That(taken || allThere, Is.True, "an ID of ours is taken, or all our rows are there");
         }
     }
 

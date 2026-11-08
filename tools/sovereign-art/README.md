@@ -26,8 +26,17 @@ modern test client only with `--modern-test`, and only while the game client is 
 catalog only if nothing else changed it since, then removes the two archives. To replace installed art with new
 textures: roll back, swap `textures/`, install again.
 
-`regalia_client.py` holds the shared helpers (catalog rows, DDS encoders from `tools/pet-art`, the archive tool from
-`tools/asset-tool`).
+## Releases
+
+Both kits are in the release client patch (`source/tools/make_client_patch.py` `regalia_entries`, 2026-11-08): the launcher
+adds the same rows and archives to every player's client copy, and to a copy an older release set up. The release world
+must then point the items at the new objects: run `tara_regalia_edits.py --update` and `camelot_regalia_edits.py --update`
+(World Workshop) on the release's staging world. DR-dev-0.1d shipped both sets on stock art, and the Storm Regalia on
+objects 4929-4942 that no release client has; `build_modern_test_package.py` now refuses an item on a private model the
+patch doesn't add (`private_models_without_art`).
+
+`regalia_client.py` holds the shared helpers (catalog rows, skin archives and the whole build, used by both installers and
+the client patch; DDS encoders from `tools/pet-art`, the archive tool from `tools/asset-tool`).
 
 ## Painters
 

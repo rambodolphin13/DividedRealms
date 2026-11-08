@@ -44,6 +44,78 @@ def add_row(data, row):
     return "\r\n".join(lines[:at] + [line_of(row)] + lines[at:]).encode("latin1")
 
 
+CATALOGS = ("mskins.csv", "pskins.csv", "objects.csv")
+
+
+def catalog_rows(files: dict, kit) -> dict:
+    """The kit's new catalog rows, {catalog: [row, ...]} in the order they are added, cloned from the stock rows of
+    `files` (gamedata.mpk's members by lower-case name). `kit` is an installer module (MSKINS, PSKINS, OBJECTS,
+    PSKIN_ARC, MSKIN_ARC, LABEL). Shared by the installers and the release client patch (make_client_patch.py)."""
+    T = {k: table(files[k]) for k in CATALOGS}
+    rows = {k: [] for k in CATALOGS}
+    for mid, tex, _, _ in kit.MSKINS:
+        row = list(T["mskins.csv"]["2327"]); row[0], row[1], row[2], row[4], row[5] = str(mid), tex, tex, str(kit.MSKIN_ARC), "0"
+        rows["mskins.csv"].append(row)
+    for pid, tex, _, _, stock, base, _ in kit.PSKINS:
+        row = list(T["pskins.csv"][stock])
+        row += [""] * max(0, 7 - len(row))
+        row[0], row[1], row[2], row[4], row[5], row[6] = str(pid), kit.LABEL + " " + tex[:-4], tex, str(kit.PSKIN_ARC), "0", str(base)
+        rows["pskins.csv"].append(row)
+    for oid, stock, label, changes in kit.OBJECTS:
+        row = list(T["objects.csv"][stock]); row += [""] * (98 - len(row))
+        row[0], row[1] = str(oid), label
+        for c, v in changes.items():
+            row[c] = v
+        rows["objects.csv"].append(row)
+    return rows
+
+
+def skin_archives(client: Path, kit, stamp: int) -> tuple:
+    """The kit's two new archives (pskinNNN.mpk, mskinNNN.mpk) built from its textures; the stock DDS files in `client`
+    only lend their header layout. A fixed `stamp` makes the same bytes on every build."""
+    ref = next(e.data for e in archive.read((client / "items/pskins/pskin008.mpk").read_bytes())[1]
+               if e.name.lower().endswith(".dds") and e.data[84:88] == b"DXT1")
+    ref3 = next(e.data for e in archive.read((client / "items/pskins/pskin001.mpk").read_bytes())[1] if e.name.lower() == "cloak.dds")
+    ptex = sorted(((t, encode_dxt3(kit.img(src, size), ref3) if dxt3 else encode_dds(kit.img(src, size), ref))
+                   for _, t, src, size, _, _, dxt3 in kit.PSKINS), key=lambda x: x[0].lower())
+    mtex = sorted(((t, encode_dds(kit.img(src, size), ref)) for _, t, src, size in kit.MSKINS), key=lambda x: x[0].lower())
+    pak = archive.write(f"pskin{kit.PSKIN_ARC:03d}.mpk".encode(), [archive.Entry(n, d, stamp, 4) for n, d in ptex])
+    mpak = archive.write(f"mskin{kit.MSKIN_ARC:03d}.mpk".encode(), [archive.Entry(n, d, stamp, 4) for n, d in mtex])
+    for b in (pak, mpak):
+        archive.verify_memory_image(b)
+    return pak, mpak
+
+
+def skin_targets(kit) -> tuple:
+    """Where the kit's archives go, relative to the client folder."""
+    return f"items/pskins/pskin{kit.PSKIN_ARC:03d}.mpk", f"figures/Mskins/mskin{kit.MSKIN_ARC:03d}.mpk"
+
+
+def build(client: Path, kit, stamp: int):
+    """gamedata.mpk with the kit's rows added (every other member byte for byte), and its two archives."""
+    game = client / "gamedata.mpk"
+    name, entries = archive.read(game.read_bytes())
+    files = {e.name.lower(): e.data for e in entries}
+    upd = {k: files[k] for k in CATALOGS}
+    added = catalog_rows(files, kit)
+    for k in CATALOGS:
+        for row in added[k]:
+            upd[k] = add_row(upd[k], row)
+    blob = archive.write(name, [archive.Entry(e.name, upd.get(e.name.lower(), e.data), e.timestamp, e.flags) for e in entries])
+    archive.verify_memory_image(blob)
+    _, dec = archive.read(blob)
+    for old, new in zip(entries, dec):
+        if old.name.lower() not in upd:
+            need(old.data == new.data, f"unrelated entry changed: {old.name}")
+    for k in upd:
+        old_rows = files[k].decode("latin1").split("\r\n")
+        new_rows = upd[k].decode("latin1").split("\r\n")
+        need([l for l in new_rows if l in set(old_rows)] == old_rows, f"stock {k} line changed")
+        need(len(new_rows) - len(old_rows) == len(added[k]), f"{k}: unexpected row count")
+    pak, mpak = skin_archives(client, kit, stamp)
+    return blob, pak, mpak
+
+
 def client_closed():
     import subprocess
     out = subprocess.run(["tasklist"], capture_output=True, text=True).stdout.lower()
