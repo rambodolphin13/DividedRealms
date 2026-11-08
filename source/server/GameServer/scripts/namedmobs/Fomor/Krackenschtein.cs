@@ -177,7 +177,12 @@ namespace DOL.AI.Brain
 					}
 				}
 			}
-			if (CanPort == false)
+			// Drop anyone who died, left or ported out since they were added. With nobody left the
+			// list is empty and picking from it threw; NpcService then removed the boss from the
+			// world (overnight run 2026-11-08 05:56).
+			Enemys_To_Port.RemoveAll(p => p == null || !p.IsAlive || p.ObjectState != GameObject.eObjectState.Active
+				|| p.CurrentRegion != Body.CurrentRegion || !p.IsWithinRadius(Body, 2000));
+			if (CanPort == false && Enemys_To_Port.Count > 0)
 			{
 				GamePlayer Target = (GamePlayer)Enemys_To_Port[Util.Random(0, Enemys_To_Port.Count - 1)];//pick random target from list
 				TeleportTarget = Target;//set random target to static RandomTarget

@@ -1235,13 +1235,15 @@ namespace DOL.GS
                 }
                 // Resolving the approach can drop the service (a region change or recovery clears it); the
                 // next turn chooses again. (NullReferenceException here twice on 2026-11-07.)
+                // IssuePath can clear it as well (overnight run 2026-11-08 05:54), so keep the name in a local.
                 if (_serviceNpc == null)
                     return true;
-                if (TryBeginFasterStableRoute(bot, point, _serviceNpc.Name))
+                string serviceName = _serviceNpc.Name;
+                if (TryBeginFasterStableRoute(bot, point, serviceName))
                     return true;
                 IssuePath(bot, point, preciseArrival: true);
-                SetStatus(bot, $"Traveling to {_serviceNpc.Name}", ServiceGoal(needed.Value),
-                    "Routing to a real world service before resuming progression", _serviceNpc.Name, destination.ZoneName);
+                SetStatus(bot, $"Traveling to {serviceName}", ServiceGoal(needed.Value),
+                    "Routing to a real world service before resuming progression", serviceName, destination.ZoneName);
                 return true;
             }
 
@@ -2817,6 +2819,24 @@ namespace DOL.GS
             return true;
         }
 
+        /// <summary>Targets dropped as stale fights, with when the bot may fight them again unprovoked.</summary>
+        private readonly Dictionary<ushort, long> _staleFightTargets = new();
+        private const long StaleFightIgnoreMilliseconds = 5 * 60_000;
+
+        /// <summary>A pet left fighting a dropped target (often far off and out of reach) puts it back on its owner's list.</summary>
+        private static void RecallPetFrom(GameBot bot, GameNPC target)
+        {
+            if (bot.ControlledBrain is not DOL.AI.Brain.ControlledMobBrain petBrain || petBrain.Body is not GameNPC pet)
+                return;
+            petBrain.RemoveFromAggroList(target);
+            if (pet.TargetObject == target)
+            {
+                pet.StopAttack();
+                pet.TargetObject = null;
+            }
+            petBrain.FollowOwner();
+        }
+
         private GameNPC _flyerWatchTarget;
         private long _flyerWatchSinceTick;
         private long _flyerWatchAttackedTick;
@@ -2845,6 +2865,18 @@ namespace DOL.GS
                 return false;
             }
             bool flyer = AutonomousPveTargetPolicy.IsUnreachableFlyer(target.Flags, target.Z, bot.Z);
+            // Back again after a stale drop, and it has not hit the bot: let go now, not after another minute. Overnight run
+            // 2026-11-08: Mistfist (Spiritmaster) re-acquired the same dust devil 4,410 units away every ~69 s for nine and a half
+            // hours, never moving (436 drops); four more bots did the same 100+ times each.
+            if (_staleFightTargets.TryGetValue(target.ObjectID, out long staleUntil) && staleUntil > nowTick &&
+                !bot.attackComponent.AttackerTracker.Attackers.Contains(target))
+            {
+                _flyerWatchTarget = null;
+                ReleaseSavageMeleePullTarget(brain, bot, target);
+                bot.StopAttack();
+                RecallPetFrom(bot, target);
+                return true;
+            }
             if (_flyerWatchTarget != target)
             {
                 _flyerWatchTarget = target;
@@ -2871,8 +2903,13 @@ namespace DOL.GS
 
             _flyerWatchTarget = null;
             _failedSavageMeleePullTargets[target.ObjectID] = nowTick + SavageBotCombatPolicy.FailedMeleePullRetryMilliseconds;
+            if (_staleFightTargets.Count > 64)
+                foreach (ushort id in _staleFightTargets.Where(pair => pair.Value <= nowTick).Select(pair => pair.Key).ToArray())
+                    _staleFightTargets.Remove(id);
+            _staleFightTargets[target.ObjectID] = nowTick + StaleFightIgnoreMilliseconds;
             ReleaseSavageMeleePullTarget(brain, bot, target);
             bot.StopAttack();
+            RecallPetFrom(bot, target);
             Log.Warn($"{(flyer ? "AUTONOMOUS_UNREACHABLE_FLYER" : "AUTONOMOUS_STALE_FIGHT")} bot={bot.Name} id={bot.DatabaseID} " +
                      $"level={bot.Level} class=\"{bot.ClassName}\" target=\"{target.Name}\" heightAbove={target.Z - bot.Z} " +
                      $"distance={(int)bot.GetDistanceTo(target)} group={(bot.Group == null ? "solo" : _groupDirective?.GroupId ?? "party")} " +
@@ -4306,6 +4343,13 @@ namespace DOL.GS
                 AutonomousDeathRecoveryPolicy.RetryDelayMilliseconds(_recentSoloDeathsWithoutExperience);
             _routeCautionUntilTick = nowTick + RouteCautionAfterDeathMilliseconds;
             _recoverAfterSoloDeath = true;
+
+            // A town break is optional. A bot killed on the way kept walking the same route after every release (the
+            // capital release sent it back by teleporter): overnight run 2026-11-08, a level 5 Mauler died five times in
+            // eight minutes between Huginfell and Dvalin to level 11-12 wolves and vipers, and 608 bots hit the bind
+            // death loop. Give the break up and go back to work at a camp the death recovery chooses.
+            if (_townIdleDestination != null && !_townIdleFinished)
+                FinishTownIdle(bot, $"Killed by {bot.LastDeathKillerName} on the way to {_townIdleDestination.Town.Name}");
 
             // Killed by another realm (player, bot, pet or guard): nothing to learn about PvE. Night playtest 2026-11-04: an
             // enemy bot's kill was logged as a failed PvE camp with new_max_con=GREEN, and the bot hopped goals and died again

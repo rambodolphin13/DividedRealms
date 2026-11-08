@@ -72,10 +72,18 @@ namespace DOL.AI.Brain
             return false;
         }
 
-        protected override GameLiving CalculateNextAttackTarget() =>
-            AnimistSingleTargetPolicy.AppliesTo(Owner)
-                ? AnimistSingleTargetPolicy.AssistTarget(Owner)
-                : base.CalculateNextAttackTarget();
+        protected override GameLiving CalculateNextAttackTarget()
+        {
+            if (!AnimistSingleTargetPolicy.AppliesTo(Owner))
+                return base.CalculateNextAttackTarget();
+            // The owner's target can be beyond this rooted turret's reach. Casting at it anyway was refused silently
+            // as "too far" (overnight run 2026-11-08: 85-95% of every gamebot Animist turret cast refused).
+            GameLiving target = AnimistSingleTargetPolicy.AssistTarget(Owner);
+            Spell spell = (Body as TurretPet)?.TurretSpell;
+            if (target == null || spell == null || spell.IsPBAoE)
+                return target;
+            return Body.IsWithinRadius(target, spell.CalculateEffectiveRange(Body)) ? target : null;
+        }
 
         protected override GameLiving FindTargetForDefensiveSpell(Spell spell)
         {
@@ -127,6 +135,10 @@ namespace DOL.AI.Brain
             if (AnimistSingleTargetPolicy.AppliesTo(Owner) &&
                 (!AnimistSingleTargetPolicy.IsSingleTargetPayload(spell) ||
                  spell.IsHarmful && target != AnimistSingleTargetPolicy.AssistTarget(Owner)))
+                return false;
+
+            // A non-player caster still under an interrupt is refused without a message; wait it out instead.
+            if (!spell.IsInstantCast && !spell.Uninterruptible && Body.InterruptRemainingDuration > 0)
                 return false;
 
             if (spell.IsPBAoE)

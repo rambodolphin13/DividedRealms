@@ -2736,6 +2736,12 @@ namespace DOL.AI.Brain
                     tier = 1;
                     return Body;
                 }
+                // Cast to the end a short while ago and the caster holds it: a member in range still without it did not
+                // take it (a stronger or other-caster buff of that kind), and casting again changes nothing. Overnight run
+                // 2026-11-08: most of the 908 BOT_BUFF_RECAST_LOOP lines were group buffs (Valkyrie Odin's Full Aura,
+                // Druid Touch of Nature, Warden resists) recast for members 0-200 units away that never took them.
+                if (!NeedsBuff(Body, spell) && BotBody.GroupBuffFinishedWithin(spell, GroupBuffRetakeMilliseconds))
+                    return null;
                 // One cast reaches the whole group (the class filter is for single-target buffs only);
                 // its tier is that of the most important member still missing it.
                 IEnumerable<GameLiving> members = Body.Group?.GetMembersInTheGroup() ?? [Body];
@@ -2777,6 +2783,15 @@ namespace DOL.AI.Brain
 
             return null;
         }
+
+        /// <summary>How long after a finished group buff its missing members are left alone (members who join later get the next cast).</summary>
+        public const long GroupBuffRetakeMilliseconds = 3 * 60_000;
+
+        /// <summary>
+        /// A member walking away can leave range during the cast ("That target is too far away!", the rest of the
+        /// 2026-11-08 recast loops: Warden Nature's Fend, Runemaster Runic Fend, Bard Hymn at 900 of 1,250 and moving).
+        /// </summary>
+        public const int MovingBuffTargetMargin = 300;
 
         /// <summary>The target lacks this buff, its upkeep refresh window is open, or it is a long buff with less than a minute left (BUFF_RULES).</summary>
         private bool NeedsBuff(GameLiving target, Spell spell) =>
@@ -2850,7 +2865,8 @@ namespace DOL.AI.Brain
             IEnumerable<GameLiving> petTargets = AreaBuffSkipsPets(spell) ? [] : BotGroupPetBuffTargets.Enumerate(BotBody, spell);
             foreach (GameLiving target in members.Concat(petTargets))
             {
-                if (target == null || !target.IsAlive || !Body.IsWithinRadius(target, range) ||
+                if (target == null || !target.IsAlive ||
+                    !Body.IsWithinRadius(target, target.IsMoving && target != Body && !spell.IsPBAoE ? Math.Max(0, range - MovingBuffTargetMargin) : range) ||
                     !NeedsBuff(target, spell) || (claims?.IsReserved(target, family, now) ?? false))
                     continue;
                 int targetTier = BotBuffRules.TargetTier(spell, target);
@@ -6283,6 +6299,12 @@ namespace DOL.AI.Brain
                 enemyBlocked ? AutonomousSiegeResurrection.Check.EnemyByCorpse : AutonomousSiegeResurrection.Check.NoCorpse);
             if (corpse == null)
                 return false;
+            // A higher-level corpse costs more than CanRaise priced; the native check would refuse it silently.
+            if (BotBody.Mana < BotSpellPower.ResurrectCost(BotBody, corpse))
+            {
+                AutonomousSiegeResurrection.Note(AutonomousSiegeResurrection.Check.CannotCast);
+                return false;
+            }
             int range = BotBody.castingComponent.CalculateSpellRange(resurrection);
             if (!BotBody.IsWithinRadius(corpse, range) || !BotGroupSupport.HasCorpseLineOfSight(BotBody, corpse))
             {
