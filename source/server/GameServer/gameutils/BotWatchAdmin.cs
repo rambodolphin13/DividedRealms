@@ -72,7 +72,15 @@ namespace DOL.GS
         public static bool IsStalled(OfflineWorldBotRecord record, bool alive, DateTime nowUtc, TimeSpan threshold) =>
             alive && MinutesSinceProgress(record, nowUtc) is { } minutes && minutes >= threshold.TotalMinutes;
 
-        private static string RealmName(eRealm realm) => realm.ToString();
+        // eRealm has alias names on the same values (_FirstPlayerRealm = Albion), so ToString() is not reliable.
+        public static string RealmName(eRealm realm) => realm switch
+        {
+            eRealm.Albion => "Albion",
+            eRealm.Midgard => "Midgard",
+            eRealm.Hibernia => "Hibernia",
+            eRealm.None => "None",
+            _ => ((int) realm).ToString()
+        };
 
         // ------------------------------------------------------------ live views (run off the game loop: guard each unit)
 

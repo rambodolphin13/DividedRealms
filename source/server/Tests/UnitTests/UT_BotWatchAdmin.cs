@@ -29,6 +29,13 @@ namespace DOL.UnitTests
         public void LevelBands(int level, string band) => Assert.That(BotWatchAdmin.LevelBand(level), Is.EqualTo(band));
 
         [Test]
+        public void AlbionIsNotNamedByItsAlias()
+        {
+            Assert.That(BotWatchAdmin.RealmName(eRealm.Albion), Is.EqualTo("Albion"));
+            Assert.That(BotWatchAdmin.RealmName(eRealm.Hibernia), Is.EqualTo("Hibernia"));
+        }
+
+        [Test]
         public void MinutesSinceProgressReadsTheRecord()
         {
             var record = new OfflineWorldBotRecord { LastMeaningfulProgressUtc = "2026-11-08T11:40:00.0000000Z" };
