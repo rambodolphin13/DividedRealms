@@ -7,6 +7,7 @@ pointed at the new objects by the World Workshop edit scripts in `source/tools/s
 | Kit | Class | Look | Client IDs | Server edits |
 |---|---|---|---|---|
 | `tara/` | Tuatha Sovereign (67) | emerald court scale, moon-and-stag roundel, polished like the new epics (A2) | pskin062, mskin071; mskins 2750-2755, pskins 5810-5818, objects 4950-4956 | `tara_regalia_edits.py --update` |
+| `storm/` | Storm Sovereign (64) | Stormforged v20 Rune-Warlord plate and storm cloak (polish passes 2026-11-04) | pskin061, mskin070; mskins 2740-2745, pskins 5790-5797, objects 4929-4933, 4937 | `storm_regalia_edits.py` |
 | `camelot/` | Pendragon Sovereign (65) | gilded plate, crimson enamel, red dragon, crowned great helm (B, polish pass 4) | pskin063, mskin072; mskins 2756-2761, pskins 5819-5827, objects 4957-4963 | `camelot_regalia_edits.py --update` |
 
 Both body textures are painted on the Body05 / Legs01 / Arms01 / Gloves06 / Boots06 meshes, so the hauberk and
@@ -28,12 +29,21 @@ textures: roll back, swap `textures/`, install again.
 
 ## Releases
 
-Both kits are in the release client patch (`source/tools/make_client_patch.py` `regalia_entries`, 2026-11-08): the launcher
-adds the same rows and archives to every player's client copy, and to a copy an older release set up. The release world
-must then point the items at the new objects: run `tara_regalia_edits.py --update` and `camelot_regalia_edits.py --update`
-(World Workshop) on the release's staging world. DR-dev-0.1d shipped both sets on stock art, and the Storm Regalia on
-objects 4929-4942 that no release client has; `build_modern_test_package.py` now refuses an item on a private model the
-patch doesn't add (`private_models_without_art`).
+All three kits are in the release client patch (`source/tools/make_client_patch.py` `regalia_entries`, 2026-11-08): the
+launcher adds the same rows and archives to every player's client copy, and to a copy an older release set up. The release
+world must then point the Tara and Camelot items at the new objects: run `tara_regalia_edits.py --update` and
+`camelot_regalia_edits.py --update` (World Workshop) on the release's staging world (the Storm items already name theirs).
+DR-dev-0.1d shipped Tara and Camelot on stock art, and the Storm Regalia on objects 4929-4942 that no release client had;
+`build_modern_test_package.py` now refuses an item on a private model the patch doesn't add (`private_models_without_art`).
+
+`storm/` is taken from the Stormforged concept kit (`DAoC Offline\Stormforged-armor-concepts\v20-polished-set`): its final
+textures and the rows its installers wrote for the pieces the Storm Regalia uses, checked against the test client (every
+row and texture the same; the classic DXT3 cloak differs only in compression bits, from an older Pillow). The concept kit's
+painters are not in the repository. **Left out:** the winged helm (4942, skin pskins 5800): its painter recolours the stock
+ToA Winged Helm (Mid)'s feather drawing, so the skin isn't only our art. Release worlds draw the stock helm 2224 instead
+(`PRIVATE_MODELS`); repaint the wings without the stock texture to ship it. Also left out: the Storm Crown, wolf cloaks and
+wolf helm (4934-4936, 4941), which no item uses (custom meshes and fig3map edits). The Camelot helm keeps the stock full
+plate helm's eye slot and breathing holes (its near-black texels, darkened: `keep_openings` in `paint_camelot.py`).
 
 `regalia_client.py` holds the shared helpers (catalog rows, skin archives and the whole build, used by both installers and
 the client patch; DDS encoders from `tools/pet-art`, the archive tool from `tools/asset-tool`).

@@ -216,20 +216,23 @@ class ClientPatchTests(unittest.TestCase):
                           'zones/zone206/dat206.mpk', 'zones/zone206/csv206.mpk',
                           'zones/zone207/dat207.mpk', 'zones/zone207/csv207.mpk',
                           'items/offline_fishrod01.nif',
+                          'items/pskins/pskin061.mpk', 'figures/Mskins/mskin070.mpk',
                           'items/pskins/pskin062.mpk', 'figures/Mskins/mskin071.mpk',
                           'items/pskins/pskin063.mpk', 'figures/Mskins/mskin072.mpk', 'gamedata.mpk'])
         # The fishing rod: only our vertex positions ship.
-        rod, game = patch['Files'][-6], patch['Files'][-1]
+        rod, game = patch['Files'][-8], patch['Files'][-1]
         self.assertLess(sum(len(base64.b64decode(e['Insert'])) for e in rod['Edits']), 1000)
-        # The rod's three catalog rows and the Regalia of Tara and Camelot rows ship, and every other catalog is untouched.
+        # The rod's three catalog rows and the Storm, Tara and Camelot Regalia rows ship, and every other catalog is untouched
+        # (not the Storm winged helm 4942: its skin isn't only ours).
         self.assertEqual([part['Member'] for part in game['Members']], list(m.GAMEDATA_CATALOGS))
         added = {part['Member']: [line.split(',', 1)[0] for e in part['Edits']
                                   for line in base64.b64decode(e['Insert']).decode('latin1').strip('\r\n').split('\r\n')]
                  for part in game['Members']}
-        self.assertEqual(added, {'objects.csv': ['4927', '4928'] + [str(n) for n in range(4950, 4964)],
+        self.assertEqual(added, {'objects.csv': ['4927', '4928', '4929', '4930', '4931', '4932', '4933', '4937'] +
+                                                [str(n) for n in range(4950, 4964)],
                                  'items.csv': ['3085'],
-                                 'pskins.csv': [str(n) for n in range(5810, 5828)],
-                                 'mskins.csv': [str(n) for n in range(2750, 2762)]})
+                                 'pskins.csv': [str(n) for n in range(5790, 5798)] + [str(n) for n in range(5810, 5828)],
+                                 'mskins.csv': [str(n) for n in range(2740, 2746)] + [str(n) for n in range(2750, 2762)]})
         stock_game = (PRISTINE / 'gamedata.mpk').read_bytes()
         patched_game = m.apply(stock_game, game)
         archive.verify_memory_image(patched_game)
@@ -237,14 +240,18 @@ class ClientPatchTests(unittest.TestCase):
         self.assertEqual([e.name for e in before], [e.name for e in after])
         self.assertEqual([e.data for e in before if e.name.lower() not in m.GAMEDATA_CATALOGS],
                          [e.data for e in after if e.name.lower() not in m.GAMEDATA_CATALOGS])
-        # The Regalia skin archives hold only our textures, the same ones the test client's installers put in.
-        for skins in patch['Files'][-5:-1]:
+        # The Regalia skin archives hold only our textures, the same ones the test client's installers put in (its Storm
+        # archive has more concept textures, and its classic cloak came from an older Pillow: the same image, other DXT3 bits).
+        for skins in patch['Files'][-7:-1]:
             ours = m.apply((PRISTINE / skins['From']).read_bytes(), skins)
             archive.verify_memory_image(ours)
-            self.assertTrue(all(e.name.lower().startswith(('tara_', 'camelot_')) for e in archive.read(ours)[1]), skins['Path'])
+            self.assertTrue(all(e.name.lower().startswith(('sf_rw_', 'sf_wolfcloak', 'tara_', 'camelot_'))
+                                for e in archive.read(ours)[1]), skins['Path'])
             if MODERN_TEST.is_dir():
-                installed = archive.read((MODERN_TEST / skins['Path']).read_bytes())[1]
-                self.assertEqual([(e.name, e.data) for e in archive.read(ours)[1]], [(e.name, e.data) for e in installed])
+                installed = {e.name: e.data for e in archive.read((MODERN_TEST / skins['Path']).read_bytes())[1]}
+                for e in archive.read(ours)[1]:
+                    if e.name != 'sf_wolfcloak256.dds':
+                        self.assertEqual(installed.get(e.name), e.data, e.name)
         game = patch['Files'][0]
         self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', 'f6660890'))  # 2c7e306e0 (Vampiir hover); the test client and DR-dev-0.1d match
         # The stock 1.130 loading screen in, the Divided Realms splash out, in one edit.

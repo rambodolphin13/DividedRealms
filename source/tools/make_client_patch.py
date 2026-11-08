@@ -35,11 +35,12 @@ with nothing retail in it: items/offline_fishrod01.nif is made From the player's
 positions and bounding sphere, and one gamedata.mpk entry with Members adds our three rows to objects.csv and items.csv,
 one member after the other. Building the patch needs numpy (the rod's mesh code).
 
-The Sovereign Regalia art (tools/sovereign-art: Regalia of Tara and of Camelot, objects 4950-4963) is our painted skins on
-stock meshes: each kit's two skin archives (pskin062/mskin071, pskin063/mskin072) are made From a stock skin archive and
-ship whole, since every texture in them is ours, and its pskins.csv, mskins.csv and objects.csv rows join the rod's in the
-one gamedata.mpk entry. The archives use a fixed member time, so the same textures give the same bytes. Building them
-needs Pillow. The Storm Regalia (objects 4929-4942) is not in the patch: its art is a separate experimental kit.
+The Sovereign Regalia art (tools/sovereign-art: Storm Regalia objects 4929-4933 and 4937, Regalia of Tara and of Camelot
+4950-4963) is our painted skins on stock meshes: each kit's two skin archives (pskin061/mskin070, pskin062/mskin071,
+pskin063/mskin072) are made From a stock skin archive and ship whole, since every texture in them is ours, and its
+pskins.csv, mskins.csv and objects.csv rows join the rod's in the one gamedata.mpk entry. The archives use a fixed member
+time, so the same textures give the same bytes. Building them needs Pillow. The Storm winged helm (4942) stays out: its
+wings are the stock helm's feathers recoloured (build_modern_test_package.py gives it the stock helm instead).
 
 Marfach Caverns (region 276) is the one exception to shipping nothing retail, by the owner's decision (2026-10-30): 1.130
 has no copy of its map, so dat276.mpk and its sounds.dat (about 20 KB, read from the classic client when the patch is
@@ -100,7 +101,7 @@ GAMEDATA = 'gamedata.mpk'
 ROD_CATALOGS = ('objects.csv', 'items.csv')
 SOVEREIGN_ART = Path(__file__).resolve().parents[2] / 'tools/sovereign-art'
 # The Regalia kits (tools/sovereign-art/<kit>/install_<kit>_set.py): our painted skins on stock meshes, under new IDs.
-REGALIA_KITS = ('tara', 'camelot')
+REGALIA_KITS = ('storm', 'tara', 'camelot')
 # The stock archive each new skin archive is made From (any file every 1.130 client has; its bytes don't ship).
 REGALIA_FROM = 'items/pskins/pskin008.mpk'
 REGALIA_STAMP = 1794009600  # 2026-11-07 00:00 UTC, the archives' member time: the same bytes on every build

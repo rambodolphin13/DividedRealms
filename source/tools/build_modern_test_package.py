@@ -78,7 +78,11 @@ WITHHELD_MERCHANT_ITEMS = ('mount_67',)
 # Models only the developer's client has, for the same reason, mapped to the stock model the package's world uses instead,
 # and the settings that would swap them in. Empty since the fishing rod (objects 4927 and 4928) is in the client patch
 # (make_client_patch.py rod_entries); a new private model goes here until the patch adds it.
-PRIVATE_MODELS: dict[int, int] = {}
+PRIVATE_MODELS: dict[int, int] = {
+    # The Storm Regalia's winged helm: its skin's wings are the stock ToA Winged Helm (Mid)'s feathers recoloured, so it
+    # isn't only our art and stays out of the client patch. The package draws the stock helm it was cloned from.
+    4942: 2224,
+}
 STOCK_SERVER_PROPERTIES: dict[str, str] = {}
 
 
