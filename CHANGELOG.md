@@ -3,9 +3,46 @@
 The newest version is first. For the full detail of every earlier update, see
 [docs/history/CHANGELOG-0.3-to-0.32b.md](docs/history/CHANGELOG-0.3-to-0.32b.md).
 
+## DR-dev-0.1d — 2026-11-07
+
+The Sovereign remakes, a launcher that updates itself, and the fixes from a full day of playtesting. It replaces
+DR-dev-0.1b and includes everything listed under DR-dev-0.1c (built, never published).
+
+- **Updates from the launcher:** from this build on, the launcher looks for a newer release on GitHub once a day (or
+  Options > Update and repair > CHECK FOR UPDATES), and offers Install, Later or Skip this version. Install
+  downloads the release, checks it against its published SHA-256 and the package's own file list, then copies it
+  over your folder with a backup of every file it replaces, keeps your world, account, logs and settings, and rolls
+  back if anything fails. The daily check can be turned off. Ported from chris4aker's Living Server.
+- **Storm Sovereign remake:** Hammer, Axe and Shield lines with 60 chained styles, Tempest charges spent by
+  finishers, merged spells, three realm abilities, one Storm Wolf, and Storm Regalia as real items with a set bonus.
+- **Tuatha Sovereign remake:** Scythe, Blades and Shield, 61 styles, Sidhe Marks, the two courts, 15 spells, Evade,
+  the Morrigan form and Regalia of Tara.
+- **Pendragon Sovereign remake:** Sword, Polearm and Shield, 61 styles, Valor, 9 new spells, three realm abilities
+  and Regalia of Camelot. (The Regalia sets use stock armor art in this build.)
+- **Sovereign styles:** a finisher whose hit kills still runs its splash, heals and spends; style effects can't be
+  resisted; the Sovereign's life siphon now says what it restored.
+- **Loot:** one loot roll per kill with personal drops for the player who earned them (a hand pickup no longer
+  autosplits them away), bad-luck protection, family loot tables for 1,500 monster names that dropped only coin,
+  ToA bonuses on random items (rog_toa_item_chance 15), class-filtered cap lines, and no single huge stat line.
+- **Atlantis:** monsters notice you at 500 like the rest of the world (was 800); 57 djinn landings moved out of
+  monster camps; aggressive Stable Masters and Bakabti at the Havens are at peace; zone exits route bots correctly;
+  a warning when you start holding your breath; the Ruins of Atlantis sea monsters are back above the sea floor.
+- **Master Levels and artifacts:** trial starters no longer stand in hostile camps; trial clones, respawns and
+  encounter forms no longer pay full experience and loot; lone encounter forms no longer cast like the boss; the Band
+  of Stars snake has normal health; the Winged Helm and Golden Scarab Vest encounters moved out of their camps.
+- **Classes:** Mauler left-hand wraps fit the left hand; Reaver Boomslang/Taipan snares 40% and Constrictor procs
+  Reaver Pain; Malefic Horror makes monsters flee; Necromancer servants proc again; Enchanter Stone Skin's armor
+  lands; pulsing chants no longer leave a negative regeneration bonus; regeneration bonuses stack again (issue #10);
+  monsters on model IDs the 1.130 client reused look right again.
+- **Bots:** they notice enemy players like players do instead of by radar; Darkness Falls princes no longer eat them
+  and solo bots stay on their own side; Atlantis bots give up fewer trips; a bot in your group stops its old trip;
+  /invite no longer breaks a bot party mid-camp; raid deaths no longer make bots pick easier camps; and many smaller
+  fixes from the playtest and server logs.
+- **Guilds:** /gc addalt adds your own other characters to your guild, even offline.
+
 ## DR-dev-0.1c — 2026-11-06
 
-A fix for Atlantis movement; it replaces DR-dev-0.1b.
+A fix for Atlantis movement; it replaces DR-dev-0.1b. (Built, never published: its fixes ship in DR-dev-0.1d.)
 
 - Atlantis: on land below sea level, and in the water, players stopped and snapped in place, and drowned standing on
   dry land in the Stygian Delta and the Land of Atum. The server now puts water only where the client draws it (each
