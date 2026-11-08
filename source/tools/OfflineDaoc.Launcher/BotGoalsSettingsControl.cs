@@ -9,7 +9,7 @@ internal sealed class BotGoalsSettingsControl : UserControl
     private readonly NumericUpDown[,] _values = new NumericUpDown[3, 4];
     private readonly Label[] _totals = new Label[3];
     private readonly CheckBox _spreadEnabled = new() { Text = "Stop some bots below level 50", AutoSize = true, Margin = new Padding(3, 3, 3, 8) };
-    private readonly NumericUpDown[] _spread = new NumericUpDown[4];
+    private readonly NumericUpDown[] _spread = new NumericUpDown[5];
     private readonly Label _spreadTotal = new() { AutoSize = true, Padding = new Padding(0, 8, 0, 8) };
     private readonly Label _status = new() { AutoSize = true, MaximumSize = new Size(850, 0) };
     private readonly Button _save = new() { Text = "Save settings", AutoSize = true };
@@ -72,11 +72,11 @@ internal sealed class BotGoalsSettingsControl : UserControl
                 "gaining experience but keeps playing, looting and earning realm points. The shares must total 100%." });
         body.Controls.Add(_spreadEnabled);
         _spreadEnabled.CheckedChanged += (_, _) => { if (!_loading) { _notice = ""; UpdateState(); } };
-        var spreadTable = new TableLayoutPanel { AutoSize = true, ColumnCount = 5, RowCount = 2, Margin = new Padding(3, 3, 3, 8) };
-        foreach (int width in new[] { 125, 125, 125, 125, 190 }) spreadTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, width));
-        string[] spreadHeadings = ["Stop at 10–19 %", "Stop at 20–34 %", "Stop at 35–49 %", "Reach 50 %", "Total"];
-        for (int col = 0; col < 5; col++) spreadTable.Controls.Add(new Label { Text = spreadHeadings[col], AutoSize = true, Padding = new Padding(0, 4, 0, 8) }, col, 0);
-        for (int col = 0; col < 4; col++)
+        var spreadTable = new TableLayoutPanel { AutoSize = true, ColumnCount = 6, RowCount = 2, Margin = new Padding(3, 3, 3, 8) };
+        foreach (int width in new[] { 120, 120, 120, 120, 120, 170 }) spreadTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, width));
+        string[] spreadHeadings = ["Stop at 1–9 %", "Stop at 10–19 %", "Stop at 20–34 %", "Stop at 35–49 %", "Reach 50 %", "Total"];
+        for (int col = 0; col < 6; col++) spreadTable.Controls.Add(new Label { Text = spreadHeadings[col], AutoSize = true, Padding = new Padding(0, 4, 0, 8) }, col, 0);
+        for (int col = 0; col < 5; col++)
         {
             var value = new NumericUpDown { Minimum = 0, Maximum = 100, Width = 100, Margin = new Padding(3, 5, 3, 8),
                 AccessibleName = spreadHeadings[col], BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
@@ -84,7 +84,7 @@ internal sealed class BotGoalsSettingsControl : UserControl
             value.ValueChanged += (_, _) => { if (!_loading) { _notice = ""; UpdateState(); } };
             spreadTable.Controls.Add(value, col, 1);
         }
-        spreadTable.Controls.Add(_spreadTotal, 4, 1);
+        spreadTable.Controls.Add(_spreadTotal, 5, 1);
         body.Controls.Add(spreadTable);
         body.Controls.Add(new Label { AutoSize = true, MaximumSize = new Size(850, 0),
             Text = "A bot's stop level comes from its roster id, so it stays the same every start. Bots already past their stop\n" +
@@ -109,7 +109,7 @@ internal sealed class BotGoalsSettingsControl : UserControl
         LevelSpread = Spread(),
     };
     private BotLevelSpread Spread() => new(_spreadEnabled.Checked, (int)_spread[0].Value, (int)_spread[1].Value,
-        (int)_spread[2].Value, (int)_spread[3].Value);
+        (int)_spread[2].Value, (int)_spread[3].Value, (int)_spread[4].Value);
     private BotGoalWeights Row(int row) => new((int)_values[row, 0].Value, (int)_values[row, 1].Value, (int)_values[row, 2].Value,
         (int)_values[row, 3].Value);
 
@@ -126,10 +126,11 @@ internal sealed class BotGoalsSettingsControl : UserControl
         }
         BotLevelSpread spread = settings.LevelSpread ?? BotLevelSpread.Defaults;
         _spreadEnabled.Checked = spread.Enabled;
-        _spread[0].Value = spread.Stop10To19;
-        _spread[1].Value = spread.Stop20To34;
-        _spread[2].Value = spread.Stop35To49;
-        _spread[3].Value = spread.Reach50;
+        _spread[0].Value = spread.Stop1To9;
+        _spread[1].Value = spread.Stop10To19;
+        _spread[2].Value = spread.Stop20To34;
+        _spread[3].Value = spread.Stop35To49;
+        _spread[4].Value = spread.Reach50;
         _loading = false;
     }
 

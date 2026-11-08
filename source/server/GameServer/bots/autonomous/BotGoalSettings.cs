@@ -30,14 +30,14 @@ public sealed record BotGoalWeights(int SoloPve, int GroupPve, int RvR, int Batt
 
 /// <summary>
 /// Where autonomous gamebots stop gaining experience (owner request 2026-11-08), so every level range keeps bots.
-/// Each bot draws its stop level from its own id, so it never changes between starts. The four shares are percentages
+/// Each bot draws its stop level from its own id, so it never changes between starts. The five shares are percentages
 /// of the roster and must total 100. A bot already past its stop level keeps its level; it only stops gaining.
 /// </summary>
-public sealed record BotLevelSpread(bool Enabled, int Stop10To19, int Stop20To34, int Stop35To49, int Reach50)
+public sealed record BotLevelSpread(bool Enabled, int Stop1To9, int Stop10To19, int Stop20To34, int Stop35To49, int Reach50)
 {
-    public static BotLevelSpread Defaults => new(false, 15, 15, 15, 55);
-    public int Total => Stop10To19 + Stop20To34 + Stop35To49 + Reach50;
-    public static readonly (int Low, int High)[] Ranges = [(10, 19), (20, 34), (35, 49), (50, 50)];
+    public static BotLevelSpread Defaults => new(false, 10, 10, 15, 15, 50);
+    public int Total => Stop1To9 + Stop10To19 + Stop20To34 + Stop35To49 + Reach50;
+    public static readonly (int Low, int High)[] Ranges = [(1, 9), (10, 19), (20, 34), (35, 49), (50, 50)];
 
     /// <summary>The level this bot stops at: 50 when the spread is off or the bot draws the level 50 share.</summary>
     public int StopLevelFor(long botId)
@@ -45,9 +45,9 @@ public sealed record BotLevelSpread(bool Enabled, int Stop10To19, int Stop20To34
         if (!Enabled || Total != 100) return 50;
         ulong draw = Mix((ulong)botId);
         int roll = (int)(draw % 100);
-        int[] shares = [Stop10To19, Stop20To34, Stop35To49, Reach50];
+        int[] shares = [Stop1To9, Stop10To19, Stop20To34, Stop35To49, Reach50];
         int range = 0, cumulative = shares[0];
-        while (range < 3 && roll >= cumulative) cumulative += shares[++range];
+        while (range < shares.Length - 1 && roll >= cumulative) cumulative += shares[++range];
         (int low, int high) = Ranges[range];
         return low + (int)(Mix(draw) % (ulong)(high - low + 1));
     }
@@ -63,7 +63,7 @@ public sealed record BotLevelSpread(bool Enabled, int Stop10To19, int Stop20To34
 
     public void Validate()
     {
-        int[] shares = [Stop10To19, Stop20To34, Stop35To49, Reach50];
+        int[] shares = [Stop1To9, Stop10To19, Stop20To34, Stop35To49, Reach50];
         if (shares.Any(share => share < 0 || share > 100) || Total != 100)
             throw new InvalidDataException("Level spread: percentages must be 0–100 and add up to exactly 100%.");
     }

@@ -54,14 +54,14 @@ public class BotGoalsSettingsTests
     {
         var spread = Field<NumericUpDown[]>("_spread");
         Field<CheckBox>("_spreadEnabled").Checked = true;
-        spread[3].Value = 40;
+        spread[4].Value = 40;
         Assert.That(Field<Button>("_save").Enabled, Is.False);
         Assert.That(Field<Label>("_spreadTotal").Text, Does.Contain("needs 100%"));
-        spread[0].Value = 30;
+        spread[0].Value = 20;
         Assert.That(Field<Button>("_save").Enabled, Is.True);
         Call("SaveSettings");
         Assert.That(BotGoalSettings.Load(Path.Combine(_folder, BotGoalSettings.FileName)).LevelSpread,
-            Is.EqualTo(new BotLevelSpread(true, 30, 15, 15, 40)));
+            Is.EqualTo(new BotLevelSpread(true, 20, 10, 15, 15, 40)));
         _stopped = false;
         Call("UpdateState");
         Assert.That(Field<CheckBox>("_spreadEnabled").Enabled, Is.False);
