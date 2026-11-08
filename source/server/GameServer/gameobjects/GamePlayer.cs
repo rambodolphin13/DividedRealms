@@ -7016,6 +7016,8 @@ namespace DOL.GS
 
                                                     if (aim == null)
                                                         Out.SendMessage("You need a target for that!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                                                    else if (ItemSpellTargetProblem(spell, aim) is string problem)
+                                                        Out.SendMessage(problem, eChatType.CT_System, eChatLoc.CL_SystemWindow);   // the charge is kept
                                                     else if (spellHandler.StartSpell(aim, useItem))
                                                     {
                                                         if (useItem.Count > 1)
@@ -8536,6 +8538,32 @@ namespace DOL.GS
                         UpdateWaterBreathState(eWaterBreath.Holding);
                 }
             }
+        }
+
+        /// <summary>
+        /// Why a charged item's harmful spell can't go at <paramref name="aim"/>, or null when it can. StartSpell skips
+        /// the cast checks and its target list drops an unattackable target quietly, so the Javelin of Flame said
+        /// "has been used", spent a charge and did nothing (DR-058). The attack rules' own message says why.
+        /// </summary>
+        public string ItemSpellTargetProblem(Spell spell, GameLiving aim)
+        {
+            if (spell == null || !spell.IsHarmful || aim == this || spell.Target is not eSpellTarget.ENEMY || spell.Range <= 0)
+                return null;
+
+            return ItemSpellTargetProblem(aim.IsAlive, IsWithinRadius(aim, spell.CalculateEffectiveRange(this)),
+                () => GameServer.ServerRules.IsAllowedToAttack(this, aim, false));
+        }
+
+        /// <summary>The decision, apart from the world: dead, too far, or the attack rules said no (they send their own message).</summary>
+        public static string ItemSpellTargetProblem(bool aimAlive, bool inRange, Func<bool> allowedToAttack)
+        {
+            if (!aimAlive)
+                return "Your target is dead!";
+
+            if (!inRange)
+                return "That target is too far away!";
+
+            return allowedToAttack() ? null : "You can't attack that target.";
         }
 
         public void UpdateWaterBreathState(eWaterBreath state)
