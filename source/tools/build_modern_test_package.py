@@ -58,7 +58,8 @@ CONNECTOR = 'connect-local1130.exe'
 # (world-workshop) is installed from the repository's clean package build instead of the install's copy.
 # server-backups holds deploy backups (developer builds), herald the launcher's Herald page written from this game's records.
 # world-updates is written from the repository's chain (the install may have an older one).
-RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', 'server-backups', 'herald', 'world-updates'}
+RUNTIME_SKIP_DIRS = {'client-modern', 'world-workshop', 'world-workshop-data', 'server-backups', 'herald', 'world-updates',
+                     '.dr'}  # .dr: the private DevKit's server supervisor state (lock, console log)
 WORLD_WORKSHOP = 'artifacts/world-workshop-package/WorldWorkshop'
 DARKNESS_FALLS_PROOFS = Path(__file__).resolve().parents[1] / 'server/GameServer/bots/autonomous/data/darkness_falls_navigation_proofs.json'
 # host-for-friends.json and the firewall script are the developer's Host for Friends state (friends' addresses, local paths).
@@ -67,7 +68,9 @@ RUNTIME_SKIP_NAMES = {'modern-client.json', 'modern-profile-verification.json', 
                       # The developer's overlay choices: shipped, they would switch the fight card and panels off for everyone.
                       'overlay.json',
                       # The launcher's Bot AI diagnostics switch: a diagnostics file, which check_package refuses.
-                      'bot-diagnostics.on'}
+                      'bot-diagnostics.on',
+                      # The private DevKit's deploy record (INSTALLED.json): names this PC's folders and builds.
+                      'INSTALLED.json'}
 LAUNCHER_FILES = ('OfflineDAoC.dll', 'OfflineDAoC.exe', 'OfflineDAoC.pdb', 'OfflineDAoC.deps.json', 'OfflineDAoC.runtimeconfig.json',
                   'Join Friend.cmd')
 TEXT_SUFFIXES = {'.json', '.xml', '.txt', '.md', '.cmd', '.config', '.ini', '.csv'}
