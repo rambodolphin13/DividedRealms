@@ -50,7 +50,18 @@ namespace DOL.GS
         public const int QuickReturnsBeforeCapital = 1;
 
         public static int NextQuickReturns(int quickReturns, bool sameBind, long sinceLastRelease) =>
-            sameBind && sinceLastRelease < QuickReturnMilliseconds ? quickReturns + 1 : 0;
+            NextQuickReturns(quickReturns, sameBind, sinceLastRelease, 0);
+
+        /// <summary>
+        /// Only a death close to the bind says the bind itself is ringed by danger. Overnight run 2026-11-08: two ordinary
+        /// deaths within six minutes at a camp far from the bind sent 608 levelling bots (mostly 6-14, killed by blue, yellow
+        /// and green) to the capital, a long way from their camps, 913 times.
+        /// </summary>
+        public const double NearBindDeathRadius = 6_000;
+
+        public static int NextQuickReturns(int quickReturns, bool sameBind, long sinceLastRelease, double deathDistanceFromBind) =>
+            sameBind && sinceLastRelease < QuickReturnMilliseconds && deathDistanceFromBind <= NearBindDeathRadius
+                ? quickReturns + 1 : 0;
 
         public static bool SendsToCapital(int quickReturns) => quickReturns >= QuickReturnsBeforeCapital;
 

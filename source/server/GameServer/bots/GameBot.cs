@@ -1224,7 +1224,9 @@ namespace DOL.GS
                 long now = GameLoop.GameLoopTime;
                 bool sameBind = _lastBindRelease != null && _lastBindReleaseRegion == releaseRegion &&
                     _lastBindRelease.X == release.X && _lastBindRelease.Y == release.Y;
-                _bindQuickReturns = BotReleaseBindPoints.NextQuickReturns(_bindQuickReturns, sameBind, now - _lastBindReleaseTick);
+                // The corpse is still where the bot fell: how far from the bind it died.
+                double deathDistance = System.Math.Sqrt(System.Math.Pow((double)X - release.X, 2) + System.Math.Pow((double)Y - release.Y, 2));
+                _bindQuickReturns = BotReleaseBindPoints.NextQuickReturns(_bindQuickReturns, sameBind, now - _lastBindReleaseTick, deathDistance);
                 _lastBindRelease = release;
                 _lastBindReleaseRegion = releaseRegion;
                 _lastBindReleaseTick = now;
@@ -3138,8 +3140,19 @@ namespace DOL.GS
         internal void NoteSpellFinished(Spell spell, GameLiving target)
         {
             if (spell != null && !spell.IsHarmful)
+            {
                 _lastFinishedBuff = (spell.ID, GameLoop.GameLoopTime, target?.Name ?? string.Empty);
+                if (spell.Target == eSpellTarget.GROUP)
+                    _groupBuffFinishedTicks[spell.ID] = GameLoop.GameLoopTime;
+            }
         }
+
+        private readonly Dictionary<int, long> _groupBuffFinishedTicks = new();
+
+        /// <summary>This group buff was cast to the end within the last <paramref name="milliseconds"/>.</summary>
+        internal bool GroupBuffFinishedWithin(Spell spell, long milliseconds) =>
+            spell != null && _groupBuffFinishedTicks.TryGetValue(spell.ID, out long tick) &&
+            GameLoop.GameLoopTime - tick < milliseconds;
 
         private (int SpellId, string Text) _lastSpellMessage;
 

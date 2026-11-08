@@ -37,6 +37,21 @@ namespace DOL.GS
         private int _routeThreatPullRepeats;
         private long _lastRouteThreatPullTick;
         private const int RouteThreatPullAttempts = 3;
+
+        /// <summary>Turn-backs from one monster on a keep march before the bot walks on past it.</summary>
+        public const int RvrTravelTurnBacksBeforeWalkingOn = 2;
+        private GameNPC _rvrTurnBackFrom;
+        private int _rvrTurnBacks;
+        private long _rvrLastTurnBackTick;
+
+        /// <summary>Counts this turn-back from <paramref name="blocker"/> (a gap over two minutes starts over).</summary>
+        private int RvrTravelTurnBacks(GameNPC blocker, long now)
+        {
+            _rvrTurnBacks = blocker == _rvrTurnBackFrom && now - _rvrLastTurnBackTick < 120_000 ? _rvrTurnBacks + 1 : 1;
+            _rvrTurnBackFrom = blocker;
+            _rvrLastTurnBackTick = now;
+            return _rvrTurnBacks;
+        }
         // A party holding in front of a route monster it may not pull yet. Run 17 (2026-10-17): 12,472 of 13,547 level 50
         // party route-threat decisions were the same hold repeated (114 loops in 78 parties, one for 98 minutes): only
         // the leader looks ahead, only the party's puller may open a pull, and a leader that was not the puller held
@@ -265,6 +280,18 @@ namespace DOL.GS
                     SetStatus(bot, $"Going around {blocker.Name}", GoalText(),
                         $"Taking a way around the {(pack > 1 ? $"pack of {pack}" : "monster")} on the route instead of walking into its aggro",
                         blocker.Name, _camp?.ZoneName ?? string.Empty);
+                    return false;
+
+                case RouteThreatAction.Retarget when alone && rvrTravel && (int)con <= (int)ConColor.ORANGE && !bossLike &&
+                        RvrTravelTurnBacks(blocker, now) > RvrTravelTurnBacksBeforeWalkingOn:
+                    // A keep march has no other road. Overnight run 2026-11-08: level 50s stood in the fellwood camp on the
+                    // Pennine road (rvr-keep-56) and by the isalf forayers in Odin's Gate (rvr-keep-79), turning back from a
+                    // yellow pack with "no way out" every scan until three stalls released the job, then marching back to
+                    // the same spot (700 RVR_KEEP_TRAVEL_STALL lines, two-thirds at those two spots). Walk on and fight if they come.
+                    foreach (GameNPC member in packMembers)
+                        _unreachableRouteThreats.Add(member);
+                    if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_THREAT_WALK_ON bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
+                             $"target=\"{blocker.Name}\" pack={pack} con={con} zone=\"{zone.Description}\" at={blocker.X},{blocker.Y},{blocker.Z}");
                     return false;
 
                 case RouteThreatAction.Retarget when alone:
