@@ -1277,6 +1277,9 @@ namespace DOL.AI.Brain
                 if (post == null) raidPoint = CompanionFollowPolicy.FormationDestination(BotBody, raidPoint);
                 _ambientWanderMovement = false;
                 var point = new Point3D((int)raidPoint.X, (int)raidPoint.Y, (int)raidPoint.Z);
+                // A shut friendly keep door between the bot and its spot: walk to it and pass it (CompanionKeepDoors).
+                if (CompanionKeepDoors.Follow(BotBody, leader, raidPoint))
+                    return;
                 if (Body.GetDistanceTo(point) > 35)
                 {
                     CompanionFollowPolicy.BeginFormation(BotBody, raidPoint);
@@ -1297,6 +1300,8 @@ namespace DOL.AI.Brain
                 Vector3 floor = CompanionFollowPolicy.FormationDestination(BotBody, new(destination.X, destination.Y, destination.Z));
                 destination = new Point3D((int)floor.X, (int)floor.Y, (int)floor.Z);
             }
+            if (!ambientWander && CompanionKeepDoors.Follow(BotBody, leader, new Vector3(destination.X, destination.Y, destination.Z)))
+                return;
             int arrivalTolerance = ambientWander ? 12 : 20;
             if (Body.GetDistanceTo(destination) > arrivalTolerance)
             {
