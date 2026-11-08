@@ -30,4 +30,33 @@ public sealed class UT_BonedancerCommanderUpgrade
     {
         Assert.That(AutonomousPetSupport.CommanderNeedsUpgrade(eCommanderType.Unknown, 52, 50), Is.False);
     }
+
+    // DR-097 (2026-11-08): the Dread spells now summon their own templates.
+    [Test]
+    public void TheDreadLordOutranksTheDreadCommanderOnce()
+    {
+        Assert.That(AutonomousPetSupport.CommanderNeedsUpgrade(eCommanderType.DreadCommander, AutonomousPetSupport.DreadLordTemplateId, 50), Is.True);
+        Assert.That(AutonomousPetSupport.CommanderNeedsUpgrade(eCommanderType.DreadLord, AutonomousPetSupport.DreadLordTemplateId, 50), Is.False);
+    }
+
+    [Test]
+    public void TheDreadGuardianAndLichRankWithTheDreadCommander()
+    {
+        foreach (int template in new[] { 211, 212, 213 })
+        {
+            Assert.That(AutonomousPetSupport.CommanderNeedsUpgrade(eCommanderType.DreadCommander, template, 40), Is.False, $"template {template}");
+            Assert.That(AutonomousPetSupport.CommanderNeedsUpgrade(eCommanderType.BoneCommander, template, 40), Is.True, $"template {template}");
+            Assert.That(AutonomousPetSupport.CommanderNeedsUpgrade(eCommanderType.DreadLich, template, 40), Is.False, $"template {template}");
+        }
+    }
+
+    // DR-097: subpets are 100% of the caster's level (owner 2026-11-01), so the old 75 total left a level 50 Bonedancer one.
+    [Test]
+    public void ALevel50BonedancerControlsTwoFullLevelSubpets()
+    {
+        Assert.That(AutonomousPetSupport.BonedancerMinionLevelBudget(50), Is.EqualTo(100));
+        Assert.That(AutonomousPetSupport.BonedancerMinionLevelBudget(45), Is.GreaterThanOrEqualTo(2 * 45));
+        Assert.That(AutonomousPetSupport.BonedancerMinionLevelBudget(30), Is.EqualTo(75));
+        Assert.That(AutonomousPetSupport.BonedancerMinionLevelBudget(0), Is.EqualTo(75));
+    }
 }
