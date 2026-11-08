@@ -52,6 +52,7 @@ namespace DOL.GS
                 case eSpellType.DeathKnightPowerShield: return eEffect.DeathKnightPowerShield;
                 case eSpellType.DeathKnightEmpowerment: return eEffect.DeathKnightEmpowerment;
                 case eSpellType.DeathKnightRegenerate: return eEffect.HealOverTime;
+                case eSpellType.HealAllOverTime: return eEffect.HealOverTime;
                 case eSpellType.DeathKnightSnare: return eEffect.MovementSpeedDebuff;
                 case eSpellType.DeathKnightServant: return eEffect.Pet;
                 case eSpellType.DeathKnightPowerLock: return eEffect.DeathKnightPowerLock;

@@ -541,5 +541,6 @@ namespace DOL.GS
         ArtifactProcPet,
         ArtifactSummonItems,
         CostFreeChance,
+        HealAllOverTime,
     }
 }
