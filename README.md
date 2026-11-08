@@ -96,7 +96,9 @@ siege whether or not you log in. Bring friends along if you like: one of you hos
 3. Click **START SERVER**, then **ENTER REALM**. Your account is made on your first login.
 
 **Updating:** close the launcher, extract the new build over your folder and replace every file. Your world and
-characters are kept.
+characters are kept. Builds after DR-dev-0.1c update themselves from the launcher. **Options > Update and repair >
+CHECK FOR UPDATES** checks now, and the launcher also checks once a day on start (you can turn that off). See
+[Updating](docs/PLAY-MODERN-TEST.md#updating).
 
 The full guide is [docs/PLAY-MODERN-TEST.md](docs/PLAY-MODERN-TEST.md).
 

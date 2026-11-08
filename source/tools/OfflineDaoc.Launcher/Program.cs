@@ -67,6 +67,23 @@ internal static class Program
             Environment.ExitCode = ApplyRecommendedSettings();
             return;
         }
+        if (args.Length >= 1 && args[0] == Updates.FinishUpdateCommand.Switch)
+        {
+            // The update helper (a copy of this launcher in runtime\updates\helper): copies a checked package over the game.
+            Environment.ExitCode = Updates.FinishUpdateCommand.Run(args);
+            return;
+        }
+        if (args.Length >= 2 && args[0] == Updates.ApplyUpdateCommand.Switch)
+        {
+            // Tests and support: an update from a package on disk, without the window (Updates/ApplyUpdateCommand.cs).
+            Environment.ExitCode = Updates.ApplyUpdateCommand.Run(args, MainForm.ServerRootFor(AppContext.BaseDirectory), AppContext.BaseDirectory);
+            return;
+        }
+        if (args.Length >= 2 && args[0] == "--rollback-update")
+        {
+            Environment.ExitCode = Updates.FinishUpdateCommand.RunRollback(args, MainForm.ServerRootFor(AppContext.BaseDirectory));
+            return;
+        }
         ApplicationConfiguration.Initialize();
         Application.ThreadException += (_, e) =>
         {

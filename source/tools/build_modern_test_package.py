@@ -21,6 +21,9 @@ The install (the developer's modern test, only read) gives the server folder and
     the launcher copies the player's own 1.130 client into runtime/client-modern/app and patches the copy.
   * tools/connect-local1130.exe (upstream's connect.exe with its 1.130 edit), tools/dotnet (the .NET runtime), the
     START cmd, READ ME FIRST, the licences and docs.
+  * RELEASE.txt, the version stamp the launcher's update check reads (release_stamp), and PACKAGE MANIFEST.sha256, the
+    SHA-256 of every file, which the launcher's updater checks a downloaded package against. Name the package folder
+    DividedRealms-<version>-<name> (the zip takes its name) so the updater finds it on the release page.
 No retail client file ships (checked), and nothing is started.
 
 Build the server and launcher first without the developer's paths in the binaries (the package check refuses them):
@@ -143,6 +146,9 @@ Updating from an earlier test build: close the launcher, extract the new downloa
 folder and choose to replace every file. Your world and characters are kept: the launcher adds
 the new build's world fixes to your world (after a backup in runtime\\backups) and patches your
 client copy again (it may ask for your Dark Age of Camelot folder once).
+From this build on, the launcher can also do this for you: it looks for a newer release once a
+day (Options > Update and repair > CHECK FOR UPDATES to look now; you can turn the daily check
+off there) and installs it with your saves and settings kept. See docs/PLAY-MODERN-TEST.md.
 
 This is a development test build. See docs/PLAY-MODERN-TEST.md and docs/PROGRESS-2026-10.md.
 '''
@@ -150,6 +156,23 @@ This is a development test build. See docs/PLAY-MODERN-TEST.md and docs/PROGRESS
 
 def sha(path: Path) -> str:
     return release.sha(path)
+
+
+# The package's version stamp, at the top of the package beside EDITION.txt (and listed in PACKAGE MANIFEST.sha256). The
+# launcher's update check (source/tools/OfflineDaoc.Launcher/Updates) reads Version to know which release a folder is,
+# and only offers updates to a folder that has it (or an older package's EDITION.txt) and the manifest.
+RELEASE_STAMP = 'RELEASE.txt'
+REPOSITORY = 'rambodolphin13/DividedRealms'
+
+
+def release_stamp(label: str, package: str, commit: str = '') -> str:
+    """Key=value lines: Version is the label's first word (the release tag, e.g. DR-dev-0.1d), Package the top folder and
+    zip name (without .zip)."""
+    lines = [f'Version={label.split()[0]}', f'Label={label}', f'Package={package}', f'Repository={REPOSITORY}']
+    if commit:
+        lines.append(f'Commit={commit}')
+    lines.append(f'BuiltUtc={datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}')
+    return '\r\n'.join(lines) + '\r\n'
 
 
 def keep_runtime(relative: Path) -> bool:
@@ -329,6 +352,11 @@ def build(install: Path, pristine: Path, classic: Path, repo: Path, out: Path, l
     title = f'Divided Realms {label}'
     (out / 'READ ME FIRST.txt').write_text(READ_ME.format(label=label, rule='=' * len(title)).replace('\n', '\r\n'), encoding='utf-8')
     (out / 'EDITION.txt').write_text(f'{title}: the original 1.130 client (bring your own), modern test classes.\r\n', encoding='utf-8')
+    commit = subprocess.run(['git', '-C', str(repo), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
+    (out / RELEASE_STAMP).write_text(release_stamp(label, out.name, commit), encoding='utf-8')
+    if not out.name.startswith(f'DividedRealms-{release_version}'):
+        print(f'WARNING: the launcher looks for DividedRealms-{release_version}-<name>.zip on the release page; '
+              f'this package is {out.name}.zip, so the launcher will not offer it as an update.', flush=True)
     for name in ('LICENSE', 'THIRD_PARTY.md'):
         shutil.copy2(repo / name, out / name)
     # Only the docs the repository tracks: the developer's local hand-off and research notes never ship.
