@@ -33,7 +33,7 @@ public class LauncherNavigationTests
         var generate = Field<List<Button>>(form, "_realmGenerateButtons");
         var deleteAll = Field<Button>(form, "_deleteAllBotsButton");
 
-        Assert.That(generate, Has.Count.EqualTo(6));
+        Assert.That(generate, Has.Count.EqualTo(9)); // + Lv.1, + Lv.25 and + Lv.50 for each realm
         Assert.That(generate.All(button => All(bots).Contains(button)), Is.True);
         Assert.That(All(bots).Contains(deleteAll), Is.True);
         Assert.That(deleteAll.Enabled, Is.False);

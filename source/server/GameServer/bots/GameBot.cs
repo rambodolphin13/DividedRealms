@@ -582,6 +582,15 @@ namespace DOL.GS
         #region IGamePlayer — Level / Class Properties
 
         public byte MaxLevel => 50;
+
+        /// <summary>
+        /// The level at which this gamebot stops gaining experience: its level-spread stop (bot-goals.json) for an
+        /// autonomous gamebot, otherwise 50. Special Forces and account companions are never held back.
+        /// </summary>
+        public int ExperienceStopLevel =>
+            IsAutonomousWorldBot && !IsEpicSpecialForce && !IsAccountCompanion
+                ? Math.Clamp(AutonomousBotGoalPolicy.Settings.LevelSpread.StopLevelFor(DatabaseID), 1, MaxLevel)
+                : MaxLevel;
         public int RealmLevel { get; set; }
         public int MLLevel { get; set; }
         public bool Champion { get; set; }
@@ -1968,9 +1977,10 @@ namespace DOL.GS
             }
             if (!IsAutonomousWorldBot || arguments == null || arguments.ExpTotal <= 0)
                 return;
-            if (Level >= MaxLevel)
+            int stopLevel = ExperienceStopLevel;
+            if (Level >= stopLevel)
             {
-                // The cap discards the experience, but a kill that earned it is still proof the bot is working: a
+                // The cap (level 50, or the bot's own level-spread stop) discards the experience, but a kill that earned it is still proof the bot is working: a
                 // level-50 caster or pet class farming from one spot was "rescued" to its capital every fifteen
                 // minutes (241 of 268 such recoveries in run 2026-10-13 were level 50).
                 AutonomousStuckWatchdog.MarkProgress(this, eAutonomousProgressKind.Experience);
@@ -2014,12 +2024,16 @@ namespace DOL.GS
                 previousExperience = Experience;
                 previousLevel = Level;
                 Experience += experienceGained;
-                while (Level < MaxLevel && Experience >= GamePlayer.GetExperienceAmountForLevel(Level))
+                while (Level < stopLevel && Experience >= GamePlayer.GetExperienceAmountForLevel(Level))
                 {
                     Level++;
                     ApplyLevelStatGrowth(Level);
                     leveled = true;
                 }
+                // A bot held below 50 keeps no banked experience past its stop, so a later change to the
+                // spread does not level it several times from one kill.
+                if (Level >= stopLevel && stopLevel < MaxLevel)
+                    Experience = Math.Min(Experience, GamePlayer.GetExperienceAmountForLevel(Level) - 1);
 
                 if (leveled)
                 {

@@ -179,6 +179,7 @@ public sealed class LauncherPresentationTests
             Is.EqualTo(new[] { "1×  Original", "2×", "3×", "5×", "10×" }));
         var realmButtons = (System.Collections.IEnumerable)mainFormType.GetField("_realmGenerateButtons", HiddenInstance)!.GetValue(form)!;
         Assert.That(realmButtons.Cast<Button>().Count(button => button.Text == "+ Lv.1"), Is.EqualTo(3));
+        Assert.That(realmButtons.Cast<Button>().Count(button => button.Text == "+ Lv.25"), Is.EqualTo(3));
         Assert.That(realmButtons.Cast<Button>().Count(button => button.Text == "+ Lv.50"), Is.EqualTo(3));
     }
 

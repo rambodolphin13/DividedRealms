@@ -726,12 +726,13 @@ internal sealed partial class MainForm : Form
 
     private Control RealmGenerateButton(int realm, string realmName, Color accent)
     {
-        var split = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, Margin = Padding.Empty, Padding = Padding.Empty };
-        split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        int[] levels = [.. BotStartLevels];
+        var split = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = levels.Length, RowCount = 1, Margin = Padding.Empty, Padding = Padding.Empty };
+        foreach (int _ in levels)
+            split.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / levels.Length));
         split.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        split.Controls.Add(RealmGenerateLevelButton(realm, realmName, accent, 1), 0, 0);
-        split.Controls.Add(RealmGenerateLevelButton(realm, realmName, accent, 50), 1, 0);
+        for (int column = 0; column < levels.Length; column++)
+            split.Controls.Add(RealmGenerateLevelButton(realm, realmName, accent, levels[column]), column, 0);
         return split;
     }
 
@@ -2761,7 +2762,7 @@ internal sealed partial class MainForm : Form
             throw new InvalidOperationException("The prepared world database is missing.");
         if (count is not (1 or 10 or 100))
             throw new ArgumentOutOfRangeException(nameof(count));
-        if (level is not (1 or 50)) throw new ArgumentOutOfRangeException(nameof(level));
+        if (!BotStartLevels.Contains(level)) throw new ArgumentOutOfRangeException(nameof(level));
 
         using var connection = new SQLiteConnection($"Data Source={_database};Version=3;Pooling=False;Default Timeout=10");
         connection.Open();
@@ -2788,7 +2789,7 @@ internal sealed partial class MainForm : Form
         for (int index = 0; index < count; index++)
         {
             BotCharacterGenerator.Identity identity = BotCharacterGenerator.Generate(realm, reserved, modernClasses, rejected);
-            BotStartingLocation start = level == 50
+            BotStartingLocation start = level > 1
                 ? CapitalBotStartingLocation(identity.Realm)
                 : ChooseBotStartingLocation(connection, transaction, identity.Realm, identity.RaceId, identity.ClassId);
             identities.Add(identity);
@@ -2809,8 +2810,8 @@ internal sealed partial class MainForm : Form
                 """;
             insert.Parameters.AddWithValue("@name", identity.Name);
             insert.Parameters.AddWithValue("@level", level);
-            insert.Parameters.AddWithValue("@xp", level == 50 ? 169999999950L : 0L);
-            insert.Parameters.AddWithValue("@money", level == 50 ? 100000000L : 0L);
+            insert.Parameters.AddWithValue("@xp", BotStartExperience(level));
+            insert.Parameters.AddWithValue("@money", BotStartMoneyCopper(level));
             insert.Parameters.AddWithValue("@realm", identity.Realm);
             insert.Parameters.AddWithValue("@classId", identity.ClassId);
             insert.Parameters.AddWithValue("@className", identity.ClassName);
@@ -2823,7 +2824,7 @@ internal sealed partial class MainForm : Form
             insert.Parameters.AddWithValue("@y", start.Y);
             insert.Parameters.AddWithValue("@z", start.Z);
             insert.Parameters.AddWithValue("@zoneId", start.ZoneId);
-            insert.Parameters.AddWithValue("@zoneName", level == 50 ? start.ZoneName : start.RegionId is 51 or 151 or 181
+            insert.Parameters.AddWithValue("@zoneName", level > 1 ? start.ZoneName : start.RegionId is 51 or 151 or 181
                 ? "Shrouded Isles starting area"
                 : "Classic starting area");
             insert.Parameters.AddWithValue("@placement",
@@ -2850,6 +2851,33 @@ internal sealed partial class MainForm : Form
         transaction.Commit();
         return identities;
     }
+
+    /// <summary>The levels the "+ Lv." buttons create. Level 25 (2026-11-08) fills the middle levels.</summary>
+    internal static readonly int[] BotStartLevels = [1, 25, 50];
+
+    /// <summary>
+    /// Experience at the start of a level (the server's XPForLevel table), so a bot made at 25 or 50 sits at that
+    /// level's floor. The server trains every point on arrival for any bot created above level 1.
+    /// </summary>
+    internal static long BotStartExperience(int level) => level switch
+    {
+        1 => 0L,
+        25 => 146999950L,
+        50 => 169999999950L,
+        _ => throw new ArgumentOutOfRangeException(nameof(level)),
+    };
+
+    /// <summary>
+    /// Level 50s come with their class kit and 10 platinum. A level 25 gets no armor (gamebots earn it) but
+    /// 50 gold, enough to buy merchant gear for its level in its capital.
+    /// </summary>
+    internal static long BotStartMoneyCopper(int level) => level switch
+    {
+        1 => 0L,
+        25 => 500_000L,
+        50 => 100_000_000L,
+        _ => throw new ArgumentOutOfRangeException(nameof(level)),
+    };
 
     private sealed record BotStartingLocation(int RegionId, int X, int Y, int Z, int ZoneId = 0, string ZoneName = "");
 

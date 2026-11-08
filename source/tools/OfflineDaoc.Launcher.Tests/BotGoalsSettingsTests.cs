@@ -50,9 +50,27 @@ public class BotGoalsSettingsTests
         Assert.That(_panel.GetType().GetProperty("HasUnsavedChanges")!.GetValue(_panel), Is.False);
     }
 
+    [Test] public void LevelSpreadSavesOnlyAtOneHundredPercent()
+    {
+        var spread = Field<NumericUpDown[]>("_spread");
+        Field<CheckBox>("_spreadEnabled").Checked = true;
+        spread[3].Value = 40;
+        Assert.That(Field<Button>("_save").Enabled, Is.False);
+        Assert.That(Field<Label>("_spreadTotal").Text, Does.Contain("needs 100%"));
+        spread[0].Value = 30;
+        Assert.That(Field<Button>("_save").Enabled, Is.True);
+        Call("SaveSettings");
+        Assert.That(BotGoalSettings.Load(Path.Combine(_folder, BotGoalSettings.FileName)).LevelSpread,
+            Is.EqualTo(new BotLevelSpread(true, 30, 15, 15, 40)));
+        _stopped = false;
+        Call("UpdateState");
+        Assert.That(Field<CheckBox>("_spreadEnabled").Enabled, Is.False);
+        Assert.That(spread.All(value => !value.Enabled), Is.True);
+    }
+
     [Test] public void RenderPanelWithoutStartingServerOrLauncher()
     {
-        using var host = new Form { ClientSize = new Size(960, 530), StartPosition = FormStartPosition.Manual, Location = new Point(-3000, -3000), ShowInTaskbar = false };
+        using var host = new Form { ClientSize = new Size(960, 860), StartPosition = FormStartPosition.Manual, Location = new Point(-3000, -3000), ShowInTaskbar = false };
         host.Controls.Add(_panel);
         host.Show();
         Application.DoEvents();
