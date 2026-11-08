@@ -52,6 +52,19 @@ namespace DOL.GS
         // Lowest health points seen (not percent: a percent of Galladoria's 125,000-health Corrupt Primal of Fire is 1,250
         // points, and a few raiders wearing him down counted as no damage and he was skipped, run 23).
         private int _targetLowestHealth;
+        // Health at the last look: a boss that heals itself (Easmarach on the waterfall top, Grand Summoner Govannon's full
+        // heal at 50%) never goes below its earlier lowest while the raid wears him down again, and was skipped "no damage
+        // for five minutes" with the raid hitting him (Living Server play test 2026-11-07, 7eb241f44 / 5324734c6).
+        private int _targetLastHealth;
+
+        /// <summary>The target took damage since the last look (pure): below its lowest yet, or below the last look's
+        /// health (a boss that healed itself being worn down again). "No damage for five minutes" means that: a target the
+        /// raid keeps hurting is fought on (a fight it can't win ends in a wipe or the raid's time-out).</summary>
+        public static bool TargetTookDamage(int health, int lowest, int last) => health < lowest || last > 0 && health < last;
+
+        /// <summary>The named a raid with no target turns on (pure): the one attacking it, if any. While it has a target,
+        /// the old rule switches to an attacker only when the target itself is out of combat (Living Server 8ab2279ee).</summary>
+        public static GameNPC TurnsOnAttacker(GameNPC target, GameNPC attacker) => target == null ? attacker : null;
         // Final encounter muster (see MusterForFinal).
         private GameNPC _musterTarget;
         private Vector3 _musterPoint;
@@ -167,11 +180,16 @@ namespace DOL.GS
 
         /// <summary>
         /// An attempt on a named encounter failed when at least eight raiders were in it and half of them fell (dead,
-        /// released or gone from the dungeon), or when the encounter healed back to 95% after being taken to 85% or
-        /// lower (it reset: nobody was left fighting it).
+        /// released or gone from the dungeon), or when the encounter healed back to 95% after being taken to
+        /// <see cref="ResetWipeLowestPercent"/> or lower (it reset: nobody was left fighting it).
         /// </summary>
         public static bool IsWipe(int engaged, int fallen, int healthPercent, int lowestPercent) =>
-            engaged >= MinimumRaidersAtTarget && (fallen * 2 >= engaged || healthPercent >= 95 && lowestPercent <= 85);
+            engaged >= MinimumRaidersAtTarget && (fallen * 2 >= engaged || healthPercent >= 95 && lowestPercent <= ResetWipeLowestPercent);
+
+        /// <summary>How low a reset encounter must have been for the reset to count as the raid's wipe: 70% (Living Server
+        /// 2b383cb1a, play test 2026-11-07: a named trash monster on Caer Sidi's way, taken to 84% and left by 91 of 95 living
+        /// raiders, was counted as the raid's first wipe). A boss the raid wore down and then lost still counts.</summary>
+        public const int ResetWipeLowestPercent = 70;
 
         /// <summary>Raiders a regroup waits for: 70% of the raid's roster (40% after 20 minutes), 8 to 150.</summary>
         public static int RegroupNeeded(int roster, long regroupMilliseconds) =>
@@ -214,7 +232,7 @@ namespace DOL.GS
             _musterProgress.Remove(_target);
             // A reset encounter is back at full health: damage from there is progress again (the lowest health seen
             // was the last attempt's).
-            _targetLowestHealth = _target.Health;
+            _targetLowestHealth = _targetLastHealth = _target.Health;
             _targetProgressTick = now;
             _regrouping = false;
         }
@@ -407,7 +425,7 @@ namespace DOL.GS
                 _target = _chainTarget; _chain = null; _chainTarget = null;
                 // A fresh start: the chain's target kept the previous target's start, so Prince Ba'alorien
                 // inherited Prince Abdin's absence allowance and was skipped at 100% with the raid arriving (2026-10-14).
-                _targetProgressTick = _targetStartTick = now; _targetLowestHealth = _target.Health;
+                _targetProgressTick = _targetStartTick = now; _targetLowestHealth = _targetLastHealth = _target.Health;
                 _targetClosest = float.MaxValue; _targetApproachTick = now;
                 Hold = false; Status = "Clearing " + _target.Name;
                 return true;
@@ -955,7 +973,9 @@ namespace DOL.GS
             if (finalDeaths) { Complete = true; Status = "Final encounter defeated"; return; }
             if (_target?.IsAlive == true && _target.ObjectState == GameObject.eObjectState.Active)
             {
-                if (_target.Health < _targetLowestHealth) { _targetLowestHealth = _target.Health; _targetProgressTick = now; }
+                if (TargetTookDamage(_target.Health, _targetLowestHealth, _targetLastHealth)) _targetProgressTick = now;
+                _targetLowestHealth = Math.Min(_targetLowestHealth, _target.Health);
+                _targetLastHealth = _target.Health;
                 ReportHealthJump(participants, now);
                 // The no-damage clock runs only while the raid is actually at its target. A raid
                 // wiped or regrouping elsewhere skipped Prince Ba'alorien and Princess Nahemah at
@@ -986,7 +1006,7 @@ namespace DOL.GS
                              $"reason=\"it is fighting the raid\"");
                     _target = attacker; TargetName = attacker.Name; TargetLevel = attacker.Level;
                     Front = Destination = approach;
-                    _targetProgressTick = _targetStartTick = now; _targetLowestHealth = attacker.Health;
+                    _targetProgressTick = _targetStartTick = now; _targetLowestHealth = _targetLastHealth = attacker.Health;
                     _targetClosest = float.MaxValue; _targetApproachTick = now;
                     Hold = false; Status = "Clearing " + attacker.Name; return;
                 }
@@ -1028,6 +1048,22 @@ namespace DOL.GS
                 }
             }
             _target = null;
+            // A named that attacks the raid while it has no target (walking to its next encounter or its final staging) is
+            // fought, as it is while the raid gathers for another: Living Server play test 2026-11-07, Caer Sidi's raid
+            // walked to the horsemen's room past the Host, who killed 40 of it with nobody turning on him (8ab2279ee).
+            // A target just set aside (no damage, unreachable muster) is in _routeRetry, so HostileEncounter skips it.
+            if (TurnsOnAttacker(_target, HostileEncounter(live, participants)) is { } attacking)
+            {
+                bool resolved = TryEncounterApproach(attacking, participants, out Vector3 approach);
+                log.Warn($"REALM_EXPEDITION_TARGET_SWITCH region={_region} from=\"{TargetName}\" to=\"{attacking.Name}\" level={attacking.Level} " +
+                         $"front={(int)approach.X},{(int)approach.Y},{(int)approach.Z} approach={(resolved ? "resolved" : "raw")} " +
+                         $"reason=\"it is fighting the raid on its way\"");
+                _target = attacking; TargetName = attacking.Name; TargetLevel = attacking.Level;
+                Front = Destination = approach;
+                _targetProgressTick = _targetStartTick = now; _targetLowestHealth = _targetLastHealth = attacking.Health;
+                _targetClosest = float.MaxValue; _targetApproachTick = now;
+                Hold = false; Status = "Clearing " + attacking.Name; return;
+            }
             GameLiving[] inside = participants.Where(p => p.IsAlive && p.CurrentRegionID == _region).ToArray();
             if (AdvanceChain(inside, now)) return;
             bool atFront = inside.Any(p => p.IsWithinRadius(new Point3D((int)Front.X, (int)Front.Y, (int)Front.Z), 1000));
@@ -1135,7 +1171,7 @@ namespace DOL.GS
                 if (IsOutOfRangedReach(npc.Flags, npc.Z, (int)approach.Z))
                 { _routeRetry[npc] = now + BlockedTargetRetryMilliseconds; continue; }
                 _target = npc; Front = Destination = approach; TargetName = npc.Name; TargetLevel = npc.Level;
-                _targetProgressTick = _targetStartTick = now; _targetLowestHealth = npc.Health;
+                _targetProgressTick = _targetStartTick = now; _targetLowestHealth = _targetLastHealth = npc.Health;
                 _targetClosest = float.MaxValue; _targetApproachTick = now;
                 _probeCursor = 0; _blockedSince = 0;
                 Hold = false; Status = "Clearing " + npc.Name; return;
