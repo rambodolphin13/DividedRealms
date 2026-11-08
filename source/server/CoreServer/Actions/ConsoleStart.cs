@@ -119,7 +119,7 @@ namespace DOL.DOLServer.Actions
                         if (line[0] != '/')
                             line = $"/{line}";
 
-                        GameClient client = new(null);
+                        GameClient client = ConsoleCommandClient.Create();
                         client.Out = new ConsolePacketLib();
 
                         try
