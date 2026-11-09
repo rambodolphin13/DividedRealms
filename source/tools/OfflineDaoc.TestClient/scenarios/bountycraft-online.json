@@ -1,0 +1,16 @@
+{
+  "name": "Bountycraft: an item from the online Herald (Unyielding Majestic Robe, recipe 1733) crafts at a Camelot forge",
+  "steps": [
+    { "about": "server is listening", "tool": "server_status", "expect": ["\"listening\":true"], "required": true },
+    { "about": "log the Armsman in", "tool": "login", "args": { "session": "bounty", "name": "Bountycrafter", "class": "armsman" }, "expect": ["\"oid\":"], "required": true },
+    { "about": "empty backpack", "tool": "command", "args": { "session": "bounty", "text": "/clearinventory", "wait_ms": 1000 } },
+    { "about": "Stardust x2", "tool": "command", "args": { "session": "bounty", "text": "/item create stardust 2", "wait_ms": 800 } },
+    { "about": "Bounty Armor Mold x2", "tool": "command", "args": { "session": "bounty", "text": "/item create bounty_armor_mold 2", "wait_ms": 800 } },
+    { "about": "Recipe: Aurulite", "tool": "command", "args": { "session": "bounty", "text": "/item create bounty_recipe_aurulite 1", "wait_ms": 800 } },
+    { "about": "Enriched Quicksilver x3", "tool": "command", "args": { "session": "bounty", "text": "/item create Enriched_Quicksilver 3", "wait_ms": 800 } },
+    { "about": "go to a Camelot forge", "tool": "teleport", "args": { "session": "bounty", "x": 37860, "y": 30050, "z": 8002, "region": 10 }, "expect": ["\"arrived\":true"], "required": true },
+    { "about": "let it load", "tool": "wait", "args": { "session": "bounty", "seconds": 4 } },
+    { "about": "craft the Unyielding Majestic Robe", "tool": "craft", "args": { "session": "bounty", "recipe": 1733, "wait_ms": 25000 }, "expect": ["successfully make the Unyielding Majestic Robe! (100)"], "forbid": ["not known here", "You are missing", "do not have the tools"] },
+    { "about": "the robe is in the bag, the materials used", "tool": "inventory", "args": { "session": "bounty" }, "expect": ["Unyielding Majestic Robe\",\"level\":51"], "forbid": ["Bounty Armor Mold", "Recipe: Aurulite", "Stardust", "Enriched Quicksilver"] }
+  ]
+}

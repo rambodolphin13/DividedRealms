@@ -99,10 +99,15 @@ HELPFUL = {'EnduranceHeal', 'PowerHeal', 'Heal', 'AblativeArmor', 'CombatSpeedBu
 
 
 class Herald:
-    def __init__(self, zip_path, spells=None, package='OfflineHerald', date='2026-11-08'):
+    def __init__(self, zip_path, spells=None, package='OfflineHerald', date='2026-11-08', extra=()):
         z = zipfile.ZipFile(zip_path)
         self.items = [i for i in json.loads(z.read('static_objects.json').decode('utf8', 'replace'))['items']
                       if not i.get('artifact')]
+        # Newer records from the online Herald (tools.camelotherald.com/item/view/<id> "Raw Item JSON", same format),
+        # as {"items": [...]}; they replace an export record of the same id.
+        for path in extra:
+            newer = {i['id']: dict(i, _online=True) for i in json.load(open(path, encoding='utf-8'))['items']}
+            self.items = [i for i in self.items if i['id'] not in newer] + list(newer.values())
         self.META = json.loads(z.read('daoc_item_metadata.json').decode('utf8', 'replace'))
         self.OFF = self.items
         self.spells = spells if spells is not None else {}

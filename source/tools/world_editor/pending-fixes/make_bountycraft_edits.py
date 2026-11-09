@@ -1,6 +1,12 @@
 """Bountycraft (client trade 5) for the world: materials, products, item spells, recipes and merchant stock.
 
     python -I make_bountycraft_edits.py <opendaoc.sqlite3.db> <client app folder> <daoc_item_database_combined.zip> <out dir>
+        [online-herald-*.json ...]
+
+The optional files are newer item records from the online Herald (tools.camelotherald.com/item/view/<id>, the page's
+"Raw Item JSON"), for products the 1.126 export lacks; they are matched by the official id alone, since the client's
+recipe names are older than the items' ("Cabalist - Unyielding Majestic Vest" is official 24081 "Unyielding Majestic
+Robe").
 
 Writes <out dir>/bountycraft-<date>.edits.json, report.json and summary.json. Applies nothing. Needs the server
 build with eCraftingSkill.BountyCrafting (feature/bountycraft): older DLLs ignore skill 5 recipes.
@@ -71,7 +77,7 @@ def slug(s):
     return re.sub(r'[^a-z0-9]+', '_', s.lower()).strip('_')
 
 
-def main(db_path, app_folder, zip_path, out_dir):
+def main(db_path, app_folder, zip_path, out_dir, *extra):
     con = sqlite3.connect(f'file:{db_path}?mode=ro', uri=True)
     con.row_factory = sqlite3.Row
     W = {r['Id_nb'].lower(): dict(r) for r in con.execute('SELECT * FROM ItemTemplate')}
@@ -84,7 +90,7 @@ def main(db_path, app_folder, zip_path, out_dir):
     attached = collections.defaultdict(list)
     for p, i, c in con.execute('SELECT CraftedItemId_nb, IngredientId_nb, Count FROM CraftedXItem'):
         attached[p.lower()].append((i.lower(), c))
-    h = Herald(zip_path, spells=spells, package=PKG, date=DATE)
+    h = Herald(zip_path, spells=spells, package=PKG, date=DATE, extra=extra)
     off_by_id = {i['id']: i for i in h.items}
     off_by_name = collections.defaultdict(list)
     for i in h.items:
@@ -122,6 +128,8 @@ def main(db_path, app_folder, zip_path, out_dir):
         base = re.sub(r'\s*\((cloth|leather|studded|reinforced|chain|scale|plate)\)\s*$', '', name, flags=re.I)
         m = re.match(r'^([A-Za-z ]+?) - (.+)$', base)
         cls, base = (m.group(1).lower(), m.group(2)) if m else (None, base)
+        if o and o.get('_online'):
+            return o, 'id (online Herald)'
         if o and o['name'].lower().replace('’', "'") == base.lower().replace('’', "'"):
             return o, 'id'
         cands = [i for i in off_by_name.get(base.lower().replace('’', "'"), []) if i['realm'] in (0, r['realm'])]
@@ -348,4 +356,4 @@ def main(db_path, app_folder, zip_path, out_dir):
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:5])
+    main(*sys.argv[1:])
