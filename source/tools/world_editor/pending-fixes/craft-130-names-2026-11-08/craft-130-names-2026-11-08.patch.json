@@ -1,6 +1,6 @@
 {
  "format": "offline-daoc-world-editor-2",
- "created": "2026-11-09T01:44:05.865725+00:00",
+ "created": "2026-11-09T01:52:44.015279+00:00",
  "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
  "changes": [
   {
@@ -88,7 +88,7 @@
     "ClassType": null,
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2026-11-08 00:00:00",
-    "ItemTemplate_ID": "f722673e-a37a-46f9-8b13-9da732eb81ad"
+    "ItemTemplate_ID": "5ac6d43a-1ae8-4eae-b0ed-407d281e73ba"
    }
   },
   {
@@ -176,7 +176,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2026-11-08 00:00:00",
-    "ItemTemplate_ID": "d2868c23-e9da-456d-b72d-11f3e85a5126"
+    "ItemTemplate_ID": "5f47d56d-cc35-435c-b3de-347417974e01"
    }
   },
   {
@@ -264,7 +264,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2026-11-08 00:00:00",
-    "ItemTemplate_ID": "0995b610-96fc-4fba-a07f-94e1cad53636"
+    "ItemTemplate_ID": "bf12aa03-33bc-4b05-a83c-ecac1990821b"
    }
   },
   {
