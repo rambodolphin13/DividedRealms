@@ -24,8 +24,9 @@ namespace DOL.GS.Spells
         public const int ImmunityMs = 60000;
         public WarlockPetFearHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
         public override string ShortDescription => "Sends an enemy pet running in fear, causing its master to lose control. 60-second immunity afterwards.";
-        public static bool IsEnemyPet(GameLiving caster, GameLiving target) => target is GameNPC { Brain: IControlledBrain } &&
-            GameServer.ServerRules.IsAllowedToAttack(caster, target, true);
+        // A gamebot's BotBrain is an IControlledBrain too, but a gamebot stands in for a player, not a pet (DR-199).
+        public static bool IsEnemyPet(GameLiving caster, GameLiving target) => target is not GameBot &&
+            target is GameNPC { Brain: IControlledBrain } && GameServer.ServerRules.IsAllowedToAttack(caster, target, true);
         public static bool IsImmune(GameLiving target) => target.effectListComponent.ContainsEffectForEffectType(eEffect.WarlockPetFearImmunity) ||
             target.effectListComponent.ContainsEffectForEffectType(eEffect.WarlockPetFear);
         public override bool CheckBeginCast(GameLiving target, bool quiet)
