@@ -35,7 +35,8 @@ def main():
     for realm, realm_id in REALMS.items():
         for path in sorted(glob.glob(os.path.join(SERVER, 'playerclasses', realm, 'Class*.cs'))):
             text = open(path, encoding='utf8', errors='ignore').read()
-            head = re.search(r'\[CharacterClass\(\(int\)eCharacterClass\.(\w+),\s*"([^"]+)"', text)
+            # (Savage spells the attribute out in full: [CharacterClassAttribute(...)])
+            head = re.search(r'\[CharacterClass(?:Attribute)?\(\(int\)eCharacterClass\.(\w+),\s*"([^"]+)"', text)
             if not head:
                 continue
             races = []

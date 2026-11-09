@@ -593,6 +593,24 @@
    60
   ]
  },
+ "savage": {
+  "class_id": 32,
+  "gender": 0,
+  "model": 185,
+  "name": "Savage",
+  "race": 7,
+  "realm": 2,
+  "stats": [
+   70,
+   60,
+   80,
+   60,
+   60,
+   60,
+   60,
+   60
+  ]
+ },
  "scout": {
   "class_id": 3,
   "gender": 0,

@@ -461,7 +461,7 @@ for i in ALL:
     same = [r for r in by_name.get(i['name'], []) if str(cls) in str(r['AllowedClasses']).split(';')
             or str(r['AllowedClasses']) in ('0', '')]   # e.g. the old Bainshee epics are open to every class
     if same:
-        keep = {k: v for k, v in cols.items() if k not in ('Name', 'PackageID', 'Description')}
+        keep = {k: v for k, v in cols.items() if k != 'Name'}   # PackageID too: trainers find the set by it (ClassEpicGear)
         edits.append({'table': 'ItemTemplate', 'key': same[0]['Id_nb'], 'set': keep})
         report['updated_existing'].append(f"{same[0]['Id_nb']} ({i['name']})")
         target = same[0]['Id_nb']
