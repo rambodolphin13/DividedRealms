@@ -287,8 +287,8 @@ def main(db_path, app_folder, zip_path, out_dir):
     page_use = collections.defaultdict(set)
     sells = collections.defaultdict(set)
     for lst, item, page, slot in con.execute('SELECT ItemListID, ItemTemplateID, PageNumber, SlotPosition FROM MerchantItem'):
-        page_use[(lst.lower(), page)].add(slot)
-        sells[lst.lower()].add(item.lower())
+        page_use[(lst, page)].add(slot)
+        sells[lst].add(item.lower())
     lists = {r[0] for r in con.execute(
         "SELECT DISTINCT ItemsListTemplateID FROM Mob WHERE ClassType = 'DOL.GS.GameBountyMerchant' "
         "AND ItemsListTemplateID IS NOT NULL AND ItemsListTemplateID <> ''")}
@@ -296,24 +296,25 @@ def main(db_path, app_folder, zip_path, out_dir):
 
     def add_to(lst, items):
         page = 0
-        while page_use.get((lst.lower(), page)):
+        while page_use.get((lst, page)):
             page += 1
-        if page and len(page_use[(lst.lower(), page - 1)]) + len(items) <= 30:
+        if page and len(page_use[(lst, page - 1)]) + len(items) <= 30:
             page -= 1
-        free = (s for s in range(30) if s not in page_use[(lst.lower(), page)])
+        free = (s for s in range(30) if s not in page_use[(lst, page)])
         for item in items:
-            if item.lower() in sells[lst.lower()]:
+            if item.lower() in sells[lst]:
                 continue
             slot = next(free)
-            page_use[(lst.lower(), page)].add(slot)
-            sells[lst.lower()].add(item.lower())
+            page_use[(lst, page)].add(slot)
+            sells[lst].add(item.lower())
             edits.append({'table': 'MerchantItem', 'insert': {'MerchantItem_ID': uid('mi', lst, item), 'ItemListID': lst,
                                                                'ItemTemplateID': item, 'PageNumber': page, 'SlotPosition': slot}})
 
-    for lst in sorted(lists, key=str.lower):
-        if lst.lower() in seen_lists:
+    # MerchantItem.ItemListID is COLLATE NOCASE: midBPTotem and MidBPTotem are the same list
+    for lst in sorted(lists):
+        if lst in seen_lists:
             continue
-        seen_lists.add(lst.lower())
+        seen_lists.add(lst)
         add_to(lst, BOUNTY_MASTER_ITEMS)
     # Stardust at the alchemy merchants: the lists selling alchemy-only ingredients
     alch_only = set()
@@ -323,9 +324,14 @@ def main(db_path, app_folder, zip_path, out_dir):
         by_skill[ing].add(sk)
     alch_only = {i for i, s in by_skill.items() if s == {ALCHEMY}}
     alchemy_lists = sorted(l for l, items in sells.items() if len(items & alch_only) >= 3)
-    real_names = {r[0].lower(): r[0] for r in con.execute('SELECT DISTINCT ItemListID FROM MerchantItem')}
     for lst in alchemy_lists:
-        add_to(real_names[lst], ['stardust'])
+        add_to(lst, ['stardust'])
+
+    # The 1.130 client lists realm-0 products (shared Bountycraft items, Mauler staffs, horse gear...) in every
+    # realm's crafting window, but NormalServerRules refuses a realm-0 product unless this is on.
+    row = con.execute("SELECT Value FROM ServerProperty WHERE Key = 'allow_craft_norealm_items'").fetchone()
+    if row is not None and row[0] != 'True':
+        edits.append({'table': 'ServerProperty', 'where': {'Key': 'allow_craft_norealm_items'}, 'set': {'Value': 'True'}})
 
     os.makedirs(out_dir, exist_ok=True)
     json.dump(edits, open(os.path.join(out_dir, f'bountycraft-{DATE}.edits.json'), 'w', encoding='utf-8'), indent=1)

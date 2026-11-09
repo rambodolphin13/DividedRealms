@@ -772,6 +772,14 @@ namespace OfflineDaoc.TestClient
             _client.UseSlot((float)X, (float)Y, (float)Z, _speedNow, Heading, true, slot, type);
         }
 
+        /// <summary>MakeProductHandler (0xED): the recipe id the crafting window sends.</summary>
+        public void Craft(int recipe)
+        {
+            var w = new DaocClient.Writer();
+            w.Short((ushort)recipe);
+            _client.Send(0xED, w);
+        }
+
         public void MoveItem(int from, int to, int count)
         {
             _client.MoveItem(from, to, count);

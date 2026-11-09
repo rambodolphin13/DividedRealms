@@ -89,6 +89,8 @@ namespace OfflineDaoc.TestClient
                 ("count", "integer", "Default 1")));
             All.Add(Make("interact", "Right-click a living or object.", Interact, new[] { "who" }, ("who", "string", ""), ("wait_ms", "integer", "Default 800")));
             All.Add(Make("pick_up", "Pick up an object on the ground.", PickUp, new[] { "who" }, ("who", "string", "")));
+            All.Add(Make("craft", "Craft a recipe by its client recipe id (tdl.crf), as the crafting window does; waits for the result.", Craft,
+                new[] { "recipe" }, ("recipe", "integer", "Recipe id (CraftedItemID)"), ("wait_ms", "integer", "How long to collect messages (default 15000)")));
             All.Add(Make("house_enter", "Enter (or leave) a house through its door, as the client does: stand within 1000 of it.", HouseEnter,
                 new[] { "house" }, ("house", "integer", "House number"), ("enter", "boolean", "Default true; false leaves")));
             All.Add(Make("house_place", "Drop a backpack item on a house hookpoint or floor, as dragging it in decorate mode does.", HousePlace,
@@ -628,6 +630,14 @@ namespace OfflineDaoc.TestClient
             long since = s.LastSeq;
             s.PickUp(e.Oid);
             return Collect(s, since, 800);
+        }
+
+        object Craft(JsonObject a)
+        {
+            TestSession s = Session(a);
+            long since = s.LastSeq;
+            s.Craft(Whole(a, "recipe", 0));
+            return Collect(s, since, Whole(a, "wait_ms", 15000));
         }
 
         object HouseEnter(JsonObject a)

@@ -90324,116 +90324,6 @@
  {
   "table": "MerchantItem",
   "insert": {
-   "MerchantItem_ID": "c00178b7-1830-5486-8605-5cfacb62f202",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_weapon_mold",
-   "PageNumber": 0,
-   "SlotPosition": 12
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "55601dac-4a21-5c70-81ba-7ab39bd75e55",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_armor_mold",
-   "PageNumber": 0,
-   "SlotPosition": 13
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "eef21a21-3b73-5d40-9388-55dcccd6535d",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_accessory_mold",
-   "PageNumber": 0,
-   "SlotPosition": 14
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "d3924257-16f8-59a7-b04a-4adfaa32a21e",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_recipe_pictslayer",
-   "PageNumber": 0,
-   "SlotPosition": 15
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "5f7cbb58-8755-586c-a3b3-e29368a7d5ce",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_recipe_darkness_falls",
-   "PageNumber": 0,
-   "SlotPosition": 16
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "63a9c274-44cf-54c6-8298-df0f12770a68",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_recipe_seasonal",
-   "PageNumber": 0,
-   "SlotPosition": 17
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "6b6f01f9-93da-5e9f-bd25-e52e2f813c32",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_recipe_aurulite",
-   "PageNumber": 0,
-   "SlotPosition": 18
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "6664592b-4df9-5cdf-82a0-d35416571ec5",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_recipe_otherworldly",
-   "PageNumber": 0,
-   "SlotPosition": 19
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "2d7b9ef3-fef8-5c80-9474-64e51729424d",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_recipe_frozen",
-   "PageNumber": 0,
-   "SlotPosition": 20
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "c6383bfe-8f33-5865-a06a-20dfe5c6ee75",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_recipe_curse",
-   "PageNumber": 0,
-   "SlotPosition": 21
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "b0ac6a52-d2c9-5b52-b9b0-128f3ddf70ca",
-   "ItemListID": "HibBountyMerchant",
-   "ItemTemplateID": "bounty_rare_alchemy_components_box",
-   "PageNumber": 0,
-   "SlotPosition": 22
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
    "MerchantItem_ID": "86488f6c-27c6-53d4-a9b6-1c9ad157148a",
    "ItemListID": "HibBPTotem",
    "ItemTemplateID": "bounty_weapon_mold",
@@ -90536,6 +90426,116 @@
   "insert": {
    "MerchantItem_ID": "0d3c178c-397e-5efb-8147-145f5567bc39",
    "ItemListID": "HibBPTotem",
+   "ItemTemplateID": "bounty_rare_alchemy_components_box",
+   "PageNumber": 0,
+   "SlotPosition": 22
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "c00178b7-1830-5486-8605-5cfacb62f202",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_weapon_mold",
+   "PageNumber": 0,
+   "SlotPosition": 12
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "55601dac-4a21-5c70-81ba-7ab39bd75e55",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_armor_mold",
+   "PageNumber": 0,
+   "SlotPosition": 13
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "eef21a21-3b73-5d40-9388-55dcccd6535d",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_accessory_mold",
+   "PageNumber": 0,
+   "SlotPosition": 14
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "d3924257-16f8-59a7-b04a-4adfaa32a21e",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_recipe_pictslayer",
+   "PageNumber": 0,
+   "SlotPosition": 15
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "5f7cbb58-8755-586c-a3b3-e29368a7d5ce",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_recipe_darkness_falls",
+   "PageNumber": 0,
+   "SlotPosition": 16
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "63a9c274-44cf-54c6-8298-df0f12770a68",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_recipe_seasonal",
+   "PageNumber": 0,
+   "SlotPosition": 17
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "6b6f01f9-93da-5e9f-bd25-e52e2f813c32",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_recipe_aurulite",
+   "PageNumber": 0,
+   "SlotPosition": 18
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "6664592b-4df9-5cdf-82a0-d35416571ec5",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_recipe_otherworldly",
+   "PageNumber": 0,
+   "SlotPosition": 19
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "2d7b9ef3-fef8-5c80-9474-64e51729424d",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_recipe_frozen",
+   "PageNumber": 0,
+   "SlotPosition": 20
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "c6383bfe-8f33-5865-a06a-20dfe5c6ee75",
+   "ItemListID": "HibBountyMerchant",
+   "ItemTemplateID": "bounty_recipe_curse",
+   "PageNumber": 0,
+   "SlotPosition": 21
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "b0ac6a52-d2c9-5b52-b9b0-128f3ddf70ca",
+   "ItemListID": "HibBountyMerchant",
    "ItemTemplateID": "bounty_rare_alchemy_components_box",
    "PageNumber": 0,
    "SlotPosition": 22
@@ -90934,6 +90934,166 @@
  {
   "table": "MerchantItem",
   "insert": {
+   "MerchantItem_ID": "7ad889e1-5c68-5140-8f46-16743b862b73",
+   "ItemListID": "AlbAlchemy",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 26
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "5671f9a0-45b2-5052-92ff-badf71843afc",
+   "ItemListID": "AlbSpellcraft",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 20
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "ef63ff74-840d-5a79-bc42-f3167ef3e00a",
+   "ItemListID": "HibAlchemy",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 27
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "990e913f-d9ef-507f-9ec8-15b69611e02f",
+   "ItemListID": "HibAlchemy2",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 25
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "d0b3bbd5-5af8-5667-842c-63f60479ca1b",
+   "ItemListID": "HibSCAlchMerchant",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 1,
+   "SlotPosition": 9
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "f423fe92-25be-545c-b934-5948bae48830",
+   "ItemListID": "HibSpellAlchMerchant",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 3,
+   "SlotPosition": 27
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "5ec7be2a-d7c7-53c9-916d-7e259eba0e14",
+   "ItemListID": "HibSpellcraft",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 18
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "9d3c8e54-723d-581c-b2a3-9abd4b50d890",
+   "ItemListID": "MidAlchemy",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 28
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "c430e428-aca7-5f4e-94a4-40549c93df98",
+   "ItemListID": "MidAlchemy2",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 26
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "f750fc10-d249-5074-bb47-931088691e73",
+   "ItemListID": "MidAlchemyComponents",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 1,
+   "SlotPosition": 25
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "3151d1c7-dd89-5c1c-acf3-ff6f566a7694",
+   "ItemListID": "MidFlasksAlchemy",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 1,
+   "SlotPosition": 23
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "d633e11d-e2b8-564b-bebe-ae6bf78f7609",
+   "ItemListID": "MidSpellAlchMerchant",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 3,
+   "SlotPosition": 27
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "c81ceb26-07cb-5a4c-94e3-706d89ee0c3a",
+   "ItemListID": "MidSpellAlchMerchant2",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 3,
+   "SlotPosition": 27
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "7ff793fe-1d8f-5bf9-aebd-4f9200126d41",
+   "ItemListID": "MidSpellcraftAll",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 20
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "b2b1bc01-67d2-5118-aaa9-ca24f57cd320",
+   "ItemListID": "MidSpellcraftMerchant2",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 3,
+   "SlotPosition": 27
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "4d35a0e5-4c50-5a0e-ba03-bf9cc2701c46",
+   "ItemListID": "MidSpellcrafting",
+   "ItemTemplateID": "stardust",
+   "PageNumber": 4,
+   "SlotPosition": 20
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
    "MerchantItem_ID": "eecbf7c8-2a8b-5336-a68d-694a84bbde41",
    "ItemListID": "a10b5e7e-117a-4332-8278-7428ba13fd93",
    "ItemTemplateID": "stardust",
@@ -90956,26 +91116,6 @@
   "insert": {
    "MerchantItem_ID": "43df030c-59c8-59dd-99dd-af3cc733f4a4",
    "ItemListID": "a66add6f-2688-497d-aed1-1cf3d9c9387e",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 20
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "7ad889e1-5c68-5140-8f46-16743b862b73",
-   "ItemListID": "AlbAlchemy",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 26
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "5671f9a0-45b2-5052-92ff-badf71843afc",
-   "ItemListID": "AlbSpellcraft",
    "ItemTemplateID": "stardust",
    "PageNumber": 4,
    "SlotPosition": 20
@@ -91064,56 +91204,6 @@
  {
   "table": "MerchantItem",
   "insert": {
-   "MerchantItem_ID": "ef63ff74-840d-5a79-bc42-f3167ef3e00a",
-   "ItemListID": "HibAlchemy",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 27
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "990e913f-d9ef-507f-9ec8-15b69611e02f",
-   "ItemListID": "HibAlchemy2",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 25
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "d0b3bbd5-5af8-5667-842c-63f60479ca1b",
-   "ItemListID": "HibSCAlchMerchant",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 1,
-   "SlotPosition": 9
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "f423fe92-25be-545c-b934-5948bae48830",
-   "ItemListID": "HibSpellAlchMerchant",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 3,
-   "SlotPosition": 27
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "5ec7be2a-d7c7-53c9-916d-7e259eba0e14",
-   "ItemListID": "HibSpellcraft",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 18
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
    "MerchantItem_ID": "55ab0eb2-6ecd-50b0-89df-89cdcd98dbd0",
    "ItemListID": "housing_alb_dye_tincture_enchantment",
    "ItemTemplateID": "stardust",
@@ -91192,93 +91282,12 @@
   }
  },
  {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "9d3c8e54-723d-581c-b2a3-9abd4b50d890",
-   "ItemListID": "MidAlchemy",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 28
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "c430e428-aca7-5f4e-94a4-40549c93df98",
-   "ItemListID": "MidAlchemy2",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 26
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "f750fc10-d249-5074-bb47-931088691e73",
-   "ItemListID": "MidAlchemyComponents",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 1,
-   "SlotPosition": 25
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "3151d1c7-dd89-5c1c-acf3-ff6f566a7694",
-   "ItemListID": "MidFlasksAlchemy",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 1,
-   "SlotPosition": 23
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "d633e11d-e2b8-564b-bebe-ae6bf78f7609",
-   "ItemListID": "MidSpellAlchMerchant",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 3,
-   "SlotPosition": 27
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "c81ceb26-07cb-5a4c-94e3-706d89ee0c3a",
-   "ItemListID": "MidSpellAlchMerchant2",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 3,
-   "SlotPosition": 27
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "7ff793fe-1d8f-5bf9-aebd-4f9200126d41",
-   "ItemListID": "MidSpellcraftAll",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 20
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "4d35a0e5-4c50-5a0e-ba03-bf9cc2701c46",
-   "ItemListID": "MidSpellcrafting",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 4,
-   "SlotPosition": 20
-  }
- },
- {
-  "table": "MerchantItem",
-  "insert": {
-   "MerchantItem_ID": "b2b1bc01-67d2-5118-aaa9-ca24f57cd320",
-   "ItemListID": "MidSpellcraftMerchant2",
-   "ItemTemplateID": "stardust",
-   "PageNumber": 3,
-   "SlotPosition": 27
+  "table": "ServerProperty",
+  "where": {
+   "Key": "allow_craft_norealm_items"
+  },
+  "set": {
+   "Value": "True"
   }
  }
 ]

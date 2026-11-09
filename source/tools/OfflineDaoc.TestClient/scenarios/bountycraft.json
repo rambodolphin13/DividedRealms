@@ -1,0 +1,33 @@
+{
+  "name": "Bountycraft: Bounty Master molds by realm rank, no forge refusal, a real craft at a Camelot forge, the components box",
+  "steps": [
+    { "about": "server is listening", "tool": "server_status", "expect": ["\"listening\":true"], "required": true },
+    { "about": "the world has Bountycraft recipes", "tool": "db_query", "args": { "sql": "select count(*) n from CraftedItem where CraftingSkillType = 5" }, "forbid": ["\"n\":0"], "required": true },
+    { "about": "log an Albion Armsman in", "tool": "login", "args": { "session": "bounty", "name": "Bountycrafter", "class": "armsman" }, "expect": ["\"oid\":"], "required": true },
+    { "about": "level 50", "tool": "prepare", "args": { "session": "bounty", "class": "armsman" }, "expect": ["\"worn\":true"] },
+    { "about": "empty backpack", "tool": "command", "args": { "session": "bounty", "text": "/clearinventory", "wait_ms": 1000 } },
+    { "about": "bounty points to spend", "tool": "command", "args": { "session": "bounty", "text": "/player bps 100000", "wait_ms": 1000 }, "expect": ["100000"] },
+    { "about": "go to the Camelot Bounty Master", "tool": "teleport", "args": { "session": "bounty", "x": 31985, "y": 27800, "z": 8000, "region": 10 }, "expect": ["\"arrived\":true"], "required": true },
+    { "about": "let the area load", "tool": "wait", "args": { "session": "bounty", "seconds": 4 } },
+    { "about": "open her shop", "tool": "interact", "args": { "session": "bounty", "who": "Freya Edelmar", "wait_ms": 1500 }, "required": true },
+    { "about": "a realm rank 1 buyer gets one mold per purchase", "tool": "buy", "args": { "session": "bounty", "item_slot": 14, "count": 5 }, "expect": ["realm rank you can buy 1"] },
+    { "about": "buy mold 2", "tool": "buy", "args": { "session": "bounty", "item_slot": 14, "count": 1 } },
+    { "about": "buy mold 3", "tool": "buy", "args": { "session": "bounty", "item_slot": 14, "count": 1 } },
+    { "about": "buy mold 4", "tool": "buy", "args": { "session": "bounty", "item_slot": 14, "count": 1 } },
+    { "about": "buy mold 5", "tool": "buy", "args": { "session": "bounty", "item_slot": 14, "count": 1 } },
+    { "about": "buy Recipe: Seasonal (100,000 BP needs more points)", "tool": "command", "args": { "session": "bounty", "text": "/player bps 100000", "wait_ms": 800 } },
+    { "about": "buy the recipe", "tool": "buy", "args": { "session": "bounty", "item_slot": 17, "count": 1 } },
+    { "about": "Stardust", "tool": "command", "args": { "session": "bounty", "text": "/item create stardust 1", "wait_ms": 800 } },
+    { "about": "Ancient Giant Blood x2", "tool": "command", "args": { "session": "bounty", "text": "/item create Ancient_Giant_Blood 2", "wait_ms": 800 } },
+    { "about": "the materials are in the bag", "tool": "inventory", "args": { "session": "bounty" }, "expect": ["Bounty Accessory Mold", "Recipe: Seasonal", "Stardust", "Ancient Giant Blood"], "required": true },
+    { "about": "no forge here: refused", "tool": "craft", "args": { "session": "bounty", "recipe": 654, "wait_ms": 2500 }, "expect": ["forge"] },
+    { "about": "walk to a Camelot forge", "tool": "teleport", "args": { "session": "bounty", "x": 37860, "y": 30050, "z": 8002, "region": 10 }, "expect": ["\"arrived\":true"], "required": true },
+    { "about": "let it load", "tool": "wait", "args": { "session": "bounty", "seconds": 4 } },
+    { "about": "craft Midwinter's Frozen Medal of Honor", "tool": "craft", "args": { "session": "bounty", "recipe": 654, "wait_ms": 25000 }, "expect": ["successfully make the Midwinter", "Frozen Medal of Honor! (100)"], "forbid": ["not known here", "You are missing", "do not have the tools"] },
+    { "about": "the medal is in the bag and the materials are used", "tool": "inventory", "args": { "session": "bounty" }, "expect": ["\"slot\":40,\"name\":\"Midwinter", "Frozen Medal of Honor\",\"level\":51"], "forbid": ["Bounty Accessory Mold", "Recipe: Seasonal", "Stardust"] },
+    { "about": "a components box", "tool": "command", "args": { "session": "bounty", "text": "/item create bounty_rare_alchemy_components_box 1", "wait_ms": 800 } },
+    { "about": "see where it went (backpack slot 41, after the medal in 40)", "tool": "inventory", "args": { "session": "bounty" }, "expect": ["\"slot\":41,\"name\":\"Box of Rare Alch. Components\""] },
+    { "about": "open the box", "tool": "use_item", "args": { "session": "bounty", "slot": 41 }, "expect": ["You open the box and find"] },
+    { "about": "the box is used up and a component is in the bag", "tool": "inventory", "args": { "session": "bounty" }, "forbid": ["Box of Rare Alch. Components"] }
+  ]
+}
