@@ -45,8 +45,11 @@ namespace DOL.GS
 		}
 
 		// Both represent what percentage of this entity's target's defenses should be used, not how much is removed.
-		public virtual double DualWieldDefensePenetrationFactor => 0.5;
-		public virtual double TwoHandedDefensePenetrationFactor => 0.5;
+		// Dual wield: monsters keep the old 50%; players and bots use 75% (see PlayerDefenseFormula, DR-191).
+		public virtual double DualWieldDefensePenetrationFactor =>
+			PlayerDefenseFormula.UsesPlayerDefense(this) ? PlayerDefenseFormula.DualWieldDefenseFactor : 0.5;
+		// 1.87: parry is no longer penalized against a two-handed weapon (DR-192).
+		public virtual double TwoHandedDefensePenetrationFactor => 1.0;
 
 		public virtual bool BenefitsFromRelics => false;
 
@@ -1153,8 +1156,10 @@ namespace DOL.GS
 					parryChance *= 0.001;
 
 					// Parry chance is divided by the number of attackers.
-					// The penalty was reduced in 1.87.
-					if (attackerCount > 0)
+					// 1.87 "greatly reduced" the penalty without a number, and the 2020-10-23 Grab Bag says that in RvR
+					// several attackers in the frontal arc do not lower parry at all (DR-193). So: no penalty between
+					// players and bots, the old division against monsters.
+					if (attackerCount > 0 && !PlayerDefenseFormula.IgnoresAttackerCountForParry(ad.Attacker, this))
 						parryChance /= attackerCount;
 
 					// Tribal Wrath 25% evade.

@@ -23,6 +23,28 @@ public static class AutonomousBotRealmPointRewards
     public static bool IsEligibleVictim(GameNPC npc) =>
         npc is GameBot { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false };
 
+    internal const string ReleasedAfterDeathProperty = "autonomous.rvr.released.after.death";
+
+    /// <summary>
+    /// 1.124 (DR-175): realm points from killing a player are raised by 25% before any other bonus.
+    /// kill_rp_bonus_percent, 0 turns it off.
+    /// </summary>
+    public static int ApplyKillBonus(int realmPoints) =>
+        realmPoints <= 0 ? realmPoints : (int)(realmPoints * (100L + Math.Max(0, Properties.KILL_RP_BONUS_PERCENT)) / 100);
+
+    /// <summary>
+    /// 1.123b (DR-180): seconds after a death until the victim is worth realm points again. 2 minutes when it
+    /// released, 5 when it was resurrected.
+    /// </summary>
+    public static int RealmPointWorthSeconds(bool released)
+    {
+        int resurrected = Math.Max(0, Properties.RP_WORTH_SECONDS);
+        return released ? Math.Min(resurrected, Math.Max(0, Properties.RP_WORTH_SECONDS_RELEASED)) : resurrected;
+    }
+
+    /// <summary>A gamebot released to its bind point: the shorter wait applies to its next death.</summary>
+    public static void NoteReleased(GameBot bot) => bot?.TempProperties?.SetProperty(ReleasedAfterDeathProperty, true);
+
     /// <summary>Realm points each realm level adds to what a player or gamebot is worth (1 before patch 1.81).</summary>
     public const int RealmPointsPerRealmLevel = 10;
 
@@ -46,7 +68,7 @@ public static class AutonomousBotRealmPointRewards
 
         int baseRealmPoints = victimRealmPointValue / participantCount;
         baseRealmPoints = Math.Min(baseRealmPoints, awarderRealmPointValue * 2);
-        int realmPoints = (int)(baseRealmPoints * Math.Min(1.0, damagePercent));
+        int realmPoints = ApplyKillBonus((int)(baseRealmPoints * Math.Min(1.0, damagePercent)));
 
         if (applyRealmRankAdjustment)
         {
@@ -152,8 +174,10 @@ public static class AutonomousBotRealmPointRewards
         long now = GameLoop.GameLoopTime;
         long previousDeath = killedBot.TempProperties.GetProperty<long>(
             LastRealmPointDeathTickProperty, -1);
-        long worthInterval = Math.Max(0, Properties.RP_WORTH_SECONDS) * 1000L;
+        bool releasedSincePreviousDeath = killedBot.TempProperties.GetProperty(ReleasedAfterDeathProperty, false);
+        long worthInterval = RealmPointWorthSeconds(releasedSincePreviousDeath) * 1000L;
         bool isWorthRealmPoints = previousDeath < 0 || now - previousDeath >= worthInterval;
+        killedBot.TempProperties.SetProperty(ReleasedAfterDeathProperty, false);
 
         // Every death resets the same repeat-kill window used for a real player,
         // including a death caused by an NPC or by somebody who receives no RP.

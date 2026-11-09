@@ -3383,7 +3383,7 @@ namespace DOL.GS.Spells
 			if (Caster.Chance(RandomDeckEvent.CriticalChance, criticalChance))
 			{
 				double min = 0.1;
-				double max = ad.Target is GamePlayer ? 0.5 : 1.0;
+				double max = DOL.GS.PropertyCalc.PlayerDefenseFormula.MaxSpellCriticalBonus(ad.Target);
 				double criticalMod = min + Caster.GetPseudoDoubleIncl(RandomDeckEvent.CriticalVariance) * (max - min);
 				criticalDamage = (int) (finalDamage * criticalMod);
 			}

@@ -1188,6 +1188,7 @@ namespace DOL.GS
 
         private void ReleaseToNearestBindAndReturn(bool returnToParty = true)
         {
+            AutonomousBotRealmPointRewards.NoteReleased(this);
             if (IsTemporaryGroupHelper)
             {
                 if (!TemporaryCompanionRecovery.CanReleaseToOwner(this))
