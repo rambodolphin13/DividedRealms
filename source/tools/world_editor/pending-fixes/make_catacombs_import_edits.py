@@ -14,7 +14,7 @@ import (Class-Research/claude/toa-restoration/atlantis-import-v2):
 Albion's Otherworld (region 196) is left out: its 897 EoD rows lie outside the zone box (see the report).
 Task dungeon rows (InstanceXElement) are not part of this import.
 
-usage: python -I make_catacombs_import_edits.py <world.sqlite3.db> <eod-db-public data dir> <out prefix>
+usage: python -I make_catacombs_import_edits.py <world.sqlite3.db> <eod-db-public data dir> <out prefix> [batch: 1 or 2]
 writes <prefix>-1-support.edits.json (templates, merchant items, zone points), <prefix>-2-mobs.edits.json,
        <prefix>.excluded.json and <prefix>.report.txt
 """
@@ -36,11 +36,24 @@ REGIONS = {
     97: "Hibernia's Deadlands", 197: 'The Otherworld', 94: "The Queen's Labyrinth", 93: 'Shar Labyrinth',
     98: "Hibernia's Darkspire",
 }
+# Batch 2 (2026-11-09): the Catacombs zones the first list missed (Jordheim's entrance leads to the Burial Grounds),
+# plus the Darkness Rising areas EoD has rows for.
+REGIONS_2 = {
+    227: "Albion's Abandoned Mines", 228: "Hibernia's Abandoned Mines", 226: "Midgard's Abandoned Mines",
+    229: 'Burial Grounds', 109: "Albion's Frontlines", 433: "Snarg's Grotto", 430: 'the Plutonian Shore',
+    429: "Snyblem's Lair", 436: 'Forges of Flame', 390: 'Lair of the Exiled', 376: "Goblin's Cookery",
+    396: 'Depths of Despair', 397: 'the Realm of the Damned', 437: "Hammer Hugak's Smithy", 446: "Blathnait's Refuge",
+    447: 'Broken Mirrors', 495: 'Inner Sanctum',
+    339: 'Brimstone Caverns', 335: 'The Foothills of Hibernia',
+    394: "King Constantine's Throne Room", 360: "King Eirik's Throne Room", 395: "King Lamfhotas' Throne Room",
+}
+BATCHES = {'1': REGIONS, '2': REGIONS_2}
 LEFT_OUT_REGIONS = {196: "Albion's Otherworld"}
 HELPER_MODELS = {665, 666, 667, 1686, 1923}
 HELPER_NAMES = {'new mob'}
 # EoD class names our server spells differently (dr world lint on the 2026-11-09 sandbox trial).
-CLASS_MAP = {'DOL.GS.Trainer.RogueTrainer': 'DOL.GS.Trainer.AlbionRogueTrainer'}   # Master Thedriwin, Roman Aqueducts
+# EoD's RogueTrainer is three classes here, one per realm (Master Thedriwin in the Roman Aqueducts, and others).
+ROGUE_TRAINER = {1: 'DOL.GS.Trainer.AlbionRogueTrainer', 2: 'DOL.GS.Trainer.MidgardRogueTrainer', 3: 'DOL.GS.Trainer.StalkerTrainer'}
 ROAM = 100
 PEACE = 16
 report = []
@@ -72,6 +85,8 @@ def remap_model(model, name, region):
 
 def main():
     world, eod, prefix = sys.argv[1], sys.argv[2], sys.argv[3]
+    global REGIONS
+    REGIONS = BATCHES[sys.argv[4] if len(sys.argv) > 4 else '1']
     db = sqlite3.connect(f'file:{world}?mode=ro', uri=True)
     db.row_factory = sqlite3.Row
     cols = {t: [r[1] for r in db.execute(f'PRAGMA table_info({t})')] for t in ('Mob', 'ZonePoint', 'NpcTemplate', 'MerchantItem')}
@@ -86,6 +101,7 @@ def main():
         ours_here[(int(r['Region']), (r['Name'] or '').lower())].append((int(r['X']), int(r['Y'])))
     known_classes = {r[0] for r in db.execute('SELECT DISTINCT ClassType FROM Mob')}
     templates = {int(r[0]) for r in db.execute('SELECT TemplateId FROM NpcTemplate')}
+    template_keys = {r[0] for r in db.execute('SELECT NpcTemplate_ID FROM NpcTemplate')}
     items = {r[0].lower() for r in db.execute('SELECT Id_nb FROM ItemTemplate')}
     our_lists = defaultdict(list)
     for r in db.execute('SELECT ItemListID, ItemTemplateID FROM MerchantItem'):
@@ -114,7 +130,8 @@ def main():
                              'Level': m.get('Level'), 'Model': m['Model'], 'ClassType': m['ClassType']})
             continue
         row = {c: m[c] for c in cols['Mob'] if c in m}
-        row['ClassType'] = CLASS_MAP.get(row['ClassType'], row['ClassType'])
+        if row['ClassType'] == 'DOL.GS.Trainer.RogueTrainer':
+            row['ClassType'] = ROGUE_TRAINER.get(int(row.get('Realm') or 0), row['ClassType'])
         new_model = remap_model(row['Model'], row.get('Name'), reg)
         remapped += new_model != row['Model']
         row['Model'] = new_model
@@ -155,6 +172,8 @@ def main():
         t = eod_templates.get(tid)
         if t:
             ins = {c: t[c] for c in cols['NpcTemplate'] if c in t}
+            if ins.get('NpcTemplate_ID') in template_keys:      # our world uses this row key for another template
+                ins['NpcTemplate_ID'] = f'eod-template-{tid}'
             if ins.get('Model') not in (None, ''):
                 ins['Model'] = ';'.join(str(remap_model(x, ins.get('Name'), 0)) if x.strip().isdigit() else x
                                         for x in str(ins['Model']).split(';'))
@@ -162,7 +181,8 @@ def main():
     no_template = sorted(t for t in missing if t not in eod_templates)
 
     # ------------------------------------------------------------------ zone points
-    our_zp = {int(r['Id']): r for r in db.execute('SELECT * FROM ZonePoint')}
+    our_zp = {(int(r['Id']), int(r['Realm'])): r for r in db.execute('SELECT * FROM ZonePoint')}   # one row per id and realm
+    zp_classes = {r[0] for r in db.execute("SELECT DISTINCT ClassType FROM ZonePoint WHERE ClassType LIKE 'DOL.GS.ServerRules.%'")}
     zp_added, zp_same, zp_conflict = 0, 0, []
     for z in load(eod, 'ZonePoint'):
         tr, sr = int(z.get('TargetRegion') or 0), int(z.get('SourceRegion') or 0)
@@ -170,9 +190,12 @@ def main():
             continue
         if tr in LEFT_OUT_REGIONS or sr in LEFT_OUT_REGIONS:
             continue
-        mine = our_zp.get(int(z['Id']))
+        mine = our_zp.get((int(z['Id']), int(z['Realm'])))
         if mine is None:
-            support.append({'table': 'ZonePoint', 'insert': {c: z[c] for c in cols['ZonePoint'] if c in z}})
+            ins = {c: z[c] for c in cols['ZonePoint'] if c in z}
+            if ins.get('ClassType') and ins['ClassType'] not in zp_classes:   # an EoD script class we do not have:
+                ins['ClassType'] = ''                                         # a plain jump (dr world lint, 2026-11-09)
+            support.append({'table': 'ZonePoint', 'insert': ins})
             zp_added += 1
         elif (int(mine['TargetRegion']), int(mine['TargetX']), int(mine['TargetY'])) == (tr, int(z['TargetX']), int(z['TargetY'])):
             zp_same += 1
