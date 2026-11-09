@@ -1,6 +1,6 @@
 {
  "format": "offline-daoc-world-editor-2",
- "created": "2026-11-09T21:49:37.538138+00:00",
+ "created": "2026-11-09T21:54:55.590354+00:00",
  "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
  "changes": [
   {
@@ -88,7 +88,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "2474d842-6b81-42de-887c-aae9878fea1a"
+    "ItemTemplate_ID": "233322b2-904b-4139-8f07-8e7ea1b76953"
    }
   },
   {
@@ -176,7 +176,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "128dec53-973d-4c98-b8fc-be6c95567fdc"
+    "ItemTemplate_ID": "fa92f3c3-078a-4fb2-bc97-9a863bb9a800"
    }
   },
   {
@@ -264,7 +264,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "fb4e0d6f-61dc-46d4-99b8-bc1d3199b1a2"
+    "ItemTemplate_ID": "bab684dd-8161-43cf-bea8-352093ec1e08"
    }
   },
   {
@@ -352,7 +352,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b0f4b270-eaa3-4621-a898-e0c7f9f0b2d0"
+    "ItemTemplate_ID": "d270c4b1-647a-4e60-a369-112f9aa17007"
    }
   },
   {
@@ -440,7 +440,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "41be2597-83c7-4b5a-bed2-2935ea7fa499"
+    "ItemTemplate_ID": "07c32047-68cb-4140-a262-6442f1bd1357"
    }
   },
   {
@@ -528,7 +528,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9a0b5af8-4b3b-4fb6-965b-fd7127bcf9c6"
+    "ItemTemplate_ID": "b06b5009-67ef-45b8-8cad-bf2bcf4fc020"
    }
   },
   {
@@ -616,7 +616,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b59d1bda-e0e3-4bae-8874-67272c7eaf54"
+    "ItemTemplate_ID": "9d0e8cdc-a6c4-4803-824b-70d3a76b7c21"
    }
   },
   {
@@ -704,7 +704,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "832705a9-577d-4612-92d4-537237ea8b42"
+    "ItemTemplate_ID": "33182d66-1247-4c39-ba3e-0978152f3e6a"
    }
   },
   {
@@ -792,7 +792,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "f34b1d13-70ef-4d53-8d82-e00612365748"
+    "ItemTemplate_ID": "b9366ebe-ce6e-468f-a92f-187f2303f96b"
    }
   },
   {
@@ -880,7 +880,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "6a52ed5e-ab07-4a5b-8b77-eb5b3c33a389"
+    "ItemTemplate_ID": "5621022b-965c-4e4c-9734-746597df7348"
    }
   },
   {
@@ -968,7 +968,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "2842e8af-7cb1-4be0-baae-1db0522ec6af"
+    "ItemTemplate_ID": "75cf8c3a-b3f8-436e-b4a4-ead9f97f11a3"
    }
   },
   {
@@ -1056,7 +1056,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "87521004-f12d-4f03-b2d3-2a6c88825d4c"
+    "ItemTemplate_ID": "4dd8e407-ae0f-4fd1-b168-cccaf0b9e861"
    }
   },
   {
@@ -1144,7 +1144,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "e9d68a71-431e-40d1-b5d0-b82cd6a4591b"
+    "ItemTemplate_ID": "7c32d02f-f87a-4cb2-aeec-ca34169444dd"
    }
   },
   {
@@ -1232,7 +1232,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "aab6b0d5-aa3d-4624-b1fa-94286c923882"
+    "ItemTemplate_ID": "75b7197f-2b2f-48c2-bf16-3ec0c93e40f8"
    }
   },
   {
@@ -1320,7 +1320,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "58c8e847-1281-4a21-90a9-142cc0af8278"
+    "ItemTemplate_ID": "ae5dc7a1-60c9-4ad8-9cbb-e2c6f54439b5"
    }
   },
   {
@@ -1408,7 +1408,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b9e54613-bd04-4d2f-b6e5-ba025037d8b6"
+    "ItemTemplate_ID": "d54af3a4-a570-4080-ae7a-e4d79d136f01"
    }
   },
   {
@@ -1496,7 +1496,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4710780e-036f-4e52-844e-47edb876bb27"
+    "ItemTemplate_ID": "675d5fa0-fc17-4018-bc44-a9db50a8d227"
    }
   },
   {
@@ -1584,7 +1584,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "04590fff-2935-49e6-ab78-cfd38bceaa09"
+    "ItemTemplate_ID": "3d41509b-481c-46f3-be8c-606aa9ae28b4"
    }
   },
   {
@@ -1672,7 +1672,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-01-29 00:32:11",
-    "ItemTemplate_ID": "c96e26ca-92b8-41e2-9938-63d8b4922fc8"
+    "ItemTemplate_ID": "a377af17-8b7d-4fd8-9f53-12198a4e6984"
    }
   },
   {
@@ -1760,7 +1760,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9c60ccc8-6882-4495-ab72-4202c05b5eda"
+    "ItemTemplate_ID": "49a30593-ad51-4b7d-9df2-ad4d08092a52"
    }
   },
   {
@@ -1848,7 +1848,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "c1c467c3-fe9f-4ee8-82e3-504c964b69ff"
+    "ItemTemplate_ID": "847ac600-7be2-4e93-beab-8f4d9095570b"
    }
   },
   {
@@ -1936,7 +1936,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "cfb89a37-538b-4c28-9768-b085765e2f0e"
+    "ItemTemplate_ID": "651c83de-76b6-4540-b8d5-bda7937fe9ad"
    }
   },
   {
@@ -2024,7 +2024,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2021-12-28 15:20:12",
-    "ItemTemplate_ID": "259fb197-c367-462e-a0ff-17c5b49a9efa"
+    "ItemTemplate_ID": "0148fe3c-408f-4874-b3b4-7ba3ae308e05"
    }
   },
   {
@@ -2112,7 +2112,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "19e29629-81e3-49fa-986c-d4cf47fcba6b"
+    "ItemTemplate_ID": "f640924a-8b1d-4f31-815f-b71191c69802"
    }
   },
   {
@@ -2200,7 +2200,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4380d6c2-ebb8-42df-8853-2312362cd2df"
+    "ItemTemplate_ID": "9c318ef1-c83f-4db6-83ee-8e9ffe61d2c0"
    }
   },
   {
@@ -2288,7 +2288,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "987d5b16-8232-4d4a-a3b2-b465bafa6d40"
+    "ItemTemplate_ID": "1a297c0a-8262-481f-9aa4-f3be9db33c67"
    }
   },
   {
@@ -2376,7 +2376,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "e124d06b-d727-48c4-afbe-7b34155da6d7"
+    "ItemTemplate_ID": "37f8e4d1-02b1-4e2e-84e2-a9a365569067"
    }
   },
   {
@@ -2464,7 +2464,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "fe40fdb4-238d-41c4-8124-8ee7326ba3c2"
+    "ItemTemplate_ID": "59db6d96-0d5e-44a4-9ea5-769859602030"
    }
   },
   {
@@ -2552,7 +2552,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "68bdb070-ec48-46d8-9c38-9a97d7a832f6"
+    "ItemTemplate_ID": "fc3ba9be-e42b-47bc-85ac-96df53a222d9"
    }
   },
   {
@@ -2640,7 +2640,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2019-04-15 09:52:11",
-    "ItemTemplate_ID": "b0dc4952-44d7-4c17-9d3a-a44682c5ba8b"
+    "ItemTemplate_ID": "fa8c820a-4b2b-4c98-8a0c-1551c9abdea0"
    }
   },
   {
@@ -2728,7 +2728,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "8723256b-4264-4817-b15b-b0fd157664b4"
+    "ItemTemplate_ID": "836863f1-300b-4d11-be43-f6f58bcd930c"
    }
   },
   {
@@ -2816,7 +2816,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "799e6e9e-ac52-461c-ae96-6f166c402ecd"
+    "ItemTemplate_ID": "dbeef7f6-0836-4a92-ac30-a39259a08d98"
    }
   },
   {
@@ -2904,7 +2904,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "065dd075-4930-4307-8c46-6969de0df898"
+    "ItemTemplate_ID": "9f635d73-da0d-45b0-a6d9-2f82cf8b2c89"
    }
   },
   {
@@ -2992,7 +2992,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ab82e70c-0a03-4c69-92fe-d1e648c54e88"
+    "ItemTemplate_ID": "319f825c-f1ee-424e-ab53-40a10f05bc2f"
    }
   },
   {
@@ -3080,7 +3080,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d306b231-bcb4-41bf-9487-daf4cd3dc21c"
+    "ItemTemplate_ID": "660df6b4-3898-4295-8ac6-82aba34dad3e"
    }
   },
   {
@@ -3168,7 +3168,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "fdcd0226-53b3-4745-92a1-a94f219f2622"
+    "ItemTemplate_ID": "ef3b91ae-b5f8-49e4-bafb-9100802acd92"
    }
   },
   {
@@ -3256,7 +3256,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "8ad54f00-a09f-4a2f-938b-b6095080ec02"
+    "ItemTemplate_ID": "50cb94b0-150d-4a86-a08c-84ec8221d2d6"
    }
   },
   {
@@ -3344,7 +3344,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "a407a04e-fcef-42cc-a74d-cd29328b14f2"
+    "ItemTemplate_ID": "bb7e8b62-4a46-4286-82fd-181ce683d341"
    }
   },
   {
@@ -3432,7 +3432,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d01782c4-340e-4353-a5a8-fee383ce376f"
+    "ItemTemplate_ID": "8de105da-8091-4d27-a337-87a890a14057"
    }
   },
   {
@@ -3520,7 +3520,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "51e4bca0-8298-48a6-905f-6e260806653d"
+    "ItemTemplate_ID": "25f89536-b929-4080-9e78-40870e0b1c80"
    }
   },
   {
@@ -3608,7 +3608,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "276cbf80-a632-4db4-badb-c0cfd49ca7e5"
+    "ItemTemplate_ID": "a2fe2ff2-6d07-4a4d-bd48-6a18904b768b"
    }
   },
   {
@@ -3696,7 +3696,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "18695a85-7908-4ddb-849b-f00c16ca7aa7"
+    "ItemTemplate_ID": "cbc6b113-7fb3-4eb7-ac1a-94078088d96d"
    }
   },
   {
@@ -3784,7 +3784,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "967b3f92-ad20-40ba-9f79-b3454892635f"
+    "ItemTemplate_ID": "6aae5886-ac09-4348-99b2-e1cde25b7678"
    }
   },
   {
@@ -3872,7 +3872,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "74b4eebe-80a6-4b67-a833-70c4355c4c25"
+    "ItemTemplate_ID": "d4267dbd-1610-4b40-9b12-0590b2873472"
    }
   },
   {
@@ -3960,7 +3960,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2021-12-30 19:19:58",
-    "ItemTemplate_ID": "c956f2d6-66b4-4f8c-a0a4-e4d348cb29c1"
+    "ItemTemplate_ID": "b20d08b3-b6bc-4852-ac12-7ff8e34ac130"
    }
   },
   {
@@ -4048,7 +4048,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "51d98840-26b0-4afc-9504-f983712a35ec"
+    "ItemTemplate_ID": "54f89f1e-bbd9-4224-acc4-428622b5dd18"
    }
   },
   {
@@ -4136,7 +4136,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9b109856-94c5-4c41-bdcc-6133ed6e6b5b"
+    "ItemTemplate_ID": "4119f016-0157-4c77-ab98-f88eecb2d231"
    }
   },
   {
@@ -4224,7 +4224,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b48973ce-3ced-43c6-b1a1-7eed821e4206"
+    "ItemTemplate_ID": "a8f8b0e2-9c75-4d51-b025-fcb0e85089fe"
    }
   },
   {
@@ -4312,7 +4312,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4de917bc-ff38-4523-9a2e-4ddae1d30bc6"
+    "ItemTemplate_ID": "fcfafd01-df3b-4a17-a759-5af7686ed855"
    }
   },
   {
@@ -4400,7 +4400,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "8e0a2433-517f-4d33-94e9-9db3fcc46cd8"
+    "ItemTemplate_ID": "9e9b6b12-93f4-4336-a94c-b8ddbae9f995"
    }
   },
   {
@@ -4488,7 +4488,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7fa6640b-a93d-4e96-8ca1-93dfac63e2ae"
+    "ItemTemplate_ID": "3958cc3e-b9e7-4020-8a99-60ea303013e7"
    }
   },
   {
@@ -4576,7 +4576,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-01-02 01:47:01",
-    "ItemTemplate_ID": "21a48c9d-81aa-4413-a7e9-24773d264091"
+    "ItemTemplate_ID": "ca98d381-fd53-49fe-b8a5-243efa33c6bf"
    }
   },
   {
@@ -4664,7 +4664,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "86cacf86-4820-4a42-adae-59daa5788647"
+    "ItemTemplate_ID": "85446a30-9d73-4e29-992f-be4d3a64140d"
    }
   },
   {
@@ -4752,7 +4752,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "92b504dd-8a81-4780-b12c-49c4b433d8ed"
+    "ItemTemplate_ID": "032fcfa8-0262-400d-b256-930bd6431769"
    }
   },
   {
@@ -4840,7 +4840,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "f9d0f184-93ef-4814-ab76-8d22eab8cb69"
+    "ItemTemplate_ID": "fa4a6725-8ca0-4bab-8fb2-00d9e78dd44f"
    }
   },
   {
@@ -4928,7 +4928,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "77ea37dd-0e34-4b9f-ae9c-77c5bbd0d64c"
+    "ItemTemplate_ID": "e1d4b73d-d845-4659-a515-4e17285a8c57"
    }
   },
   {
@@ -5016,7 +5016,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "f1b93504-26f3-46ec-b57b-de3aaa80769f"
+    "ItemTemplate_ID": "34d4f2cb-704c-451e-b0b3-4937517e4d79"
    }
   },
   {
@@ -5104,7 +5104,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "35b5a336-ae8e-4486-8144-884b017ce21d"
+    "ItemTemplate_ID": "b7917810-9b75-4dd4-979f-03aa0fd4d7fa"
    }
   },
   {
@@ -5192,7 +5192,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "93612cd5-0cfa-42cd-918d-0ae330b95378"
+    "ItemTemplate_ID": "d66e77f0-25dc-4f5b-aaac-cc633062d131"
    }
   },
   {
@@ -5280,7 +5280,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "54a5e524-dfdb-4a15-82b1-6bd206f102df"
+    "ItemTemplate_ID": "ce4056e2-8d20-4d04-a43d-05561ad24597"
    }
   },
   {
@@ -5368,7 +5368,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4a4503ec-ca27-4d6b-90bb-bc9ee54d2e93"
+    "ItemTemplate_ID": "b8f6b6c6-1281-4a5d-b19e-3c89c02ed2eb"
    }
   },
   {
@@ -5456,7 +5456,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "af73d218-7844-4668-b9c6-13fb0b68b41e"
+    "ItemTemplate_ID": "234f5cec-1609-4ccb-9614-cba6b9a43244"
    }
   },
   {
@@ -5544,7 +5544,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7b2e79a9-7627-4370-97f0-9bc61fa36705"
+    "ItemTemplate_ID": "b103fe53-c0c2-48f2-87bd-6670358c37d2"
    }
   },
   {
@@ -5632,7 +5632,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ac06149c-5109-4727-ac91-58d07751118d"
+    "ItemTemplate_ID": "13756e4e-ad97-4333-8f9a-25b77b3017d0"
    }
   },
   {
@@ -5720,7 +5720,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d19b8232-a1f0-41a2-ba83-9be7b4cea5b0"
+    "ItemTemplate_ID": "98620930-bfe1-4b80-9616-7ef353c7198c"
    }
   },
   {
@@ -5808,7 +5808,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-01-31 11:36:02",
-    "ItemTemplate_ID": "d28bb161-1f0f-4626-80e3-fe1878b70fa6"
+    "ItemTemplate_ID": "53e3ba02-406e-4504-afa0-79ad5b050587"
    }
   },
   {
@@ -5896,7 +5896,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-01-28 20:19:28",
-    "ItemTemplate_ID": "c9fd544c-f1d3-40d7-8e61-757ab390a603"
+    "ItemTemplate_ID": "cb526809-f335-4c16-98a7-088465972f0d"
    }
   },
   {
@@ -5984,7 +5984,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-15 11:46:09",
-    "ItemTemplate_ID": "c70e02bc-87d5-43b9-b101-373f4326b768"
+    "ItemTemplate_ID": "de9d7b03-2c25-4687-b547-d2e6e377773b"
    }
   },
   {
@@ -6072,7 +6072,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "5114f61a-e39b-4b19-8f14-e52ea22e629d"
+    "ItemTemplate_ID": "6fb7c97b-fa17-4174-9d51-d02f47dc0f35"
    }
   },
   {
@@ -6160,7 +6160,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-09 11:35:01",
-    "ItemTemplate_ID": "6a8f8f7f-a739-4f66-a71d-38ca81724d3b"
+    "ItemTemplate_ID": "5dfc601f-8db5-4ec1-93d7-08392e8f6a84"
    }
   },
   {
@@ -6248,7 +6248,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "768cd1ad-984b-4a71-94bb-9106ac071389"
+    "ItemTemplate_ID": "d3a6236c-1af3-4aa8-a779-d02a4a81bcdd"
    }
   },
   {
@@ -6336,7 +6336,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "605850ae-bbeb-48a2-b1b6-ab47aa1b792b"
+    "ItemTemplate_ID": "a8c6b05a-f31b-43ed-9ba9-82fe22315375"
    }
   },
   {
@@ -6424,7 +6424,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "c8e7bfc7-9212-4c75-92ff-131e07f76797"
+    "ItemTemplate_ID": "0f8fee85-9464-4184-acea-2c15513d5108"
    }
   },
   {
@@ -6512,7 +6512,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4a0a7e08-3377-41b8-a632-a6bd3f1b66fd"
+    "ItemTemplate_ID": "51b76bd8-7aea-477e-b951-5cd5c70f72a2"
    }
   },
   {
@@ -6600,7 +6600,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "8428a7eb-50ab-4b5f-8d36-29c5186138fb"
+    "ItemTemplate_ID": "1a8966b7-ade4-48e5-99be-6dacce44f136"
    }
   },
   {
@@ -6688,7 +6688,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "a54c6dde-7c2f-42f3-ac09-eab58b8008a1"
+    "ItemTemplate_ID": "34833fe1-1582-4b66-9e87-9ca47d58ab93"
    }
   },
   {
@@ -6776,7 +6776,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "a0e3d009-22e4-4353-8311-a5867dbb6e2a"
+    "ItemTemplate_ID": "f1e9f56f-6a74-425e-92e0-acdac9b1a978"
    }
   },
   {
@@ -6864,7 +6864,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "349de404-2273-4c0c-97f4-f175e1b6c8fa"
+    "ItemTemplate_ID": "3c57e58b-893e-4ebb-bf9c-d6973671668f"
    }
   },
   {
@@ -6952,7 +6952,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "6d3fa837-8bc8-4865-a187-9fbffbe101be"
+    "ItemTemplate_ID": "21666e23-df54-4783-a0a4-514040fb41f0"
    }
   },
   {
@@ -7040,7 +7040,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "019a1d20-a42b-4ba8-9935-ef0782b9fe76"
+    "ItemTemplate_ID": "1c0fcffd-f62f-4d49-bdf8-a11b9e5ac44f"
    }
   },
   {
@@ -7128,7 +7128,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "84e301ac-e453-45e0-a282-d55f1e67fed8"
+    "ItemTemplate_ID": "8bc225ca-806b-43af-8fa8-c091b8ed81a3"
    }
   },
   {
@@ -7216,7 +7216,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "3d437704-002e-4572-af51-fb7bb201477f"
+    "ItemTemplate_ID": "ddca223b-ce88-48b0-be7a-c5eafc470616"
    }
   },
   {
@@ -7304,7 +7304,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d94ab6aa-b91c-4c55-add8-c229d6e48892"
+    "ItemTemplate_ID": "5c1eb53f-6053-4378-b0e6-3e769b1c56d2"
    }
   },
   {
@@ -7392,7 +7392,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "f84ba177-82ad-4e65-8873-b0064728591d"
+    "ItemTemplate_ID": "8b0f8c75-436a-4310-9b2b-16bad15ba28d"
    }
   },
   {
@@ -7480,7 +7480,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "3f92c080-4525-41eb-a4a4-d18078005578"
+    "ItemTemplate_ID": "227832d5-0a8d-45e1-9803-95de9671977d"
    }
   },
   {
@@ -7568,7 +7568,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "484d2ecf-2775-4e93-b5cd-3eac57dc482a"
+    "ItemTemplate_ID": "2b63ebb7-83a1-49f9-9b45-a67e398f034d"
    }
   },
   {
@@ -7656,7 +7656,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "c8e1a1b6-90ef-4847-b615-40cc27286725"
+    "ItemTemplate_ID": "e403df6b-e689-4fab-a508-9ae9ad8f14a1"
    }
   },
   {
@@ -7744,7 +7744,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "84a7f207-b321-4fb4-83a7-08e2e3d9e829"
+    "ItemTemplate_ID": "2c726e3a-f488-44c2-89b9-128a6c5941eb"
    }
   },
   {
@@ -7832,7 +7832,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "de0eea05-f644-4562-84d2-64de92442069"
+    "ItemTemplate_ID": "aedf95b4-e80a-4c04-8349-c9230f7006d6"
    }
   },
   {
@@ -7920,7 +7920,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-15 19:56:40",
-    "ItemTemplate_ID": "14ec42e9-2cb5-4f29-ace5-c0972e758858"
+    "ItemTemplate_ID": "9b15f705-f257-4ba8-ba4e-f745b6bd8361"
    }
   },
   {
@@ -8008,7 +8008,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ff801571-fc72-4603-b50b-1ffd17b55c8c"
+    "ItemTemplate_ID": "35663436-179d-4d79-a940-85e1ec59da8d"
    }
   },
   {
@@ -8096,7 +8096,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-15 19:56:40",
-    "ItemTemplate_ID": "c8edf727-8b2d-48fc-92da-14b086445699"
+    "ItemTemplate_ID": "69ae9c60-c487-4f92-8717-24ebb782b842"
    }
   },
   {
@@ -8184,7 +8184,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-05-20 08:22:51",
-    "ItemTemplate_ID": "4b1a9e7d-4b7d-4b69-b17d-e7eaec7318bc"
+    "ItemTemplate_ID": "cf59d77c-d394-47f3-a18d-b0b958cb252d"
    }
   },
   {
@@ -8272,7 +8272,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "dbfc12db-43ed-4ef4-a39b-97617f6be03a"
+    "ItemTemplate_ID": "e6a94173-3754-491b-8adb-4002d0e54cec"
    }
   },
   {
@@ -8360,7 +8360,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "11baaae2-0fd1-4119-9306-151896bbb2e3"
+    "ItemTemplate_ID": "c6f8c590-07a5-4ca9-96bb-1782b67337ef"
    }
   },
   {
@@ -8448,7 +8448,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b97962e6-f2e2-4868-afa2-6a4f349c48ad"
+    "ItemTemplate_ID": "d549178e-bc01-403b-a4f6-739a2264a339"
    }
   },
   {
@@ -8536,7 +8536,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7162df79-9b75-4742-97f5-5c5ddf4133ab"
+    "ItemTemplate_ID": "13bdae9e-ea2d-498f-98e7-183c4634a9e0"
    }
   },
   {
@@ -8624,7 +8624,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "784c12b6-ab3c-4626-8d2e-f579448e358e"
+    "ItemTemplate_ID": "e117546d-2c2e-401b-a493-082cc1848497"
    }
   },
   {
@@ -8712,7 +8712,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4129113b-f95d-4744-a171-f1012da6811b"
+    "ItemTemplate_ID": "8b21ad7f-ab21-4067-a542-51a92507971d"
    }
   },
   {
@@ -8800,7 +8800,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "fbbaa36b-551e-43a7-bc15-44ff298c53cb"
+    "ItemTemplate_ID": "58d15e5e-c5a0-4a46-aa64-53066b0622ea"
    }
   },
   {
@@ -8888,7 +8888,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7273b133-48be-469b-bd63-377aebb25063"
+    "ItemTemplate_ID": "7d08f432-8ece-49cf-85f7-51623984d46f"
    }
   },
   {
@@ -8976,7 +8976,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "808bd64b-0dc9-4fdd-9554-ba682386d328"
+    "ItemTemplate_ID": "6f0ceff4-343f-4ad0-ad0e-bd6cfd34fab1"
    }
   },
   {
@@ -9064,7 +9064,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "2b0c437b-cc8c-4cab-bb79-8ff443642f82"
+    "ItemTemplate_ID": "4703c228-805b-42d9-9d1f-27a69323ee3c"
    }
   },
   {
@@ -9152,7 +9152,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "0aed3ebe-1b03-4a54-bcde-bb77f4b1a204"
+    "ItemTemplate_ID": "56641034-597a-4c13-b631-47da11b1191b"
    }
   },
   {
@@ -9240,7 +9240,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2020-05-27 21:22:05",
-    "ItemTemplate_ID": "d82d62c9-dfdf-4f27-988a-9f9e5591454d"
+    "ItemTemplate_ID": "386020af-64c2-4426-9a45-f0f0ab204564"
    }
   },
   {
@@ -9328,7 +9328,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "1c6a0a64-252c-4939-8656-594e097fd33a"
+    "ItemTemplate_ID": "8f40f91b-ca7a-4764-88f7-a1680b47e758"
    }
   },
   {
@@ -9416,7 +9416,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "99e96f99-2a80-43d9-a510-783fe7cd5572"
+    "ItemTemplate_ID": "e18eee3e-dc0a-43a7-9270-0d46d7398326"
    }
   },
   {
@@ -9504,7 +9504,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b829023c-0f6a-41eb-ac82-d86643492321"
+    "ItemTemplate_ID": "1c90ea41-6151-40b8-8c37-859485611918"
    }
   },
   {
@@ -9592,7 +9592,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-01-25 23:23:32",
-    "ItemTemplate_ID": "2d67f139-bfc1-4854-a2b4-98f1bdec6390"
+    "ItemTemplate_ID": "86f3ec4a-30f0-4118-996b-648cda61cc65"
    }
   },
   {
@@ -9680,7 +9680,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7c3d3961-4edc-466e-a7e0-f04698738a5c"
+    "ItemTemplate_ID": "491154da-d4f4-43f0-b834-d60114b38a23"
    }
   },
   {
@@ -9768,7 +9768,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-15 15:54:44",
-    "ItemTemplate_ID": "f4cb1163-5c48-41e4-931c-2b624765227f"
+    "ItemTemplate_ID": "f894ea27-9a78-46a0-9bdc-2bcabecf6a5a"
    }
   },
   {
@@ -9856,7 +9856,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "19b7ecb9-419e-4385-9f8e-dc8134456192"
+    "ItemTemplate_ID": "daa803e8-40eb-4b6b-88f1-72689291d9b4"
    }
   },
   {
@@ -9944,7 +9944,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "add73583-5aee-407a-98d6-56911d4df422"
+    "ItemTemplate_ID": "7f2d419f-cb50-4503-9051-bc00c8b8ab4e"
    }
   },
   {
@@ -10032,7 +10032,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "622657e1-d623-4016-94fd-8dd58a09a668"
+    "ItemTemplate_ID": "3a9423bd-f2d4-4f5f-9f7c-70b25c93cd1b"
    }
   },
   {
@@ -10120,7 +10120,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7707f614-8d54-4876-bfe2-54d3864645bd"
+    "ItemTemplate_ID": "a5548653-89c9-4585-b43b-2d466e86c097"
    }
   },
   {
@@ -10208,7 +10208,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "17f538e3-8e8d-4480-9acc-5ceebf7f1278"
+    "ItemTemplate_ID": "d6825ce5-2885-473a-bb3b-ea5dfd8e6e2c"
    }
   },
   {
@@ -10296,7 +10296,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9b5af1f7-cb9a-41b9-b639-7df0c9df86b4"
+    "ItemTemplate_ID": "a4875cbd-bc72-4d6d-b736-3765b5606dbf"
    }
   },
   {
@@ -10384,7 +10384,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4a4efb09-bf15-4b8b-8713-4e0bec22a330"
+    "ItemTemplate_ID": "1dedf65a-2f23-4e74-837f-dc250d569a3c"
    }
   },
   {
@@ -10472,7 +10472,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-15 23:58:28",
-    "ItemTemplate_ID": "8f730ddf-707d-40c7-a0c7-9bee9adb2aeb"
+    "ItemTemplate_ID": "f8967e6a-e2e2-41e4-8bdf-4cf0ecc6dbb3"
    }
   },
   {
@@ -10560,7 +10560,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "e05577d7-f95a-43ba-9ee5-899e210f2de7"
+    "ItemTemplate_ID": "e7469526-d300-482d-899c-e28f71cd28dd"
    }
   },
   {
@@ -10648,7 +10648,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-02-01 19:06:30",
-    "ItemTemplate_ID": "65f77fe9-da83-4be0-867d-e524ee66c87c"
+    "ItemTemplate_ID": "9ad673f8-ea23-4dc1-824b-80058ea54a28"
    }
   },
   {
@@ -10736,7 +10736,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "47b47f15-9b6e-4fe9-b08e-cdb920d6d003"
+    "ItemTemplate_ID": "1b5d99d1-955d-46ea-a90a-8f9ca718e429"
    }
   },
   {
@@ -10824,7 +10824,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "212acb25-b340-490a-9a9d-142dcc8b3344"
+    "ItemTemplate_ID": "958194be-db6b-4cc6-9fa1-28e8db3049ad"
    }
   },
   {
@@ -10912,7 +10912,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "29e747a9-410f-4bfb-9c5b-cc6cba617fe8"
+    "ItemTemplate_ID": "d9277c0a-70f1-4585-9906-0918506a029d"
    }
   },
   {
@@ -11000,7 +11000,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-02-01 01:08:31",
-    "ItemTemplate_ID": "7e8b02a2-6492-4c21-a48a-09cf384ccdff"
+    "ItemTemplate_ID": "32778bc6-eaa3-4376-8a18-d947a2303391"
    }
   },
   {
@@ -11088,7 +11088,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "be344646-d143-47c1-b6ae-1436e59d3754"
+    "ItemTemplate_ID": "01cf2c12-914d-44c1-aa76-0a6a56586f05"
    }
   },
   {
@@ -11176,7 +11176,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d306a20c-1e12-45a5-918d-4faad5a53618"
+    "ItemTemplate_ID": "aeb53512-2da4-446d-890d-a7e5c1afc1e9"
    }
   },
   {
@@ -11264,7 +11264,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "eb48be14-99e0-4111-9b42-3dd8735b1435"
+    "ItemTemplate_ID": "5d77bd6f-c85a-4437-995f-3bbfd5c7dcba"
    }
   },
   {
@@ -11352,7 +11352,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "36a35fc9-3189-480d-a7e2-58fb467958b6"
+    "ItemTemplate_ID": "d944c609-07eb-42bd-a05c-ff490d42c461"
    }
   },
   {
@@ -11440,7 +11440,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "065080ca-2864-496b-b723-c2bbcffaf21c"
+    "ItemTemplate_ID": "4c137644-c43d-43f0-ab06-ba90b64e4601"
    }
   },
   {
@@ -11528,7 +11528,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ab4de1e1-6ee4-4e4c-a938-adbedf4aa5b3"
+    "ItemTemplate_ID": "21b1d5e1-7ca4-48b0-b224-b5e2f25f5466"
    }
   },
   {
@@ -11616,7 +11616,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "426be837-7580-48e8-aeaa-6e7961416b34"
+    "ItemTemplate_ID": "ad97faa4-7049-4a99-8738-ea0a04371302"
    }
   },
   {
@@ -11704,7 +11704,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "1ca97345-f7dd-444c-90e2-6beff33052bc"
+    "ItemTemplate_ID": "8504af4e-e7c1-4a6b-a8b7-0f8a972fe04f"
    }
   },
   {
@@ -11792,7 +11792,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "cc7f7f37-079b-4220-a966-b3c8745bf273"
+    "ItemTemplate_ID": "0b5e42e3-53f2-4048-81ea-480a2d49b905"
    }
   },
   {
@@ -11880,7 +11880,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "93b4c401-a9e3-4728-b6b3-3472f5b6377f"
+    "ItemTemplate_ID": "219a38f4-9310-40f9-a96b-fda3df48be21"
    }
   },
   {
@@ -11968,7 +11968,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "bb2015c5-b08e-47f3-8089-4af02877e558"
+    "ItemTemplate_ID": "c4cca8f7-fbf5-4f95-a14f-8c7225c32098"
    }
   },
   {
@@ -12056,7 +12056,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d59bfd25-59d0-4f56-b242-31e16e8db257"
+    "ItemTemplate_ID": "ac44954d-39e4-4d62-b47b-fb5db5152f32"
    }
   },
   {
@@ -12144,7 +12144,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7eb32283-4df4-4759-9276-63d3e99b1352"
+    "ItemTemplate_ID": "0f054a2c-5d8c-46e7-b3a4-01fd54d1ffdd"
    }
   },
   {
@@ -12232,7 +12232,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-14 23:35:23",
-    "ItemTemplate_ID": "eddeeabb-7fc8-40c5-b6e9-2df3636af30e"
+    "ItemTemplate_ID": "ab5f6443-c20b-413a-b5cc-81c3cc79ddcb"
    }
   },
   {
@@ -12320,7 +12320,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "1909aaf4-19ce-4c48-badb-48e37452d32a"
+    "ItemTemplate_ID": "23d1e597-eaaa-4b76-800e-c4d57905f10a"
    }
   },
   {
@@ -12408,7 +12408,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "c90bd195-4942-49be-9d4d-0a376a23736e"
+    "ItemTemplate_ID": "1ed5c208-0f95-4a2b-b31f-d6bda46e9647"
    }
   },
   {
@@ -12496,7 +12496,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "3052625f-320e-4ba1-9d1a-609e04418995"
+    "ItemTemplate_ID": "683bb0b4-f0de-4a73-b934-ca56882c2d6e"
    }
   },
   {
@@ -12584,7 +12584,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9827f1af-e939-4e50-88af-70e160c43f3c"
+    "ItemTemplate_ID": "17da136c-ed6d-40f2-83b5-960177668914"
    }
   },
   {
@@ -12672,7 +12672,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "1c5365a9-4d33-48ef-86c7-068934c7dfaf"
+    "ItemTemplate_ID": "543702d9-25df-43cf-bec0-c76eb1ed3aad"
    }
   },
   {
@@ -12760,7 +12760,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "c6add5ea-e550-45da-a47d-f5f11106d504"
+    "ItemTemplate_ID": "c4cf7726-ae43-433f-b048-1e19e9b13ad4"
    }
   },
   {
@@ -12848,7 +12848,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-01-02 02:00:08",
-    "ItemTemplate_ID": "c433d7ed-66a8-49ce-b30c-039c39256591"
+    "ItemTemplate_ID": "547d30e7-b720-4e45-a88c-29b41e7110ef"
    }
   },
   {
@@ -12936,7 +12936,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "1b4def42-7ef7-41b2-aa7f-397e498633a4"
+    "ItemTemplate_ID": "b1f14bff-8e5f-458a-9f64-9dd0e247e8c4"
    }
   },
   {
@@ -13024,7 +13024,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b5d4b24a-b0e6-46de-af91-bc073ff5b900"
+    "ItemTemplate_ID": "e6b4a7fb-c78a-4058-84fe-bbd685991d5f"
    }
   },
   {
@@ -13112,7 +13112,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-03-01 20:18:26",
-    "ItemTemplate_ID": "30349f5f-6a58-4c5c-896c-5fde08b5c065"
+    "ItemTemplate_ID": "218cf621-11b7-4a43-b617-7bb30dc1a837"
    }
   },
   {
@@ -13200,7 +13200,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "52a952ec-8597-4776-a933-63029ad55e9b"
+    "ItemTemplate_ID": "358af0c1-3e54-4574-8ff0-97f22de183c8"
    }
   },
   {
@@ -13288,7 +13288,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7d27332a-68f6-461d-904d-0e1a79ea94aa"
+    "ItemTemplate_ID": "0c79c2ff-05c4-439d-8556-d4255eefe54d"
    }
   },
   {
@@ -13376,7 +13376,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "69625456-7677-40ce-9562-5e468ad8a684"
+    "ItemTemplate_ID": "061dbb05-15c3-4fe2-a122-eb21ec9df070"
    }
   },
   {
@@ -13464,7 +13464,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-14 18:22:03",
-    "ItemTemplate_ID": "9caacb54-a440-4a57-b2f3-84635cd8dbaf"
+    "ItemTemplate_ID": "10b62370-b1fe-427b-a007-245225464f30"
    }
   },
   {
@@ -13552,7 +13552,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "52022fd5-10e9-466a-b73e-e14ef0c7f1d7"
+    "ItemTemplate_ID": "21124858-0c75-40c7-b75b-53181cbd86d2"
    }
   },
   {
@@ -13640,7 +13640,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "33ac0415-2469-410d-a873-a19fa953d394"
+    "ItemTemplate_ID": "24f8faeb-77b6-487c-bdec-ea702e951f4a"
    }
   },
   {
@@ -13728,7 +13728,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-09 11:35:02",
-    "ItemTemplate_ID": "150f6819-896f-443e-85c7-15a7845d0176"
+    "ItemTemplate_ID": "2d72f6a3-4277-4916-b128-a252d9e92916"
    }
   },
   {
@@ -13816,7 +13816,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "0882cf79-df6c-448f-a9fb-598e23a54971"
+    "ItemTemplate_ID": "4d52a5a6-30d7-4d2e-be39-720d4cc8ea21"
    }
   },
   {
@@ -13904,7 +13904,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9fa11199-045c-4f7a-b35d-5c8e5d97ae24"
+    "ItemTemplate_ID": "ff8af298-08ca-4ea4-a565-f319b54e533a"
    }
   },
   {
@@ -13992,7 +13992,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7d51485a-8663-4286-a0b2-ae58c6db66e9"
+    "ItemTemplate_ID": "53c7fe0a-7907-4abc-b44c-eb7bc807c69a"
    }
   },
   {
@@ -14080,7 +14080,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "2ef9638b-8e55-421b-9071-22e93aed66a6"
+    "ItemTemplate_ID": "11d83911-62fc-44dd-9621-193c2198442a"
    }
   },
   {
@@ -14168,7 +14168,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-14 16:54:48",
-    "ItemTemplate_ID": "167c22e6-feef-4e00-bacf-139afab051d4"
+    "ItemTemplate_ID": "0c204b15-64d4-449a-b8c2-5c20fbf22ecb"
    }
   },
   {
@@ -14256,7 +14256,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7d690969-f657-4f88-ba0b-165b64ebe819"
+    "ItemTemplate_ID": "c301b4e2-85e8-47fd-8407-214afa260560"
    }
   },
   {
@@ -14344,7 +14344,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "96fc60df-5320-41c8-817c-5fbe79ee15ab"
+    "ItemTemplate_ID": "22f5f4ea-2629-4aa9-b330-232613056e39"
    }
   },
   {
@@ -14432,7 +14432,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "551fe45e-e84a-451b-8ffa-c5cf529f7c64"
+    "ItemTemplate_ID": "2229457c-28bd-4513-8aea-6c9bbd545744"
    }
   },
   {
@@ -14520,7 +14520,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "84a6a927-0566-4c8b-8649-5f4c4e66dba8"
+    "ItemTemplate_ID": "9bb227b5-df4d-4718-96a9-5f30e6dbbb06"
    }
   },
   {
@@ -14608,7 +14608,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2021-12-28 13:53:06",
-    "ItemTemplate_ID": "7b7d282a-6671-4cb3-ab9f-e0d807bde885"
+    "ItemTemplate_ID": "5e43be99-1ef8-48e7-b4bf-bd583194ab43"
    }
   },
   {
@@ -14696,7 +14696,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "97ac0021-c426-4a27-80c7-95c1fce47e8b"
+    "ItemTemplate_ID": "edbab7d8-a967-4739-9535-1f5908e5347d"
    }
   },
   {
@@ -14784,7 +14784,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "f539c728-72c5-40e4-aa14-f9f6e69d6324"
+    "ItemTemplate_ID": "847371a0-fbd1-4cd1-b15c-5055dd2c4463"
    }
   },
   {
@@ -14872,7 +14872,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "70e6b14d-e5b5-42a5-80ff-4f34ec004b74"
+    "ItemTemplate_ID": "c777629e-de56-4ec2-b2b9-6bba4927b09c"
    }
   },
   {
@@ -14960,7 +14960,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-01-02 02:05:09",
-    "ItemTemplate_ID": "978873ae-892a-4897-bb82-a5f417c86d0a"
+    "ItemTemplate_ID": "ad484e4e-bb8e-4ddf-b82a-5d15e39b92a8"
    }
   },
   {
@@ -15048,7 +15048,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-01-26 11:36:17",
-    "ItemTemplate_ID": "02e15c0d-93c2-4d8e-b350-bd040a629fb4"
+    "ItemTemplate_ID": "cbfecb9c-4eb7-4997-9903-c947f8ccc797"
    }
   },
   {
@@ -15136,7 +15136,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-01-26 11:36:17",
-    "ItemTemplate_ID": "05c52727-3c97-4d44-aaa0-14bb61b46179"
+    "ItemTemplate_ID": "5a5c0674-ea27-4f26-86d8-7a26200fba12"
    }
   },
   {
@@ -15224,7 +15224,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "bab3a872-44a7-406b-b680-e24657c4ba66"
+    "ItemTemplate_ID": "c00ba884-704c-4fb8-8c7e-75a330ceec56"
    }
   },
   {
@@ -15312,7 +15312,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7b073c59-453e-4d58-89bf-82b5b8dd926a"
+    "ItemTemplate_ID": "36f5816c-3d68-4cfd-810e-70cba441a846"
    }
   },
   {
@@ -15400,7 +15400,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2018-01-27 19:02:47",
-    "ItemTemplate_ID": "ea423ab2-08c3-4f48-a0a0-fb09be4c599b"
+    "ItemTemplate_ID": "bdf5f80c-5206-4a1b-b04e-24708f86fa67"
    }
   },
   {
@@ -15488,7 +15488,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-15 18:12:38",
-    "ItemTemplate_ID": "fdc91816-046f-4874-b810-dfd7253bdeb9"
+    "ItemTemplate_ID": "6d3dbaf2-7e3d-4216-922d-0a60db037079"
    }
   },
   {
@@ -15576,7 +15576,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-15 18:12:38",
-    "ItemTemplate_ID": "ea5e7218-5590-42d8-9412-0f78e4956455"
+    "ItemTemplate_ID": "5789adc3-adc9-460b-8349-8d702293c21e"
    }
   },
   {
@@ -15664,7 +15664,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "7aaabdb0-1f15-44ad-8b47-b699639ac7d5"
+    "ItemTemplate_ID": "3a69b30d-b8bb-421f-b40c-50dcfd57eca9"
    }
   },
   {
@@ -15752,7 +15752,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "5006660c-6847-437a-89fc-64165ed3c6e5"
+    "ItemTemplate_ID": "57d1a1d2-c4b8-4468-b485-05b553d8d5ef"
    }
   },
   {
@@ -15840,7 +15840,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "4e9c377b-e477-461f-b86f-82f7e3c83a0e"
+    "ItemTemplate_ID": "e11393de-2306-4b15-9538-3a16dc1f4783"
    }
   },
   {
@@ -15928,7 +15928,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9bd010f1-d3d5-4dc7-8fdb-304fe92fb233"
+    "ItemTemplate_ID": "b7c16648-c393-4ce7-89f2-39646e4493ba"
    }
   },
   {
@@ -16016,7 +16016,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "c77152c8-7ee1-4885-b7f0-7671933adead"
+    "ItemTemplate_ID": "a715849e-a9a3-421d-ba80-53194e3f4463"
    }
   },
   {
@@ -16104,7 +16104,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ae580437-29ae-4264-b74a-c4731db64fa2"
+    "ItemTemplate_ID": "f9537136-c5c2-42e3-a635-284fe4191fb4"
    }
   },
   {
@@ -16192,7 +16192,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "e0a1dbcb-ab43-4628-b8da-a6141825b476"
+    "ItemTemplate_ID": "bd3c43e5-a377-49e9-9a2d-539aef028590"
    }
   },
   {
@@ -16280,7 +16280,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ee51f5b3-9f13-4ea7-b665-4b4002fccba1"
+    "ItemTemplate_ID": "f9396686-e324-4019-be60-970af2f524f8"
    }
   },
   {
@@ -16368,7 +16368,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "f53c19f2-3c8a-4d69-a3b8-6556804f0288"
+    "ItemTemplate_ID": "76df50c4-7caa-4890-9dbf-2a5988aa2c88"
    }
   },
   {
@@ -16456,7 +16456,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "04d6a0b9-ada1-4958-a12b-5b0726bbf0c0"
+    "ItemTemplate_ID": "ac8859cb-967c-454d-a39b-3e8dec9ba53c"
    }
   },
   {
@@ -16544,7 +16544,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "5f880381-cfb6-4829-985d-6ebfdfe67eb9"
+    "ItemTemplate_ID": "08a33ed8-cb3d-4bbc-9147-b77cb05e0365"
    }
   },
   {
@@ -16632,7 +16632,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "bf302ebb-c840-40f8-871a-25eec217db64"
+    "ItemTemplate_ID": "bab05f18-fe59-49e5-be2b-1d471a11de27"
    }
   },
   {
@@ -16720,7 +16720,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "2740da5a-65c3-4362-8626-a6591fd9a799"
+    "ItemTemplate_ID": "b3d8e5c0-76f5-4d34-b19a-cc217aee8c15"
    }
   },
   {
@@ -16808,7 +16808,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "9c3767d6-d01b-413b-abc8-1d1685b641e7"
+    "ItemTemplate_ID": "cf4f071c-fd9d-490f-8e3c-abb449da4412"
    }
   },
   {
@@ -16896,7 +16896,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d277ec59-a5a3-48e9-a607-e86805d5ccb8"
+    "ItemTemplate_ID": "42c3bf0d-409f-4d88-9a45-281415a70fa8"
    }
   },
   {
@@ -16984,7 +16984,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-07-14 20:25:27",
-    "ItemTemplate_ID": "503e32a5-14ab-4b8d-97ec-35dcb8f6c81a"
+    "ItemTemplate_ID": "2bce086b-8d1a-44b0-b7aa-7b9d7f56b764"
    }
   },
   {
@@ -17072,7 +17072,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "e9e83365-fc23-4748-bee5-35b840912f64"
+    "ItemTemplate_ID": "3a567451-1be1-4fee-8009-912d844cd15a"
    }
   },
   {
@@ -17160,7 +17160,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "38f9ba82-6cd1-4dbf-a34d-7dcac41144b6"
+    "ItemTemplate_ID": "1db54c3f-9169-49d3-a214-e319534546a3"
    }
   },
   {
@@ -17248,7 +17248,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "b4324e5b-1a46-4cab-8dd6-03bfd347ff5c"
+    "ItemTemplate_ID": "08f613f7-cebf-4099-bdbe-d5e708238dad"
    }
   },
   {
@@ -17336,7 +17336,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "42ec59aa-5175-4dd1-901e-edab7c64bbd9"
+    "ItemTemplate_ID": "a896c528-6a19-4d1a-a550-a4a4f4576f0d"
    }
   },
   {
@@ -17424,7 +17424,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "f305a42d-f4e6-4020-a05b-9754eef53eb7"
+    "ItemTemplate_ID": "197e1185-bb67-4a44-83d8-2bbac192670b"
    }
   },
   {
@@ -17512,7 +17512,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ff435f7e-5919-4459-a392-86cbfdbbf586"
+    "ItemTemplate_ID": "a542ad0c-c9db-4596-8aa4-6a56e22c9668"
    }
   },
   {
@@ -17600,7 +17600,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "d12b5f03-f16b-4afe-a16e-a991bc728294"
+    "ItemTemplate_ID": "30ed72e9-05ab-4a7b-96d7-9f20c146d58f"
    }
   },
   {
@@ -17688,7 +17688,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "bca3006e-b1c9-49e3-805e-df8b86643b13"
+    "ItemTemplate_ID": "0e2b916b-df45-4bb6-9875-5520301df97b"
    }
   },
   {
@@ -17776,7 +17776,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "024dd830-033f-4295-b78d-3e4fa664adfe"
+    "ItemTemplate_ID": "a83ecaf8-c22f-4321-bb22-1fd5d8acc148"
    }
   },
   {
@@ -17864,7 +17864,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2022-01-02 01:58:15",
-    "ItemTemplate_ID": "4d5e7679-1984-4a62-86e9-d2c407b53639"
+    "ItemTemplate_ID": "f0f76e9d-04eb-4458-b552-1732b2c9179d"
    }
   },
   {
@@ -17952,7 +17952,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "3e95fcd5-5f7b-415a-bde6-df9799a13e8f"
+    "ItemTemplate_ID": "48d576af-a809-4c5b-8fd9-8bc01a720a5d"
    }
   },
   {
@@ -18040,7 +18040,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "72fa6958-04a0-4126-91ed-a2de38ce2abc"
+    "ItemTemplate_ID": "74cdd4b4-07ed-4080-b7f3-81645b0e7cf8"
    }
   },
   {
@@ -18128,7 +18128,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2026-11-08 00:00:00",
-    "ItemTemplate_ID": "11c3a4a3-9969-4398-9756-95dbd93eb097"
+    "ItemTemplate_ID": "bbc95fe4-4b58-4607-b979-17ec0da6eed1"
    }
   },
   {
@@ -18216,7 +18216,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "dafea639-c9ca-4e7a-b97b-0ad763a0b919"
+    "ItemTemplate_ID": "be0afc54-f69c-45d8-87fd-50b91233e50c"
    }
   },
   {
@@ -18304,7 +18304,7 @@
     "ClassType": "",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "1dbc23aa-653f-4e2e-83e0-99d2d8e6c30a"
+    "ItemTemplate_ID": "33e91737-e3aa-44ac-a1e5-b0784eac4681"
    }
   },
   {
