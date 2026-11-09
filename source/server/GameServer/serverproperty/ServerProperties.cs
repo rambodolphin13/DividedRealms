@@ -2083,6 +2083,9 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("loot", "artifact_glass_min_level", "Lowest mob level that can drop Atlantean Glass.", 45)]
 		public static int ARTIFACT_GLASS_MIN_LEVEL;
 
+		[ServerProperty("loot", "artifact_glass_named_max_spawns", "A capitalised monster name counts as a boss for Atlantean Glass (always drops 5) only when its region holds at most this many spawns of that name. 0 = every capitalised name is a boss (the old rule).", 3)]
+		public static int ARTIFACT_GLASS_NAMED_MAX_SPAWNS;
+
 		[ServerProperty("pve", "lootgenerator_mythirian_min_level", "Lowest mob level that can drop a mythirian.", 45)]
 		public static int LOOTGENERATOR_MYTHIRIAN_MIN_LEVEL;
 		
