@@ -30,6 +30,12 @@ namespace DOL.GS
         internal AccountCompanionRecord CompanionRecord { get; private set; }
         public string CompanionCharacterId => CompanionCharacter?.ObjectId;
 
+        /// <summary>The character's realm points, earned in RvR beside its owner and saved back to it.</summary>
+        public long CompanionRealmPoints { get; private set; }
+
+        /// <summary>The character's bounty points, earned in RvR beside its owner and saved back to it.</summary>
+        public long CompanionBountyPoints { get; private set; }
+
         public GameBot(GamePlayer owner, DbCoreCharacter character, AccountCompanionRecord record)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -69,6 +75,9 @@ namespace DOL.GS
             LoadPersistedSpecs(character.SerializedSpecs);
             BotSpec = ResolveCompanionBuild();
             Experience = Math.Max(0, character.Experience);
+            CompanionRealmPoints = Math.Max(0, character.RealmPoints);
+            CompanionBountyPoints = Math.Max(0, character.BountyPoints);
+            RealmLevel = Math.Max(Math.Max(0, character.RealmLevel), AutonomousBotRealmPointRewards.RealmLevelFor(CompanionRealmPoints));
             RefreshSpecDependantSkills(false);
             SetBotSpells();
             SortStyles();
@@ -428,6 +437,36 @@ namespace DOL.GS
         }
 
         /// <summary>
+        /// Realm points for an RvR kill beside the owner: kept on the character as a player's are, with the
+        /// realm rank they reach. The owner sees what the companion got.
+        /// </summary>
+        private void GainAccountCompanionRealmPoints(long amount)
+        {
+            int previousRealmLevel = RealmLevel;
+            CompanionRealmPoints += amount;
+            RealmLevel = Math.Max(RealmLevel, AutonomousBotRealmPointRewards.RealmLevelFor(CompanionRealmPoints));
+            _companionDirty = true;
+
+            if (Owner?.Client?.ClientState is not GameClient.eClientState.Playing)
+                return;
+            Owner.Out.SendMessage($"{Name} gets {amount} realm points!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            if (RealmLevel > previousRealmLevel)
+            {
+                string rank = $"{RealmLevel / 10 + 1}L{RealmLevel % 10}";
+                Owner.Out.SendMessage($"{Name} has reached realm rank {rank}!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                Owner.Out.SendMessage($"{Name} has reached realm rank {rank}!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+            }
+        }
+
+        private void GainAccountCompanionBountyPoints(long amount)
+        {
+            CompanionBountyPoints += amount;
+            _companionDirty = true;
+            if (Owner?.Client?.ClientState is GameClient.eClientState.Playing)
+                Owner.Out.SendMessage($"{Name} gets {amount} bounty points!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+        }
+
+        /// <summary>
         /// What a player's level-up shows: the new level on the nameplate and group window, the
         /// level-up sparkle for everyone nearby, the chime and the screen-center message.
         /// </summary>
@@ -554,6 +593,10 @@ namespace DOL.GS
             target.Class = ClassId;
             target.Level = Level;
             target.Experience = Experience;
+            // Only ever raised: a character's RvR progress is never taken away by a companion save.
+            target.RealmPoints = Math.Max(target.RealmPoints, CompanionRealmPoints);
+            target.RealmLevel = Math.Max(target.RealmLevel, RealmLevel);
+            target.BountyPoints = CompanionBountyPoints;
             target.IsLevelSecondStage = CompanionSecondStage;
             target.SerializedSpecs = AccountCompanionRules.MergeSerializedSpecs(target.SerializedSpecs,
                 GetSpecList().Where(spec => spec.Trainable && spec.AllowSave).Select(spec => (spec.KeyName, spec.Level)));

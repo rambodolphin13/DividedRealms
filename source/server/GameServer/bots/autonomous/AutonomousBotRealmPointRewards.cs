@@ -326,28 +326,63 @@ public static class AutonomousBotRealmPointRewards
 
     /// <summary>
     /// Gamebots earn realm points for PvP kills like players: a share of the victim's value by
-    /// their part of the damage, with the same group bonus. Only persistent gamebots of a hostile
-    /// realm within reward range (pets resolve to their bot).
+    /// their part of the damage, with the same group bonus. Only persistent gamebots and account
+    /// companions of a hostile realm within reward range (pets resolve to their bot). /spawn helpers earn nothing.
     /// </summary>
     public static void PayGamebots(GameLiving victim, int victimRealmPointValue, int victimRealmLevel,
         IReadOnlyDictionary<GameLiving, double> hostileContributors, double totalDamage)
     {
         if (victim == null || victimRealmPointValue <= 0 || totalDamage <= 0) return;
-        var bots = hostileContributors
-            .Where(pair => pair.Key is GameBot { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false } bot &&
-                bot.Realm != eRealm.None && (DOL.GS.ServerRules.HybridCoopRules.Enabled ? DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(bot, victim) : bot.Realm != victim.Realm) && bot.ObjectState == GameObject.eObjectState.Active &&
-                bot.IsWithinRadius(victim, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+        var inRange = hostileContributors
+            .Where(pair => pair.Key != null && pair.Key.ObjectState == GameObject.eObjectState.Active &&
+                pair.Key.IsWithinRadius(victim, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+            .ToArray();
+        var bots = inRange
+            .Where(pair => pair.Key is GameBot bot && EarnsRealmPoints(bot) &&
+                bot.Realm != eRealm.None && (DOL.GS.ServerRules.HybridCoopRules.Enabled ? DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(bot, victim) : bot.Realm != victim.Realm))
             .Select(pair => (Bot: (GameBot)pair.Key, Damage: pair.Value)).ToArray();
         foreach (var (bot, damage) in bots)
         {
-            int groupCount = bot.Group == null ? 1 : Math.Max(1, bots.Count(other => other.Bot.Group == bot.Group));
-            double groupDamage = bot.Group == null ? damage : bots.Where(other => other.Bot.Group == bot.Group).Sum(other => other.Damage);
+            int groupCount;
+            double groupDamage;
+            if (bot.Group == null)
+            {
+                groupCount = 1;
+                groupDamage = damage;
+            }
+            else if (bot.IsAccountCompanion)
+            {
+                // An account companion takes its group's split like a player in that group: every contributor in the
+                // group (players, gamebots, companions) counts, as Award pays the players. Owner 2026-11-09:
+                // companions earned no realm points beside their player.
+                var group = inRange.Where(other => other.Key.Group == bot.Group).ToArray();
+                groupCount = Math.Max(1, group.Length);
+                groupDamage = group.Sum(other => other.Value);
+            }
+            else
+            {
+                groupCount = Math.Max(1, bots.Count(other => other.Bot.Group == bot.Group));
+                groupDamage = bots.Where(other => other.Bot.Group == bot.Group).Sum(other => other.Damage);
+            }
+            double damagePercent = Math.Min(1.0, groupDamage / totalDamage);
             int points = CalculateRealmPointReward(victimRealmPointValue, victimRealmLevel,
                 GetPlayerEquivalentRealmPointValue(bot.Level, bot.RealmLevel), bot.RealmLevel,
-                groupCount, groupCount, Math.Min(1.0, groupDamage / totalDamage), true);
+                groupCount, groupCount, damagePercent, true);
             if (points > 0) bot.GainRealmPoints(points, true);
+
+            // Bounty points as a player gets them (same split, cap and battleground rule); gamebots keep none.
+            if (bot.IsAccountCompanion && (Properties.ALLOW_BPS_IN_BGS || victim.CurrentZone?.IsBG != true))
+            {
+                int bountyPoints = CalculateBountyPointReward(GetPlayerEquivalentBountyPointValue(victim.Level),
+                    GetPlayerEquivalentBountyPointValue(bot.Level), groupCount, damagePercent);
+                if (bountyPoints > 0) bot.GainBountyPoints(bountyPoints);
+            }
         }
     }
+
+    /// <summary>Persistent gamebots and account companions earn realm points; /spawn helpers do not.</summary>
+    public static bool EarnsRealmPoints(GameBot bot) =>
+        bot is { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false } or { IsAccountCompanion: true };
 
     /// <summary>A player killed in PvP pays the gamebots that fought them (players are paid by the rules).</summary>
     public static void PayGamebotsForPlayerKill(GamePlayer killedPlayer)
