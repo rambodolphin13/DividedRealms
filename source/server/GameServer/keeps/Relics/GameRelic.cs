@@ -37,8 +37,21 @@ namespace DOL.GS
         public GameRelicPad CurrentRelicPad { get; private set; }
         public GameLiving CurrentCarrier { get; private set; }
         private readonly object _custodyLock = new();
-        private static IGameInventory InventoryOf(GameLiving living) => (living as IGamePlayer)?.Inventory;
-        private static IPacketLib OutputOf(GameLiving living) => (living as IGamePlayer)?.Out;
+        // A real GamePlayer is not an IGamePlayer (only GameBot is): with "as IGamePlayer" alone every real player's relic
+        // click was refused as not-a-player with no message, and only bots could ever take a relic (DR-164, 2026-11-09).
+        private static bool CanCarry(GameLiving living) => living is GamePlayer or IGamePlayer;
+        private static IGameInventory InventoryOf(GameLiving living) => living switch
+        {
+            GamePlayer player => player.Inventory,
+            IGamePlayer bot => bot.Inventory,
+            _ => null
+        };
+        private static IPacketLib OutputOf(GameLiving living) => living switch
+        {
+            GamePlayer player => player.Out,
+            IGamePlayer bot => bot.Out,
+            _ => null
+        };
         public bool IsMounted => CurrentRelicPad != null;
         public static int ReturnRelicInterval => Properties.RELIC_RETURN_TIME * 1000;
 
@@ -92,7 +105,7 @@ namespace DOL.GS
         private bool PickupCore(GameLiving player, out string refusal)
         {
             refusal = "not-a-player";
-            if (player is not IGamePlayer || InventoryOf(player) == null)
+            if (!CanCarry(player) || InventoryOf(player) == null)
                 return false;
 
             // A carried relic is out of the world. One that is in the world with a carrier still recorded is a broken

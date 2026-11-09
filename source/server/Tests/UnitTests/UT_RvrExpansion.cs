@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using DOL.Database;
 using DOL.Events;
 using DOL.AI.Brain;
+using DOL.GS.PacketHandler;
 using NUnit.Framework;
 
 namespace DOL.GS.Tests;
@@ -367,6 +368,35 @@ public sealed class UT_RvrExpansion
         public override bool RemoveFromWorld() { ObjectState = eObjectState.Inactive; return true; }
         protected override void SetHandlers(GameLiving player, bool activate) { }
         protected override void StartPlayerTimer(GameLiving player) { }
+    }
+
+    private sealed class RelicTestPlayer : GamePlayer
+    {
+        private RelicTestPlayer() : base(null, null) { }
+        public IPacketLib TestOut;
+        public override IPacketLib Out => TestOut;
+    }
+
+    [Test]
+    public void RealPlayerIsARelicCarrierWithItsOwnInventoryAndOutput()
+    {
+        // DR-164 (2026-11-09): a real GamePlayer is not an IGamePlayer, so every player relic click was refused as
+        // "not-a-player" with no message and only bots could ever take a relic.
+        var player = (RelicTestPlayer)RuntimeHelpers.GetUninitializedObject(typeof(RelicTestPlayer));
+        var inventory = new BotInventory();
+        typeof(GameLiving).GetField("m_inventory", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(player, inventory);
+        player.TestOut = new BotDummyPacketLib();
+        const BindingFlags Hidden = BindingFlags.Static | BindingFlags.NonPublic;
+        object Call(string name, GameLiving living) => typeof(GameRelic).GetMethod(name, Hidden)!.Invoke(null, [living]);
+        var npc = (GameNPC)RuntimeHelpers.GetUninitializedObject(typeof(GameNPC));
+        Assert.Multiple(() =>
+        {
+            Assert.That(Call("CanCarry", player), Is.True);
+            Assert.That(Call("InventoryOf", player), Is.SameAs(inventory));
+            Assert.That(Call("OutputOf", player), Is.SameAs(player.TestOut));
+            Assert.That(Call("CanCarry", npc), Is.False, "A plain monster still cannot carry a relic.");
+            Assert.That(Call("InventoryOf", npc), Is.Null);
+        });
     }
 
     [Test]
