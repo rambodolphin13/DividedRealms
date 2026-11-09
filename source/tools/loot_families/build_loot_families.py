@@ -60,7 +60,12 @@ NAME_FAMILY = [
     ("humanoid", ["bandit", "brigand", "thief", "cultist", "soldier", "mercenary", "villager", "orc", "goblin",
                   "kobold", "gnoll", "pirate", "raider", "rogue", "knight", "warrior", "mage", "priest", "acolyte",
                   "scout", "hunter", "poacher", "smuggler", "deserter", "highwayman", "footpad", "outlaw", "exile",
-                  "minotaur", "siabra", "fomorian", "fir bolg", "firbolg", "svartalf", "dwarf", "elf", "man", "woman"]),
+                  "minotaur", "siabra", "fomorian", "fir bolg", "firbolg", "svartalf", "dwarf", "elf", "man", "woman",
+                  # Catacombs peoples and their trades (2026-11-09 top-up)
+                  "glashtin", "terracite", "outcast", "inconnu", "plutonian", "dark elf", "marauder", "summoner",
+                  "sorcerer", "theurgist", "vigilante", "chieftain", "pugilist", "duelist", "spellbinder", "armigerant",
+                  "valorant", "shadowblade", "runemaster", "skald", "stalwart", "marksman", "defender", "assassin",
+                  "blackguard", "deathseeker", "infernalist", "necromancer", "wizard", "reaver", "infiltrator"]),
     ("animal", ["wolf", "bear", "boar", "cat", "lion", "lioness", "badger", "rat", "hound", "dog", "fox", "stag",
                 "deer", "elk", "hare", "rabbit", "bat", "owl", "hawk", "crow", "raven", "eagle", "griffin", "horse",
                 "pony", "bull", "cow", "goat", "sheep", "pig", "mole", "weasel", "otter", "lynx", "panther", "tiger",
@@ -157,12 +162,17 @@ def has_word(name, keyword):
     return keyword in words(name) or any(w.rstrip("s") == keyword for w in words(name))
 
 
+# Body types an import left as a default and that say nothing (--distrust-body). EoD db-public's Catacombs rows carry
+# BodyType 1 on goblins, half-orcs and cultists alike, which made 428 names drop animal pelts in the first top-up.
+DISTRUSTED_BODIES = set()
+
+
 def family_for(name, race, body):
     if any(has_word(name, w) for w in SEA_WORDS):
         return "sea", "name"
     if race in RACE_FAMILY:
         return RACE_FAMILY[race], "race"
-    if body in BODY_FAMILY:
+    if body in BODY_FAMILY and body not in DISTRUSTED_BODIES:
         return BODY_FAMILY[body], "body type"
     for family, keywords in NAME_FAMILY:
         if any(has_word(name, w) for w in keywords):
@@ -185,7 +195,10 @@ def main():
     parser.add_argument("--summary")
     parser.add_argument("--top-up", action="store_true",
                         help="the world already has the family patch: only add tables for mobs it missed")
+    parser.add_argument("--distrust-body", type=int, action="append", default=[],
+                        help="a BodyType value to ignore (name words decide, else the generic family)")
     args = parser.parse_args()
+    DISTRUSTED_BODIES.update(args.distrust_body)
 
     db = sqlite3.connect(pathlib.Path(args.db).resolve().as_uri() + "?mode=ro", uri=True)
     q = lambda sql, *a: db.execute(sql, a).fetchall()
