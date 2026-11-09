@@ -542,5 +542,6 @@ namespace DOL.GS
         ArtifactSummonItems,
         CostFreeChance,
         HealAllOverTime,
+        SpecSkillBuff,
     }
 }

@@ -86,6 +86,24 @@ public class UT_BountyCrafting
         Assert.That(DOL.GS.Spells.EnduranceHealSpellHandler.PercentOf(value, max), Is.EqualTo(restored));
     }
 
+    [TestCase(eProperty.Skill_Sword, true)]
+    [TestCase(eProperty.Skill_Critical_Strike, true)]
+    [TestCase(eProperty.Skill_Celtic_Dual, true)]
+    [TestCase(eProperty.Strength, false)]
+    [TestCase(eProperty.Resist_Body, false)]
+    [TestCase(eProperty.Undefined, false)]
+    public void SpecSkillBuff_OnlyRaisesSpecializationSkills(eProperty property, bool allowed)
+    {
+        // the official "Skill buff: Sword, Bonus 10%" item procs; a stray BuffProperty must never buff a stat or resist
+        Assert.That(DOL.GS.Spells.SpecSkillBuff.IsSkill(property), Is.EqualTo(allowed));
+    }
+
+    [Test]
+    public void SpecSkillBuff_WithoutASpellHasNoProperty()
+    {
+        Assert.That(DOL.GS.Spells.SpecSkillBuff.PropertyOf(null), Is.EqualTo(eProperty.Undefined));
+    }
+
     [Test]
     public void TryUse_IgnoresEverythingButTheBox()
     {
