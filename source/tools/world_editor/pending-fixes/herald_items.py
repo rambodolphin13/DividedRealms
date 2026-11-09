@@ -369,7 +369,9 @@ class Herald:
             value = pct('Bonus') or (float(m.group(2)) if m else 0)
             if not prop or not value:
                 return None
-            row.update({'Value': value, 'Target': 'Self', 'Range': 0})
+            row.update({'Value': value, 'Target': 'Self', 'Range': 0,
+                        'Message1': f'Your {skill.lower()} skill improves!', 'Message2': '{0} looks more skilled.',
+                        'Message3': f'Your {skill.lower()} skill returns to normal.', 'Message4': "{0}'s skill returns to normal."})
             row['_params'] = [('BuffProperty', prop)]
             return 'SpecSkillBuff'
         if fn in ('offensive proc', 'defensive proc') and f.get('_sub'):
@@ -396,7 +398,9 @@ class Herald:
             row['_proc'] = True
             return 'OffensiveProc' if fn == 'offensive proc' else 'DefensiveProc'
         if f.get('Effect') == 'Stealth Lore' and num('Stealth bonus'):
-            row.update({'Value': num('Stealth bonus'), 'Target': 'Self', 'Range': 0})
+            row.update({'Value': num('Stealth bonus'), 'Target': 'Self', 'Range': 0,
+                        'Message1': 'Your senses sharpen and your steps grow quieter.', 'Message2': '{0} looks more watchful.',
+                        'Message3': 'Your senses return to normal.', 'Message4': "{0}'s watchfulness fades."})
             return 'StealthSkillBuff'
         if fn == 'bedazzled' and num('Chance to miscast') and not num('Chance to fumble'):
             # no miscast handler: the world's own Bedazzled (826042) is a CastingSpeedDebuff of the same strength

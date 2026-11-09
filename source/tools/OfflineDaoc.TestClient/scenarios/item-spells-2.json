@@ -1,0 +1,18 @@
+{
+  "name": "Item spells round 2: Stealth Lore and the defensive proc (Uther's Otherworldly Resilient Cloak), weapon skill buffs (SpecSkillBuff)",
+  "steps": [
+    { "about": "server is listening", "tool": "server_status", "expect": ["\"listening\":true"], "required": true },
+    { "about": "log the Armsman in", "tool": "login", "args": { "session": "bounty", "name": "Bountycrafter", "class": "armsman" }, "expect": ["\"oid\":"], "required": true },
+    { "about": "empty backpack", "tool": "command", "args": { "session": "bounty", "text": "/clearinventory", "wait_ms": 1000 } },
+    { "about": "Uther's Otherworldly Resilient Cloak", "tool": "command", "args": { "session": "bounty", "text": "/item create bounty_uther_s_otherworldly_resilient_cloak_all 1", "wait_ms": 800 }, "expect": ["Item created"] },
+    { "about": "wear it", "tool": "move_item", "args": { "session": "bounty", "from": 40, "to": 26 } },
+    { "about": "item use timer", "tool": "wait", "args": { "session": "bounty", "seconds": 11 } },
+    { "about": "first charge: Stealth Lore", "tool": "use_item", "args": { "session": "bounty", "slot": 26 }, "expect": ["You attempt to use the Uther"], "forbid": ["must wait", "You cannot"] },
+    { "about": "item use timer", "tool": "wait", "args": { "session": "bounty", "seconds": 11 } },
+    { "about": "second charge: defensive proc (absorb shield)", "tool": "use_item", "args": { "session": "bounty", "slot": 26, "type": 2 }, "expect": ["You attempt to use the Uther"], "forbid": ["must wait", "You cannot"] },
+    { "about": "target yourself", "tool": "target", "args": { "session": "bounty", "who": "@self" } },
+    { "about": "Sword skill buff (803383)", "tool": "command", "args": { "session": "bounty", "text": "/cast spell 803383", "wait_ms": 1500 } },
+    { "about": "Crush skill buff (803379) stacks with it", "tool": "command", "args": { "session": "bounty", "text": "/cast spell 803379", "wait_ms": 1500 } },
+    { "about": "effects", "tool": "events", "args": { "session": "bounty", "kinds": "message,spell_effect", "since": 0, "limit": 400 } }
+  ]
+}
