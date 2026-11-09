@@ -3499,6 +3499,12 @@ namespace DOL.AI.Brain
                 return;
             }
 
+            // A damage focus (a Heretic's ramping fire) channels until another spell ends it, so the
+            // cast guard below held the bot in it while the group died (Discord 2026-11-09). Heals and
+            // cures come first; their cast replaces the channel, and the focus is picked up again after.
+            if (BotFocusChannelPolicy.ChecksHealsDuringChannel(Body.castingComponent) && CheckHeals())
+                return;
+
             // The native handler owns an accepted cast through completion (and
             // handles real hits, range/LOS loss and death). Do not replace it
             // with a melee/range/pull decision merely because an enemy is near.
@@ -6120,7 +6126,8 @@ namespace DOL.AI.Brain
             // Non-emergency heal
             if (spellToCast == null && numNeedHealing > 0)
             {
-                if (!BotBody.IsCasting || (numEmergency > 0 && !isCastingHeal))
+                if (!BotBody.IsCasting || (numEmergency > 0 && !isCastingHeal) ||
+                    BotFocusChannelPolicy.ChecksHealsDuringChannel(BotBody.castingComponent))
                 {
                     if (CheckHealSpell(BotBody.HealOverTime) && !LivingHasEffect(spellTarget, BotBody.HealOverTime))
                         spellToCast = BotBody.HealOverTime;
