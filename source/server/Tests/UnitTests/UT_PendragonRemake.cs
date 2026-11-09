@@ -146,6 +146,17 @@ namespace DOL.UnitTests
             Assert.That(own.Message1, Is.EqualTo("custom"), "a spell's own text wins");
         }
 
+        // The ward and burn have no stock lines: they must keep empty text, never null (SendMessages calls StartsWith).
+        [TestCase(nameof(eSpellType.BothAblativeArmor))]
+        [TestCase(nameof(eSpellType.DamageOverTime))]
+        [TestCase(nameof(eSpellType.DirectDamage))]
+        public void SubSpells_WithoutStockLinesKeepEmptyTextNotNull(string type)
+        {
+            var db = new DbSpell { Type = type, Value = 50 };
+            MasterLevelAbilityHandler.StockMessages(db);
+            Assert.That(new[] { db.Message1, db.Message2, db.Message3, db.Message4 }, Is.All.Not.Null);
+        }
+
         [Test]
         public void Valor_AHitTakenEarnsOnlyOnceEveryThreeSeconds()
         {
