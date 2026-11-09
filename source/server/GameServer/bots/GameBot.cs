@@ -1942,6 +1942,11 @@ namespace DOL.GS
 
         public void GainRealmPoints(long amount, bool modify)
         {
+            if (IsAccountCompanion && amount > 0)
+            {
+                GainAccountCompanionRealmPoints(amount);
+                return;
+            }
             if (!IsAutonomousWorldBot || amount <= 0)
                 return;
             AutonomousRealmPoints += amount;
@@ -1958,6 +1963,13 @@ namespace DOL.GS
         }
 
         public override void GainRealmPoints(long amount) => GainRealmPoints(amount, true);
+
+        public override void GainBountyPoints(long amount)
+        {
+            if (IsAccountCompanion && amount > 0)
+                GainAccountCompanionBountyPoints(amount);
+            base.GainBountyPoints(amount);
+        }
 
         public override void EnemyKilled(GameLiving enemy)
         {
