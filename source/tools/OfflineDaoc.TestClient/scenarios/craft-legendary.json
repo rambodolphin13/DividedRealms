@@ -1,0 +1,30 @@
+{
+  "name": "1.130 recipes: buy Otherworldly Ore from Luke (Camelot) and craft a Legendary Lithic Bishops Mace at the forge",
+  "steps": [
+    { "about": "server is listening", "tool": "server_status", "expect": ["\"listening\":true"], "required": true },
+    { "about": "log the Armsman in", "tool": "login", "args": { "session": "bounty", "name": "Bountycrafter", "class": "armsman" }, "expect": ["\"oid\":"], "required": true },
+    { "about": "empty backpack", "tool": "command", "args": { "session": "bounty", "text": "/clearinventory", "wait_ms": 1000 } },
+    { "about": "target yourself for the GM crafting command", "tool": "target", "args": { "session": "bounty", "who": "@self" } },
+    { "about": "Weaponcraft 1100", "tool": "command", "args": { "session": "bounty", "text": "/crafting change 1 1100", "wait_ms": 800 }, "expect": ["changed"] },
+    { "about": "Metalworking 1100", "tool": "command", "args": { "session": "bounty", "text": "/crafting change 6 1100", "wait_ms": 800 }, "expect": ["changed"] },
+    { "about": "money", "tool": "command", "args": { "session": "bounty", "text": "/player money gold 500", "wait_ms": 800 } },
+    { "about": "go to Luke", "tool": "teleport", "args": { "session": "bounty", "x": 37500, "y": 30650, "z": 8002, "region": 10 }, "expect": ["\"arrived\":true"], "required": true },
+    { "about": "let it load", "tool": "wait", "args": { "session": "bounty", "seconds": 4 } },
+    { "about": "open Luke's shop", "tool": "interact", "args": { "session": "bounty", "who": "Luke", "wait_ms": 1500 }, "required": true },
+    { "about": "buy 20 Otherworldly Ore (page 2 slot 16)", "tool": "buy", "args": { "session": "bounty", "item_slot": 76, "count": 20 }, "expect": ["Otherworldly Ore"] },
+    { "about": "the other materials", "tool": "command", "args": { "session": "bounty", "text": "/item create arcanium_exceptional_mace 1", "wait_ms": 800 } },
+    { "about": "Dust of Creation", "tool": "command", "args": { "session": "bounty", "text": "/item create Dust_of_Creation 1", "wait_ms": 800 } },
+    { "about": "volatile spirit tincture 1", "tool": "command", "args": { "session": "bounty", "text": "/item create volatile_spirit_arcanium_weapon_tincture 1", "wait_ms": 600 } },
+    { "about": "volatile spirit tincture 2", "tool": "command", "args": { "session": "bounty", "text": "/item create volatile_spirit_arcanium_weapon_tincture 1", "wait_ms": 600 } },
+    { "about": "volatile spirit tincture 3", "tool": "command", "args": { "session": "bounty", "text": "/item create volatile_spirit_arcanium_weapon_tincture 1", "wait_ms": 600 } },
+    { "about": "perfect fiery essence jewel 1", "tool": "command", "args": { "session": "bounty", "text": "/item create perfect_Fiery_Essence_Jewel 1", "wait_ms": 600 } },
+    { "about": "perfect fiery essence jewel 2", "tool": "command", "args": { "session": "bounty", "text": "/item create perfect_Fiery_Essence_Jewel 1", "wait_ms": 600 } },
+    { "about": "perfect fiery essence jewel 3", "tool": "command", "args": { "session": "bounty", "text": "/item create perfect_Fiery_Essence_Jewel 1", "wait_ms": 600 } },
+    { "about": "40 arcanium metal bars", "tool": "command", "args": { "session": "bounty", "text": "/item create arcanium_metal_bars 40", "wait_ms": 800 } },
+    { "about": "everything is in the bag", "tool": "inventory", "args": { "session": "bounty" }, "expect": ["Otherworldly Ore", "arcanium exceptional mace", "perfect Fiery Essence Jewel", "arcanium metal bars"], "required": true },
+    { "about": "go to the forge", "tool": "teleport", "args": { "session": "bounty", "x": 37860, "y": 30050, "z": 8002, "region": 10 }, "expect": ["\"arrived\":true"] },
+    { "about": "let it load", "tool": "wait", "args": { "session": "bounty", "seconds": 4 } },
+    { "about": "craft the Lithic Bishops Mace", "tool": "craft", "args": { "session": "bounty", "recipe": 6310, "wait_ms": 120000 }, "expect": ["successfully make the Lithic Bishops Mace"], "forbid": ["not known here", "You are missing", "do not have the tools"] },
+    { "about": "the mace is in the bag", "tool": "inventory", "args": { "session": "bounty" }, "expect": ["Lithic Bishops Mace"], "forbid": ["Otherworldly Ore"] }
+  ]
+}

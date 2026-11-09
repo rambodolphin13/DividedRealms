@@ -27,6 +27,7 @@ below was learned from the recipes the world already has (every id agreed on one
 """
 import collections
 import json
+import re
 import sqlite3
 import struct
 import sys
@@ -50,7 +51,36 @@ MATERIALS = {
     72: 'silksteel', 73: 'petrified', 74: 'crystalized', 101: 'rough clout', 102: 'rough', 103: 'clout',
     104: 'rough flight', 105: 'standard', 106: 'footed clout', 107: 'flight', 108: 'footed', 109: 'footed flight',
     110: 'footed flight',
+    89: 'perfect',   # Legendary weapons: "3 Perfect Fiery Essence Jewel" (Allakhazam recipe 6424); no world recipe uses it
 }
+
+# Legendary weapon materials the world lacks. Live: gathered in the Otherworlds (not in this world) or bought at the
+# Legendary Items Merchant in Oceanus Haven (Pendragon hot fix, 2015); 20 ore per weapon, an Orb of Entropy for
+# Entropic and a Pound of Flesh for Somatic ones. Sold here at each realm's high-tier craft merchants (AlbExpensiveTrade, MidExpensiveTrade,
+# HibExpensiveCraftComponents).
+# Prices are this project's choice (live gives none): ore 1 gold, orb and pound 50 gold.
+EXTRA_MATERIALS = [
+    # id, name, copper, donor (stack size), model. Not the metal bar model 519: the server picks an ingredient's
+    # secondary skill by its model, so a 519 ore asked for Metalworking "to create the Otherworldly Ore".
+    ('otherworldly_ore', 'Otherworldly Ore', 10_000, 'arcanium_metal_bars', 488),
+    ('orb_of_entropy', 'Orb of Entropy', 500_000, 'Dust_of_Creation', 605),
+    ('pound_of_flesh', 'Pound of Flesh', 500_000, 'Dust_of_Creation', 605),
+]
+GEM_TIER = re.compile(r'^(Raw|Uncut|Rough|Flawed|Imperfect|Polished|Faceted|Precious|Flawless|Perfect)\s*\+\d+$', re.I)
+
+
+def product_names(r):
+    """Names the product may have in the world, best first. The client often names a product only inside its
+    category: "Faceted +7" in "Glacial War Rune (Fist Wraps Skill)" is "faceted glacial war rune"; "war hammer" in
+    "Dragonsworn Weapons" is "Dragonsworn War Hammer"."""
+    category = re.sub(r'\s*\(.*\)$', '', r['category']).strip()
+    names = [r['name']]
+    gem = GEM_TIER.match(r['name'])
+    if gem:
+        names.append(f'{gem.group(1)} {category}')
+    if category.split() and category.split()[0].lower() in ('dragonsworn', 'legendary'):
+        names.append(f'{category.split()[0]} {r["name"]}')
+    return names
 
 
 def read_crf(app_folder):
@@ -119,6 +149,31 @@ def main(db_path, app_folder, prefix):
         attached[product.lower()].append((ingredient.lower(), count))
     attached = {k: sorted(v) for k, v in attached.items()}
 
+    material_edits = []
+    if not templates['otherworldly ore']:
+        lists = [row[0] for row in db.execute(
+            "SELECT DISTINCT ItemsListTemplateID FROM Mob WHERE ItemsListTemplateID LIKE '%Expensive%'")]
+        pages = collections.defaultdict(set)
+        for lst, page, slot in db.execute('SELECT ItemListID, PageNumber, SlotPosition FROM MerchantItem'):
+            pages[(lst.lower(), page)].add(slot)
+        donors = {row[0].lower(): row[0] for row in db.execute('SELECT Id_nb FROM ItemTemplate')}
+        for id_nb, name, price, donor, model in EXTRA_MATERIALS:
+            material_edits.append({'table': 'ItemTemplate', 'copy': donors[donor.lower()], 'key': id_nb, 'set': {
+                'Name': name, 'Price': price, 'Model': model, 'Realm': 0, 'Level': 51, 'PackageID': 'OfflineCraft130',
+                'Description': 'Legendary weapon material (Otherworlds)', 'TranslationId': '',
+                'LastTimeRowUpdated': '2026-11-08 00:00:00'}})
+            templates[name.lower()].append((id_nb, 0, 51))
+            sold[id_nb] += 1
+        for lst in sorted(lists):
+            page = max([p for (l, p) in pages if l == lst.lower()] or [0])
+            free = [slot for slot in range(30) if slot not in pages[(lst.lower(), page)]]
+            if len(free) < len(EXTRA_MATERIALS):
+                page, free = page + 1, list(range(30))
+            for (id_nb, *_), slot in zip(EXTRA_MATERIALS, free):
+                material_edits.append({'table': 'MerchantItem', 'insert': {
+                    'MerchantItem_ID': str(uuid.uuid5(NAMESPACE, f'mi-{lst}-{id_nb}')), 'ItemListID': lst,
+                    'ItemTemplateID': id_nb, 'PageNumber': page, 'SlotPosition': slot}})
+
     def pick_ingredient(name, realm):
         return sorted(lookup(name, realm), key=lambda t: (
             -as_ingredient[t[0].lower()], -sold[t[0].lower()], t[1] != r['realm'], t[0]))[0][0]
@@ -133,9 +188,15 @@ def main(db_path, app_folder, prefix):
             continue
         why, product, add_rows = None, None, []
         missing = [n for n, _ in r['ingredients'] if not lookup(n, r['realm'])]
-        named = lookup(r['name'], r['realm'])
-        # a generic name ("war hammer" for a level 51 Dragonsworn weapon) must not land on an unrelated item
-        fitting = [t for t in named if r['trade'] == 3 or not r['level'] or not t[2] or abs(t[2] - r['level']) <= 3]
+        named, fitting = [], []
+        for candidate in product_names(r):
+            found = lookup(candidate, r['realm'])
+            # a generic name ("war hammer" for a level 51 Dragonsworn weapon) must not land on an unrelated item
+            fit = [t for t in found if r['trade'] == 3 or not r['level'] or not t[2] or abs(t[2] - r['level']) <= 3]
+            named = named or found
+            if fit:
+                named, fitting = found, fit
+                break
         if r['trade'] == BOUNTYCRAFT:
             why = 'bountycraft (no server skill yet)'
         elif not r['ingredients']:
@@ -177,7 +238,7 @@ def main(db_path, app_folder, prefix):
             attached[product.lower()] = sorted(rows)
         report.append({**r, 'why': 'added' if add_rows else 'added (shared product)', 'product': product})
 
-    Path(prefix + '.recipes.edits.json').write_text(json.dumps(insert_edits, indent=1) + '\n', encoding='utf-8')
+    Path(prefix + '.recipes.edits.json').write_text(json.dumps(material_edits + insert_edits, indent=1) + '\n', encoding='utf-8')
     Path(prefix + '.levels.edits.json').write_text(json.dumps(level_edits, indent=1) + '\n', encoding='utf-8')
     Path(prefix + '.report.json').write_text(json.dumps(report, indent=1) + '\n', encoding='utf-8')
     summary = collections.Counter((r['realm'], r['trade'], r['why'].split(':')[0]) for r in report)
