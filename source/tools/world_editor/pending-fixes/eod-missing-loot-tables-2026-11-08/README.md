@@ -15,3 +15,13 @@ This brings back a lot of named classic, SI and dungeon loot: it changes the eco
 
 Checks: planned (9,309 edits), applied on a copy after the other two, undone exactly. Dangling links on the copy
 went from 2,645 to 500. Not booted.
+
+## Level trim (applied 2026-11-08 19:37, undo 20261108-193747-d8c1ab63)
+
+The AI tester saw level 5 arachite greensilk (its NpcTemplate is level 5, the spawn rows say 27-30) drop level 38-40
+Svartalf jewelry. `../make_eod_loot_level_trim_edits.py` removes, from restored tables whose best gear is 20+ levels
+above the highest live level of their monsters, every gear row more than 10 levels above it: 32 rows in 17 tables
+(arachite greensilk/hatchling/youngling/priest/shadowslinker/weblasher, wildling, spriggarn, escaped thrall, tomte
+shaman, giant frog, ash, oak man, corpse candle, disturbed presence, keltoi spiritualist, large skeleton; list in
+`../eod-loot-level-trim-2026-11-08/removed.json`). Junk and crafting items stay. Rheton (peaceful, level 1, region
+244) keeps its level 50 set: nobody can kill it. Undo the trim before undoing the tables patch.
