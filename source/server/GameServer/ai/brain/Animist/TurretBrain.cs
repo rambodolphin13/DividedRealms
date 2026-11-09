@@ -74,15 +74,39 @@ namespace DOL.AI.Brain
 
         protected override GameLiving CalculateNextAttackTarget()
         {
-            if (!AnimistSingleTargetPolicy.AppliesTo(Owner))
-                return base.CalculateNextAttackTarget();
-            // The owner's target can be beyond this rooted turret's reach. Casting at it anyway was refused silently
-            // as "too far" (overnight run 2026-11-08: 85-95% of every gamebot Animist turret cast refused).
-            GameLiving target = AnimistSingleTargetPolicy.AssistTarget(Owner);
+            bool singleTarget = AnimistSingleTargetPolicy.AppliesTo(Owner);
+            GameLiving target = singleTarget ? AnimistSingleTargetPolicy.AssistTarget(Owner) : base.CalculateNextAttackTarget();
             Spell spell = (Body as TurretPet)?.TurretSpell;
             if (target == null || spell == null || spell.IsPBAoE)
                 return target;
-            return Body.IsWithinRadius(target, spell.CalculateEffectiveRange(Body)) ? target : null;
+
+            // A rooted turret cannot close the distance. The owner's target or the attack order can be beyond its
+            // reach, and casting at it anyway was refused as "too far" (overnight runs 2026-11-08 and 11-09: 82-95% of
+            // gamebot turret casts; autonomous gamebots use BotAnimistPolicy, so the single-target check alone missed them).
+            int range = spell.CalculateEffectiveRange(Body);
+            if (Body.IsWithinRadius(target, range))
+                return target;
+            return singleTarget ? null : NearestAggroTargetInRange(range);
+        }
+
+        /// <summary>The closest living attacker on the aggro list that this turret can reach, or null.</summary>
+        protected GameLiving NearestAggroTargetInRange(int range)
+        {
+            GameLiving best = null;
+            int bestDistance = int.MaxValue;
+            foreach (GameLiving living in AggroList.Keys)
+            {
+                if (living == null || !living.IsAlive || living.ObjectState != GameObject.eObjectState.Active ||
+                    living.CurrentRegion != Body.CurrentRegion || !GameServer.ServerRules.IsAllowedToAttack(Body, living, true))
+                    continue;
+                int distance = Body.GetDistanceTo(living);
+                if (distance <= range && distance < bestDistance)
+                {
+                    best = living;
+                    bestDistance = distance;
+                }
+            }
+            return best;
         }
 
         protected override GameLiving FindTargetForDefensiveSpell(Spell spell)
