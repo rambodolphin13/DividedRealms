@@ -18,10 +18,11 @@ import sqlite3
 import sys
 
 TYMIRRE_LIST = '77793022'
-# Held back until the glass rule can tell a boss from capitalised trash: a capitalised name always drops 5 glass, and
-# these two dungeons are full of such trash (Uamhas' Brood x47, Aspect of Uamhas x20, Belial's child x22,
-# Xaphan's soldier x21): about 385 glass for one clear of Cave of Cruachan, more than an artifact credit costs.
-HELD_BACK = {339, 341}     # Brimstone Caverns, Cave of Cruachan
+# Brimstone Caverns (339) and Cave of Cruachan (341) were held back in the first run: a capitalised name always dropped
+# 5 glass and those dungeons are full of capitalised trash (Uamhas' Brood x47). The server now counts such a name as a
+# boss only with at most artifact_glass_named_max_spawns spawns in its region (DR-238), so nothing is held back.
+# Apply a run that adds them only to a world whose server has that rule.
+HELD_BACK = set()
 BIG_PIECES = {25, 27}     # Item_Type: torso, legs
 
 
