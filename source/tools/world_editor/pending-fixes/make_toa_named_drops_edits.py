@@ -343,7 +343,11 @@ HELPFUL = {'EnduranceHeal', 'PowerHeal', 'Heal', 'AblativeArmor', 'CombatSpeedBu
 
 
 def ability_block(item, spell):
-    """The delve block of this ability: blocks follow the order of the abilities list."""
+    """The delve block of this ability: blocks follow the order of the abilities list.
+
+    KNOWN FAULT (found 2026-11-08): "Secondary Charged Magic Item:" is not split as a header, so a second ability can
+    read the first one's text. herald_items.Herald.ability_block is the fixed version; the ToA spells built wrong
+    (801592, 803403, 812051) are corrected by item-spells-2026-11-08. Use herald_items before rerunning this script."""
     t = item['delve_text'].replace('\r', '')
     parts = re.split(r'\n(?=[A-Za-z ]*Ability:)', t)[1:]
     order = [a['spell'] for a in item.get('abilities') or []]
