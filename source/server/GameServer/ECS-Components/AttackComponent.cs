@@ -1865,7 +1865,8 @@ namespace DOL.GS
 
             foreach (ECSGameEffect bladeturn in owner.effectListComponent.GetEffects(eEffect.Bladeturn))
             {
-                if (DOL.GS.Spells.ModernMauler.PierceBladeturn(ad.Attacker) || DOL.GS.Spells.MeleeTruthSpellHandler.Strikes(ad)) continue;
+                if (DOL.GS.Spells.ModernMauler.PierceBladeturn(ad.Attacker) || DOL.GS.Spells.MeleeTruthSpellHandler.Strikes(ad) ||
+                    DOL.GS.Spells.LoyaltyCloaks.IgnoresBladeturn(ad)) continue;
                 if (!bladeturn.IsActive)
                     continue;
 

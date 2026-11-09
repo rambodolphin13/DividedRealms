@@ -1607,6 +1607,7 @@ namespace DOL.GS.Spells
 			GameLiving target = castTarget as GameLiving;
 			eSpellTarget modifiedTarget = Spell.Target;
 			ushort modifiedRadius = (ushort) ModernWarlock.AdjustDistance(Caster, Spell, Spell.Radius);
+			modifiedRadius = LoyaltyCloaks.AdjustDirectDamageRadius(Caster, Spell, modifiedRadius);
 
 			if (modifiedTarget is eSpellTarget.PET && !HasPositiveEffect)
 				modifiedTarget = eSpellTarget.ENEMY;

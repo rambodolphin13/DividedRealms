@@ -543,5 +543,17 @@ namespace DOL.GS
         CostFreeChance,
         HealAllOverTime,
         SpecSkillBuff,
+        // Loyalty cloak abilities (DR-216, LoyaltyCloakHandlers.cs)
+        MeleeCritBuff,
+        ParryBlockBuff,
+        LoyalArcaneLeadership,
+        IgnoreBladeturn,
+        RefreshClassTimers,
+        GroupDDRadius,
+        ControlShrug,
+        DiseaseWard,
+        SelfStealth,
+        InCombatSpeed,
+        CharmableDecoy,
     }
 }

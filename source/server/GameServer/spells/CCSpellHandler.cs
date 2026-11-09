@@ -34,6 +34,12 @@ namespace DOL.GS.Spells
                 return;
             }
 
+            if (LoyaltyCloaks.ShrugsControl(target))
+            {
+                MessageToCaster($"{target.GetName(0, true)} shrugs off your spell!", eChatType.CT_SpellResisted);
+                return;
+            }
+
             base.ApplyEffectOnTarget(target);
         }
 
