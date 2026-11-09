@@ -27,7 +27,7 @@ import sys
 import uuid
 import zipfile
 
-DATE = '2026-11-08'
+DATE = os.environ.get('DR_PATCH_DATE', '2026-11-08')   # a later run (e.g. after new zones) writes its own dated folder
 NS = uuid.UUID('3b2b9a3e-6a55-4d1e-9a52-6f0d5d7e0b11')
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, f'toa-named-drops-{DATE}')
