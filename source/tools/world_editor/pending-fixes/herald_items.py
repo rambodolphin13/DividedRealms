@@ -89,12 +89,15 @@ def official_type(i):
 
 
 DT = {'Crush': 1, 'Slash': 2, 'Thrust': 3, 'Body': 10, 'Cold': 11, 'Energy': 12, 'Heat': 13, 'Matter': 14, 'Spirit': 15}
-RESIST_DEBUFF = {'Slash': 'SlashResistDebuff', 'Thrust': 'ThrustResistDebuff', 'Crush': 'CrushResistDebuff'}
+RESIST_DEBUFF = {k: f'{k}ResistDebuff' for k in ('Slash', 'Thrust', 'Crush', 'Body', 'Cold', 'Energy', 'Heat', 'Matter', 'Spirit')}
 
 
 HELPFUL = {'EnduranceHeal', 'PowerHeal', 'Heal', 'AblativeArmor', 'CombatSpeedBuff', 'AcuityBuff', 'StrengthConstitutionBuff',
            'DexterityQuicknessBuff', 'HealthRegenBuff', 'DamageAdd', 'BaseArmorFactorBuff', 'ToHitBuff', 'FlexibleSkillBuff',
-           'StealthSkillBuff', 'HealAllOverTime'}
+           'StealthSkillBuff', 'HealAllOverTime', 'ArtifactAllStats', 'CurePoison', 'Conversion', 'MesmerizeDurationBuff', 'HealingDoneBuff',
+           'MeleeDamageBuff', 'DmgReductionAndPowerReturn', 'AllMagicResistsBuff', 'CCResist', 'StyleAbsorbBuff', 'Resurrect',
+           'HealingReceivedBuff', 'ParryBuff', 'SpreadHeal', 'ArmorAbsorptionBuff', 'AfHitsBuff', 'AblativeArmor', 'CrushSlashThrustBuff', 'HeatResistBuff', 'ColdResistBuff', 'MatterResistBuff',
+           'BodyResistBuff', 'SpiritResistBuff', 'EnergyResistBuff', 'PowerRegenBuff'}
 
 
 
@@ -114,6 +117,7 @@ class Herald:
         self.PKG = package
         self.DATE = date
         self.need_spells = {}
+        self.extra_rows = {}   # 800000 + id -> {'spells': [sub rows], 'custom': [MultipleSubSpells ids]}
 
     def bonus_lines(self, item):
         """Official bonuses -> ordered [(eProperty, value)], merging repeats; unknown codes reported."""
@@ -135,14 +139,30 @@ class Herald:
     def official_type(i):
         return official_type(i)
 
+    HEADER = re.compile(r'^(Secondary )?(Charged Magic Ability|Charged Magic Item|Magical Ability|Offensive Proc Ability|'
+                        r'Defensive Proc Ability):\s*$')
+    BLOCK_END = re.compile(r'^(Damage Modifiers|Armor Modifiers|Can use item every|Cannot be|Bonus Level)')
+
     def ability_block(self, item, spell):
-        """The delve block of this ability: blocks follow the order of the abilities list."""
-        t = item['delve_text'].replace('\r', '')
-        parts = re.split(r'\n(?=[A-Za-z ]*Ability:)', t)[1:]
-        order = [a['spell'] for a in item.get('abilities') or []]
-        if spell in order and order.index(spell) < len(parts):
-            return parts[order.index(spell)]
-        return parts[0] if parts else ''
+        """The delve block of this ability: a "Secondary ..." header is position 2, the other position 1.
+        (Before 2026-11-08 blocks were split on "...Ability:" only, so after a "Secondary Charged Magic Item:" header
+        position 2 read position 1's text, e.g. official 3465 "cures disease and poison" read as Boon of Kings.)"""
+        blocks, current = [], None
+        for line in item['delve_text'].replace('\r', '').split('\n'):
+            m = self.HEADER.match(line.strip())
+            if m:
+                current = [2 if m.group(1) else 1, []]
+                blocks.append(current)
+            elif current is not None:
+                if self.BLOCK_END.match(line.strip()):
+                    current = None
+                else:
+                    current[1].append(line)
+        pos = next((a.get('position', 1) for a in item.get('abilities') or [] if a['spell'] == spell), 1)
+        for p, body in blocks:
+            if p == pos:
+                return '\n'.join(body)
+        return '\n'.join(blocks[0][1]) if blocks else ''
 
     def seconds(self, s):
         m = re.match(r'\s*(\d+):(\d+) min', s)
@@ -155,12 +175,17 @@ class Herald:
         holders = [i for i in self.OFF for a in (i.get('abilities') or []) if a['spell'] == sid]
         holders.sort(key=lambda i: len(i.get('abilities') or []))
         blk = self.ability_block(holders[0], sid) if holders else ''
-        f = {}
+        f, text = {}, []
         for line in blk.split('\n'):
-            m = re.match(r'^([A-Za-z/ -]+):\s*(.+)$', line.strip())
+            # "(Function: omni heal)" and "(Cures both Disease and Poison from the user.)" are short forms
+            line = line.strip().lstrip('(').rstrip(')').strip()
+            m = re.match(r'^([A-Za-z/ -]+):\s*(.+)$', line)
             if m and m.group(1) not in f:
                 f[m.group(1).strip()] = m.group(2).strip()
-        return f, self.META['abilities']['spell'].get(str(sid), '')
+            elif line and not line.startswith('-'):
+                text.append(line)
+        f['_text'] = ' '.join(text)
+        return f, self.META['abilities']['spell'].get(str(sid), '') or f['_text']
 
     def build_spell(self, sid):
         """A Spell row for official spell sid as 800000+sid, or (None, reason)."""
@@ -252,7 +277,9 @@ class Herald:
             row['Target'], row['Range'] = 'Self', 0
             row['Duration'] = row['Duration'] or self.seconds(re.search(r'(\d+) sec', desc).group(0) if re.search(r'(\d+) sec', desc) else '') or 30
         else:
-            return None, f'no rule for "{fn or f}"'
+            typ = self.rules_item_spells(fn, f, desc, row, num)
+            if typ is None:
+                return None, f'no rule for "{fn or {k: v for k, v in f.items() if k != "_text"}}"'
         if typ in ('ArmorFactorDebuff', 'ArmorAbsorptionDebuff', 'SpeedDecrease', 'CastingSpeedDebuff', 'ToHitDebuff', 'AfHitsBuff',
                    'ArmorAbsorptionBuff') and not row['Duration']:
             m = re.search(r'for (\d+:\d+ min|[\d.]+ sec)', desc)
@@ -263,7 +290,8 @@ class Herald:
         look = {'FlexibleSkillBuff': 'StrengthConstitutionBuff', 'StealthSkillBuff': 'StrengthConstitutionBuff',
                 'HealAllOverTime': 'HealOverTime'}.get(typ, typ)
         donor = next((s for k, s in sorted(self.spells.items()) if 800000 <= k < 820000 and s['Type'] in (typ, look)), None) or \
-            next((s for k, s in sorted(self.spells.items()) if s['Type'] == typ and s['Target'] == target), None)
+            next((s for k, s in sorted(self.spells.items()) if s['Type'] == typ and s['Target'] == target), None) or \
+            next((s for k, s in sorted(self.spells.items()) if s['Type'] == typ), None)
         if not donor:
             return None, f'no spell row of type {typ} to copy'
         title = (f.get('Function') or f.get('Effect') or typ).strip().title()
@@ -275,13 +303,164 @@ class Herald:
             # "Target: Targeted" on a buff or heal means a friendly target, never the enemy.
             row['Target'] = 'Group' if f.get('Target', '').strip() == 'Group' else 'Realm'
             row['Range'] = row['Range'] or 1500
+        subs, multi = row.pop('_subs', []), row.pop('_multi', False)
         new.update(row)
         new.update({'SpellID': 800000 + sid, 'Name': f'{title} ({sid})', 'Description': desc or title, 'Type': typ,
                     'PackageID': self.PKG, 'Spell_ID': f'offline-toa-item-{800000 + sid}', 'TooltipId': 0,
                     'LastTimeRowUpdated': f'{self.DATE} 00:00:00'})
         if typ == 'HealAllOverTime':   # the export's summary line says 5%; the item delve says 3% every 5 seconds
             new['Description'] = f"You regenerate {row['Value']:g}% health, endurance and power every {row['Frequency'] / 10:g} sec."
+        # Second parts of one official spell (Arrogance's melee immunity, omni heal's power and endurance) are sub
+        # spells 850000 + id and 860000 + id, cast with the main one (SubSpellID, or MultipleSubSpells for two).
+        extra = {'spells': [], 'custom': []}
+        for k, (sub_typ, sub_row) in enumerate(subs):
+            sub_donor = next((s for _, s in sorted(self.spells.items()) if s['Type'] == sub_typ), None)
+            if not sub_donor:
+                return None, f'no spell row of type {sub_typ} to copy for the second part'
+            sub = {c: sub_donor[c] for c in sub_donor if c != 'LastTimeRowUpdated'}
+            for c in ('Damage', 'Value', 'Duration', 'Frequency', 'Radius', 'Pulse', 'Power', 'RecastDelay', 'SubSpellID',
+                      'SharedTimerGroup', 'Concentration', 'SpellGroup', 'EffectGroup'):
+                sub[c] = 0 if not isinstance(sub_donor[c], float) else 0.0
+            sub_id = (850000 if k == 0 else 860000) + sid
+            sub.update({c: new[c] for c in ('Target', 'Range', 'Duration', 'CastTime')})
+            sub.update(sub_row)
+            sub.update({'SpellID': sub_id, 'Name': f'{title} ({sid}, part {k + 2})', 'Description': desc or title,
+                        'Type': sub_typ, 'PackageID': self.PKG, 'Spell_ID': f'offline-item-{sub_id}', 'TooltipId': 0,
+                        'LastTimeRowUpdated': f'{self.DATE} 00:00:00'})
+            extra['spells'].append(sub)
+        if len(subs) == 1:
+            new['SubSpellID'] = extra['spells'][0]['SpellID']
+        elif subs:
+            extra['custom'] = [s['SpellID'] for s in extra['spells']]
+        self.extra_rows[800000 + sid] = extra
         return new, donor['SpellID']
+
+    def rules_item_spells(self, fn, f, desc, row, num):
+        """Rules added 2026-11-08 for the Bountycraft products' item spells. Each type is one the world already uses for
+        the same live function (examples named), with the official numbers. Returns the spell type or None."""
+        text = desc + ' ' + f.get('_text', '')
+        pct = lambda *keys: next((num(k) for k in keys if num(k)), 0.0)
+        found = lambda pattern: float(re.search(pattern, text).group(1)) if re.search(pattern, text) else 0.0
+        target = f.get('Target', '').strip()
+        if target == 'Point-Blank Area':
+            row.update({'Target': 'Enemy', 'Range': 0, 'Radius': int(num('Radius'))})
+        elif target == 'Group':
+            row.update({'Target': 'Group', 'Range': int(num('Range')) or 1500})
+        if fn.startswith('arrogance'):
+            # 826061 Arrogance: ArtifactAllStats + ArmorAbsorptionBuff (826060) for the melee immunity
+            stats = pct('Bonus to all stats') or found(r'a (\d+) bonus to all stats')
+            immunity = pct('Immunity to melee') or found(r'(\d+)% immunity to melee')
+            if not stats or not immunity:
+                return None
+            row.update({'Value': stats, 'Target': 'Self', 'Range': 0,
+                        'Duration': row['Duration'] or self.seconds(re.search(r'(\d+) sec', text).group(0)) or 30})
+            row['_subs'] = [('ArmorAbsorptionBuff', {'Value': immunity})]
+            return 'ArtifactAllStats'
+        if fn == 'omni heal' or re.search(r'Heals the target for (\d+)% health, power and fatigue', text):
+            # no OmniHeal handler: a percent Heal with PowerHeal and EnduranceHeal of the same percent
+            value = pct('Value') or found(r'for (\d+)% health, power and fatigue')
+            if not value:
+                return None
+            row.update({'Value': -value, 'Target': 'Self', 'Range': 0})
+            row['_subs'] = [('PowerHeal', {'Value': -value}), ('EnduranceHeal', {'Value': -value})]
+            return 'Heal'
+        if 'Cures both Disease and Poison' in text:
+            # 826085 Purify: CurePoison with a CureDisease sub spell
+            row.update({'Target': 'Self', 'Range': 0, 'Duration': 0})
+            row['_subs'] = [('CureDisease', {})]
+            return 'CurePoison'
+        if fn == 'damage conversion':
+            row['Value'] = pct('Value')        # 810340 Damage Conversion
+            return 'Conversion'
+        if fn == 'mesmerize duration reduction':
+            row['Value'] = pct('Value')
+            return 'MesmerizeDurationBuff'
+        if fn == 'heal bonus':
+            row['Value'] = abs(pct('Modifier') or float(re.sub(r'[^\d.]', '', f.get('Modifier', '0')) or 0))
+            return 'HealingDoneBuff'
+        if fn == 'melee damage boost':
+            row['Value'] = pct('Value')
+            return 'MeleeDamageBuff'
+        if fn == 'damage to power':
+            # DamageReductionAndPowerReturnSpellHandler: Damage = percent absorbed, given back as power
+            row.update({'Damage': pct('Blocked'), 'Value': pct('Power given')})
+            return 'DmgReductionAndPowerReturn'
+        if re.search(r'penalizes the casting time of enemy casters by (\d+)% for (\d+) seconds', text):
+            m = re.search(r'penalizes the casting time of enemy casters by (\d+)% for (\d+) seconds', text)
+            row.update({'Value': float(m.group(1)), 'Duration': int(m.group(2)), 'Target': 'Enemy', 'Range': 1500})
+            return 'CastingSpeedDebuff'
+        if fn == 'speed decrease' and pct('Value') and row['Target'] == 'Enemy':
+            row['Value'] = pct('Value')
+            return 'SpeedDecrease'
+        if fn == 'illusion' and num('Melee to-hit penalty'):
+            row['Value'] = num('Melee to-hit penalty')     # the shape change itself is left out
+            return 'ToHitDebuff'
+        if fn == 'resistance enhancement' and num('All magic resistances'):
+            row.update({'Value': num('All magic resistances'), 'Target': 'Self', 'Range': 0})
+            return 'AllMagicResistsBuff'
+        if fn == 'resistance enhancement' and num('Resist crush/slash/thrust'):
+            row.update({'Value': num('Resist crush/slash/thrust'), 'Target': 'Self', 'Range': 0})
+            return 'CrushSlashThrustBuff'
+        one = next((k for k in f if re.match(r'^Resist (Body|Cold|Energy|Heat|Matter|Spirit)$', k)), None)
+        if fn == 'resistance enhancement' and one and num(one):
+            row.update({'Value': num(one), 'Target': 'Self', 'Range': 0})
+            return f'{one.split()[1]}ResistBuff'
+        if fn == 'power regen' and num('Value'):
+            row.update({'Value': num('Value'), 'Target': 'Self', 'Range': 0})
+            return 'PowerRegenBuff'
+        if fn == 'bedazzled' and num('Chance to fumble'):
+            row['Value'] = num('Chance to fumble')         # 826043 Bedazzled
+            return 'FumbleChanceDebuff'
+        if fn == 'mesmerization feedback' and 'immune to the next mesmerize' in text:
+            row['Value'] = 20                              # as the world's 808711 / 809443 Mesmerization Feedback
+            return 'CCResist'
+        if fn == 'style damage shield':
+            row.update({'Value': pct('Value'), 'Target': 'Self', 'Range': 0})
+            return 'StyleAbsorbBuff'
+        if fn == 'disease':
+            return 'Disease'
+        if fn == 'wave of healing' and pct('Value'):
+            row.update({'Value': -pct('Value'), 'Target': 'Realm', 'Range': 0, 'Radius': int(num('Radius'))})
+            return 'Heal'
+        if fn == 'raise dead':
+            row.update({'Target': 'Corpse', 'Range': 1500, 'Radius': int(num('Radius')),
+                        'ResurrectHealth': int(found(r'restores (\d+)%') or 10), 'ResurrectMana': 0, 'Duration': 0})
+            return 'Resurrect'
+        if fn == 'efficient healing':
+            row['Value'] = pct('Bonus')
+            return 'HealingReceivedBuff'
+        if fn == 'increase attack speed':
+            row.update({'Value': pct('Value'), 'Target': 'Self', 'Range': 0})
+            return 'CombatSpeedBuff'
+        if fn == 'parry':
+            row.update({'Value': pct('Chance to parry'), 'Target': 'Self', 'Range': 0})
+            return 'ParryBuff'
+        if fn == 'stat decrease' and num('Constitution penalty'):
+            row['Value'] = num('Constitution penalty')
+            return 'ConstitutionDebuff'
+        if fn == 'spreadheal':
+            row['Value'] = pct('Value')
+            return 'SpreadHeal'
+        if fn == 'melee absorption' and pct('Value'):
+            row.update({'Value': pct('Value'), 'Target': 'Self', 'Range': 0})
+            return 'ArmorAbsorptionBuff'
+        if fn == 'attack speed decrease':
+            row['Value'] = pct('Value')
+            return 'CombatSpeedDebuff'
+        if fn == 'boon of kings' and pct('Bonus'):
+            row['Value'] = -pct('Bonus')                   # percent, as Scepter's Boon (32182)
+            if row['Target'] != 'Group':
+                row.update({'Target': 'Self', 'Range': 0})
+            return 'AfHitsBuff'
+        if 'temporarily absorb' in text and num('Absorption') and num('Value') and not fn.endswith(' proc'):
+            row.update({'Damage': num('Absorption'), 'Value': num('Value'), 'Target': 'Self', 'Range': 0})
+            return 'AblativeArmor'
+        if fn == 'mesmerize':
+            return 'Mesmerize'
+        if f.get('Effect') == 'Lore Debuff' and pct('Spell damage/resists'):
+            row.update({'Value': pct('Spell damage/resists'), 'Target': 'Enemy', 'Range': 0, 'Radius': int(num('Radius'))})
+            return 'LoreDebuff'
+        return None
 
     def ability_set(self, i):
         """ItemTemplate ability columns from the official abilities, and self.spells needed."""

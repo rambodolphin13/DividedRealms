@@ -76,6 +76,16 @@ public class UT_BountyCrafting
         Assert.That(seen.Count, Is.EqualTo(8));
     }
 
+    [TestCase(-10, 100, 10)]
+    [TestCase(-18, 100, 18)]
+    [TestCase(-10, 250, 25)]
+    [TestCase(-100, 80, 80)]
+    public void EnduranceHeal_PercentIsOfTheTargetsEndurance(double value, int max, int restored)
+    {
+        // the Bountycraft omni heals: Heal + PowerHeal + EnduranceHeal at -10 / -18 (percent)
+        Assert.That(DOL.GS.Spells.EnduranceHealSpellHandler.PercentOf(value, max), Is.EqualTo(restored));
+    }
+
     [Test]
     public void TryUse_IgnoresEverythingButTheBox()
     {
