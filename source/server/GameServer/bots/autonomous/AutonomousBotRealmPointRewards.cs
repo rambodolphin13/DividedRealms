@@ -23,11 +23,15 @@ public static class AutonomousBotRealmPointRewards
     public static bool IsEligibleVictim(GameNPC npc) =>
         npc is GameBot { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false };
 
+    /// <summary>Realm points each realm level adds to what a player or gamebot is worth (1 before patch 1.81).</summary>
+    public const int RealmPointsPerRealmLevel = 10;
+
     public static int GetPlayerEquivalentRealmPointValue(byte level, int realmLevel)
     {
-        // This is the pre-1.81 player formula used by GamePlayer.RealmPointsValue.
+        // The player formula since 1.81 (DR-174), shared with GamePlayer.RealmPointsValue: (level - 20)^2 for the
+        // level, plus 10 points per realm level. 900 at level 50 RR1, 1,800 at level 50 RR10.
         int modifiedLevel = level - 20;
-        return Math.Max(1, modifiedLevel * modifiedLevel) + realmLevel;
+        return Math.Max(1, modifiedLevel * modifiedLevel) + Math.Max(0, realmLevel) * RealmPointsPerRealmLevel;
     }
 
     public static int CalculateRealmPointReward(int victimRealmPointValue, int victimRealmLevel,
