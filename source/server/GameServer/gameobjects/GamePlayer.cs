@@ -6578,7 +6578,23 @@ namespace DOL.GS
         /// <returns></returns>
         public virtual long GetCurrentMoney()
         {
-            return Money.GetMoney(Mithril, Platinum, Gold, Silver, Copper);
+            lock (_moneyLock)
+                return Money.GetMoney(Mithril, Platinum, Gold, Silver, Copper);
+        }
+
+        // Coins are five fields: an award and a purchase on two game loop threads at once could each read the old
+        // total and the last write would wipe out the other (DR-200, from OpenDAoC's Wallet fix 7f7ddffc9).
+        // Made on first use: tests and tools build players without running the constructor.
+        private Lock _moneyLockStorage;
+        private Lock _moneyLock => LazyInitializer.EnsureInitialized(ref _moneyLockStorage);
+
+        private void SetMoney(long money)
+        {
+            Mithril = Money.GetMithril(money);
+            Platinum = Money.GetPlatinum(money);
+            Gold = Money.GetGold(money);
+            Silver = Money.GetSilver(money);
+            Copper = Money.GetCopper(money);
         }
 
         public long ApplyGuildDues(long money)
@@ -6624,13 +6640,8 @@ namespace DOL.GS
         /// <param name="cl">message chat location</param>
         public virtual void AddMoney(long money, string messageFormat, eChatType ct, eChatLoc cl)
         {
-            long newMoney = GetCurrentMoney() + money;
-
-            Copper = Money.GetCopper(newMoney);
-            Silver = Money.GetSilver(newMoney);
-            Gold = Money.GetGold(newMoney);
-            Platinum = Money.GetPlatinum(newMoney);
-            Mithril = Money.GetMithril(newMoney);
+            lock (_moneyLock)
+                SetMoney(GetCurrentMoney() + money);
 
             Out.SendUpdateMoney();
 
@@ -6669,16 +6680,13 @@ namespace DOL.GS
         /// <returns>true if successfull, false if player doesn't have enough money</returns>
         public virtual bool RemoveMoney(long money, string messageFormat, eChatType ct, eChatLoc cl)
         {
-            if (money > GetCurrentMoney())
-                return false;
-
-            long newMoney = GetCurrentMoney() - money;
-
-            Mithril = Money.GetMithril(newMoney);
-            Platinum = Money.GetPlatinum(newMoney);
-            Gold = Money.GetGold(newMoney);
-            Silver = Money.GetSilver(newMoney);
-            Copper = Money.GetCopper(newMoney);
+            lock (_moneyLock)
+            {
+                long current = GetCurrentMoney();
+                if (money > current)
+                    return false;
+                SetMoney(current - money);
+            }
 
             Out.SendUpdateMoney();
 
