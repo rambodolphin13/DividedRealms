@@ -1935,6 +1935,10 @@ namespace DOL.GS
 					if (effect.SpellHandler.Spell.SpellType is eSpellType.VampiirFlight)
 						continue;
 
+					// Bard loyalty cloak (DR-216): in-combat run speed.
+					if (effect.SpellHandler.Spell.SpellType is eSpellType.InCombatSpeed)
+						continue;
+
 					if (ShouldBeCancelled(attackData, effect))
 						effect.End();
 				}

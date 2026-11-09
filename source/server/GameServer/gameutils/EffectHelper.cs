@@ -220,6 +220,25 @@ namespace DOL.GS
                     return eEffect.StyleZeal;
                 case eSpellType.MeleeTruth:
                     return eEffect.MeleeTruth;
+                // DR-216 loyalty cloaks; ArtifactSpellDamage had no effect type, so its bonus never applied.
+                case eSpellType.ArtifactSpellDamage:
+                    return eEffect.SpellDamageBuff;
+                case eSpellType.MeleeCritBuff:
+                    return eEffect.MeleeCritBuff;
+                case eSpellType.ParryBlockBuff:
+                    return eEffect.ParryBlockBuff;
+                case eSpellType.LoyalArcaneLeadership:
+                    return eEffect.ArcaneLeadership;
+                case eSpellType.IgnoreBladeturn:
+                    return eEffect.IgnoreBladeturn;
+                case eSpellType.GroupDDRadius:
+                    return eEffect.GroupDDRadius;
+                case eSpellType.ControlShrug:
+                    return eEffect.ControlShrug;
+                case eSpellType.DiseaseWard:
+                    return eEffect.DiseaseWard;
+                case eSpellType.InCombatSpeed:
+                    return eEffect.MovementSpeedBuff;
                 case eSpellType.Siegebreaker:
                     return eEffect.Siegebreaker;
                 case eSpellType.BlightSurge:
@@ -472,6 +491,28 @@ namespace DOL.GS
                     return list;
                 case eEffect.SpellRangeBuff:
                     list.Add(eProperty.SpellRange);
+                    return list;
+                case eEffect.SpellDamageBuff:
+                    list.Add(eProperty.SpellDamage);
+                    return list;
+                case eEffect.MeleeCritBuff:
+                    list.Add(eProperty.CriticalMeleeHitChance);
+                    return list;
+                case eEffect.ParryBlockBuff:
+                    list.Add(eProperty.ParryChance);
+                    list.Add(eProperty.BlockChance);
+                    return list;
+                case eEffect.ArcaneLeadership:
+                    list.Add(eProperty.SpellRange);
+                    list.Add(eProperty.ResistPierce);
+                    return list;
+                case eEffect.ControlShrug:
+                    list.Add(eProperty.Resist_Body);
+                    list.Add(eProperty.Resist_Cold);
+                    list.Add(eProperty.Resist_Energy);
+                    list.Add(eProperty.Resist_Heat);
+                    list.Add(eProperty.Resist_Matter);
+                    list.Add(eProperty.Resist_Spirit);
                     return list;
                 case eEffect.StaffSkillBuff:
                     list.Add(eProperty.Skill_Staff);

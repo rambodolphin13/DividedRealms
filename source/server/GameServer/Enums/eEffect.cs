@@ -253,6 +253,15 @@ namespace DOL.GS
         ArtifactCheatDeath,
         ArtifactMorph,
         CampRest,
-        CostFreeChance
+        CostFreeChance,
+        // Loyalty cloak abilities (DR-216) and the artifact spell damage buff
+        SpellDamageBuff,
+        MeleeCritBuff,
+        ParryBlockBuff,
+        ArcaneLeadership,
+        IgnoreBladeturn,
+        GroupDDRadius,
+        ControlShrug,
+        DiseaseWard
     }
 }
