@@ -414,15 +414,19 @@ namespace OfflineDaoc.TestClient
             foreach (int slot in new[] { 21, 22, 23, 25, 27, 28 })      // head, hands, feet, torso, legs, arms
                 kit.Add(Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.ArmorType}", out _));
             int hand = 10;
-            foreach (int slot in new[] { 10, 12 })                      // one-handed, else two-handed (a staff)
+            object weapon = null;
+            foreach (int slot in new[] { 10, 12 })                      // one-handed, else two-handed (a staff, a polearm)
             {
-                kit.Add(Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.WeaponType}", out bool worn));
+                weapon = Equip(s, slot, kitFor, $"Item_Type = {slot} and Object_Type = {kitFor.WeaponType}", out bool worn);
                 if (worn)                                               // slot 10 is never empty: the starter weapon sits there
                 {
                     hand = slot;
                     break;
                 }
             }
+            // Only the weapon that was worn (or the last miss): a two-hander's empty one-hand try is not a failure, and
+            // scenarios forbid "worn":false to catch gear that really did not go on.
+            kit.Add(weapon);
             s.UseSlot(hand, 0);                                         // ready that weapon set
             s.Command("/heal");                                         // levels raise max health, not health
             return Collect(s, since, 500, new { specs, kit, you = Describe(s) });
