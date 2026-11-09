@@ -194,7 +194,7 @@ internal sealed class HostForFriendsForm : Form
         try
         {
             if (_current.Hosting)
-                StopHosting();
+                await StopHostingAsync();
             else
                 await StartHostingAsync();
             await RefreshStateAsync();
@@ -206,16 +206,63 @@ internal sealed class HostForFriendsForm : Form
         }
     }
 
-    private void StopHosting()
+    private async Task StopHostingAsync()
     {
         try
         {
             HostForFriends.Disable(_runtime);
-            SetStatus("Hosting stopped: the server listens on this PC only." + RestartNote(), DaocTheme.Success);
         }
         catch (Exception exception)
         {
             SetStatus($"Could not change serverconfig.xml: {exception.Message}", DaocTheme.Danger);
+            return;
+        }
+
+        // Start made the friends' firewall rules; stop takes exactly those away again (DR-201). The names belong to
+        // this launcher only, so another program's rule on the same port stays.
+        if (await RulesPresentAsync())
+        {
+            string script = Path.Combine(_runtime, "host-for-friends-firewall-remove.cmd");
+            SetStatus("Windows will ask for permission to close the firewall to friends…", DaocTheme.GoldLight);
+            string? failure = await RunElevatedScriptAsync(script, HostForFriends.FirewallScript(_runtime, _current, add: false));
+            if (failure != null || await RulesPresentAsync())
+            {
+                SetStatus("Hosting stopped, but the firewall rules for friends are still there" +
+                          (failure != null ? $" ({failure})" : string.Empty) +
+                          $". Run {script} as administrator to remove them." + RestartNote(), DaocTheme.Danger);
+                return;
+            }
+        }
+        SetStatus("Hosting stopped: the server listens on this PC only and the firewall is closed to friends." + RestartNote(),
+            DaocTheme.Success);
+    }
+
+    private const string PermissionDeclined = "Windows permission was declined";
+
+    /// <summary>Writes the script and runs it with administrator rights. Returns null when it ran, else what went wrong.</summary>
+    private static async Task<string?> RunElevatedScriptAsync(string script, string contents)
+    {
+        try
+        {
+            File.WriteAllText(script, contents);
+            using Process? process = Process.Start(new ProcessStartInfo("cmd.exe")
+            {
+                ArgumentList = { "/c", script },
+                Verb = "runas",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            });
+            if (process != null)
+                await process.WaitForExitAsync();
+            return null;
+        }
+        catch (Win32Exception exception) when (exception.NativeErrorCode == 1223)
+        {
+            return PermissionDeclined;
+        }
+        catch (Exception exception)
+        {
+            return exception.Message;
         }
     }
 
@@ -263,27 +310,12 @@ internal sealed class HostForFriendsForm : Form
 
         string script = Path.Combine(_runtime, "host-for-friends-firewall.cmd");
         SetStatus("Windows will ask for permission to let friends through the firewall…", DaocTheme.GoldLight);
-        try
+        string? failure = await RunElevatedScriptAsync(script, HostForFriends.FirewallScript(_runtime, _current, add: true, internet));
+        if (failure != null)
         {
-            File.WriteAllText(script, HostForFriends.FirewallScript(_runtime, _current, add: true, internet));
-            using Process? process = Process.Start(new ProcessStartInfo("cmd.exe")
-            {
-                ArgumentList = { "/c", script },
-                Verb = "runas",
-                UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-            });
-            if (process != null)
-                await process.WaitForExitAsync();
-        }
-        catch (Win32Exception exception) when (exception.NativeErrorCode == 1223)
-        {
-            SetStatus("Windows permission was declined, so hosting did not start.", DaocTheme.Danger);
-            return false;
-        }
-        catch (Exception exception)
-        {
-            SetStatus($"Could not change the firewall: {exception.Message}", DaocTheme.Danger);
+            SetStatus(failure == PermissionDeclined
+                ? "Windows permission was declined, so hosting did not start."
+                : $"Could not change the firewall: {failure}", DaocTheme.Danger);
             return false;
         }
 
