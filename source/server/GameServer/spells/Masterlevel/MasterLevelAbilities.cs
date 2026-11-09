@@ -305,6 +305,10 @@ namespace DOL.GS.Spells
                     ("Your attacks slow!", "{0}'s attacks slow!", "Your attacks speed up again.", "{0}'s attacks speed up again."),
                 _ => (null, null, null, null)
             };
+            // Other types keep their empty lines: null made SendMessages throw on StartsWith for the Pendragon
+            // ward (BothAblativeArmor) and burn (DamageOverTime), 113 exceptions in a 10-minute soak.
+            if (lines.Item1 == null)
+                return;
             (db.Message1, db.Message2, db.Message3, db.Message4) = lines;
         }
 
