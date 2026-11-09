@@ -2133,7 +2133,7 @@ namespace DOL.GS.ServerRules
                 return;
             }
 
-            isWorthAnything = killedPlayer.DeathTime + Properties.RP_WORTH_SECONDS <= killedPlayer.PlayedTime;
+            isWorthAnything = killedPlayer.DeathTime + AutonomousBotRealmPointRewards.RealmPointWorthSeconds(killedPlayer.ReleasedAfterLastDeath) <= killedPlayer.PlayedTime;
             double damagePercent = CalculateDamagePercent();
             int baseRpReward;
             int baseBpReward;
@@ -2207,7 +2207,7 @@ namespace DOL.GS.ServerRules
 
             void RewardRealmPoints(out int realmPointsEarned)
             {
-                int realmPoints = (int) (baseRpReward * damagePercent);
+                int realmPoints = AutonomousBotRealmPointRewards.ApplyKillBonus((int) (baseRpReward * damagePercent));
                 DbBattleground battleground = GameServer.KeepManager.GetBattleground(playerToAward.CurrentRegionID);
 
                 // Only award RPs if the player is under the battleground's cap.

@@ -1512,6 +1512,10 @@ namespace DOL.GS
             else
                 m_releaseType = releaseCommand;
 
+            // The release happens from here on (the refusals and the wait are above).
+            if (m_releaseType is not eReleaseType.Duel)
+                ReleasedAfterLastDeath = true;
+
             int relX = 0;
             int relY = 0;
             int relZ = 0;
@@ -4077,6 +4081,12 @@ namespace DOL.GS
         }
 
         /// <summary>
+        /// True from /release until the next death. A released player is worth realm points again sooner than a
+        /// resurrected one (1.123b, DR-180). Not saved: after a relog the longer wait applies.
+        /// </summary>
+        public bool ReleasedAfterLastDeath { get; set; }
+
+        /// <summary>
         /// Realm point value of this player
         /// </summary>
         public override int RealmPointsValue
@@ -6181,7 +6191,10 @@ namespace DOL.GS
             // no other way to keep correct message order...
             GameServer.ServerRules.OnPlayerKilled(this, killer);
             if (m_releaseType != eReleaseType.Duel)
+            {
                 DeathTime = PlayedTime;
+                ReleasedAfterLastDeath = false;
+            }
 
             CancelAllConcentrationEffects();
             //effectListComponent.CancelAll();

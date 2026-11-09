@@ -951,6 +951,18 @@ namespace DOL.GS.ServerProperties
 		public static int RP_WORTH_SECONDS;
 
 		/// <summary>
+		/// The time until a player who used /release is worth rps again (1.123b: 2 minutes, 5 when resurrected)
+		/// </summary>
+		[ServerProperty("rates", "rp_worth_seconds_released", "Seconds until a player or gamebot who released after dying is worth RPs again. Live is 120 since 1.123b; a resurrected one uses rp_worth_seconds.", 120)]
+		public static int RP_WORTH_SECONDS_RELEASED;
+
+		/// <summary>
+		/// Extra realm points for killing players (1.124: +25%, applied before every other bonus)
+		/// </summary>
+		[ServerProperty("rates", "kill_rp_bonus_percent", "Extra realm points, in percent, for killing a player or gamebot, applied before any other bonus. Live is 25 since 1.124; 0 turns it off.", 25)]
+		public static int KILL_RP_BONUS_PERCENT;
+
+		/// <summary>
 		/// Health Regen Rate
 		/// </summary>
 		[ServerProperty("rates", "health_regen_amount_modifier", "Health regen amount modifier", 1.0)]
