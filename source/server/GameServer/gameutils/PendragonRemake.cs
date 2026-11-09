@@ -49,6 +49,15 @@ namespace DOL.GS
         /// <summary>Damage multiplier for a Judgment spending <paramref name="valor"/>: +20% each.</summary>
         public static double Bonus(int valor) => 1 + BonusPerPoint * Math.Max(0, valor);
 
+        /// <summary>What held Valor adds to every other Pendragon spell (owner 2026-11-09: all its spells should use Valor).</summary>
+        public const double HeldBonusPerPoint = 0.10;
+
+        /// <summary>
+        /// Multiplier for the spells that keep Valor instead of spending it: +10% per point held (Crownfire Lance, Guard of
+        /// the Crown, Rally, Consecrated Armament, Decree, Binding Radiance, Field of Judgement, King's Advance).
+        /// </summary>
+        public static double Held(GameLiving living) => 1 + HeldBonusPerPoint * Count(living);
+
         public static void Add(GameLiving living, int amount = 1)
         {
             if (living == null || amount <= 0 || !living.IsAlive)

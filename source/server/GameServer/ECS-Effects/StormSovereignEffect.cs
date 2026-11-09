@@ -48,9 +48,10 @@ namespace DOL.GS
             if(Pendragon)
             {
                 // Consecrated Armament: polearm hits splash holy fire on one enemy near the target, sword hits burn.
+                // Held Valor makes the holy fire 10% stronger per point.
                 if(weapon is eObjectType.PolearmWeapon)
                     foreach(var enemy in Handler.Enemies(hit.Target,250).Where(t=>t!=hit.Target && t.InCombat).Take(1))
-                        StormSovereignAbilities.Strike(Handler,enemy,Owner.Level*2,eDamageType.Heat);
+                        StormSovereignAbilities.Strike(Handler,enemy,Owner.Level*2*PendragonValor.Held(Owner),eDamageType.Heat);
                 else
                     PendragonRemakeStyles.Burn(Handler,hit.Target);
                 return;
@@ -96,7 +97,7 @@ namespace DOL.GS
                 && GameLoop.GameLoopTime>=_lastReversal) {
                 // Runic Armament returns lightning; Wildwood Armament returns spirit thorns (evades too).
                 _lastReversal=GameLoop.GameLoopTime+1000;
-                StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2,Tuatha?eDamageType.Spirit:Pendragon?eDamageType.Heat:eDamageType.Energy);
+                StormSovereignAbilities.Strike(Handler,hit.Attacker,Owner.Level*2*(Pendragon?PendragonValor.Held(Owner):1),Tuatha?eDamageType.Spirit:Pendragon?eDamageType.Heat:eDamageType.Energy);
             }
             if(Key==18 && (hit.AttackResult==eAttackResult.Parried || Remake && hit.AttackResult==eAttackResult.Blocked)) {
                 _lastProc=GameLoop.GameLoopTime+1000;

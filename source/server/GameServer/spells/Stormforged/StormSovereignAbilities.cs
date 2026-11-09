@@ -216,9 +216,12 @@ namespace DOL.GS.Spells
                 wolf.Body.Stealth(false);
                 if(wolf.AggressionState!=DOL.AI.Brain.eAggressionState.Passive) wolf.Attack(target);
             }
-            Strike(h,target,h.Spell.Damage,eDamageType.Energy,h.FromStealth?10:0);
+            // Pendragon King's Advance: +10% damage per Valor held, and the charge itself earns 1 Valor.
+            double valor=PendragonRules.IsPendragon(owner)?PendragonValor.Held(owner):1;
+            Strike(h,target,h.Spell.Damage*valor,eDamageType.Energy,h.FromStealth?10:0);
             foreach(var enemy in h.Enemies(owner,h.Spell.Radius).Where(t=>t!=target))
-                Strike(h,enemy,h.Spell.Damage*0.5);
+                Strike(h,enemy,h.Spell.Damage*0.5*valor);
+            if(PendragonRules.IsPendragon(owner)) PendragonValor.Add(owner,1);
         }
 
         private static MLAbility Style(int index)

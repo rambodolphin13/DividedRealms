@@ -193,6 +193,7 @@ namespace DOL.GS.Spells
                 Icon = h.Spell.Icon, ClientEffect = h.Spell.ClientEffect, DamageType = (int)eDamageType.Spirit
             };
             setup(db);
+            MasterLevelAbilityHandler.StockMessages(db);
             var spell = new Spell(db, 50) { InternalID = h.Spell.InternalID };
             ScriptMgr.CreateSpellHandler(h.Caster, spell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells))?.StartSpell(target);
         }

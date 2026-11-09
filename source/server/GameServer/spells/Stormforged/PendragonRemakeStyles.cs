@@ -196,6 +196,7 @@ namespace DOL.GS.Spells
                 Icon = h.Spell.Icon, ClientEffect = h.Spell.ClientEffect, DamageType = (int)eDamageType.Heat
             };
             setup(db);
+            MasterLevelAbilityHandler.StockMessages(db);
             var spell = new Spell(db, 50) { InternalID = h.Spell.InternalID };
             ScriptMgr.CreateSpellHandler(h.Caster, spell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells))?.StartSpell(target);
         }
@@ -215,7 +216,10 @@ namespace DOL.GS.Spells
 
         /// <summary>A holy-fire ward on an ally (or the Pendragon): absorbs half of each blow up to the amount, 20 seconds.</summary>
         public static void Ward(MasterLevelAbilityHandler h, GameLiving ally, int amount) =>
-            Apply(h, ally, 5, eSpellType.BothAblativeArmor, db => { db.Target = ally == h.Caster ? "Self" : "Realm"; db.Value = Math.Max(1, amount); db.Damage = 50; db.Duration = 20; });
+            // Its own name: Guard of the Crown and Decree showed two same-named icons, the buff and this ward (playtest 2026-11-07).
+            Apply(h, ally, 5, eSpellType.BothAblativeArmor, db => { db.Name = WardName(h.Spell.Name); db.Target = ally == h.Caster ? "Self" : "Realm"; db.Value = Math.Max(1, amount); db.Damage = 50; db.Duration = 20; });
+
+        public static string WardName(string spellName) => spellName.EndsWith(" Ward") ? spellName : spellName + " Ward";
 
         /// <summary>Holy fire burning for 12 seconds.</summary>
         public static void Burn(MasterLevelAbilityHandler h, GameLiving t) =>

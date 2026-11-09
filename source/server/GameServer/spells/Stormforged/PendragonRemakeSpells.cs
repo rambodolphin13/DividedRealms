@@ -22,6 +22,8 @@ namespace DOL.GS.Spells
         public static bool Owns(int id) => id >= FirstId && id < FirstId + StormSovereignAbilities.Levels.Length * 16 && (id - FirstId) % 16 < Keys;
         public static int Key(int id) => Owns(id) ? (id - FirstId) % 16 : -1;
         public static bool Toggle(int id) => Key(id) == ConsecratedArmament;
+        /// <summary>Field of Judgement's ground object: objects.csv 2585 "Ward - Rejuvenation", drawn in the caster's realm.</summary>
+        public const ushort FieldModel = 2585;
         public static bool IsValorIcon(int id) => id >= FirstId + ValorIconFirstKey && id < FirstId + ValorIconFirstKey + ValorIcons;
         public static int ValorIconId(int valor) => FirstId + ValorIconFirstKey + Math.Clamp(valor, 1, ValorIcons) - 1;
 
@@ -46,7 +48,8 @@ namespace DOL.GS.Spells
             switch (key)
             {
                 case CrownfireLance:
-                    return Ability(false, (h, t) => Strike(h, t, h.Spell.Damage));
+                    // Instant with 3+ Valor (StormSovereignHandler); +10% damage per Valor held, none spent.
+                    return Ability(false, (h, t) => Strike(h, t, h.Spell.Damage * PendragonValor.Held(h.Caster)));
                 case GuardOfTheCrown:
                     // The guarded ally gains 20% absorption and a holy ward; Knight's Guard (RA) makes the ward 25/50/75% stronger.
                     return Ability(true, (h, t) =>
@@ -54,7 +57,7 @@ namespace DOL.GS.Spells
                         GameLiving ally = t ?? h.Caster;
                         h.Hold(ally, 15000);
                         int rank = h.Caster is GamePlayer player ? player.GetAbilityLevel(RealmAbilities.PendragonKnightsGuard.KeyName) : 0;
-                        PendragonRemakeStyles.Ward(h, ally, (int)(ally.MaxHealth * 0.10 * (1 + 0.25 * Math.Clamp(rank, 0, 3))));
+                        PendragonRemakeStyles.Ward(h, ally, (int)(ally.MaxHealth * 0.10 * (1 + 0.25 * Math.Clamp(rank, 0, 3)) * PendragonValor.Held(h.Caster)));
                         PendragonValor.Add(h.Caster, 1);
                     }, MLMod.Buff(eProperty.ArmorAbsorption, 20));
                 case SovereignsChallenge:
@@ -68,9 +71,11 @@ namespace DOL.GS.Spells
                 case RallyToTheCrown:
                     return Ability(true, (h, _) =>
                     {
+                        // 10% at once, +2% per Valor held.
+                        int percent = 10 + 2 * PendragonValor.Count(h.Caster);
                         foreach (GameLiving member in h.Group(h.Spell.Radius))
                         {
-                            h.Heal(member, member.MaxHealth / 10);
+                            h.Heal(member, member.MaxHealth * percent / 100);
                             h.Cast(member, 2, eSpellType.HealOverTime, db => { db.Target = "Realm"; db.Value = Value(150); db.Frequency = 30; db.Duration = 12; });
                         }
                     });
@@ -83,16 +88,18 @@ namespace DOL.GS.Spells
                         foreach (GameLiving member in h.Group(h.Spell.Radius))
                         {
                             h.Hold(member, 15000);
-                            PendragonRemakeStyles.Ward(h, member, member.MaxHealth / 10);
+                            PendragonRemakeStyles.Ward(h, member, (int)(member.MaxHealth / 10 * PendragonValor.Held(h.Caster)));
                         }
                     }, new MLMod(eProperty.BlockChance, MLCategory.Ability, 10), new MLMod(eProperty.ParryChance, MLCategory.Ability, 10));
                 case BindingRadiance:
                     return Ability(false, (h, t) =>
                     {
-                        h.Cast(t, 1, eSpellType.StyleStun, db => db.Duration = 4);
+                        // Valor held: +10% damage each, and at 3+ Valor the stun lasts 6 seconds instead of 4.
+                        int valor = PendragonValor.Count(h.Caster);
+                        h.Cast(t, valor >= 3 ? 4 : 1, eSpellType.StyleStun, db => db.Duration = valor >= 3 ? 6 : 4);
                         foreach (GameLiving enemy in h.Enemies(t, 300).Where(e => e != t))
                             h.Cast(enemy, 2, eSpellType.SpeedDecrease, db => { db.Value = 40; db.Duration = 8; });
-                        Strike(h, t, h.Spell.Damage);
+                        Strike(h, t, h.Spell.Damage * PendragonValor.Held(h.Caster));
                     });
                 case Judgment:
                     return Ability(false, (h, _) =>
@@ -110,13 +117,16 @@ namespace DOL.GS.Spells
                 case FieldOfJudgement:
                     return Ability(false, (h, _) => h.Field(new Point3D(h.Caster.X, h.Caster.Y, h.Caster.Z), new MasterLevelFieldOptions
                     {
-                        Name = h.Spell.Name, Model = 3457, Interval = 3000, Both = true, SuppressEffect = true, PulseEffect = h.Spell.ClientEffect,
+                        // The Albion healing-ward crystal, not the Storm Sovereign's thundercloud (owner 2026-11-09: lightning on the Alb class).
+                        Name = h.Spell.Name, Model = FieldModel, Interval = 3000, Both = true, SuppressEffect = true, PulseEffect = h.Spell.ClientEffect,
                         OnPulse = (field, living) =>
                         {
+                            // Each pulse reads the Valor held then: +10% damage and healing per point.
+                            double held = PendragonValor.Held(field.StormOwner);
                             if (field.IsHostile(living))
-                                Strike(field.Ability, living, field.Ability.Spell.Damage);
+                                Strike(field.Ability, living, field.Ability.Spell.Damage * held);
                             else
-                                field.Ability.Heal(living, living.MaxHealth * 3 / 100);
+                                field.Ability.Heal(living, (int)(living.MaxHealth * 3 / 100 * held));
                         }
                     }));
                 default:

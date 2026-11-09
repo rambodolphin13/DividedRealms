@@ -274,10 +274,38 @@ namespace DOL.GS.Spells
                     Icon = Spell.Icon, ClientEffect = Spell.ClientEffect, DamageType = (int)eDamageType.Energy
                 };
                 setup(db);
+                StockMessages(db);
                 // Show the ability's own tooltip on the effect, not the borrowed icon's stock spell.
                 return new Spell(db, 50) { InternalID = Spell.InternalID };
             });
             ScriptMgr.CreateSpellHandler(Caster, spell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells))?.StartSpell(target);
+        }
+
+        /// <summary>
+        /// The stock lines a stun, snare, root, mez or disarm prints. Internal sub-spells had no Message1-4, so a Sovereign
+        /// stun or snare landed silently (playtest 2026-11-07: Binding Radiance, Unhorse, Lady of the Lake).
+        /// </summary>
+        public static void StockMessages(DbSpell db)
+        {
+            if (!string.IsNullOrEmpty(db.Message1) || !string.IsNullOrEmpty(db.Message2))
+                return;
+            (string, string, string, string) lines = db.Type switch
+            {
+                nameof(eSpellType.StyleStun) or nameof(eSpellType.Stun) =>
+                    ("You are stunned!", "{0} is stunned!", "You recover from the stun.", "{0} recovers from the stun."),
+                nameof(eSpellType.SpeedDecrease) when db.Value >= 99 =>
+                    ("Your feet are frozen to the ground!", "{0} is rooted in place!", "You can move again.", "{0} can move again."),
+                nameof(eSpellType.SpeedDecrease) or nameof(eSpellType.DamageSpeedDecrease) =>
+                    ("Your movements slow!", "{0} slows down!", "You speed up again.", "{0} speeds up again."),
+                nameof(eSpellType.Mesmerize) =>
+                    ("You are entranced!", "{0} is entranced!", "You are no longer entranced.", "{0} is no longer entranced."),
+                nameof(eSpellType.Disarm) =>
+                    ("You are disarmed!", "{0} is disarmed!", "You can use your weapon again.", "{0} can use their weapon again."),
+                nameof(eSpellType.CombatSpeedDebuff) =>
+                    ("Your attacks slow!", "{0}'s attacks slow!", "Your attacks speed up again.", "{0}'s attacks speed up again."),
+                _ => (null, null, null, null)
+            };
+            (db.Message1, db.Message2, db.Message3, db.Message4) = lines;
         }
 
         public void Damage(GameLiving target, double amount, eDamageType type = eDamageType.Energy, int index = 0) =>

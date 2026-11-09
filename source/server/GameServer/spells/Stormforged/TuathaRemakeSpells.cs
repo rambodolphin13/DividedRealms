@@ -19,6 +19,8 @@ namespace DOL.GS.Spells
 
         public const int SeelieCourt = FirstId + SeelieKey, UnseelieCourt = FirstId + UnseelieKey;
         public const int CourtSeconds = 60;
+        /// <summary>Fairy Ring's ground object: objects.csv 2592 "Rune - Tanglesnare", drawn in the caster's realm (green for Hibernia).</summary>
+        public const ushort FairyRingModel = 2592;
 
         public static bool Owns(int id) => id >= FirstId && id < FirstId + StormSovereignAbilities.Levels.Length * 16 && (id - FirstId) % 16 < Keys;
         public static int Key(int id) => Owns(id) ? (id - FirstId) % 16 : -1;
@@ -108,20 +110,21 @@ namespace DOL.GS.Spells
                 case FairyRing:
                     return Ability(false, (h, _) => h.Field(new Point3D(h.Caster.X, h.Caster.Y, h.Caster.Z), new MasterLevelFieldOptions
                     {
-                        Name = h.Spell.Name, Model = 3457, Interval = 3000, Both = true, SuppressEffect = true, PulseEffect = h.Spell.ClientEffect,
+                        // A green ground rune, not the Storm Sovereign's thundercloud. Outside a court the ring still
+                        // burns enemies and mends allies (owner 2026-11-09: it did nothing once the courts became timed);
+                        // the Unseelie Court adds the drain, the Seelie Court doubles the mending.
+                        Name = h.Spell.Name, Model = FairyRingModel, Interval = 3000, Both = true, SuppressEffect = true, PulseEffect = h.Spell.ClientEffect,
                         OnPulse = (field, living) =>
                         {
                             GameLiving owner = field.StormOwner;
                             if (field.IsHostile(living))
                             {
+                                Strike(field.Ability, living, field.Ability.Spell.Damage);
                                 if (TuathaCourt.IsUnseelie(owner))
-                                {
-                                    Strike(field.Ability, living, field.Ability.Spell.Damage);
                                     field.Ability.Heal(owner, (int)(field.Ability.Spell.Damage * 0.5));
-                                }
                             }
-                            else if (TuathaCourt.IsSeelie(owner))
-                                field.Ability.Heal(living, living.MaxHealth * 3 / 100);
+                            else
+                                field.Ability.Heal(living, living.MaxHealth * (TuathaCourt.IsSeelie(owner) ? 6 : 3) / 100);
                         }
                     }));
                 default:

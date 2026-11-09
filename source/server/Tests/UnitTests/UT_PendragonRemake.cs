@@ -112,6 +112,41 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void Valor_HeldValorStrengthensTheSpellsThatKeepIt_WithoutSpendingIt()
+        {
+            var me = NewPool();
+            Assert.That(PendragonValor.Held(me), Is.EqualTo(1.0).Within(1e-9));
+            PendragonValor.Add(me, 4);
+            Assert.That(PendragonValor.Held(me), Is.EqualTo(1.4).Within(1e-9), "+10% per point held");
+            Assert.That(PendragonValor.Count(me), Is.EqualTo(4), "reading the bonus spends nothing");
+        }
+
+        [Test]
+        public void Ground_FieldOfJudgementIsNotTheStormCloud_AndWardsHaveTheirOwnName()
+        {
+            Assert.That(PendragonRemakeSpells.FieldModel, Is.Not.EqualTo((ushort)3457), "3457 is the Storm Sovereign's thundercloud");
+            Assert.That(TuathaRemakeSpells.FairyRingModel, Is.Not.EqualTo((ushort)3457));
+            Assert.That(PendragonRemakeStyles.WardName("Guard of the Crown"), Is.EqualTo("Guard of the Crown Ward"));
+            Assert.That(PendragonRemakeStyles.WardName("Holy Ward"), Is.EqualTo("Holy Ward"));
+        }
+
+        [TestCase(nameof(eSpellType.StyleStun), 0, "{0} is stunned!")]
+        [TestCase(nameof(eSpellType.SpeedDecrease), 40, "{0} slows down!")]
+        [TestCase(nameof(eSpellType.SpeedDecrease), 99, "{0} is rooted in place!")]
+        [TestCase(nameof(eSpellType.Mesmerize), 0, "{0} is entranced!")]
+        public void SubSpells_StunsSnaresRootsAndMezzesSayWhatHappened(string type, int value, string area)
+        {
+            var db = new DbSpell { Type = type, Value = value };
+            MasterLevelAbilityHandler.StockMessages(db);
+            Assert.That(db.Message2, Is.EqualTo(area));
+            Assert.That(db.Message1, Is.Not.Empty);
+
+            var own = new DbSpell { Type = type, Message1 = "custom" };
+            MasterLevelAbilityHandler.StockMessages(own);
+            Assert.That(own.Message1, Is.EqualTo("custom"), "a spell's own text wins");
+        }
+
+        [Test]
         public void Valor_AHitTakenEarnsOnlyOnceEveryThreeSeconds()
         {
             var me = NewPool();
