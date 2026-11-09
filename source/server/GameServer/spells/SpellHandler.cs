@@ -414,6 +414,15 @@ namespace DOL.GS.Spells
 		/// <summary>
 		/// All checks before any casting begins
 		/// </summary>
+		/// <summary>Why the last CheckBeginCast refused when it sent the caster no message (NPC casters mostly), for the bot tester log.</summary>
+		public string RefuseReason { get; protected set; }
+
+		protected bool Refuse(string reason)
+		{
+			RefuseReason = reason;
+			return false;
+		}
+
 		public virtual bool CheckBeginCast(GameLiving selectedTarget, bool quiet)
 		{
             if (DeathKnight.BlockedByForm(Caster, Spell))
@@ -427,7 +436,7 @@ namespace DOL.GS.Spells
                 return false;
             }
 			if (m_caster.ObjectState != GameObject.eObjectState.Active)
-				return false;
+				return Refuse("caster not active");
  
 			if (!m_caster.IsAlive)
 			{
@@ -637,7 +646,7 @@ namespace DOL.GS.Spells
 						}
 					}
 					else
-						return false;
+						return Refuse("interrupt timer");
 				}
 			}
 
@@ -656,11 +665,11 @@ namespace DOL.GS.Spells
 			if (m_ability != null)
 			{
 				if (!Caster.castingComponent.CheckCooldown(m_ability.Ability))
-					return false;
+					return Refuse("ability on cooldown");
 			}
 
 			if (!Caster.castingComponent.CheckCooldown(m_spell))
-				return false;
+				return Refuse("spell on cooldown");
 
 			switch (Spell.Target)
 			{
@@ -722,7 +731,7 @@ namespace DOL.GS.Spells
 						if (Caster is GameNPC npc)
 							npc.Follow(Target, m_spell.CalculateEffectiveRange(npc) - 100, npc.StickMaximumRange);
 
-						return false;
+						return Refuse($"target too far ({(int) m_caster.GetDistanceTo(Target)} > {Spell.CalculateEffectiveRange(m_caster)})");
 					}
 
 					if (!HasLos)
@@ -772,7 +781,7 @@ namespace DOL.GS.Spells
 							}
 
 							if (!GameServer.ServerRules.IsAllowedToAttack(Caster, Target, quiet))
-								return false;
+								return Refuse("not allowed to attack target");
 
 							break;
 						}
@@ -791,7 +800,7 @@ namespace DOL.GS.Spells
 						case eSpellTarget.REALM:
 						{
 							if (!GameServer.ServerRules.IsSameRealm(Caster, Target, true))
-								return false;
+								return Refuse("target not same realm");
 
 							break;
 						}
@@ -817,14 +826,14 @@ namespace DOL.GS.Spells
 				if (!quiet && Caster is not GameBot)
 					MessageToCaster("You don't have enough power to cast that!", eChatType.CT_SpellResisted);
 
-				return false;
+				return Refuse("not enough power");
 			}
 
 			if (!CheckConcentrationCost(quiet))
-				return false;
+				return Refuse("concentration");
 
 			if (!CheckPulseCap(quiet))
-				return false;
+				return Refuse("pulse cap");
 
 			// Cancel engage if user starts attack
 			if (m_caster.IsEngaging)
@@ -1148,6 +1157,7 @@ namespace DOL.GS.Spells
 				case eCastState.Precast:
 				{
 					BotTesterLog.CastStarted(this);
+					RefuseReason = null;
 					if (CheckBeginCast(Target))
 					{
 						_castStartTick = GameLoop.GameLoopTime;
