@@ -1,0 +1,24 @@
+{
+  "name": "Bountycraft item spells: Arrogance (Gem of the Harbinger), omni heal (Uther's Otherworldly Hardy Cloak), cure (Otherworldly Mighty Ring, second charge)",
+  "steps": [
+    { "about": "server is listening", "tool": "server_status", "expect": ["\"listening\":true"], "required": true },
+    { "about": "log the Armsman in", "tool": "login", "args": { "session": "bounty", "name": "Bountycrafter", "class": "armsman" }, "expect": ["\"oid\":"], "required": true },
+    { "about": "empty backpack", "tool": "command", "args": { "session": "bounty", "text": "/clearinventory", "wait_ms": 1000 } },
+    { "about": "Gem of the Harbinger", "tool": "command", "args": { "session": "bounty", "text": "/item create bounty_gem_of_the_harbinger_all 1", "wait_ms": 800 }, "expect": ["Item created"] },
+    { "about": "Uther's Otherworldly Hardy Cloak", "tool": "command", "args": { "session": "bounty", "text": "/item create bounty_uther_s_otherworldly_hardy_cloak_all 1", "wait_ms": 800 }, "expect": ["Item created"] },
+    { "about": "Otherworldly Mighty Ring", "tool": "command", "args": { "session": "bounty", "text": "/item create bounty_otherworldly_mighty_ring_all 1", "wait_ms": 800 }, "expect": ["Item created"] },
+    { "about": "wear the gem", "tool": "move_item", "args": { "session": "bounty", "from": 40, "to": 24 } },
+    { "about": "wear the cloak", "tool": "move_item", "args": { "session": "bounty", "from": 41, "to": 26 } },
+    { "about": "wear the ring", "tool": "move_item", "args": { "session": "bounty", "from": 42, "to": 35 } },
+    { "about": "all three worn", "tool": "inventory", "args": { "session": "bounty" }, "expect": ["\"slot\":24,\"name\":\"Gem of the Harbinger\"", "\"slot\":26,\"name\":\"Uther", "\"slot\":35,\"name\":\"Otherworldly Mighty Ring\""], "required": true },
+    { "about": "let the PvP timer pass", "tool": "wait", "args": { "session": "bounty", "seconds": 5 } },
+    { "about": "status before the heal", "tool": "status", "args": { "session": "bounty" } },
+    { "about": "use the cloak: omni heal 18%", "tool": "use_item", "args": { "session": "bounty", "slot": 26 }, "expect": ["You attempt to use the Uther"], "forbid": ["You cannot", "not ready", "must wait"] },
+    { "about": "status after the heal", "tool": "status", "args": { "session": "bounty" } },
+    { "about": "item use timer", "tool": "wait", "args": { "session": "bounty", "seconds": 11 } },
+    { "about": "use the gem: Arrogance", "tool": "use_item", "args": { "session": "bounty", "slot": 24 }, "expect": ["hard sheath of earth"], "forbid": ["You cannot", "not ready", "must wait"] },
+    { "about": "item use timer again", "tool": "wait", "args": { "session": "bounty", "seconds": 11 } },
+    { "about": "use the ring's second charge: cure", "tool": "use_item", "args": { "session": "bounty", "slot": 35, "type": 2 }, "expect": ["You attempt to use the Otherworldly Mighty Ring"], "forbid": ["You cannot", "not ready", "must wait"] },
+    { "about": "effects on the character", "tool": "events", "args": { "session": "bounty", "kinds": "message,spell_effect,cast", "since": 0, "limit": 400 } }
+  ]
+}
