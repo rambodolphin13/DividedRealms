@@ -182,6 +182,7 @@ def main():
 
     # ------------------------------------------------------------------ zone points
     our_zp = {(int(r['Id']), int(r['Realm'])): r for r in db.execute('SELECT * FROM ZonePoint')}   # one row per id and realm
+    zp_classes = {r[0] for r in db.execute("SELECT DISTINCT ClassType FROM ZonePoint WHERE ClassType LIKE 'DOL.GS.ServerRules.%'")}
     zp_added, zp_same, zp_conflict = 0, 0, []
     for z in load(eod, 'ZonePoint'):
         tr, sr = int(z.get('TargetRegion') or 0), int(z.get('SourceRegion') or 0)
@@ -191,7 +192,10 @@ def main():
             continue
         mine = our_zp.get((int(z['Id']), int(z['Realm'])))
         if mine is None:
-            support.append({'table': 'ZonePoint', 'insert': {c: z[c] for c in cols['ZonePoint'] if c in z}})
+            ins = {c: z[c] for c in cols['ZonePoint'] if c in z}
+            if ins.get('ClassType') and ins['ClassType'] not in zp_classes:   # an EoD script class we do not have:
+                ins['ClassType'] = ''                                         # a plain jump (dr world lint, 2026-11-09)
+            support.append({'table': 'ZonePoint', 'insert': ins})
             zp_added += 1
         elif (int(mine['TargetRegion']), int(mine['TargetX']), int(mine['TargetY'])) == (tr, int(z['TargetX']), int(z['TargetY'])):
             zp_same += 1
