@@ -575,7 +575,8 @@ namespace DOL.GS;
                            (space || AutonomousBotCrafting.IsOwnWork(bot, item)) &&
                            !TryGetEquipmentUpgrade(bot, item, out _))
             .Select(item => new ListingCandidate(item, RecommendListingPrice(item)))
-            .Where(candidate => WorthListing(candidate.Item, candidate.PriceCopper))
+            .Where(candidate => WorthListing(candidate.Item, candidate.PriceCopper) &&
+                                !RealmExchangeSaturation.IsSaturated(bot.Realm, candidate.Item))
             // A craft trip ends by posting what it made, not the dearest loot in the bag.
             .OrderByDescending(candidate => AutonomousObjectiveAssignments.WantsBetweenTaskCraft(bot) && AutonomousBotCrafting.IsOwnWork(bot, candidate.Item))
             .ThenByDescending(candidate => candidate.PriceCopper)
@@ -615,11 +616,13 @@ namespace DOL.GS;
             if (AutonomousBotCraftOrders.IsHeldForOrder(item))
                 return true;
             // The bot's own work waits for a free Realm Exchange post; only a nearly full bag sends it to a vendor.
-            if (AutonomousBotCrafting.IsOwnWork(bot, item) && !IsBackpackNearlyFull(bot))
+            // Once the realm already has plenty like it on the exchange, it goes to a vendor (Discord 2026-11-09).
+            bool saturated = RealmExchangeSaturation.IsSaturated(bot.Realm, item);
+            if (AutonomousBotCrafting.IsOwnWork(bot, item) && !IsBackpackNearlyFull(bot) && !saturated)
                 return true;
             // If the bot's single listing slot is occupied, unwanted gear can
             // still be sold normally. Never vendor an equippable upgrade.
-            return canList && item.IsTradable && WorthListing(item, RecommendListingPrice(item));
+            return canList && item.IsTradable && !saturated && WorthListing(item, RecommendListingPrice(item));
         }
 
         /// <summary>Worth a Realm Exchange post: dear enough for its level, or the bot's own work, which it sells there
@@ -914,7 +917,8 @@ namespace DOL.GS;
     {
         if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.DatabaseID <= 0 ||
             item == null || !item.IsTradable || priceCopper <= 0 || item.OwnerLot != 0 || BotSiegeRuntime.IsSupply(item.Id_nb) ||
-            item.SlotPosition is < (int)eInventorySlot.FirstBackpack or > (int)eInventorySlot.LastBackpack)
+            item.SlotPosition is < (int)eInventorySlot.FirstBackpack or > (int)eInventorySlot.LastBackpack ||
+            RealmExchangeSaturation.IsSaturated(bot.Realm, item))
             return false;
 
         lock (RealmExchangeBroker.TransactionLock)
@@ -962,6 +966,7 @@ namespace DOL.GS;
         }
         MarketCache.AddItem(item);
         MarkInventoryChanged(bot);
+        RealmExchangeSaturation.NoteListed(item);
         RunTelemetry.Trade(bot, "exchange-list", null, item, priceCopper, Math.Max(1, item.Count));
         return true;
         }
