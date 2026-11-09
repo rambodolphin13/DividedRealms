@@ -526,6 +526,11 @@ namespace DOL.GS;
                 item.Object_Type is (int)eObjectType.Axe or (int)eObjectType.LeftAxe &&
                 item.Object_Type != (int)bot.BotSpec.WeaponOneType && item.Item_Type != Slot.TWOHAND && item.Hand != 1)
                 requested = eInventorySlot.LeftHandWeapon;
+            // Many one-handers are listed as left-hand items because either hand can hold them.
+            // A class that cannot dual wield can only use them in its main hand.
+            if (requested == eInventorySlot.LeftHandWeapon && item.Hand != 2 &&
+                !BotWeaponStats.CanWieldOffhandWeapon(bot))
+                requested = eInventorySlot.RightHandWeapon;
             if (!BotWeaponStats.FitsConfiguredSlot(bot, item, requested)) return eInventorySlot.Invalid;
         }
         if (requested is eInventorySlot.LeftRing or eInventorySlot.RightRing)

@@ -101,13 +101,32 @@ namespace DOL.GS
         /// </summary>
         private BotSpec ResolveCompanionBuild()
         {
-            eCharacterClass characterClass = (eCharacterClass)ClassId;
+            BotSpec plan = PickCompanionBuild((eCharacterClass)ClassId, CompanionRecord.BuildPlan,
+                CompanionRecord.Style, GetBaseSpecLevel, out bool replaced);
+            if (replaced && plan != null)
+            {
+                CompanionRecord.BuildPlan = BotLifetimeBuild.Encode(plan);
+                CompanionRecord.Dirty = true;
+            }
+            return plan;
+        }
+
+        /// <summary>
+        /// The build a companion of this class should follow: the saved plan, unless the
+        /// character's own trained lines clearly fit another of the class's builds better.
+        /// A plan picked at level 1 (every fit 0, so the class's first choice) used to win
+        /// forever: a Champion trained in Large Weapons kept a one-hand Blades plan, refused
+        /// its two-handed sword and made a starter blade. Same rule for every class.
+        /// </summary>
+        public static BotSpec PickCompanionBuild(eCharacterClass characterClass, string savedPlan, string style,
+            Func<string, int> trained, out bool replaced)
+        {
+            replaced = false;
             IReadOnlyList<eSpecType> choices = BotSpec.GetSpecializationChoices(characterClass);
             BotSpec saved = BotSpec.GetSpec(characterClass, choices[0]);
-            if (saved != null && BotLifetimeBuild.Restore(saved, CompanionRecord.BuildPlan))
-                return saved;
+            bool restored = saved != null && BotLifetimeBuild.Restore(saved, savedPlan);
 
-            bool hasStyle = Enum.TryParse(CompanionRecord.Style, true, out eSpecType wanted) && choices.Contains(wanted);
+            bool hasStyle = Enum.TryParse(style, true, out eSpecType wanted) && choices.Contains(wanted);
             BotSpec best = null;
             int bestFit = -1;
             foreach (eSpecType choice in choices)
@@ -121,8 +140,8 @@ namespace DOL.GS
                     BotSpec candidate = BotSpec.GetSpec(characterClass, choice);
                     if (candidate == null)
                         continue;
-                    BotLifetimeBuild.AlignWithInvestedWeapons(candidate, GetBaseSpecLevel);
-                    int fit = AccountCompanionRules.PlanFit(PlanLines(candidate), GetBaseSpecLevel);
+                    BotLifetimeBuild.AlignWithInvestedWeapons(candidate, trained);
+                    int fit = AccountCompanionRules.PlanFit(PlanLines(candidate), trained);
                     if (fit > bestFit)
                     {
                         best = candidate;
@@ -131,12 +150,29 @@ namespace DOL.GS
                 }
             }
 
-            if (best != null)
-            {
-                CompanionRecord.BuildPlan = BotLifetimeBuild.Encode(best);
-                CompanionRecord.Dirty = true;
-            }
+            if (restored && (best == null || AccountCompanionRules.PlanFit(PlanLines(saved), trained) >= bestFit))
+                return saved;
+            replaced = best != null;
             return best;
+        }
+
+        /// <summary>
+        /// After the owner trains or respecs, moves the companion to the build its trained lines
+        /// now fit, and re-equips for it (two-hander, shield or main-hand weapon).
+        /// </summary>
+        private void ReconcileCompanionBuild()
+        {
+            BotSpec plan = ResolveCompanionBuild();
+            if (plan == null || BotSpec != null && BotLifetimeBuild.Encode(plan) == BotLifetimeBuild.Encode(BotSpec))
+                return;
+            string before = BotSpec?.SpecType.ToString() ?? "none";
+            BotSpec = plan;
+            SortStyles();
+            EnsureBotWeaponReady();
+            RefreshItemBonuses();
+            _companionDirty = true;
+            if (log.IsInfoEnabled)
+                log.Info($"ACCOUNT_COMPANION_BUILD companion=\"{Name}\" from={before} to={plan.SpecType} weapon={plan.WeaponOneType}/{plan.WeaponTwoType}");
         }
 
         private static IEnumerable<AccountCompanionRules.PlanLine> PlanLines(BotSpec plan) =>
@@ -243,6 +279,7 @@ namespace DOL.GS
             SetBotSpells();
             SortStyles();
             SortSpells();
+            ReconcileCompanionBuild();
             _companionDirty = true;
             SaveAccountCompanion("train");
             if (log.IsInfoEnabled)
@@ -299,6 +336,7 @@ namespace DOL.GS
             SetBotSpells();
             SortStyles();
             SortSpells();
+            ReconcileCompanionBuild();
             _companionDirty = true;
             SaveAccountCompanion("respec");
             if (log.IsInfoEnabled)
