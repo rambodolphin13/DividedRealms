@@ -82,3 +82,29 @@ Armsman, level 50):
   buff 75 for 10 min. Equip messages show the official bonus lines.
 - Not checked: Medusa and Cetus (not seen after teleporting into their dungeons, a dungeon loading matter), a
   real kill, weapon or armor procs firing, Midgard and Hibernia drops, bots looting the new items.
+
+## Real-kill test, 2026-11-08 18:20-18:50 (sandbox toa-drops, same build and patches as the test install)
+
+AI tester killed each monster with GM `/harm` (respawn set to 2 s; autoloot on, drops read from "X drops the ..."):
+
+| Monster | Character | Kills | Named drops | Also dropped |
+|---|---|---:|---|---|
+| Azar (Alb, region 73) | L50 Armsman | 25 | Shield of Azar 3, Azar's Guard 3, Azar's Defense 2 | glass 5 a kill, coin, random items, mythirian |
+| Kraken (Alb) | L50 Armsman | 25 | Tentacle Belt 5, Beak Necklace 4, Black Water Belt 4, Black Water Bracer 2, Kraken's Eye 1, Eyelid Cloak 1 | fish, old boot, random items |
+| Azar (Mid, region 30) | L50 Warrior | 20 | Azar's Defense 6, Shield of Azar 6, Azar's Guard 1 | random chain gear |
+| Kraken (Mid) | L50 Warrior | 15 | Eye 4, Bracer 4, Eyelid Cloak 3, Beak Necklace 3, Tentacle Belt 1, Black Water Belt 1 | |
+| Azar (Hib, region 130) | L50 Hero | 20 | Arcanite Shield of Azar 4, Azar's Defense 1 | random scale gear |
+| kraken (Hib, L65 copy) | L50 Hero | 15 | Beak Necklace 4, Kraken's Lost Tooth 4, Bracer 2, Black Water Belt 2, Kraken's Maw 1, Tentacle Belt 1, Eye 1 | |
+| Agidad (classic Alb) | L50 Armsman | 20 | Armor Pattern 4, Blackened Granite Shield 3, Bracer of Wonderous Alacrity 3, Lava Forged Sword 3, Pikeman's Belt 1, Archaic Granite Short Sword 1 | giant bones |
+| Amadan (classic Hib) | L50 Hero | 15 | Forgotten Silver Jasper Locket 2, Ring of Undead Might 2, Gloves of Black Death 1 | bone, grave dust |
+| arachite greensilk (classic Mid) | L4 Warrior | 20 | Svartalf Crafted Necklace 3, Svartalf Crafted Ring 3 | chitin, insect legs, random studded gear |
+
+Each realm only got its own realm's versions. Procs in real fights (8 fights, L50 Armsman): Arcanium Scintillating Blade's
+new lifedrain 803832 fired ("You steal N hit points"); Breastplate of the Cryth's ablative fired ("A crystal shield
+covers you", "Your ablative absorbs N damage"). Earlier in the sandbox: Xanxicar cloak HealAllOverTime and Kraken
+necklace Str/Con charge work. Server: no exceptions during the runs.
+
+**Found:** every arachite greensilk is level 5 in game (its NpcTemplate says 5; the spawn rows say 27-30), so level
+5 spiders drop level 38-40 Svartalf jewelry. 18 of the 1,766 restored tables sit on monsters whose highest live level
+is 20+ below their best item (wildling L0 and spriggarn L2 with level 51 items, escaped thrall L3, tomte shaman L10,
+arachite hatchling/youngling/priest, oak man, ash, large skeleton ...). Not fixed.
