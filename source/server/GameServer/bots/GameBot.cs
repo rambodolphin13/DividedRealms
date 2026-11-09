@@ -4828,6 +4828,12 @@ namespace DOL.GS
                     TryMoveEquippedItemToBackpack(slot))
                     changed = true;
             }
+            // A weapon left in the offhand of a class that cannot dual wield blocks its shield.
+            DbInventoryItem offhand = Inventory.GetItem(eInventorySlot.LeftHandWeapon);
+            if (offhand != null && BotWeaponStats.IsMeleeWeapon((eObjectType)offhand.Object_Type) &&
+                !BotWeaponStats.CanWieldOffhandWeapon(this) &&
+                TryMoveEquippedItemToBackpack(eInventorySlot.LeftHandWeapon))
+                changed = true;
             return changed;
         }
 

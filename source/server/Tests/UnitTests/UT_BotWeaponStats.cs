@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -219,6 +220,58 @@ public class UT_BotWeaponStats
         public override int WeaponSpecLevel(DbInventoryItem item) => 1;
         public override double Effectiveness { get => 1; set { } }
     }
+    private sealed class ClassedBot : GameBot
+    {
+        private ClassedBot() : base((OfflineWorldBotRecord)null) { }
+        public ICharacterClass Class;
+        public override byte Level { get; set; }
+        public override ICharacterClass CharacterClass => Class;
+        public override bool HasAbilityToUseItem(DbItemTemplate item) => true;
+    }
+
+    [TestCase(typeof(ClassBard), false)]
+    [TestCase(typeof(ClassDruid), false)]
+    [TestCase(typeof(ClassChampion), false)]
+    [TestCase(typeof(ClassBlademaster), true)]
+    public void OnlyDualWieldClassesTakeAnOffhandWeapon(Type cls, bool offhand)
+    {
+        var bot = (ClassedBot)RuntimeHelpers.GetUninitializedObject(typeof(ClassedBot));
+        bot.Level = 20;
+        bot.Class = (ICharacterClass)Activator.CreateInstance(cls);
+        DbItemTemplate sword = LargeWeapon();
+        sword.Object_Type = (int)eObjectType.Blades;
+        sword.Item_Type = Slot.LEFTHAND;
+        sword.Hand = 0;
+        DbInventoryItem item = GameInventoryItem.Create(sword);
+        item.LevelRequirement = 1;
+
+        Assert.That(BotWeaponStats.CanWieldOffhandWeapon(bot), Is.EqualTo(offhand));
+        Assert.That(BotWeaponStats.FitsConfiguredSlot(bot, item, eInventorySlot.LeftHandWeapon), Is.EqualTo(offhand));
+        Assert.That(BotWeaponStats.FitsConfiguredSlot(bot, item, eInventorySlot.RightHandWeapon), Is.True);
+    }
+
+    [Test]
+    public void ChampionTrainedInLargeWeaponsFitsTheTwoHandedBuildBetterThanTheLevelOnePick()
+    {
+        var trained = new Dictionary<string, int>
+        {
+            [Specs.Large_Weapons] = 25, [Specs.Valor] = 25, [Specs.Blades] = 1,
+        };
+        int Fit(BotSpec plan)
+        {
+            BotLifetimeBuild.AlignWithInvestedWeapons(plan, line => trained.GetValueOrDefault(line));
+            return AccountCompanionRules.PlanFit(
+                plan.SpecLines.Select(line => new AccountCompanionRules.PlanLine(line.Spec, (int)line.SpecCap, line.levelRatio)),
+                line => trained.GetValueOrDefault(line));
+        }
+
+        BotSpec oneHand = new ChampionBotSpec(eSpecType.OneHandAndShield);
+        BotSpec twoHand = new ChampionBotSpec(eSpecType.TwoHanded);
+        Assert.That(oneHand.Is2H, Is.False);
+        Assert.That(twoHand.Is2H, Is.True);
+        Assert.That(Fit(twoHand), Is.GreaterThan(Fit(oneHand)));
+    }
+
     private sealed class MeleeEligibilityBot : GameBot
     {
         private MeleeEligibilityBot() : base((OfflineWorldBotRecord)null) { }
