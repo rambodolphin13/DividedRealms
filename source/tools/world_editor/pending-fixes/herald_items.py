@@ -175,16 +175,24 @@ class Herald:
         holders = [i for i in self.OFF for a in (i.get('abilities') or []) if a['spell'] == sid]
         holders.sort(key=lambda i: len(i.get('abilities') or []))
         blk = self.ability_block(holders[0], sid) if holders else ''
-        f, text = {}, []
+        f, text, sub, sub_text = {}, [], {}, []
+        target, target_text = f, text
         for line in blk.split('\n'):
             # "(Function: omni heal)" and "(Cures both Disease and Poison from the user.)" are short forms
             line = line.strip().lstrip('(').rstrip(')').strip()
+            if line == 'Sub-spell:':
+                # a proc's second spell has its own fields (2026-11-08: they used to fill the proc's gaps)
+                target, target_text = sub, sub_text
+                continue
             m = re.match(r'^([A-Za-z/ -]+):\s*(.+)$', line)
-            if m and m.group(1) not in f:
-                f[m.group(1).strip()] = m.group(2).strip()
+            if m and m.group(1) not in target:
+                target[m.group(1).strip()] = m.group(2).strip()
             elif line and not line.startswith('-'):
-                text.append(line)
+                target_text.append(line)
         f['_text'] = ' '.join(text)
+        if sub:
+            sub['_text'] = ' '.join(sub_text)
+            f['_sub'] = sub
         return f, self.META['abilities']['spell'].get(str(sid), '') or f['_text']
 
     def build_spell(self, sid):
@@ -242,7 +250,7 @@ class Herald:
             typ, row['Value'] = 'BaseArmorFactorBuff', num('Value')
         elif fn == 'accuracy boost':
             typ, row['Value'] = 'ToHitBuff', num('Value')
-        elif fn == 'skill buff':
+        elif fn == 'skill buff' and f.get('Skill raised', '').strip() in ('Flexible', 'Stealth'):
             # "Skill raised: Flexible, Bonus: 10%": the skill buff handlers add Value to the skill.
             typ = {'Flexible': 'FlexibleSkillBuff', 'Stealth': 'StealthSkillBuff'}.get(f.get('Skill raised', '').strip())
             row['Value'] = num('Bonus')
@@ -288,10 +296,11 @@ class Herald:
             return None, f'no spell type for {f.get("Resist decreased") or f.get("Skill raised")}'
         # Visuals and messages come from a row of the same type, or of a similar one for types no row uses yet.
         look = {'FlexibleSkillBuff': 'StrengthConstitutionBuff', 'StealthSkillBuff': 'StrengthConstitutionBuff',
-                'HealAllOverTime': 'HealOverTime'}.get(typ, typ)
+                'HealAllOverTime': 'HealOverTime', 'SpecSkillBuff': 'StrengthConstitutionBuff',
+                'DmgReductionAndPowerReturn': 'AblativeArmor'}.get(typ, typ)
         donor = next((s for k, s in sorted(self.spells.items()) if 800000 <= k < 820000 and s['Type'] in (typ, look)), None) or \
             next((s for k, s in sorted(self.spells.items()) if s['Type'] == typ and s['Target'] == target), None) or \
-            next((s for k, s in sorted(self.spells.items()) if s['Type'] == typ), None)
+            next((s for k, s in sorted(self.spells.items()) if s['Type'] == typ), None) or             next((s for k, s in sorted(self.spells.items()) if s['Type'] == look), None)
         if not donor:
             return None, f'no spell row of type {typ} to copy'
         title = (f.get('Function') or f.get('Effect') or typ).strip().title()
@@ -304,6 +313,7 @@ class Herald:
             row['Target'] = 'Group' if f.get('Target', '').strip() == 'Group' else 'Realm'
             row['Range'] = row['Range'] or 1500
         subs, multi = row.pop('_subs', []), row.pop('_multi', False)
+        proc, params = row.pop('_proc', False), row.pop('_params', [])
         new.update(row)
         new.update({'SpellID': 800000 + sid, 'Name': f'{title} ({sid})', 'Description': desc or title, 'Type': typ,
                     'PackageID': self.PKG, 'Spell_ID': f'offline-toa-item-{800000 + sid}', 'TooltipId': 0,
@@ -328,10 +338,14 @@ class Herald:
                         'Type': sub_typ, 'PackageID': self.PKG, 'Spell_ID': f'offline-item-{sub_id}', 'TooltipId': 0,
                         'LastTimeRowUpdated': f'{self.DATE} 00:00:00'})
             extra['spells'].append(sub)
-        if len(subs) == 1:
+        if proc:
+            # OffensiveProc / DefensiveProc cast the spell whose id is their Value
+            new['Value'] = float(extra['spells'][0]['SpellID'])
+        elif len(subs) == 1:
             new['SubSpellID'] = extra['spells'][0]['SpellID']
         elif subs:
             extra['custom'] = [s['SpellID'] for s in extra['spells']]
+        extra['params'] = list(params)
         self.extra_rows[800000 + sid] = extra
         return new, donor['SpellID']
 
@@ -346,6 +360,48 @@ class Herald:
             row.update({'Target': 'Enemy', 'Range': 0, 'Radius': int(num('Radius'))})
         elif target == 'Group':
             row.update({'Target': 'Group', 'Range': int(num('Range')) or 1500})
+        if fn == 'skill buff':
+            # "Increases your Sword by 10%": the description names the skill; the delve's "Skill raised" can show the
+            # weapon's own skill (3411 says Slash, the spell raises Dual Wield). SpecSkillBuff + BuffProperty.
+            m = re.search(r'Increases your ([A-Za-z ]+?) by (\d+)%', desc)
+            skill = (m.group(1) if m else f.get('Skill raised', '')).strip()
+            prop = SKILL.get(skill) or SKILL.get(skill.replace(' ', ''))
+            value = pct('Bonus') or (float(m.group(2)) if m else 0)
+            if not prop or not value:
+                return None
+            row.update({'Value': value, 'Target': 'Self', 'Range': 0})
+            row['_params'] = [('BuffProperty', prop)]
+            return 'SpecSkillBuff'
+        if fn in ('offensive proc', 'defensive proc') and f.get('_sub'):
+            # OffensiveProc / DefensiveProc: Value = the spell cast, Frequency = chance x 100 (826080 Harpy Talons)
+            sf = f['_sub']
+            snum = lambda k: float(re.match(r'[\d.]+', sf[k]).group(0)) if k in sf and re.match(r'[\d.]+', sf[k]) else 0
+            sub = {'Duration': self.seconds(sf.get('Duration', '')), 'CastTime': 0.0}
+            if sf.get('Effect') == 'Disarmed':
+                sub_typ = 'Disarm'
+                sub.update({'Target': 'Enemy', 'Range': int(snum('Range')) or 250})
+            elif sf.get('Function', '').lower() == 'resistance decrease' and sf.get('Resist decreased', '').strip() in DT:
+                kind = sf['Resist decreased'].strip()
+                sub_typ = f'{kind}ResistDebuff'
+                sub.update({'Value': snum('Base value of spell'), 'Target': 'Enemy', 'Range': int(snum('Range')) or 1500,
+                            'DamageType': DT[kind]})
+            elif 'temporarily absorb' in sf.get('_text', '') and snum('Absorption') and snum('Value'):
+                sub_typ = 'AblativeArmor'
+                sub.update({'Damage': snum('Absorption'), 'Value': snum('Value'), 'Target': 'Self', 'Range': 0})
+            else:
+                return None
+            chance = found(r'with a (\d+)% chance') or 10
+            row.update({'Frequency': int(chance * 100), 'Target': 'Self', 'Range': 0})
+            row['_subs'] = [(sub_typ, sub)]
+            row['_proc'] = True
+            return 'OffensiveProc' if fn == 'offensive proc' else 'DefensiveProc'
+        if f.get('Effect') == 'Stealth Lore' and num('Stealth bonus'):
+            row.update({'Value': num('Stealth bonus'), 'Target': 'Self', 'Range': 0})
+            return 'StealthSkillBuff'
+        if fn == 'bedazzled' and num('Chance to miscast') and not num('Chance to fumble'):
+            # no miscast handler: the world's own Bedazzled (826042) is a CastingSpeedDebuff of the same strength
+            row['Value'] = num('Chance to miscast')
+            return 'CastingSpeedDebuff'
         if fn.startswith('arrogance'):
             # 826061 Arrogance: ArtifactAllStats + ArmorAbsorptionBuff (826060) for the melee immunity
             stats = pct('Bonus to all stats') or found(r'a (\d+) bonus to all stats')

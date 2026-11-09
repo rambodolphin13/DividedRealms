@@ -24,6 +24,7 @@ sys.path.insert(0, HERE)
 from herald_items import Herald  # noqa: E402
 
 DATE = '2026-11-08'
+OUT_NAME = 'item-spells'
 NS = uuid.UUID('5c1e7f0a-2b9d-4c3e-8a61-7d4f2e9b1c08')
 REBUILD_PACKAGES = ('OfflineBountycraft', 'OfflineToANamedDrops')
 COMPARE = ('Type', 'Value', 'Damage', 'Duration', 'Target', 'Range', 'Radius', 'Frequency', 'DamageType', 'SubSpellID',
@@ -42,6 +43,7 @@ def main(db_path, zip_path, out_dir, *extra):
     spells = {r['SpellID']: dict(r) for r in con.execute('SELECT * FROM Spell')}
     line_x = {r[0] for r in con.execute("SELECT SpellID FROM LineXSpell WHERE LineName = 'Item Effects'")}
     custom = {(r[0], r[1]) for r in con.execute("SELECT SpellID, Value FROM SpellXCustomValues WHERE KeyName = 'MultipleSubSpells'")}
+    params = {(r[0], r[1]) for r in con.execute("SELECT SpellID, KeyName FROM SpellXCustomValues WHERE KeyName <> 'MultipleSubSpells'")}
     next_param = (con.execute('SELECT max(CustomParamID) FROM SpellXCustomValues').fetchone()[0] or 0) + 1
     # rules look up donor rows among the world's other spells, never among the rows being rebuilt
     donors = {k: v for k, v in spells.items() if v['PackageID'] not in REBUILD_PACKAGES}
@@ -69,6 +71,13 @@ def main(db_path, zip_path, out_dir, *extra):
                 edits.append({'table': 'SpellXCustomValues', 'insert': {'CustomParamID': next_param, 'SpellID': row['SpellID'],
                                                                          'KeyName': 'MultipleSubSpells', 'Value': str(sub_id)}})
                 custom.add((row['SpellID'], str(sub_id)))
+                next_param += 1
+        for key, value in h.extra_rows.get(row['SpellID'], {}).get('params', []):
+            # e.g. SpecSkillBuff's BuffProperty (the eProperty of the skill raised)
+            if (row['SpellID'], key) not in params:
+                edits.append({'table': 'SpellXCustomValues', 'insert': {'CustomParamID': next_param, 'SpellID': row['SpellID'],
+                                                                         'KeyName': key, 'Value': str(value)}})
+                params.add((row['SpellID'], key))
                 next_param += 1
 
     # 2. rebuild what the old parser built
