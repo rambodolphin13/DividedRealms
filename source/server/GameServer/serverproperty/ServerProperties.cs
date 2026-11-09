@@ -1461,6 +1461,13 @@ namespace DOL.GS.ServerProperties
 		public static int RELIC_PLAYERS_REQUIRED_ON_PAD;
 
 		/// <summary>
+		/// Owner 2026-11-09: a real player may take an enemy relic alone. Gamebots and companions still need
+		/// relic_players_required_on_pad, so autonomous bots cannot solo-steal relics.
+		/// </summary>
+		[ServerProperty("pvp", "relic_players_ignore_pad_count", "A real player can take an enemy relic from its pad without anyone else on the pad (bots and companions still need relic_players_required_on_pad). The own-relic rule, doors and guards still apply.", true)]
+		public static bool RELIC_PLAYERS_IGNORE_PAD_COUNT;
+
+		/// <summary>
 		/// Ignore too long outcoming packet or not
 		/// </summary>
 		[ServerProperty("pvp", "enable_minotaur_relics", "Shall we enable Minotaur Relics ?", false)]

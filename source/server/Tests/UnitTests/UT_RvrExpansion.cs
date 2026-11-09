@@ -400,6 +400,25 @@ public sealed class UT_RvrExpansion
     }
 
     [Test]
+    public void OnlyRealPlayersSkipTheRelicPadCount()
+    {
+        // Owner 2026-11-09: a player may take a relic alone; gamebots and companions still need the raiders on the pad.
+        var player = (RelicTestPlayer)RuntimeHelpers.GetUninitializedObject(typeof(RelicTestPlayer));
+        var bot = (GameBot)RuntimeHelpers.GetUninitializedObject(typeof(GameBot));
+        bool saved = DOL.GS.ServerProperties.Properties.RELIC_PLAYERS_IGNORE_PAD_COUNT;
+        try
+        {
+            DOL.GS.ServerProperties.Properties.RELIC_PLAYERS_IGNORE_PAD_COUNT = true;
+            Assert.That(GameRelic.PadCountApplies(player), Is.False);
+            Assert.That(GameRelic.PadCountApplies(bot), Is.True);
+            DOL.GS.ServerProperties.Properties.RELIC_PLAYERS_IGNORE_PAD_COUNT = false;
+            Assert.That(GameRelic.PadCountApplies(player), Is.True);
+            Assert.That(GameRelic.PadCountApplies(bot), Is.True);
+        }
+        finally { DOL.GS.ServerProperties.Properties.RELIC_PLAYERS_IGNORE_PAD_COUNT = saved; }
+    }
+
+    [Test]
     public void RealRelicPickupWorksWithoutAPlayerAndCannotHaveTwoCarriers()
     {
         // Exercise native inventory/custody logic with only the world/timer/DB

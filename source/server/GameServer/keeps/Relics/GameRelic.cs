@@ -40,6 +40,19 @@ namespace DOL.GS
         // A real GamePlayer is not an IGamePlayer (only GameBot is): with "as IGamePlayer" alone every real player's relic
         // click was refused as not-a-player with no message, and only bots could ever take a relic (DR-164, 2026-11-09).
         private static bool CanCarry(GameLiving living) => living is GamePlayer or IGamePlayer;
+
+        /// <summary>
+        /// Whether taking a mounted relic needs relic_players_required_on_pad raiders on the pad. GMs never do; a real
+        /// player does not while relic_players_ignore_pad_count is on (owner 2026-11-09); gamebots and companions always do.
+        /// </summary>
+        public static bool PadCountApplies(GameLiving taker)
+        {
+            if (taker is not GamePlayer human)
+                return true;
+            if (human.Client?.Account != null && (ePrivLevel)human.Client.Account.PrivLevel != ePrivLevel.Player)
+                return false;
+            return !Properties.RELIC_PLAYERS_IGNORE_PAD_COUNT;
+        }
         private static IGameInventory InventoryOf(GameLiving living) => living switch
         {
             GamePlayer player => player.Inventory,
@@ -169,7 +182,7 @@ namespace DOL.GS
                 }
             }
 
-            if (player is not GamePlayer human || (ePrivLevel)human.Client.Account.PrivLevel == ePrivLevel.Player)
+            if (PadCountApplies(player))
             {
                 int onPad = IsMounted ? CurrentRelicPad.GetEnemiesOnPad() : 0;
                 if (IsMounted && onPad < Properties.RELIC_PLAYERS_REQUIRED_ON_PAD)
