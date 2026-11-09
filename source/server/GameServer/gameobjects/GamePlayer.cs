@@ -6745,6 +6745,10 @@ namespace DOL.GS
                 if (Fishing.FishingCooking.TryUse(this, useItem))
                     return;
 
+                // The Bountycraft box of rare alchemy components.
+                if (BountyCraftItems.TryUse(this, useItem))
+                    return;
+
                 if (GameBoat.IsBoatItem(useItem.Id_nb))
                 {
                     GameBoat.Summon(this, useItem);
@@ -10519,6 +10523,7 @@ namespace DOL.GS
                                     case "ArmorCrafting": i = 2; break;
                                     case "SiegeCrafting": i = 3; break;
                                     case "Alchemy": i = 4; break;
+                                    case "BountyCrafting": i = 5; break;
                                     case "MetalWorking": i = 6; break;
                                     case "LeatherCrafting": i = 7; break;
                                     case "ClothWorking": i = 8; break;
@@ -10570,6 +10575,12 @@ namespace DOL.GS
                 {
                     if (log.IsErrorEnabled)
                         log.Error($"{Name}: error in loading playerCraftingSkills => {DBCharacter.SerializedCraftingSkills}", e);
+                }
+
+                // Bountycraft (1.125) is on every character at 1 and never rises; saves from before it lack the line.
+                lock (_craftingLock)
+                {
+                    m_craftingSkills[eCraftingSkill.BountyCrafting] = 1;
                 }
 
                 bool IsCraftingSkillDefined(int craftingSkillToCheck)
