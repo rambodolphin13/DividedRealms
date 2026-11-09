@@ -431,6 +431,9 @@ for i in ALL:
             if col.startswith('SpellID'):
                 k = col[len('SpellID'):]
                 ab[f'Charges{k}'] = ab[f'MaxCharges{k}'] = 0
+    for k in ('', '1'):   # a use ability with no charge count is unlimited (-1), like the Storm Regalia
+        if ab[f'SpellID{k}'] and not ab[f'MaxCharges{k}']:
+            ab[f'Charges{k}'] = ab[f'MaxCharges{k}'] = -1
     if is_cloak:
         ot, model, ext, model_from = 41, i.get('icon') or 0, 0, 'official icon = client cloak model'
         level, af, absorb, req = 50, 0, 0, 0
