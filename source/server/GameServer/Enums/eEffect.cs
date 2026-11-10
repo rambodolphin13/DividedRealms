@@ -262,6 +262,8 @@ namespace DOL.GS
         IgnoreBladeturn,
         GroupDDRadius,
         ControlShrug,
-        DiseaseWard
+        DiseaseWard,
+        // Cabalist pet sacrifice line (DR-094)
+        SimulacrumSacrifice
     }
 }

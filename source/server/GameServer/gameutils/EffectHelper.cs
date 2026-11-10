@@ -237,6 +237,8 @@ namespace DOL.GS
                     return eEffect.ControlShrug;
                 case eSpellType.DiseaseWard:
                     return eEffect.DiseaseWard;
+                case eSpellType.SimulacrumSacrifice:
+                    return eEffect.SimulacrumSacrifice;
                 case eSpellType.InCombatSpeed:
                     return eEffect.MovementSpeedBuff;
                 case eSpellType.Siegebreaker:
