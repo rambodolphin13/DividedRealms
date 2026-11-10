@@ -144,6 +144,12 @@ namespace DOL.GS.Spells
             return base.CheckEndCast(target);
         }
 
+        public override void FinishSpellCast(GameLiving target)
+        {
+            m_caster.Mana -= PowerCost(target); // the base handler leaves the power cost to each spell type
+            base.FinishSpellCast(target);
+        }
+
         public override bool StartSpell(GameLiving target)
         {
             if (!HasPetToSacrifice)
