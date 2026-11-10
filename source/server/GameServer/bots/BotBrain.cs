@@ -4775,15 +4775,14 @@ namespace DOL.AI.Brain
             _nextNecromancerCommandTick = GameLoop.GameLoopTime + (cast ? 750 : 2_000);
             return cast;
 
-            // A point-blank payload (Billowing Death and its ranks: range 0, radius 350) bursts around the servant, so
-            // the servant, not the shade, must stand by the target. It was sent from 1,500 away and hit nothing.
+            // The servant casts the payload, so the servant, not the shade, must be in reach of the target (ServantReach).
             bool ServantCanReach(GameLiving commandTarget, Spell wrapper)
             {
-                Spell payload = SkillBase.GetSpellByID(wrapper.SubSpellID);
-                if (payload == null || payload.Range > 0 || payload.Radius <= 0)
+                int reach = ServantReach(SkillBase.GetSpellByID(wrapper.SubSpellID));
+                if (reach <= 0)
                     return true;
                 return servant.CurrentRegionID == commandTarget.CurrentRegionID &&
-                       servant.IsWithinRadius(commandTarget, Math.Max(100, payload.Radius * 8 / 10));
+                       servant.IsWithinRadius(commandTarget, reach);
             }
 
             bool ServantPayloadNeedsApplication(GameLiving commandTarget, Spell wrapper)
@@ -4811,6 +4810,22 @@ namespace DOL.AI.Brain
         }
 
         /// <summary>Stat, resist, armor and speed debuffs (Shroud of Affliction, Vortex of Anguish and the like).</summary>
+        /// <summary>
+        /// How close the servant must stand to the target for a payload to land, 0 for no limit.
+        /// A point-blank payload (Billowing Death and its ranks: range 0, radius 350) bursts around the servant; it was
+        /// sent from 1,500 away and hit nothing. A ranged payload (the armor factor debuffs, range 1,500) is cast by the
+        /// servant from where it stands: with only the shade's distance checked it was refused as "target too far
+        /// (5079 > 1500)" all night (DR-253).
+        /// </summary>
+        public static int ServantReach(Spell payload)
+        {
+            if (payload == null)
+                return 0;
+            if (payload.Range > 0)
+                return payload.Range;
+            return payload.Radius > 0 ? Math.Max(100, payload.Radius * 8 / 10) : 0;
+        }
+
         public static bool IsServantDebuff(Spell payload) =>
             payload.SpellType == eSpellType.SpeedDecrease ||
             payload.SpellType.ToString().Contains("Debuff", StringComparison.Ordinal);
