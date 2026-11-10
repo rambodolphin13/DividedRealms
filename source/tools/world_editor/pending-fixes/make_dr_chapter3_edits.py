@@ -55,7 +55,7 @@ COUNTERPART = {
           'soremaiden of teugmhail': 'soremaiden of asteroth', "grimeil's soldier": "xaphan's soldier",
           "uamhas' brood": 'belials brood', "uamhas' child": "belial's child", 'aspect of uamhas': 'aspect of belial'},
 }
-RENAME = {'eye of babahogg': 'Eye of Banahogg', 'glamaim': 'Glaimaim'}       # Allakhazam page typos
+RENAME = {'eye of babahogg': 'Eye of Banahogg'}       # Allakhazam page typo. The Hibernian boss stays "Glamaim": the official Herald export spells him so (his minions are "Glaimaim's" on Allakhazam)
 # Named demons the three dungeons share; our Brimstone rows spell "Chtonic" and lack two of them.
 SHARED_FALLBACK = {'marquis grigori': 'marquis halphas', 'inquisitor mehalia': 'inquisitor admoreth'}
 SKIP = {"soltinn's implement", "grimeil's implement"}     # invisible encounter helpers (as Xaphan's implement in Albion)
