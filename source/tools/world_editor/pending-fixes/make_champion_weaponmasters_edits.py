@@ -198,7 +198,7 @@ def main():
         "Type": "HealAllOverTime", "Value": 4.0,
         "Description": "You regenerate 4% health, endurance and power every 5 seconds for 30 seconds."}})
     edits.append({"table": "Spell", "where": {"SpellID": 811098}, "set": {
-        "Type": "ArmorFactorBuff", "Target": "Pet", "Value": 15.0, "Damage": 0.0, "Duration": 300, "CastTime": 2.0,
+        "Type": "BaseArmorFactorBuff", "Target": "Pet", "Value": 15.0, "Damage": 0.0, "Duration": 300, "CastTime": 2.0,
         "Description": "Your pet's armor factor is increased by 15 for 5 minutes."}})
     created_spells = spells | {811086, 811087, 811088, 811089, 811090, 811093, 811094}
 
