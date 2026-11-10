@@ -3745,6 +3745,19 @@ namespace DOL.AI.Brain
                         }
                         else
                         {
+                            // A melee companion cannot reach a flyer hovering high over its floor (the DF door
+                            // tempters, DR-246): let it go and stay with the owner instead of climbing after it.
+                            if (livingTarget is GameNPC flyer &&
+                                BotAirborneTargetPolicy.CompanionDropsFlyer(BotBody.IsTemporaryGroupHelper,
+                                    BotBody.IsAutonomousWorldBot, false, flyer.Flags, flyer.Z, Body.Z))
+                            {
+                                RemoveFromAggroList(flyer);
+                                Body.StopAttack();
+                                Body.StopFollowing();
+                                Body.TargetObject = null;
+                                return;
+                            }
+
                             // Includes the class-level Savage override. A real
                             // melee weapon makes StartAttack close to the target
                             // instead of entering the ranged draw state. Repair
