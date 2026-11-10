@@ -3438,6 +3438,19 @@ namespace DOL.GS
             return true;
         }
 
+        // DR-203 (overnight 2026-11-10): with no reachable target in a verified-route camp the search below proved
+        // every candidate on every turn (the bot had moved, so the corridor cache missed): Wilienfrey's
+        // "Searching the blue element camp" turns ran 500 corridor checks and 1,000 straight paths, up to 1.16 s.
+        // Each search now proves at most a few candidates, and a candidate that failed waits before it is proved
+        // again. The 75-second empty-camp timer still moves the bot on when nothing is reachable.
+        public const int CampTargetRouteProofsPerSearch = 4;
+        public const long UnreachableCampTargetRetryMilliseconds = 20_000;
+        private readonly Dictionary<ushort, long> _unreachableCampTargets = new();
+        private long _nextUnreachableCampTargetPruneTick;
+
+        public static bool MayProveCampTarget(bool knownUnreachable, long retryTick, long nowTick, int proofsThisSearch) =>
+            (!knownUnreachable || nowTick >= retryTick) && proofsThisSearch < CampTargetRouteProofsPerSearch;
+
         private GameNPC FindCampTarget(GameBot bot)
         {
             bool savage = SavageBotCombatPolicy.MustMeleePull((eCharacterClass)bot.CharacterClass.ID);
@@ -3464,6 +3477,14 @@ namespace DOL.GS
                     _failedSoloPullRoutes.Remove(id);
                 _nextFailedSoloPullRoutePruneTick = nowTick + 10_000;
             }
+            if (nowTick >= _nextUnreachableCampTargetPruneTick)
+            {
+                foreach (ushort id in _unreachableCampTargets
+                    .Where(pair => pair.Value <= nowTick).Select(pair => pair.Key).ToArray())
+                    _unreachableCampTargets.Remove(id);
+                _nextUnreachableCampTargetPruneTick = nowTick + 10_000;
+            }
+            int routeProofs = 0;
             eCharacterClass searchClass = (eCharacterClass)(bot.CharacterClass?.ID ?? 0);
             bool canPullFromRange = BotSpellPower.IsOffensiveCaster(bot) ||
                 searchClass is eCharacterClass.Scout or eCharacterClass.Hunter or eCharacterClass.Ranger;
@@ -3523,11 +3544,19 @@ namespace DOL.GS
                             nowTick, bot.CurrentRegionID, originZoneId, targetZoneId, origin, target))
                         return false;
 
+                    bool knownUnreachable = _unreachableCampTargets.TryGetValue(npc.ObjectID, out long retryProofTick);
+                    if (!MayProveCampTarget(knownUnreachable, retryProofTick, nowTick, routeProofs))
+                        return false;
+                    routeProofs++;
                     bool reachable = AutonomousDungeonTargetRoute.CanReach(
                         PathfindingProvider.Instance, bot.CurrentZone, origin, target);
                     if (!reachable && (npc.Flags & GameNPC.eFlags.FLYING) != 0 &&
                         AutonomousDefensivePull.CanAttemptFlyingHandoff(bot, npc))
                         reachable = true;
+                    if (reachable)
+                        _unreachableCampTargets.Remove(npc.ObjectID);
+                    else
+                        _unreachableCampTargets[npc.ObjectID] = nowTick + UnreachableCampTargetRetryMilliseconds;
                     if (soloSavage)
                     {
                         if (reachable)

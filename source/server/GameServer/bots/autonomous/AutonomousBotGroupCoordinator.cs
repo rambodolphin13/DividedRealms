@@ -185,15 +185,34 @@ public static partial class AutonomousBotGroupCoordinator
         if (Interlocked.Read(ref _lastMaintenanceTick) == now || now < Interlocked.Read(ref _maintenanceRetryTick)) return;
         try
         {
+            // Each step is timed for SERVER_STALL (DR-203): they all run serially before any AI turn.
+            long step = AiTurnStallMonitor.SerialStart();
             RealmEventNotices.Pulse(now);
+            AiTurnStallMonitor.EndSerial("RealmEventNotices.Pulse", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousLivingServer.Pulse(now);
+            AiTurnStallMonitor.EndSerial("LivingServer.Pulse", step);
+            step = AiTurnStallMonitor.SerialStart();
             RealmEventControls.Pulse();
+            AiTurnStallMonitor.EndSerial("RealmEventControls.Pulse", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousRealmRaid.Pulse(now);
+            AiTurnStallMonitor.EndSerial("RealmRaid.Pulse", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousRealmRaid.RecruitForcedParty(now);
+            AiTurnStallMonitor.EndSerial("RealmRaid.RecruitForcedParty", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousEpicSpecialForces.Pulse(now);
+            AiTurnStallMonitor.EndSerial("EpicSpecialForces.Pulse", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousRvrEventLayer.PulseDefense(now);
+            AiTurnStallMonitor.EndSerial("RvrEventLayer.PulseDefense", step);
+            step = AiTurnStallMonitor.SerialStart();
             RealmWarbandSupport.Pulse(now);
+            AiTurnStallMonitor.EndSerial("RealmWarbandSupport.Pulse", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousObjectiveAssignments.ReconcileIfDue();
+            AiTurnStallMonitor.EndSerial("ObjectiveAssignments.ReconcileIfDue", step);
             lock (Sync)
             {
                 if (_lastMaintenanceTick == now) return;
@@ -204,10 +223,16 @@ public static partial class AutonomousBotGroupCoordinator
                 if (now >= _nextBrokenSessionSweep)
                 {
                     _nextBrokenSessionSweep = now + BrokenSessionSweepMilliseconds;
+                    step = AiTurnStallMonitor.SerialStart();
                     RemoveBrokenSessions();
+                    AiTurnStallMonitor.EndSerial("GroupCoordinator.RemoveBrokenSessions", step);
                 }
+                step = AiTurnStallMonitor.SerialStart();
                 FormSiegeParties();
+                AiTurnStallMonitor.EndSerial("GroupCoordinator.FormSiegeParties", step);
+                step = AiTurnStallMonitor.SerialStart();
                 TryFormGroups();
+                AiTurnStallMonitor.EndSerial("GroupCoordinator.TryFormGroups", step);
             }
         }
         catch (Exception exception)

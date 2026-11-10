@@ -24,11 +24,20 @@ namespace DOL.GS
 
         public override void Tick()
         {
+            // Serial steps before the parallel brain dispatch are timed for SERVER_STALL (DR-203).
+            long step = AiTurnStallMonitor.SerialStart();
             ProcessPostedActionsParallel();
+            AiTurnStallMonitor.EndSerial("NpcService.PostedActions", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousBotRegistry.PrepareBrainTick();
+            AiTurnStallMonitor.EndSerial("BotRegistry.PrepareBrainTick", step);
             AutonomousWorldBotController.PrepareRvrPlanningTick();
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousBotGroupCoordinator.PrepareCoordinatorTick();
+            AiTurnStallMonitor.EndSerial("GroupCoordinator.PrepareCoordinatorTick", step);
+            step = AiTurnStallMonitor.SerialStart();
             AutonomousWorldBotController.PrepareCampPlanningTick();
+            AiTurnStallMonitor.EndSerial("CampPlanning.PrepareCampPlanningTick", step);
             int lastValidIndex;
 
             try
@@ -43,7 +52,10 @@ namespace DOL.GS
                 return;
             }
 
+            step = AiTurnStallMonitor.SerialStart();
             GameLoop.ExecuteForEach(_list, lastValidIndex + 1, TickInternal);
+            // The whole parallel dispatch; compare it with the slowest single turn in the same SERVER_STALL line.
+            AiTurnStallMonitor.EndSerial("NpcService.BrainDispatch", step);
 
             if (Diagnostics.CheckServiceObjectCount)
                 Diagnostics.PrintServiceObjectCount(ServiceName, ref EntityCount, _list.Count);
