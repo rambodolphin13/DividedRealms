@@ -60,7 +60,7 @@ def main():
         edits.append({"table": "ZonePoint", "key": key, "insert": {
             "Id": pid, "TargetX": tx, "TargetY": ty, "TargetZ": tz, "TargetRegion": treg, "TargetHeading": th or 0,
             "SourceX": sx or 0, "SourceY": sy or 0, "SourceZ": sz or 0, "SourceRegion": sreg or 0, "Realm": realm or 0,
-            "ClassType": "" if ctype in ("0", None) else ctype, "ZonePoint_ID": key}})
+            "ClassType": "" if ctype in ("0", None) else ctype.replace("DOL.GS.Scripts.AdventureWingJumpPoint", "DOL.GS.ServerRules.AdventureWingJumpPoint"), "ZonePoint_ID": key}})
         covered.add(pid)
 
     Path(a.out).write_text(json.dumps(edits, indent=1), encoding="utf-8")
