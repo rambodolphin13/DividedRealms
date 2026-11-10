@@ -751,12 +751,7 @@ namespace DOL.GS
                         return false;
                     }
 
-                    if (item.Type_Damage > m_player.ChampionLevel)
-                    {
-                        m_player.Out.SendMessage($"You can't use {item.GetName(0, true)}, you should increase your champion level.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                        return false;
-                    }
-
+                    // No Champion Level requirement on items (owner rule): mythirians are not gated by Type_Damage.
                     break;
                 }
                 case eInventorySlot.HorseBarding:

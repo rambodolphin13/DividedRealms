@@ -4589,6 +4589,8 @@ namespace DOL.GS
         public virtual void OnLevelUp(int previouslevel)
         {
             MasterLevelRules.EnsureTraining(this);
+            if (previouslevel < MAX_LEVEL)
+                ChampionRules.RemindToVisitKing(this);
             IsLevelSecondStage = false;
             int isHardcore = 0;
             int realm = 0;
