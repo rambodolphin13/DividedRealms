@@ -3571,6 +3571,15 @@ namespace DOL.GS
         }
 
         /// <summary>
+        /// Whether the Bonedancer plan migration may touch this bot's lines. Never an account companion
+        /// (DR-243): its levels are the owner's own training, and a second line above 1 would read as a
+        /// legacy spread and be re-spent into the bot plan's primary. Never an autonomous bot with a saved
+        /// lifetime build either: that is not a maintenance-time respec opportunity.
+        /// </summary>
+        public static bool BonedancerPlanMigrationApplies(bool isAccountCompanion, bool isAutonomousWorldBot, string savedBuildPlan) =>
+            !isAccountCompanion && !(isAutonomousWorldBot && !string.IsNullOrWhiteSpace(savedBuildPlan));
+
+        /// <summary>
         /// Migrates an already-running Bonedancer from the legacy mixed-ratio
         /// plan to the focused 50-point primary/secondary plan.  This changes
         /// only the future allocation policy; the current specialization
@@ -3578,8 +3587,8 @@ namespace DOL.GS
         /// </summary>
         internal void EnsureBonedancerFocusedSpecPlan()
         {
-            if (IsAutonomousWorldBot && !string.IsNullOrWhiteSpace(PersistentRecord?.SerializedBuildPlan))
-                return; // A saved lifetime build is not a maintenance-time respec opportunity.
+            if (!BonedancerPlanMigrationApplies(IsAccountCompanion, IsAutonomousWorldBot, PersistentRecord?.SerializedBuildPlan))
+                return;
             if (CharacterClass?.ID != (int)eCharacterClass.Bonedancer || BotSpec == null)
                 return;
 
