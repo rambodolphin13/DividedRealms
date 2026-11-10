@@ -254,6 +254,20 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void PerfecterFontsGiveTheFullRateInCombat()
+        {
+            // DR-258: Sphere of Rejuvenation (63032) and Font of Power (63034) no longer halve for allies in combat.
+            foreach (int id in new[] { 63032, 63034 })
+            {
+                var spell = new Spell(new DbSpell { SpellID = id, Type = "MasterLevelAbility", Target = "Self", Radius = 500, Duration = 600, Frequency = 40, Value = 5 }, 1);
+                Assert.That(MasterLevelAbilities.FontPercent(spell), Is.EqualTo(10));
+                string text = MasterLevelAbilities.For(id).Describe(spell);
+                Assert.That(text, Does.Contain("10%").And.Contain("in or out of combat"));
+                Assert.That(text, Does.Not.Contain("double out of combat"));
+            }
+        }
+
+        [Test]
         public void PassiveIconsArePermanent()
         {
             var owner = NewActor(eRealm.Midgard);

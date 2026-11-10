@@ -877,6 +877,9 @@ namespace DOL.GS.Spells
             });
         }
 
+        /// <summary>Percent a Perfecter font restores per pulse: twice the spell's Value, the same in or out of combat (DR-258).</summary>
+        public static int FontPercent(Spell spell) => (int)spell.Value * 2;
+
         private static void PlaceField(MasterLevelAbilityHandler h, MasterLevelFieldOptions options)
         {
             if (h.GroundPoint(out Point3D at))
@@ -915,11 +918,12 @@ namespace DOL.GS.Spells
             Add(new MLAbility
             {
                 Path = "Perfecter", Level = 3, Ground = true, Positive = true,
-                Describe = s => $"Font ({Sec(s) / 60} min, {s.Radius} radius): every 4 s heals allies inside for {s.Value}% of their health, double out of combat.",
+                // DR-258: fonts work at full strength in combat too (the old rate halved them for anyone fighting).
+                Describe = s => $"Font ({Sec(s) / 60} min, {s.Radius} radius): every 4 s heals allies inside for {FontPercent(s)}% of their health, in or out of combat.",
                 Run = (h, _) => PlaceField(h, new MasterLevelFieldOptions
                 {
                     Friendly = true, Model = 2585, Name = "Sphere of Rejuvenation", PulseEffect = 7245,
-                    OnPulse = (f, ally) => f.Ability.Heal(ally, ally.MaxHealth * (int)f.Ability.Spell.Value * (ally.InCombat ? 1 : 2) / 100)
+                    OnPulse = (f, ally) => f.Ability.Heal(ally, ally.MaxHealth * FontPercent(f.Ability.Spell) / 100)
                 })
             });
             Add(new MLAbility
@@ -930,13 +934,13 @@ namespace DOL.GS.Spells
             Add(new MLAbility
             {
                 Path = "Perfecter", Level = 5, Ground = true, Positive = true,
-                Describe = s => $"Font ({Sec(s) / 60} min, {s.Radius} radius): every 4 s restores {s.Value}% power and endurance to allies inside, double out of combat.",
+                Describe = s => $"Font ({Sec(s) / 60} min, {s.Radius} radius): every 4 s restores {FontPercent(s)}% power and endurance to allies inside, in or out of combat.",
                 Run = (h, _) => PlaceField(h, new MasterLevelFieldOptions
                 {
                     Friendly = true, Model = 2583, Name = "Font of Power", PulseEffect = 7212,
                     OnPulse = (f, ally) =>
                     {
-                        int percent = (int)f.Ability.Spell.Value * (ally.InCombat ? 1 : 2);
+                        int percent = FontPercent(f.Ability.Spell);
                         MasterLevelAbilityHandler.Restore(f.StormOwner, ally, percent, percent, f.Ability.Spell.Name);
                     }
                 })
