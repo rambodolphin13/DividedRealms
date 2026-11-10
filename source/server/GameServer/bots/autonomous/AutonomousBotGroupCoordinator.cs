@@ -137,6 +137,8 @@ public static partial class AutonomousBotGroupCoordinator
         /// <summary>Wipes this party had (AutonomousBotBonds remembers them).</summary>
         public int Wipes { get; set; }
         public long? NoCampSinceTick { get; set; }
+        // When the party entered "Choosing group target" with no camp (0 = not waiting). See TargetChoiceDeadlineMilliseconds.
+        public long ChoosingTargetSinceTick { get; set; }
         public AutonomousGroupRecoveryState Recovery { get; } = new();
         public bool RecoveryRendezvousChosen { get; set; }
         public long NextRecoveryReadinessTick { get; set; }
@@ -1133,6 +1135,13 @@ public static partial class AutonomousBotGroupCoordinator
     public static string PhaseAfterCasualty(string previousPhase, bool regrouping) =>
         regrouping ? "Regrouping" : previousPhase is "Traveling" or "Grinding" or "Choosing group target"
             ? previousPhase : "Traveling";
+
+    // Five minutes: ReportNoAvailableCamp's own two-minute retry window plus room for the camp catalog and
+    // lower-level fallbacks. A healthy leader publishes a camp within seconds of the party assembling.
+    public const long TargetChoiceDeadlineMilliseconds = 5 * 60_000;
+
+    public static bool HasTargetChoiceTimedOut(long choosingSinceTick, long nowTick) =>
+        choosingSinceTick > 0 && nowTick - choosingSinceTick >= TargetChoiceDeadlineMilliseconds;
 
     public static bool HasLeaderStagingTimedOut(string phase, long deadlineTick, long nowTick) =>
         phase == "Leader staging" && deadlineTick > 0 && nowTick >= deadlineTick;
@@ -2319,6 +2328,30 @@ public static partial class AutonomousBotGroupCoordinator
             Log.Info($"AUTONOMOUS_GROUP_ASSEMBLED group={session.Id} realm={members[0].Realm} size={members.Length} " +
                      $"members=\"{string.Join(",", members.Select(member => member.Name))}\" " +
                      $"region={members[0].CurrentRegionID} rendezvous={(int)session.Rendezvous.X},{(int)session.Rendezvous.Y},{(int)session.Rendezvous.Z}");
+        }
+
+        // DR-252 (overnight 2026-11-10): a PvE party assembled in Vale of Mularn and its leader never published a
+        // camp, so the party stood in formation for 8.5 hours. The PvE task clock starts only with the first camp,
+        // ReportNoAvailableCamp needs the leader's own turn to call it, and the stuck watchdog skips formation holds
+        // because "the coordinator has its own deadline". This is that deadline, kept here so it runs on any
+        // member's pulse. Group combat counts as progress and restarts the wait.
+        if (session.ObjectiveKind == eAutonomousObjectiveKind.GroupPve && raidView == null)
+        {
+            bool waitingForTarget = session.Phase == "Choosing group target" && session.Camp == null && !groupCombatActive;
+            session.ChoosingTargetSinceTick = waitingForTarget
+                ? session.ChoosingTargetSinceTick > 0 ? session.ChoosingTargetSinceTick : GameLoop.GameLoopTime
+                : 0;
+            if (HasTargetChoiceTimedOut(session.ChoosingTargetSinceTick, GameLoop.GameLoopTime))
+            {
+                GameBot chooser = ChooseLeader(session, members);
+                Log.Warn($"AUTONOMOUS_GROUP_TARGET_CHOICE_TIMEOUT group={session.Id} leader=\"{chooser?.Name}\" " +
+                         $"waitedSeconds={(GameLoop.GameLoopTime - session.ChoosingTargetSinceTick) / 1000} " +
+                         $"leaderActivity=\"{chooser?.PersistentRecord?.Activity}\" leaderCasting={chooser?.IsCasting} " +
+                         $"leaderAlive={chooser?.IsAlive} taskStarted={session.TaskClock.HasStarted} size={members.Length}");
+                FinishGroupTask(session,
+                    $"The leader chose no group target within {TargetChoiceDeadlineMilliseconds / 60_000} minutes of the party forming up");
+                return false;
+            }
         }
 
         WriteSessionMetadata(session, members);
