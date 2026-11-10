@@ -555,5 +555,7 @@ namespace DOL.GS
         SelfStealth,
         InCombatSpeed,
         CharmableDecoy,
+        // Cabalist pet sacrifice line (DR-094, spells/Cabalist/SimulacrumSacrifice.cs)
+        SimulacrumSacrifice,
     }
 }

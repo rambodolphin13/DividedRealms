@@ -1589,6 +1589,7 @@ namespace DOL.GS
             RealmAbilities.ModernRr5.OnAttacked(this, ad);
             RealmAbilities.ModernRr5.ModifyIncoming(this, ad);
             Spells.LiveRound7.OnAttacked(this, ad);
+            Spells.SimulacrumSacrificeSpellHandler.OnAttacked(this, ad); // Cabalist pet sacrifice (DR-094)
             Spells.DamageReductionSpellHandler.Reduce(this, ad);
             HandleAblatives(ad);
             Spells.DamageReflectionSpellHandler.OnAttacked(this, ad);
