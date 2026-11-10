@@ -789,6 +789,12 @@ namespace DOL.GS
                     if (PathfindingProvider.Instance.HasLineOfSight(zone, _ownerPosition, destination, filters))
                     {
                         ClearAutonomousPathFailure();
+                        // A walking bot never walks on up into the air to a hovering target (DR-246). A swimming
+                        // bot keeps its mid-water end: the floor under it is the sea bed.
+                        if (Owner is GameBot walker && (Owner.Flags & (GameNPC.eFlags.FLYING | GameNPC.eFlags.SWIMMING)) == 0 &&
+                            !BotPlayerPresentation.Swimming(walker))
+                            destination = BotAirborneTargetPolicy.GroundedWalkEnd(destination,
+                                PathfindingProvider.Instance.GetFloorBeneath(zone, destination, 3000, PathfindingProvider.Instance.DefaultFilters));
                         FallbackToWalk(this, destination, speed);
                     }
                     else
