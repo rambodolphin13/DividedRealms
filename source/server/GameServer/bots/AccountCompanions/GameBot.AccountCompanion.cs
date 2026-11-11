@@ -127,6 +127,9 @@ namespace DOL.GS
         /// forever: a Champion trained in Large Weapons kept a one-hand Blades plan, refused
         /// its two-handed sword and made a starter blade. Same rule for every class.
         /// </summary>
+        private const int CompanionBuildQuietRolls = 64; // rolls without a new build before a choice counts as seen
+        private const int CompanionBuildMaxRolls = 512;
+
         public static BotSpec PickCompanionBuild(eCharacterClass characterClass, string savedPlan, string style,
             Func<string, int> trained, out bool replaced)
         {
@@ -142,13 +145,18 @@ namespace DOL.GS
             {
                 if (hasStyle && choice != wanted)
                     continue;
-                // Builds include random weapon and variance rolls. Several rolls give the
-                // best match a fair chance to appear.
-                for (int roll = 0; roll < 8; roll++)
+                // Builds include random weapon and variance rolls, so a choice is rolled until it stops
+                // showing new builds. Eight rolls missed one build in six a quarter of the time (a Bard
+                // trained in Blades kept a plan without Blades, DR-231).
+                var seen = new HashSet<string>();
+                for (int roll = 0, sinceNew = 0; roll < CompanionBuildMaxRolls && sinceNew < CompanionBuildQuietRolls; roll++, sinceNew++)
                 {
                     BotSpec candidate = BotSpec.GetSpec(characterClass, choice);
                     if (candidate == null)
+                        break;
+                    if (!seen.Add(BotLifetimeBuild.Encode(candidate)))
                         continue;
+                    sinceNew = -1;
                     BotLifetimeBuild.AlignWithInvestedWeapons(candidate, trained);
                     int fit = AccountCompanionRules.PlanFit(PlanLines(candidate), trained);
                     if (fit > bestFit)
