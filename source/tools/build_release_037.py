@@ -55,7 +55,7 @@ QUEST_RESPAWN_SECONDS = 300
 # Personal or run-state files that are never part of a public world.
 EXCLUDED_DIRS = {"logs", "backups", "dxvk-staging", "deployment-backups", "keep-relic-reset-backups", "progress-backups",
                  "screenshots", ".git", "testresults", "dumps"}
-EXCLUDED_NAMES = {"account.txt", "rvr-world.json", "bot-goals.json", "bot-world.json", "bot-world.request", "bot-ai-delay.json",
+EXCLUDED_NAMES = {"account.txt", "accounts.txt", "rvr-world.json", "bot-goals.json", "bot-world.json", "bot-world.request", "bot-ai-delay.json",
                   "realm-events.request.json", "realm-events.result.json", "realm-event-records.sqlite3",
                   "realm-event-records.sqlite3-wal", "realm-event-records.sqlite3-shm", "errorlog.txt",
                   "debug.log", "chat.log", "user.dat", "unins000.exe", "unins000.dat", "uninstdaoc.exe",
@@ -67,7 +67,7 @@ EXCLUDED_SUFFIXES = (".log", ".dmp", ".gcdump", ".bak", ".sqlite3.db", ".sqlite3
                      ".sqlite3.db-journal")
 # Must never be anywhere in the runtime that ships (checked after the copy).
 FORBIDDEN_SUFFIXES = (".on", ".off", ".dmp", ".gcdump", ".log")
-FORBIDDEN_NAMES = {"d3d9.dll", "dxvk.conf", "account.txt", "claude_test_account.txt", "dev_mode.txt"}
+FORBIDDEN_NAMES = {"d3d9.dll", "dxvk.conf", "account.txt", "accounts.txt", "claude_test_account.txt", "dev_mode.txt"}
 REQUIRED_FILES = ("server/navmesh/roads.json", "server/navmesh/seams.json", "server/navmesh/pockets.json",
                   "server/GameServer.dll", "server/CoreServer.exe", "client-opendaoc/app/game.dll", "OfflineDAoC.exe",
                   # Abermenai's terrain, missing from the stock client (add_abermenai_terrain.py)

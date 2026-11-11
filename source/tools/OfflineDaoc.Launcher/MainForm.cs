@@ -88,7 +88,8 @@ internal sealed partial class MainForm : Form
     private readonly ComboBox _playerXpRate = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 108 };
     private readonly ComboBox _botXpRate = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 108 };
     private readonly CheckBox _botDiagnostics = new() { Text = "Bot AI diagnostics", AutoSize = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
-    private readonly CheckBox _makeMeGm = new() { Text = "Make Me a GM", AutoSize = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
+    private Button? _accountsEntry;
+    private readonly CheckBox _makeMeGm =new() { Text = "Make Me a GM", AutoSize = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
     private readonly CheckBox _rvrAnnouncements = new() { Text = "RvR and battleground announcements", AutoSize = true, Checked = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
     private readonly CheckBox _pveAnnouncements = new() { Text = "PvE realm event announcements", AutoSize = true, Checked = true, ForeColor = DaocTheme.Parchment, Font = new Font("Georgia", 9f, FontStyle.Bold) };
     private readonly Label _xpSettingsStatus = new()
@@ -451,6 +452,9 @@ internal sealed partial class MainForm : Form
         TabPage Page(string text) => _pages!.TabPages.Cast<TabPage>().Single(page => page.Text == text);
         var sidebar = new LauncherSidebar(_pages!) { Dock = DockStyle.Fill, Margin = new Padding(2, 0, 4, 0) };
         sidebar.AddPage("Play", Page("Home"));
+        _accountsEntry = sidebar.AddAction("Accounts", ShowAccounts);
+        SetToolTip(_accountsEntry, "Make more accounts and choose the one Play logs in with. Each account has its own characters.");
+        ShowAccountInSidebar();
         sidebar.AddSection("World");
         sidebar.AddPage("Population", Page("Active Population"));
         sidebar.AddPage("Groups", Page("Active Groups"));
@@ -2204,6 +2208,51 @@ internal sealed partial class MainForm : Form
         PersistGmSetting(connection, account, enabled);
     }
 
+    // "Make Me a GM" belongs to the account in use, whichever one that is (Accounts): with the server stopped, give it
+    // GM now. Called at every server start, so an account the server made on its first login gets GM from the next start.
+    private void ApplyGmToAccountInUse()
+    {
+        try
+        {
+            if (!File.Exists(_database) || IsServerRunning() || FindExactServerProcess() is not null)
+                return;
+            using var connection = new SQLiteConnection($"Data Source={_database};Version=3;Pooling=False;Default Timeout=10");
+            connection.Open();
+            ApplyGmToAccount(connection, ReadCredentials().Account);
+        }
+        catch (Exception ex) { Debug.WriteLine("GM for the account in use: " + ex.Message); }
+    }
+
+    internal static int ApplyGmToAccount(SQLiteConnection connection, string account)
+    {
+        if (!TableExists(connection, "offline_local_options") || !TableExists(connection, "Account"))
+            return 0;
+        using var command = connection.CreateCommand();
+        command.CommandText = "UPDATE Account SET PrivLevel=2 WHERE Name=@account AND PrivLevel<2 AND EXISTS " +
+                              "(SELECT 1 FROM offline_local_options WHERE Key='MakeMeGM' AND lower(Value)='true')";
+        command.Parameters.AddWithValue("@account", account);
+        return command.ExecuteNonQuery();
+    }
+
+    private void ShowAccounts()
+    {
+        using var form = new AccountsForm(_root);
+        form.Switched += _ =>
+        {
+            ApplyGmToAccountInUse();
+            ShowAccountInSidebar();
+        };
+        form.ShowDialog(this);
+        ShowAccountInSidebar();
+    }
+
+    private void ShowAccountInSidebar()
+    {
+        if (_accountsEntry is null) return;
+        try { _accountsEntry.Text = "Account: " + ReadCredentials().Account; }
+        catch (Exception) { _accountsEntry.Text = "Accounts"; }
+    }
+
     private static void PersistGmSetting(SQLiteConnection connection, string account, bool enabled)
     {
         using var transaction = connection.BeginTransaction();
@@ -3341,6 +3390,7 @@ internal sealed partial class MainForm : Form
             MessageBox.Show(this, "Correct Bot Goals Setting before starting:\n" + ex.Message, "Invalid bot goals");
             return;
         }
+        ApplyGmToAccountInUse();
         if (!File.Exists(_serverExecutable))
         {
             MessageBox.Show(this, "The compiled server package is missing.", "Cannot start", MessageBoxButtons.OK, MessageBoxIcon.Error);

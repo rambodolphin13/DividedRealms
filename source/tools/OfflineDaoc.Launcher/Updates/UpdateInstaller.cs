@@ -15,7 +15,7 @@ public static class PlayerFiles
     private static readonly string[] DataFiles =
     [
         "runtime/data/opendaoc.sqlite3.db", "runtime/data/opendaoc.sqlite3.db-wal", "runtime/data/opendaoc.sqlite3.db-shm",
-        "runtime/data/opendaoc.sqlite3.db-journal", "runtime/account.txt",
+        "runtime/data/opendaoc.sqlite3.db-journal", "runtime/account.txt", "runtime/accounts.txt",
     ];
 
     /// <summary>Folders an update never writes into: saves' backups, logs, the client copy, the updater's own folder.</summary>
