@@ -962,6 +962,30 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("rates", "kill_rp_bonus_percent", "Extra realm points, in percent, for killing a player or gamebot, applied before any other bonus. Live is 25 since 1.124; 0 turns it off.", 25)]
 		public static int KILL_RP_BONUS_PERCENT;
 
+		[ServerProperty("rates", "heal_rp_percent", "Realm points for healing a realm mate who is in RvR combat with a single target or group heal, in percent of the hit points restored. Live is about 5 since 1.81; 0 turns it off.", 5)]
+		public static int HEAL_RP_PERCENT;
+
+		[ServerProperty("rates", "mez_rp_pool_percent", "A mesmerize on an enemy player counts as this percent of the target's health in the kill's damage pool. Live is 5 since 1.81; 0 turns it off.", 5)]
+		public static int MEZ_RP_POOL_PERCENT;
+
+		[ServerProperty("rates", "stun_rp_pool_percent", "A stun on an enemy player counts as this percent of the target's health in the kill's damage pool. Live is 10 since 1.81; 0 turns it off.", 10)]
+		public static int STUN_RP_POOL_PERCENT;
+
+		[ServerProperty("rates", "repair_rp_percent", "Realm points for repairing a keep door or outpost piece, in percent of the hit points repaired. Live is about 10 since 1.81; 0 turns it off.", 10)]
+		public static int REPAIR_RP_PERCENT;
+
+		[ServerProperty("rates", "repair_rp_cap", "Most realm points one repair can pay.", 150)]
+		public static int REPAIR_RP_CAP;
+
+		[ServerProperty("rates", "underpopulated_rp_bonus", "Outnumbered realms earn +10% to +100% realm points on kills (1.122b), counted in New Frontiers every 15 minutes.", true)]
+		public static bool UNDERPOPULATED_RP_BONUS;
+
+		[ServerProperty("rates", "siege_contribution_keep_percent", "Percent of kill realm points earned at a keep under siege that is paid again when the keep is taken or defended (1.121: 50). 0 turns it off.", 50)]
+		public static int SIEGE_CONTRIBUTION_KEEP_PERCENT;
+
+		[ServerProperty("rates", "siege_contribution_tower_percent", "Percent of kill realm points earned at a tower under siege that is paid again when the tower is taken or defended (1.121: 20). 0 turns it off.", 20)]
+		public static int SIEGE_CONTRIBUTION_TOWER_PERCENT;
+
 		/// <summary>
 		/// Health Regen Rate
 		/// </summary>
@@ -1655,13 +1679,13 @@ namespace DOL.GS.ServerProperties
 		/// <summary>
 		/// Base RP value of a keep
 		/// </summary>
-		[ServerProperty("keeps", "keep_rp_base", "Base RP value of a keep", 0)] // Previously 4500.
+		[ServerProperty("keeps", "keep_rp_base", "Base RP value of a keep", 4500)] // Atlas had zeroed it; back to 4500 (DR-179).
 		public static int KEEP_RP_BASE;
 
 		/// <summary>
 		/// Base RP value of a tower
 		/// </summary>
-		[ServerProperty("keeps", "tower_rp_base", "Base RP value of a tower", 0)] // Previously 500.
+		[ServerProperty("keeps", "tower_rp_base", "Base RP value of a tower", 500)] // Atlas had zeroed it; back to 500 (DR-179).
 		public static int TOWER_RP_BASE;
 
 		/// <summary>

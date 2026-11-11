@@ -2215,6 +2215,7 @@ namespace DOL.GS.ServerRules
                     realmPoints = (int) (realmPoints * (1.0 + 2.0 * (killedPlayer.RealmLevel - playerToAward.RealmLevel) / 900.0));
 
                 realmPoints += CalculateGroupBonus();
+                realmPoints = RvrRealmPointRules.OnKillRealmPoints(playerToAward, realmPoints); // outnumbered realm bonus, siege pool (DR-181, DR-182)
 
                 if (realmPoints > 0)
                     playerToAward.GainRealmPoints(realmPoints, true);
@@ -2617,7 +2618,7 @@ namespace DOL.GS.ServerRules
             else
             {
                 rpBase = Properties.TOWER_RP_BASE;
-                rpMultiplier = Properties.TOWER_RP_CLAIM_MULTIPLIER;
+                rpMultiplier = Properties.TOWER_RP_MULTIPLIER; // was the claim multiplier (100) by mistake (DR-179)
             }
 
             int value = rpBase + (keep.BaseLevel - 50) * rpMultiplier;
