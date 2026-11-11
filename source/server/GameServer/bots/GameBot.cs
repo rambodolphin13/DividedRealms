@@ -1270,6 +1270,8 @@ namespace DOL.GS
             release ??= _deathLocation;
             if (IsAutonomousWorldBot)
                 AutonomousLivingServer.OnBotReleasing(this);
+            // beside a bindstone, never on it (owner 2026-11-10: bots stood up on top of Huginfell's stone)
+            release = BotReleaseBindPoints.BesideBindstone(releaseRegion, release, unchecked((int)DatabaseID ^ Environment.TickCount));
             // Transfer the corpse first: a failed MoveTo must not revive the bot
             // at its killer or cause HandleDeathRecovery to discard its timer.
             if (!MoveCorpseForRelease(releaseRegion, release.X, release.Y, release.Z, Heading))
