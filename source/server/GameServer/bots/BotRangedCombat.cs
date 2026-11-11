@@ -211,6 +211,26 @@ namespace DOL.GS
         /// damage from exactly these), so a bot of the class starts with that kind before any other it could use. Null: the
         /// realm's bow order decides.
         /// </summary>
+        /// <summary>
+        /// The reach of the bot's bow or crossbow without drawing it (the weapon table and archery range bonus; ammunition
+        /// and height left out, which errs short). True 1.65 0.5, 07cb3a860.
+        /// </summary>
+        public static int EstimatedRange(GameBot bot)
+        {
+            DbInventoryItem bow = bot?.Inventory?.GetItem(eInventorySlot.DistanceWeapon);
+            if (bow == null)
+                return 0;
+            double range = (eObjectType)bow.Object_Type switch
+            {
+                eObjectType.Longbow => 1760,
+                eObjectType.RecurvedBow => 1680,
+                eObjectType.CompositeBow => 1600,
+                eObjectType.Thrown => bow.Name?.Contains("weighted", StringComparison.OrdinalIgnoreCase) == true ? 1450 : 1160,
+                _ => 1200,
+            };
+            return (int)Math.Max(32, range * bot.GetModified(eProperty.ArcheryRange) * 0.01);
+        }
+
         public static eObjectType? PreferredRangedType(eCharacterClass characterClass) => characterClass switch
         {
             eCharacterClass.Mercenary => eObjectType.Fired,
