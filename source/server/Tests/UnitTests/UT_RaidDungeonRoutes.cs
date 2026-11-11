@@ -48,6 +48,17 @@ namespace DOL.UnitTests
             Assert.That(AutonomousRealmRaid.Definitions.Single(d => d.Id == "darkness-albion").Trigger, Is.EqualTo(RealmRaidNeutralEvents.FinalApproach(249)));
             Assert.That(AutonomousRealmRaid.Definitions.Single(d => d.Id == "dragon-albion").IsDungeon, Is.False);
         });
+
+        // Overnight run 2026-11-10: one pass of the next-encounter search took 7.7 s of a game tick in Galladoria.
+        [Test]
+        public void TheNextEncounterSearchStopsWhenItsTimeIsUpAndGoesOnWhereItStopped() => Assert.Multiple(() =>
+        {
+            Assert.That(RealmRaidDungeonRoute.ProbeBudgetSpent(RealmRaidDungeonRoute.ProbeBudgetMilliseconds - 1), Is.False);
+            Assert.That(RealmRaidDungeonRoute.ProbeBudgetSpent(RealmRaidDungeonRoute.ProbeBudgetMilliseconds), Is.True);
+            Assert.That(RealmRaidDungeonRoute.FirstProbeAnchor(false, 4, 6), Is.EqualTo(0), "another candidate starts at its first anchor");
+            Assert.That(RealmRaidDungeonRoute.FirstProbeAnchor(true, 4, 6), Is.EqualTo(4), "the same candidate goes on");
+            Assert.That(RealmRaidDungeonRoute.FirstProbeAnchor(true, 9, 3), Is.EqualTo(3), "fewer anchors now: none left, so it is set aside");
+        });
     }
 
     /// <summary>
