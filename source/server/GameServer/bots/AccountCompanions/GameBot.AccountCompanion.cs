@@ -669,6 +669,47 @@ namespace DOL.GS
             return true;
         }
 
+        /// <summary>
+        /// A drop rolled for this companion (personal loot names it the intended owner) is its own, as it would be a
+        /// player's: an upgrade is worn, anything else goes into its backpack and is saved with the character.
+        /// Before DR-272 the companion turned these down and the player's bags filled with every companion's rolls.
+        /// A full backpack, or a dead companion, hands the drop on to the group as before.
+        /// </summary>
+        internal TryPickUpResult TryCompanionAutoPickUpItem(WorldInventoryItem item)
+        {
+            TryPickUpResult result = KeepCompanionLoot(
+                IsAlive && ObjectState is eObjectState.Active && Inventory != null && item?.Item != null,
+                () => !item.Item.IsStackable && TryTakeCompanionUpgrade(item.Item),
+                () => item.Item.IsStackable
+                    ? Inventory.AddTemplate(item.Item, item.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack)
+                    : Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item.Item),
+                out bool equipped);
+            if (result is not TryPickUpResult.Success)
+                return result;
+
+            item.RemoveFromWorld();
+            _companionDirty = true;
+            Owner?.Out.SendMessage(equipped
+                    ? $"{Name} takes {item.Item.GetName(1, false)} and equips it."
+                    : $"{Name} keeps {item.Item.GetName(1, false)}.",
+                eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
+            return result;
+        }
+
+        /// <summary>The companion's loot decision: wear an upgrade, else keep it in the backpack, else hand it on.</summary>
+        public static TryPickUpResult KeepCompanionLoot(bool canHold, Func<bool> takeUpgrade, Func<bool> store, out bool equipped)
+        {
+            equipped = false;
+            if (!canHold)
+                return TryPickUpResult.DoesNotWant;
+            if (takeUpgrade())
+            {
+                equipped = true;
+                return TryPickUpResult.Success;
+            }
+            return store() ? TryPickUpResult.Success : TryPickUpResult.Blocked;
+        }
+
         internal static int CompanionUpgradeValue(GameBot bot, DbInventoryItem item)
         {
             if (!AutonomousBotEconomy.TryGetEquipmentUpgrade(bot, item, out eInventorySlot slot))

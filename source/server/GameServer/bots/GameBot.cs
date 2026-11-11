@@ -1944,6 +1944,8 @@ namespace DOL.GS
         public TryPickUpResult TryAutoPickUpItem(WorldInventoryItem item)
         {
             item.AssertLockAcquisition();
+            if (IsAccountCompanion)
+                return TryCompanionAutoPickUpItem(item);
             if (!IsAutonomousWorldBot || IsTemporaryGroupHelper || IsEpicSpecialForce)
                 return TryPickUpResult.DoesNotWant;
             if (Inventory == null)
