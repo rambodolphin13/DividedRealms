@@ -172,6 +172,12 @@ namespace DOL.GS.ServerProperties
 		public static int CLIENT_VERSION_MAX;
 
 		/// <summary>
+		/// Send LoginDenied AccountNotice to 1.130 clients as is
+		/// </summary>
+		[ServerProperty("system", "login_account_notice", "Send the account notice login error to 1.130 clients. An unpatched client then opens the publisher's account site in the browser. Off: they are told \"Unknown error.\" instead", false)]
+		public static bool LOGIN_ACCOUNT_NOTICE;
+
+		/// <summary>
 		/// Enable RC4 encryption for communication between the client and the server
 		/// </summary>
 		[ServerProperty("system", "client_enable_encryption_rc4", "Enable client RC4 encryption - Advanced user only, you need a special launcher to enable encryption", false)]
