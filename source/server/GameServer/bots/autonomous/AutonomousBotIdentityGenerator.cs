@@ -212,7 +212,10 @@ namespace DOL.GS
                 race);
         }
 
-        public static IReadOnlyCollection<eCharacterClass> GetEraClasses(eRealm realm, bool forPlayer = false) =>
+        // Two overloads, not an optional parameter: callers pass GetEraClasses as a method group (SelectMany).
+        public static IReadOnlyCollection<eCharacterClass> GetEraClasses(eRealm realm) => GetEraClasses(realm, false);
+
+        public static IReadOnlyCollection<eCharacterClass> GetEraClasses(eRealm realm, bool forPlayer) =>
             ActiveChoices(realm, forPlayer) is ClassChoice[] choices
                 ? choices.Select(choice => choice.CharacterClass).ToArray()
                 : Array.Empty<eCharacterClass>();
