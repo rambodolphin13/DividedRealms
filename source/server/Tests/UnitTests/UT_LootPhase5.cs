@@ -330,6 +330,31 @@ namespace DOL.UnitTests
             Assert.That(group.Tries, Is.EqualTo(1));
         }
 
+        /// <summary>DR-272: a drop rolled for an account companion is its own: worn if an upgrade, else kept in its backpack.</summary>
+        [Test]
+        public void ACompanionKeepsTheDropsRolledForIt()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(GameBot.KeepCompanionLoot(true, () => true, () => throw new AssertionException("stored an equipped item"), out bool equipped),
+                    Is.EqualTo(TryPickUpResult.Success));
+                Assert.That(equipped, Is.True);
+
+                Assert.That(GameBot.KeepCompanionLoot(true, () => false, () => true, out equipped), Is.EqualTo(TryPickUpResult.Success));
+                Assert.That(equipped, Is.False, "not an upgrade: kept in the backpack");
+
+                Assert.That(GameBot.KeepCompanionLoot(true, () => false, () => false, out _), Is.EqualTo(TryPickUpResult.Blocked),
+                    "a full backpack hands it on");
+                Assert.That(GameBot.KeepCompanionLoot(false, () => true, () => true, out _), Is.EqualTo(TryPickUpResult.DoesNotWant),
+                    "a dead or missing companion hands it on");
+            });
+
+            // A companion with a full backpack: the group still gets the drop.
+            FakeOwner companion = new() { Result = TryPickUpResult.Blocked }, group = new() { Result = TryPickUpResult.Success };
+            Assert.That(AbstractServerRules.TryAutoPickUp(Item(), [(companion, true), (group, false)]), Is.True);
+            Assert.That(group.Tries, Is.EqualTo(1));
+        }
+
         [Test]
         public void ABlockedIntendedOwnerHandsItOn()
         {
