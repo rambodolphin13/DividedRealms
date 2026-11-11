@@ -866,6 +866,9 @@ namespace DOL.AI.Brain
             // A hybrid on paper, but a Druid fights with roots, nukes and its pet, not its staff
             // (tester 2026-10-26: Druids rooted a mob and then ran in to melee it).
             characterClass?.ID == (int)eCharacterClass.Druid ||
+            // A player's grouped Shaman companion stays back and casts (owner 2026-11-11, DR-271: one ran in with
+            // its hammer beside a Healer). Autonomous and solo Shamans still melee between their nukes.
+            characterClass?.ID == (int)eCharacterClass.Shaman && grouped && !autonomous ||
             characterClass?.ClassType == eClassType.ListCaster &&
             characterClass.ID != (int)eCharacterClass.Valewalker &&
             characterClass.ID != (int)eCharacterClass.Vampiir &&
@@ -875,7 +878,7 @@ namespace DOL.AI.Brain
         private bool PrefersCurrentSpellRange() =>
             FightsAtSpellRange(
                 PrefersSpellRange(BotBody?.CharacterClass, BotBody?.Group?.MemberCount > 1, BotBody?.IsAutonomousWorldBot == true),
-                BotBody?.CharacterClass?.ID == (int)eCharacterClass.Druid, _knowsAttackSpellCheck ??= KnowsAttackSpell);
+                BotBody?.CharacterClass?.ID is (int)eCharacterClass.Druid or (int)eCharacterClass.Shaman, _knowsAttackSpellCheck ??= KnowsAttackSpell);
 
         private Func<bool> _knowsAttackSpellCheck;
 
