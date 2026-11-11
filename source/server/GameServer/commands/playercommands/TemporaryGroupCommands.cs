@@ -13,7 +13,7 @@ namespace DOL.GS.Commands
 
         public static IEnumerable<(eCharacterClass CharacterClass, string Role)> ForRealm(eRealm realm)
         {
-            IEnumerable<eCharacterClass> classes = AutonomousBotIdentityGenerator.GetEraClasses(realm);
+            IEnumerable<eCharacterClass> classes = AutonomousBotIdentityGenerator.GetEraClasses(realm, forPlayer: true);   // the player picks: custom classes allowed
 
             return classes.Select(characterClass => (characterClass, BotPartyRoles.Label(characterClass)));
         }
@@ -290,7 +290,7 @@ namespace DOL.GS.Commands
 
             eGender gender = Random.Shared.Next(2) == 0 ? eGender.Male : eGender.Female;
             AutonomousBotIdentityGenerator.Identity identity =
-                AutonomousBotIdentityGenerator.GenerateForClass(player.Realm, gender, characterClass);
+                AutonomousBotIdentityGenerator.GenerateForClass(player.Realm, gender, characterClass, forPlayer: true);
             byte gearLevel = player.Level >= 50 ? (byte)50 :
                 (byte)Random.Shared.Next(Math.Max(1, player.Level - 10), player.Level + 1);
             GameBot helper;

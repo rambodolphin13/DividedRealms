@@ -67,6 +67,9 @@ namespace DOL.GS.ServerProperties
         public static int REST_ENDURANCE_SECONDS = 20;
         [ServerProperty("recovery", "rest_sitting_multiplier", "Additional recovery-floor multiplier while sitting/resting.", 2)]
         public static int REST_SITTING_MULTIPLIER = 2;
+        [ServerProperty("bots", "bots_use_custom_classes", "Autonomous gamebots (and bots made for raids, special forces and hired groups) may roll the custom classes Stormforged (64), Pendragon Sovereign (65) and Tuatha Sovereign (67) while their enable_ switch is on. False keeps those classes for players only; bots that already have one are not changed. Mob loot still targets them.", false)]
+        public static bool BOTS_USE_CUSTOM_CLASSES;
+
         [ServerProperty("bots", "buff_upkeep_refresh_seconds", "Refresh own long-duration buffs this many seconds before expiry; zero disables early refresh.", 15)]
         public static int BUFF_UPKEEP_REFRESH_SECONDS = 15;
 
