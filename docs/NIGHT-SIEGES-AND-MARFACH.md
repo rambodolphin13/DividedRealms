@@ -50,8 +50,12 @@ uploaded), so the ledger could not be checked.
 includes "Timed out". So the next Marfach raid starts one loss step larger, the Special Forces call-up grows a party,
 and two losses in a row bring the Special Forces from the start. Dragons and dungeons follow the same rule. The Special
 Forces are called on a wipe, and this raid never wiped. Calling them on this timeout would not have helped: 24 more
-raiders would have stood at the same muster. Open question for the owner: should a timeout with no wipe count as a
-loss for sizing? This one was a routing fault, not a lost fight.
+raiders would have stood at the same muster. Owner's decision (2026-11-05): **a timeout with no wipe is neither a win nor a loss**, for the raid's size and for
+the Special Forces record alike. A timeout after one or more wipes still counts as a loss. The Herald still records
+"Timed out"; every raid's details now end with its wipes ("Wipes: N."), and only the sizing record reads them
+(`AutonomousEpicSpecialForces.RecordOutcome`, `RealmEventRecordStore.WipesIn`). Rows written before this change have no
+wipe count and keep counting a timeout as a loss, so this overnight Marfach row on the owner's world still counts as
+one loss.
 
 **Fix (`RealmRaidDungeonRoute`):**
 1. **The switch fights from an approach.** When the raid turns on an encounter that is attacking it, the front is a
@@ -147,19 +151,153 @@ period feature.
 
 **Change in this PR: logging only.** The evidence doesn't support a gameplay change yet:
 - **`RVR_SIEGE_MARCH`** adds:
+  - `kind` (`keep-siege`, `relic-siege`, `retake`, `player-attack-defense`);
+  - `needed` (what the muster waited for: 64 for a keep, 120 for a relic keep) and `thin` (`true` when a keep or relic
+    siege marched short of it);
   - `assigned` (the forces committed to this siege);
   - `realmLevel50` and `realmRvr` (the attacking realm's online level 50s, and how many of them are on RvR duty);
   - `inOtherSieges`;
   - `defenseShare`.
-- **`RVR_EVENT_ENDED`** adds `marched`, `attackers`, `defenders` and `thirdRealm`.
+- **`RVR_EVENT_ENDED`** adds `kind`, `thin`, `marched`, `attackers`, `defenders` and `thirdRealm`.
 
 The next overnight run should show whether thin musters come from few RvR level 50s, from forces assigned but not
 arriving (night `RVR_KEEP_ROUTE_FAILED` 505 against 52 by day, 234 of them Albion to Caer Erasleigh), or from too few
 forces choosing to join.
 
-**Options if the next run confirms thin musters** (not implemented):
-- (a) Size the muster threshold and the march to the realm's RvR level 50s.
+## 3. Design direction for the siege follow-up (owner, 2026-11-05)
+
+Not implemented. The next run's logging decides the cause first; this is what the follow-up should build towards.
+
+- **The owner's words:** "small raiding parties or attacks are still realistic from time to time, not every raid or
+  dungeon was a huge coordinated event", but it must stay balanced.
+- **Most sieges muster to the realm's level 50s on RvR duty.** A full siege waits for an army sized to what the realm
+  actually has in the frontier (`realmRvr`), not a fixed 64 it may never reach. This is the fix for the accidental thin
+  keep siege.
+- **A deliberate minority are small strikes.** A small force goes out on purpose, picks a target a small force can
+  take (towers, lightly held keeps), and is planned and logged as a strike. Today a small army is just a keep siege
+  that marched short of its muster.
+- **Small strikes don't swing the siege balance.** Their results are weighted so a run of strike wins or losses
+  doesn't move the defenders' share the way full sieges do. Full sieges stay the balance's measure, so neither side
+  gets free wins.
+- **Telling the two apart in the logs.** `kind` names the attack. A deliberate strike would get its own kind (for
+  example `tower-strike`), and `thin` is only ever `true` for a `keep-siege` or `relic-siege` that marched below
+  `needed`. So the next run's `thin=true` lines are all accidental thin musters; after the follow-up, a strike is
+  never counted as one (`AutonomousRvrEventLayer.MarchedThin`).
+
+**Options considered before the owner's direction** (kept for the record):
+- (a) Size the muster threshold and the march to the realm's RvR level 50s. This is now the direction above.
 - (b) Call off a muster that is still under the deadline-start threshold (32) at its last deadline, as a failed rally.
   A failed rally doesn't move the balance. In this run that would also have cancelled the 26-strong army that captured
   keep 101 by day.
-- (c) Leave thin-army results out of the balance.
+- (c) Leave thin-army results out of the balance. The direction above weights strikes instead.
+
+## 4. Overnight 2026-11-05/06 (build 168f55d): attackers took most keeps
+
+Evidence: the owner's test copy, build `168f55d`, 18:42 on 11/05 to 07:30 on 11/06 (`RVR_SIEGE_MARCH`,
+`RVR_SIEGE_STARTED`, `RVR_REINFORCEMENTS`, `RVR_EVENT_ENDED`, `SIEGE_DEFENSE_BALANCE`, `RVR_SIEGE action=hit`,
+`RVR_BOT_KILLED`). For comparison, the night before (build `616190a`, section 2). Counts are log lines. Nothing was
+played or checked in game.
+
+**The night.** 23 sieges opened: 13 keeps captured, 4 defended, 4 rallies failed, and 2 still running at 07:30 (one
+of them a relic siege). The night before: 2 captured, 7 defended, 2 rallies failed.
+
+**What changed between the nights: not the code, not the balance.**
+- **The siege code is the same.** From `616190a` to `168f55d` the only siege changes are logging (`kind`, `assigned`,
+  `defenseShare` and the army counts, section 2).
+- **The balance started both nights in the same place.** Each start replays the last 24 bot sieges from the event
+  ledger (by design, since 2026-11-04). 20:46 on 11/04: +0.25. 18:42 on 11/05: +0.25 (window `CCCCCC`, after the day's
+  captures).
+
+**What `defenseShare=1` means.** It's the setting (0.75) plus the balance's largest shift (+0.25). It caps the defenders
+a siege may draw: one for each attacker (the larger of the army that marched and the army now committed), at most 128.
+It isn't a count of defenders who come, and it isn't "full defense".
+
+**The balance was saturated, not steering the wrong way.**
+- It sat at +0.25 all night. Its window held 4-6 captures out of 6, so it never moved off its limit.
+- **Its lever wasn't the limit.**
+  - Attackers reached their cap of 128 in 10 of 17 battles. Reinforcements join within a minute of the battle
+    starting.
+  - Defenders reached their cap in only 2 of the 13 captures. In the other 11, the defending realm committed
+    35-90, which is what it had free.
+  - In 3 of the 4 defences the defenders matched the attackers (128/128, 87/88, 128/128).
+  - A larger share would have added no defenders.
+
+| Battles (peak committed) | Attackers per committed defender |
+|---|---|
+| 4 defended | 1.0, 1.0, 1.0, 1.36 |
+| 13 captured | 1.0 (twice), then 1.2-2.25 (11) |
+
+**The "armies of 12-28" weren't small armies.** `marched` counts only the muster column. Reinforcements filled the
+attack to 65-128 within minutes. Keep 50 marched with 12 and fought with 116, and keep 79 marched with 28 and fought
+with 128. No keep fell to a small army.
+
+**Did the defenders show up?** These logs record committed forces, not who stood at the keep. Kills in the keep's
+zone during the battle stand in for that:
+- **Five keeps fell in 9-13 minutes** (Dun Crimthain twice, Dun Crauchon twice, Caer Hurbury).
+  - In four of them, defender bots killed 0-2 attackers in the keep's zone.
+  - Where a door's fall was logged (four of the five), the first door was down 4-5 minutes after the battle began, and
+    the keep fell 5-8 minutes after that.
+  - Their defenders were committed (53-86) but didn't arrive in time.
+- **In 7 of the 8 slower captures (19-67 minutes)** the defenders did fight (20-194 attackers killed) and lost.
+- **Bot sieges don't hold defenders at a muster.** `RVR_DEFENSE_MUSTER` and `RVR_DEFENSE_MARCH` read `mustered=0` every
+  time. A defense that is called after the battle has begun gets no rally order (`GetRallyOrder`), so its defenders
+  walk straight to the keep. The 6-10 minutes between the two lines are bookkeeping, not a delay.
+
+**Keeps held by another realm fell every time.**
+- 7 of the 13 captures were keeps held by a realm that isn't their home realm, and 7 of 7 such sieges were captured.
+- 5 of the 7 were the home realm taking back a keep lost earlier that night. Its border muster is close, and the holder's
+  defenders have to cross a frontier.
+- Keeps held by their own realm: 6 captured, 4 defended.
+
+**Keep strength.**
+- **Doors.** In 7 of the captures, siege engines brought the first door down 4-8 minutes into the battle
+  (`RVR_SIEGE action=hit`, `targetHp`).
+- **Keep level.** By default keeps stand at level 4, or 5 when claimed (`starting_keep_level`, `max_keep_level`).
+- **After a capture.** Doors return to full health. A damaged door outside a capture regains 5% every 30 minutes
+  out of combat.
+- **Keep guards.** They killed 0-148 attackers per siege, and 0-3 in the fastest captures.
+- **The balance doesn't touch any of these.** Nothing here changes them.
+
+**Why the second night went the other way: not shown.** The same code and the same balance gave long fights that
+defenders won (25-243 minutes) on 11/04. On 11/05 it gave short ones that attackers won. Three explanations are
+possible, and the logs can't separate them:
+- The defending realm was busy elsewhere. In 12 of the 13 captures it had forces committed to another siege at the
+  start, but so did 3 of the night-before's defences.
+- The retakes chained after the first captures.
+- Chance, in a sample of about 20 sieges a night.
+
+**Change: the balance trims the attackers once the share is at its limit (`SiegeDefenseBalance`).**
+- **Two more steps.** When the share is already at +0.25 and attackers still take more than 5 of the last 6, the
+  shift goes up to two more steps. Each step takes 1/8 off the attackers' cap: 128 → 112 → 96 for a keep, and
+  240 → 210 → 180 for a relic keep.
+- **On the way back.** When defenders win again (fewer than 45% captured), the trim comes off first, then the share
+  falls as before.
+- **What stays the same:**
+  - the muster (64 / 120);
+  - the defenders' cap (one per attacker, at most 128);
+  - the third realm (64);
+  - forced sieges, retakes after a player's capture, and player-attack defences.
+- **This is the lever that binds.** The attackers' cap was reached in 10 of 17 battles. A realm that commits fewer
+  attackers also keeps more of its RvR level 50s free to defend its own keeps.
+- **On this world.** The ledger (24 captures) starts the next run at 96 attackers. The night's results would have kept
+  it there, at 13 captures in 17.
+- **Not shown.** Whether 96 against the defenders who come is enough to bring captures near half. That needs a night's
+  run.
+
+**Logging added (to answer "did they show up" next time):**
+- **`RVR_SIEGE_PRESENCE`.** Every 5 minutes of a bot battle it logs `committed=a/d/3` and `present=a/d/3`. Present means
+  at the keep, within 9,000 units, refreshed every 5 seconds.
+- **`RVR_EVENT_ENDED`** adds:
+  - `battleMinutes`;
+  - `present=a/d/3` (at the end);
+  - `peakPresent=a/d`;
+  - `defendersFirstAt` (minutes after the battle began, or `none`);
+  - `attackerCap`.
+- **`SIEGE_DEFENSE_BALANCE`** adds `attackerCap=128->N`.
+
+**Not changed (direction for after 1.1.2):**
+- calling defenders at the march instead of at the battle;
+- strengthening keeps;
+- deliberate small strikes (section 3).
+
+The next night's `defendersFirstAt` and `present=` show which of these matters.

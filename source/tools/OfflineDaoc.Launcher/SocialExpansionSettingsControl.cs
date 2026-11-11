@@ -32,6 +32,7 @@ internal sealed class SocialExpansionSettingsControl : UserControl
     private readonly CheckBox _personalities = Switch("Bot personalities");
     private readonly CheckBox _voices = Switch("Bot voices");
     private readonly CheckBox _debates = Switch("/faction debates", part: true);
+    private readonly NumericUpDown _chatRate = ChatRateInput("How much bots talk");
     private readonly CheckBox _memory = Switch("Bots remember you");
     private readonly CheckBox _grats = Switch("Grats");
     private readonly CheckBox _firsts = Switch("Server firsts");
@@ -101,21 +102,24 @@ internal sealed class SocialExpansionSettingsControl : UserControl
         Dependent(_guildAlliances, Add(guilds, _guildAlliances, null, "Each realm's RvR and raiding bot guilds form one alliance. Your own guild's alliances are never touched."), guildsOn);
         Add(guilds, _playerGuildEconomy, null, "Gamebots you /ginvite pay your guild's dues from real loot and earn it merit from levels and realm ranks. Even with bot guilds off.");
 
-        var voices = Card("PERSONALITIES AND VOICES", DaocTheme.Gold, 3);
+        var voices = Card("PERSONALITIES AND VOICES", DaocTheme.Gold, 4);
         Add(voices, _personalities, null, "Leveler, Socialite, Daredevil, Explorer, Crafter or No-lifer, tilting how each bot spends its time. Target a bot and type /personality.");
         Add(voices, _voices, null, "Period chat lines from 2002–2003, chosen by realm, class, level and moment, each bot in its own writing style.");
         Dependent(_debates, Add(voices, _debates, null, "Spec arguments, relic alerts and long threads in /faction, every 30–45 minutes while you play. Needs bot voices."),
             v => v.Voices);
+        Dependent(Caption("HOW MUCH THEY TALK"), Add(voices, null, WithUnit(_chatRate, "×"),
+            "2 (the default) sounds like a busy server; 1 is calmer, 3 very busy; 0 only answers. Chat still follows the hour and the bots online. Needs bot voices."), v => v.Voices);
 
         var living = Card("SERVER LIFE", DaocTheme.Gold, 16);
+        // First in the card (1.1.3, owner's PC 2026-11-09: off, 2,673 bots were online at 05:20): who is online when.
+        Captioned(Caption("BOT SCHEDULE", part: false), Add(living, null, _schedule,
+            "Off: every bot online day and night. Real clock: your PC's hour and weekday, busiest 7–11 pm and weekends, a few hundred at dawn. Session: 1–4 hour sessions."));
         Add(living, _memory, null, "Bots of your realm remember grouping with you, your rezzes and rude words: they greet and thank you by name.");
         Add(living, _grats, null, "Dings get grats from the group and bots nearby; a new level 50 gets cheers in /faction.");
         Add(living, _firsts, null, "The first to level 50, to 50 in each class and to each realm rank is announced and goes in the Herald.");
         Add(living, _death, null, "Dead bots ask you for a rez and thank you; a passing bot healer may rez you (you still accept).");
         Add(living, _alarms, null, "A frontier bot that sees 3+ enemies calls size, classes and place in /faction (once per 2 minutes).");
         Add(living, _nemesis, null, "Bots remember who killed them, name the killer in /faction and gloat when they get revenge.");
-        Captioned(Caption("BOT SCHEDULE", part: false), Add(living, null, _schedule,
-            "Off: all bots online. Session: bots play 1–4 hour sessions. Real clock: busy evenings, quiet nights."));
         Add(living, _breaks, null, "Idle bots go brb for 5–25 minutes; a bot in your group rarely goes linkdead for a minute.");
         Add(living, _body, null, "Idle bots look around, emote, shift their feet in town, wave when you walk up and cheer a ding. No jumping or sitting.");
         Add(living, _beggars, null, "A few Crafter bots beg in their capital and hoard coin. Ask anyone for gold and they follow you, insulting you, until you leave.");
@@ -196,6 +200,7 @@ internal sealed class SocialExpansionSettingsControl : UserControl
             box.CheckedChanged += (_, _) => Edited();
         _schedule.SelectedIndexChanged += (_, _) => Edited();
         _share.ValueChanged += (_, _) => Edited();
+        _chatRate.ValueChanged += (_, _) => Edited();
         _minLevel.ValueChanged += (_, _) => Edited();
         _manaRate.ValueChanged += (_, _) => Edited();
         _playerXp.Changed += Edited;
@@ -247,6 +252,7 @@ internal sealed class SocialExpansionSettingsControl : UserControl
         Personalities = _personalities.Checked,
         Voices = _voices.Checked,
         Debates = _debates.Checked,
+        ChatRate = (double)_chatRate.Value,
         LivingMemory = _memory.Checked,
         LivingGrats = _grats.Checked,
         LivingFirsts = _firsts.Checked,
@@ -287,6 +293,7 @@ internal sealed class SocialExpansionSettingsControl : UserControl
         _personalities.Checked = settings.Personalities;
         _voices.Checked = settings.Voices;
         _debates.Checked = settings.Debates;
+        _chatRate.Value = (decimal)Math.Clamp(settings.ChatRate, 0, 3);
         _memory.Checked = settings.LivingMemory;
         _grats.Checked = settings.LivingGrats;
         _firsts.Checked = settings.LivingFirsts;
@@ -340,7 +347,7 @@ internal sealed class SocialExpansionSettingsControl : UserControl
         try
         {
             string runtime = Path.GetDirectoryName(Path.GetDirectoryName(_database)!)!;
-            string records = Path.Combine(runtime, "server", "realm-event-records.sqlite3");
+            string records = DOL.GS.RealmEventRecordStore.Locate(runtime);
             string path = await Task.Run(() => HeraldPage.Write(_database, records, Path.Combine(runtime, "herald"), DateTime.Now));
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
             SetNotice("HERALD WRITTEN: " + path, error: false);
@@ -421,9 +428,16 @@ internal sealed class SocialExpansionSettingsControl : UserControl
             s.LivingDeeds, s.LivingStorylines, s.LivingCharacters, s.LivingRumours, s.LivingHolidays, s.LivingLeeroy }.Count(x => x);
         if (living > 0) on.Add($"Server life ({living} of 16 parts)");
         if (s.PlayerXpByLevel != "" || s.BotXpByLevel != "") on.Add("XP by level");
-        return on.Count == 0
-            ? "Settings are loaded from the saved server settings. Everything is off: the game plays like the normal release."
-            : "Saved and on at the next server startup: " + string.Join(", ", on) + ".";
+        if (on.Count == 0)
+            return "Settings are loaded from the saved server settings. Everything is off: the game plays like the normal release.";
+        // The schedule decides how many bots are online at all, so the status line always names it (1.1.3).
+        string schedule = s.ScheduleMode switch
+        {
+            "clock" => " Bot schedule: real clock.",
+            "session" => " Bot schedule: sessions.",
+            _ => " Bot schedule off: every bot online all day and night.",
+        };
+        return "Saved and on at the next server startup: " + string.Join(", ", on) + "." + schedule;
     }
 
     // ---- Layout, matching the Options tab -------------------------------------------------------------
@@ -538,6 +552,18 @@ internal sealed class SocialExpansionSettingsControl : UserControl
             Minimum = (decimal)SocialExpansionSettings.MinManaRegenModifier, Maximum = (decimal)SocialExpansionSettings.MaxManaRegenModifier,
             DecimalPlaces = 2, Increment = 0.25m, Value = (decimal)SocialExpansionSettings.DefaultManaRegenModifier,
             Width = 62, AccessibleName = name, TextAlign = HorizontalAlignment.Right,
+        };
+        StyleInput(number);
+        return number;
+    }
+
+    /// <summary>A 0-3 rate in steps of 0.1 (bot_voices_chat_rate).</summary>
+    private static NumericUpDown ChatRateInput(string name)
+    {
+        var number = new NumericUpDown
+        {
+            Minimum = 0, Maximum = 3, DecimalPlaces = 1, Increment = 0.1m, Value = 2, Width = 62, AccessibleName = name,
+            TextAlign = HorizontalAlignment.Right,
         };
         StyleInput(number);
         return number;

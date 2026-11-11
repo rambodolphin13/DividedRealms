@@ -834,6 +834,13 @@ namespace DOL.GS.ServerProperties
 		public static string BOT_XP_RATE_BY_LEVEL;
 
 		/// <summary>
+		/// Quest experience follows xp_rate_by_level (owner 2026-10-30, see QuestExperience). On, and a range covers the
+		/// player's level: the quest's XP is multiplied by that level's rate. Off, no range or no setting: quest XP as before.
+		/// </summary>
+		[ServerProperty("rates", "quest_xp_by_level", "Quest experience follows xp_rate_by_level. When true (the default) and one of its ranges covers the player's level, the XP of data quests, reward quests, bounties and the daily, weekly and battleground quests is multiplied by that level's rate (a bounty's xp_rate is replaced by it). While true, one quest payment never pays more than one level. False is a kill switch (2026-10-31): no rate and no cap, quest XP exactly as before 1.1.1. No range for the level or no xp_rate_by_level leaves the amount as it was.", true)]
+		public static bool QUEST_XP_BY_LEVEL;
+
+		/// <summary>
 		/// The CL Experience Rate
 		/// </summary>
 		[ServerProperty("rates", "cl_xp_rate", "The Champion Level Experience Points Rate Modifier - Edit this to change the rate at which you gain CL experience points e.g 1.5 is 50% more 2.0 is twice the amount (100%) 0.5 is half the amount (50%)", 1.0)]
@@ -2663,9 +2670,10 @@ namespace DOL.GS.ServerProperties
 		public static bool COMBAT_NUMBERS;
 
 		/// <summary>
-		/// How busy realm chat is (the talking update): a multiplier on how often bots start /faction and /say lines.
+		/// How busy realm chat is (the talking update; from Beta 1.1.2 the default is 2, a busy server; 1 is calmer, 3 very busy): a multiplier on every
+		/// channel's target in chat-budget.json. The launcher's Living Server tab sets it.
 		/// </summary>
-		[ServerProperty("bots", "bot_voices_chat_rate", "When bot voices are on: how much bots talk unprompted, from 0 (only answers) to 3 (very busy). 1 is a normal evening; it already rises and falls with how many bots are on and the hour.", 1.0)]
+		[ServerProperty("bots", "bot_voices_chat_rate", "When bot voices are on: how much bots talk on their own, from 0 (they only answer) to 3. 2 (the default) sounds like a busy server; 1 is calmer, 3 very busy. Chat already rises and falls with the hour and with how many bots are on (chat-budget.json).", 2.0)]
 		public static double BOT_VOICES_CHAT_RATE;
 
 		public const string LIVING_SERVER_SETTINGS_VERSION_KEY = "living_server_settings_version";

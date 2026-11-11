@@ -781,11 +781,15 @@ internal sealed partial class MainForm : Form
         return button;
     }
 
+    // Ctrl-click makes 100, Shift-click 10. The keys are read as they were when the click arrived (Control.ModifierKeys
+    // reads GetKeyState), not as they are now: a fast click from remote-desktop or automation tools releases the key
+    // before the click is handled, and GetAsyncKeyState then saw no key (playtest 2026-11-04). Either Ctrl or Shift.
     private static int GetGenerationBatchSize()
     {
-        if ((GetAsyncKeyState(VkLeftControl) & 0x8000) != 0)
+        Keys held = Control.ModifierKeys;
+        if ((held & Keys.Control) != 0)
             return 100;
-        if ((GetAsyncKeyState(VkLeftShift) & 0x8000) != 0)
+        if ((held & Keys.Shift) != 0)
             return 10;
         return 1;
     }
@@ -839,7 +843,7 @@ internal sealed partial class MainForm : Form
         events.Controls.Add(BuildRealmEventsPanel());
         tabs.TabPages.Add(events);
         var records = new TabPage("Realm Records") { BackColor = DaocTheme.Panel, ForeColor = DaocTheme.Text };
-        var eventRecords = new RealmEventRecordsControl(Path.Combine(_serverDirectory, "realm-event-records.sqlite3"));
+        var eventRecords = new RealmEventRecordsControl(() => RealmEventRecordStore.Locate(_root));
         records.Controls.Add(eventRecords);
         tabs.SelectedIndexChanged += async (_, _) =>
         {
@@ -1870,6 +1874,8 @@ internal sealed partial class MainForm : Form
             RenderActiveRvr();
             _dashboardFooterSummary = $"Realm Exchange {_auctions.Count:N0} listings • Memory {snapshot.ServerMemoryMb:0} MB • Bot status updated {DateTime.Now:T}";
             _footer.Text = _dashboardFooterSummary;
+            if (snapshotStarting && !_stoppingServer && ServerPortProbe.StuckServerHint(ServerProcessAge()) is { } stuck)
+                _footer.Text = stuck;
             UpdateAutoRefreshCountdown();
         }
         catch (Exception exception)
@@ -3376,11 +3382,20 @@ internal sealed partial class MainForm : Form
             _serverProcess = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
             _serverProcess.OutputDataReceived += (_, args) => { if (args.Data is not null) _serverLog?.WriteLine(args.Data); };
             _serverProcess.ErrorDataReceived += (_, args) => { if (args.Data is not null) _serverLog?.WriteLine("ERROR: " + args.Data); };
+            Process started = _serverProcess;
             _serverProcess.Exited += (_, _) => BeginInvoke(async () =>
             {
                 _serverReadinessPoll.Stop();
+                // A stop nobody asked for (a crash at start looked like START SERVER doing nothing, playtest
+                // 2026-11-04): the footer says so and where the reason is.
+                bool unasked = !_stoppingServer;
+                int? code = null;
+                try { code = started.ExitCode; } catch (InvalidOperationException) { }
                 _stoppingServer = false;
                 await RefreshDashboardAsync();
+                if (unasked)
+                    _footer.Text = $"The server stopped by itself{(code is int c ? $" (exit code {c})" : "")}. " +
+                                   "The end of runtime\\logs\\server-console.log says why.";
             });
             _serverProcess.Start();
             ShowStartingState();
@@ -3506,6 +3521,20 @@ internal sealed partial class MainForm : Form
             _forceStopRequested = false;
             _stopButton.Text = "STOP SERVER";
             await RefreshDashboardAsync();
+        }
+    }
+
+    /// <summary>How long this game's CoreServer process has run, or null when there is none or it can't be read.</summary>
+    private TimeSpan? ServerProcessAge()
+    {
+        try
+        {
+            using Process? server = FindExactServerProcess();
+            return server == null ? null : DateTime.Now - server.StartTime;
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return null;
         }
     }
 
@@ -3967,12 +3996,6 @@ internal sealed partial class MainForm : Form
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GlobalMemoryStatusEx(ref MemoryStatus status);
-
-    private const int VkLeftShift = 0xA0;
-    private const int VkLeftControl = 0xA2;
-
-    [DllImport("user32.dll")]
-    private static extern short GetAsyncKeyState(int virtualKey);
 
     private static ulong AvailableMemoryBytes()
     {

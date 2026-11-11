@@ -1067,6 +1067,8 @@ namespace DOL.GS
             IsReturningAfterRelease = false;
             _stableReturnPlan = null;
             CompleteStableMasterRoute();
+            // 1.1.3, after RC6: how many were on it, read before the death clears the tracker, for how the death is told.
+            int attackers = IsAutonomousWorldBot ? AutonomousDeathDiagnostics.Attackers(this) : 0;
 
             LastDeathKillerName = killer?.Name ?? string.Empty;
             LastDeathByEnemyRealm = AutonomousDeathDiagnostics.IsEnemyRealmKill(Realm, killer);
@@ -1089,7 +1091,7 @@ namespace DOL.GS
                 AnnounceRvrDeath(killer);
                 AutonomousBotStatusPersistence.Queue(this);
                 AutonomousBotGuildSocial.OnBotDeath(this);
-                AutonomousBotVoices.OnBotDeath(this);
+                AutonomousBotVoices.OnBotDeath(this, killer, attackers);
                 AutonomousLivingServer.OnBotDied(this, killer);
             }
             StartDeathRecoveryTimer();
@@ -1167,6 +1169,15 @@ namespace DOL.GS
         }
 
         public const long SiegeCorpseWaitMilliseconds = 240_000;
+
+        // Fork: /allrelease runs the death timer's release at once; the timer ends itself once the bot is alive
+        public bool ReleaseNow()
+        {
+            if (IsAlive || ObjectState != eObjectState.Active)
+                return false;
+            ReleaseToNearestBindAndReturn();
+            return IsAlive;
+        }
 
         private bool HasViableResurrector()
         {
@@ -1268,14 +1279,15 @@ namespace DOL.GS
                 release = new Point3D(capital.X, capital.Y, capital.Z);
             }
             release ??= _deathLocation;
-            if (IsAutonomousWorldBot)
-                AutonomousLivingServer.OnBotReleasing(this);
+            // RC6 on the owner's PC: "long run back to Pennine Mountains" and "released, running back" in the same second.
+            bool toldGroup = IsAutonomousWorldBot && AutonomousLivingServer.OnBotReleasing(this);
             // beside a bindstone, never on it (owner 2026-11-10: bots stood up on top of Huginfell's stone)
             release = BotReleaseBindPoints.BesideBindstone(releaseRegion, release, unchecked((int)DatabaseID ^ Environment.TickCount));
             // Transfer the corpse first: a failed MoveTo must not revive the bot
             // at its killer or cause HandleDeathRecovery to discard its timer.
             if (!MoveCorpseForRelease(releaseRegion, release.X, release.Y, release.Z, Heading))
                 return;
+            BotGroupRelease.NoteRelease(this, releaseRegion, release, returnToParty); // Fork: a release in a player's group shows in the log
             Health = Math.Max(1, MaxHealth / 3);
             Mana = Math.Max(0, MaxMana / 3);
             Endurance = Math.Max(0, MaxEndurance / 3);
@@ -1285,8 +1297,8 @@ namespace DOL.GS
             Brain?.FSM?.SetCurrentState(eFSMStateType.FOLLOW);
             Brain?.Start();
             ShowStandingToViewers();
-            if (returnToParty)
-                Say(ReturnDialogue("release"));
+            if (returnToParty && !toldGroup)
+                TellOwnGroup(ReturnDialogue("release"));
 
             if (PersistentRecord != null)
             {
@@ -1478,6 +1490,26 @@ namespace DOL.GS
             _stableReturnPlan = null;
         }
 
+        /// <summary>
+        /// Living Server: a gamebot in a player's group that stalled on its way back plans it again from where it stands
+        /// (a stablemaster route when one is faster, else a walk with detours around hostile monsters) before
+        /// BotGroupRelease lets it join the leader. False when that can't apply here.
+        /// </summary>
+        public bool RestartReturnToLeader(GamePlayer leader)
+        {
+            if (!IsAlive || IsOnStableMasterRoute || leader == null || leader.CurrentRegionID != CurrentRegionID)
+                return false;
+            StopFollowing();
+            StopMovingOnPath();
+            StopMoving();
+            WakeRecoveryRest();
+            (Brain as BotBrain)?.Disengage();
+            _stableReturnPlan = null;
+            IsReturningAfterRelease = true;
+            Brain?.FSM?.SetCurrentState(eFSMStateType.FOLLOW);
+            return true;
+        }
+
         public bool ContinueReturnJourney()
         {
             if (!IsReturningAfterRelease || !IsAlive)
@@ -1493,16 +1525,29 @@ namespace DOL.GS
             Point3D destination = leader?.IsAlive == true && leader.CurrentRegionID == CurrentRegionID
                 ? new Point3D(leader.X, leader.Y, leader.Z)
                 : _deathLocation;
-            if (CurrentRegionID != _deathRegionId && (leader == null || leader.CurrentRegionID != CurrentRegionID))
-                return true;
+            if (BotGroupRelease.WaitsForLeader(this)) return true; // Fork: its corpse is no goal, the group goes on where the player comes back
+            if ((CurrentRegionID != _deathRegionId || BotGroupRelease.IsGroupReturn(this)) && (leader == null || leader.CurrentRegionID != CurrentRegionID)) // Fork: its leader left the region it died in
+            {
+                // Living Server: a stablemaster ride in progress ends at its stable before the bot may join its leader.
+                if (IsOnStableMasterRoute)
+                {
+                    MaintainStableMasterRoute();
+                    if (IsMovingOnPath || CurrentPathPoint != null || !TryCompleteStableMasterRouteAfterArrival())
+                        return true;
+                    _stableReturnPlan = null;
+                }
+                return BotGroupRelease.TryReturnToLeader(this, _deathTick); // Fork: it stood here for good, nothing else moves a bot in a player's group
+            }
 
             if (GetDistanceTo(destination) <= 350)
             {
                 IsReturningAfterRelease = false;
                 _stableReturnPlan = null;
                 CompleteStableMasterRoute();
-                Say(ReturnDialogue("arrive"));
+                // 1.1.3 (RC5 on the owner's PC): "back" only after a death; a bot that walked to the player after an invite is "here".
+                TellOwnGroup(ReturnDialogue(_deathTick > 0 && GameLoop.GameLoopTime - _deathTick < 20 * 60_000 ? "arrive" : "arrive_walk"));
                 Brain?.FSM?.SetCurrentState(eFSMStateType.FOLLOW);
+                BotGroupRelease.FinishReturn(this); // Fork: as an invitation does
                 return false;
             }
 
@@ -1514,7 +1559,7 @@ namespace DOL.GS
                 if (!TryCompleteStableMasterRouteAfterArrival())
                     return true;
                 _stableReturnPlan = null;
-                Say(ReturnDialogue("dismount"));
+                TellOwnGroup(ReturnDialogue("dismount"));
             }
 
             _stableReturnPlan ??= FindFasterStableRoute(destination);
@@ -1548,7 +1593,7 @@ namespace DOL.GS
                     return true;
                 }
                 _stableReturnPlan = null;
-                Say(ReturnDialogue("mount"));
+                TellOwnGroup(ReturnDialogue("mount"));
                 return true;
             }
 
@@ -1561,8 +1606,10 @@ namespace DOL.GS
         {
             Vector3 current = new(X, Y, Z);
             Vector3 desired = new(destination.X, destination.Y, destination.Z);
+            // Fork: 900-unit steps stopped at the first wall, a planned route finds the door. Living Server: a detour around a
+            // hostile monster still comes first, so only a clear way is walked as one planned route.
             AutonomousThreatAwarePathing.SafeStep step = AutonomousThreatAwarePathing.ChooseStep(this, current, desired, 900);
-            PathTo(step.Position, MaxSpeed);
+            PathTo(BotGroupRelease.ReturnStepTarget(BotGroupRelease.IsGroupReturn(this), step.Detouring, step.Position, desired), MaxSpeed);
             if (PersistentRecord != null)
             {
                 PersistentRecord.Activity = step.Detouring ? step.Reason : "Walking back to the party";
@@ -1583,7 +1630,23 @@ namespace DOL.GS
             if (GameLoop.GameLoopTime < _nextReturnRoleplayTick || IsCasting || InCombat)
                 return;
             _nextReturnRoleplayTick = GameLoop.GameLoopTime + Util.Random(60_000, 120_000);
-            Say(ReturnDialogue(stage));
+            TellOwnGroup(ReturnDialogue(stage));
+        }
+
+        /// <summary>
+        /// Where a line about the way back after a release goes: the bot's own group, and only when a player is in it (1.1.3 RC1,
+        /// live check 2026-11-08 at Camelot's bind: about 25 "released, running back" lines in 45 s in /say, from bots of other
+        /// groups, to everyone standing there). "group", or null when nobody needs to hear it. Pure.
+        /// </summary>
+        public static string ReturnLineChannel(bool inGroup, bool groupHasPlayer) => inGroup && groupHasPlayer ? "group" : null;
+
+        private void TellOwnGroup(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text) || ReturnLineChannel(Group != null, AutonomousLivingServer.GroupHasPlayer(Group)) == null)
+                return;
+            text = AutonomousRoleplayers.Voice(this, text);
+            Group.SendMessageToGroupMembers(this, text, eChatType.CT_Group, eChatLoc.CL_ChatWindow);
+            BotChatTranscript.Bot("group", Name, Realm, text);
         }
 
         // Play test 2026-10-27: an autonomous gamebot in the player's group said "I have caught up. Returning to formation." —
@@ -1604,6 +1667,12 @@ namespace DOL.GS
             "stable" => "grabbing a horse, faster",
             "mount" => string.IsNullOrEmpty(stableDestination) ? "on a horse, be there soon" : $"horse to {stableDestination}, be there soon",
             "dismount" => "off the horse, almost there",
+            "arrive_walk" => random.Next(3) switch
+            {
+                0 => "here",
+                1 => "made it, ready",
+                _ => "ok here, whats the plan",
+            },
             "arrive" => random.Next(3) switch
             {
                 0 => "back",

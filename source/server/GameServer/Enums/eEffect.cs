@@ -264,6 +264,8 @@ namespace DOL.GS
         ControlShrug,
         DiseaseWard,
         // Cabalist pet sacrifice line (DR-094)
-        SimulacrumSacrifice
+        SimulacrumSacrifice,
+        // Water breathing and swim speed (Nereid potions, the fork's Nereid's Blessing).
+        WaterBreathing
     }
 }

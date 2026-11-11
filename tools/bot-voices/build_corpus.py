@@ -122,7 +122,9 @@ TIME_FLAGS = {'day', 'evening', 'night'}
 INTENTS = {'unknown', 'greeting', 'banter', 'abuse', 'grouping', 'grinding', 'travel', 'dungeon', 'rvr',
            'trading', 'help', 'farewell', 'ignoreoutofworld',
            # 0.36-se.4: short chat players type
-           'thanks', 'congrats', 'ding', 'laugh', 'away', 'back', 'rez', 'alarm', 'classtalk', 'botcheck'}
+           'thanks', 'congrats', 'ding', 'laugh', 'away', 'back', 'rez', 'alarm', 'classtalk', 'botcheck',
+           # Beta 1.1.2: an in-character line from the player
+           'roleplay'}
 MOODS = {'friendly', 'neutral', 'cool', 'rival'}
 SLOTS = {'me', 'class', 'level', 'realm', 'zone', 'monster', 'npc', 'item', 'count', 'camp', 'dungeon',
          'capital', 'enemy', 'keep', 'frontier', 'player', 'player_class', 'place', 'q',
@@ -179,7 +181,16 @@ def split_list(value):
     return [] if value in ('', '*') else [v.strip() for v in value.split(',') if v.strip()]
 
 
+# Beta 1.1.2: a "[a kobold|kobolds] ... [is|are]" family makes "a kobold ... are" (the blind round 1 judge caught it).
+AGREEMENT_RE = re.compile(r"^(a|an|one) [a-z']+( (with|holding|of|in|on|a|an|the|[a-z']+ing))*( [a-z']+)? (are|were) (worse|so|always|just|scarier|better) than\b")
+
+
 def check_text(text, tags, where, problems):
+    # Beta 1.1.2: a "[, ]" without a "|" leaked into lines as written ("lfg[, ]got time pst").
+    if '[' in text or ']' in text:
+        problems.append(f'{where}: a "[" or "]" left in the line as said (a choice needs a "|"): {text}')
+    if AGREEMENT_RE.search(text.lower()):
+        problems.append(f'{where}: a singular subject with "are" (write the choices as whole phrases): {text}')
     if len(text) > MAX_RAW:
         problems.append(f'{where}: {len(text)} characters (max {MAX_RAW}): {text}')
     for slot in SLOT_RE.findall(text):
@@ -367,6 +378,13 @@ def parse_file(path, problems):
                 # levels=35-49: a role whose lines only fit some levels ("i am not 50 yet"; live test 2026-10-18).
                 if 'levels' in req:
                     scene['roles'][role]['levels'] = parse_levels(req['levels'], where)
+                # task=rvr: a role whose lines tell what the bot is doing out there ("made it to {keep}", "first realm points"),
+                # cast only from bots really out for rvr (1.1.3 RC10 on the owner's PC: a 40 grinding in Avalon told it).
+                if 'task' in req:
+                    if req['task'] not in ('rvr',):
+                        problems.append(f'{where}: unknown task {req["task"]} (rvr)')
+                    else:
+                        scene['roles'][role]['task'] = req['task']
             elif key == 'exit':
                 # "@exit A": when the scene plays to its end, the bot cast as A logs off for a few hours (the rage quit).
                 if scene is None or not re.fullmatch(r'[A-H]', value):
@@ -451,6 +469,9 @@ def parse_file(path, problems):
             if len(family) > 1:
                 line['weight'] = round(weight, 4)
                 line['_family'] = True
+                # Beta 1.1.2: the ways of saying one template share a family, so a realm doesn't hear two of them close
+                # together ("that horse ride took so long i aged a year" / "... i grew a beard").
+                line['family'] = hashlib.sha1((tags['kind'] + '|' + text).encode()).hexdigest()[:10]
             if tags['kind'] in OPENER_KINDS:
                 line['invites'] = tags['invites'] or infer_invites(said, tags['kind'])
                 # A plain "ask" tag takes a more specific question type when the words show one ("how is everyone?").
