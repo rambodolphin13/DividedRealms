@@ -86,6 +86,9 @@ namespace DOL.UnitTests
             Assert.That(AutonomousRouteBlockMemory.TryNearest(band5, 200, inside, now + 1, out System.Numerics.Vector2 at, out float radius), Is.True);
             Assert.That((at, radius), Is.EqualTo((blocker, reach)));
             Assert.That(AutonomousRouteBlockMemory.TryNearest(band5, 201, inside, now + 1, out _, out _), Is.False, "another region");
+            Assert.That(AutonomousRouteBlockMemory.Within(band5, 200, new(351_000, 590_000), now + 1), Is.True, "a camp inside the reach never comes back");
+            Assert.That(AutonomousRouteBlockMemory.Within(band5, 200, new(352_000, 590_000), now + 1), Is.False);
+            Assert.That(AutonomousRouteBlockMemory.Within(band5, 200, new(351_000, 590_000), now + AutonomousRouteBlockMemory.CooldownMilliseconds + 1), Is.False, "forgotten");
             AutonomousRouteBlockMemory.Clear();
         }
 

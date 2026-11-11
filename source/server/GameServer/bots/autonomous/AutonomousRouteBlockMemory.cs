@@ -101,6 +101,20 @@ namespace DOL.GS
             return start < radius ? nearest < start - InsideTolerance : nearest < radius;
         }
 
+        /// <summary>Whether a point lies inside the reach of one of this owner's live blockers.</summary>
+        public static bool Within(long ownerKey, ushort region, Vector2 point, long now)
+        {
+            if (ownerKey == 0 || !Owners.TryGetValue(ownerKey, out Entry[] entries))
+                return false;
+            lock (entries)
+            {
+                foreach (Entry entry in entries)
+                    if (entry.Until > now && entry.Region == region && Vector2.Distance(entry.At, point) < entry.Radius)
+                        return true;
+            }
+            return false;
+        }
+
         /// <summary>The live blocker of this owner nearest to a point, for the log; false when there is none.</summary>
         public static bool TryNearest(long ownerKey, ushort region, Vector2 from, long now, out Vector2 at, out float radius)
         {

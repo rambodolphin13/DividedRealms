@@ -436,6 +436,12 @@ namespace DOL.GS
              AutonomousRouteBlockMemory.Crosses(AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, region), region,
                  new(bot.X, bot.Y), new(x, y), now));
 
+        /// <summary>A spot that lies inside the reach of a pack the bot, its party or its realm's bots of its level just gave up a camp for.</summary>
+        private bool IsInsideRouteBlocker(GameBot bot, ushort region, float x, float y, long now) =>
+            AutonomousRouteBlockMemory.Within(FailedGoalOwnerKey(bot), region, new(x, y), now) ||
+            AutonomousRouteBlockMemory.Within(WarbandGoalKey(), region, new(x, y), now) ||
+            AutonomousRouteBlockMemory.Within(AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, region), region, new(x, y), now);
+
         /// <summary>Where the bot stands and the nearest blocker it remembers, for the log line of a search that every blocker emptied.</summary>
         private string NearestRouteBlockerText(GameBot bot, long now)
         {
