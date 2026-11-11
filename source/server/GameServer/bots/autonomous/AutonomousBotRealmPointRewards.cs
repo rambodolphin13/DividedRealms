@@ -278,6 +278,8 @@ public static class AutonomousBotRealmPointRewards
                         player.RealmPointsValue, player.RealmLevel, contributorCount,
                         groupContributorCount, damagePercent, applyRankAdjustment);
 
+                    realmPointsEarned = RvrRealmPointRules.OnKillRealmPoints(player, realmPointsEarned); // DR-181, DR-182
+
                     if (realmPointsEarned > 0)
                         player.GainRealmPoints(realmPointsEarned, true);
 
@@ -368,6 +370,7 @@ public static class AutonomousBotRealmPointRewards
             int points = CalculateRealmPointReward(victimRealmPointValue, victimRealmLevel,
                 GetPlayerEquivalentRealmPointValue(bot.Level, bot.RealmLevel), bot.RealmLevel,
                 groupCount, groupCount, damagePercent, true);
+            points = RvrRealmPointRules.OnKillRealmPoints(bot, points); // DR-181, DR-182
             if (points > 0) bot.GainRealmPoints(points, true);
 
             // Bounty points as a player gets them (same split, cap and battleground rule); gamebots keep none.

@@ -163,6 +163,7 @@ namespace DOL.GS.Spells
 
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams)
         {
+            ServerRules.RvrRealmPointRules.OnCrowdControl(Caster, initParams.Target, false); // 1.81: a mez is 5% of the damage pool (DR-177)
             return ECSGameEffectFactory.Create(initParams, static (in i) => new MezECSGameEffect(i));
         }
 
@@ -248,6 +249,7 @@ namespace DOL.GS.Spells
 
         public override ECSGameSpellEffect CreateECSEffect(in ECSGameEffectInitParams initParams)
         {
+            ServerRules.RvrRealmPointRules.OnCrowdControl(Caster, initParams.Target, true); // 1.81: a stun is 10% of the damage pool (DR-177)
             return ECSGameEffectFactory.Create(initParams, static (in i) => new StunECSGameEffect(i));
         }
 

@@ -247,6 +247,7 @@ namespace DOL.GS.Spells
             }
 
             playerCaster?.Statistics.AddToHitPointsHealed((uint) effectiveAmount);
+            ServerRules.RvrRealmPointRules.OnHeal(Caster, target, Spell, effectiveAmount); // 1.81 realm points for RvR heals (DR-176)
             return true;
         }
 
