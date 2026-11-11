@@ -312,6 +312,30 @@ namespace DOL.GS
                     result[i] = Math.Max(1, Math.Min(lineCap(types[i]), (int)Math.Round(want[i])));
             }
 
+            // Each line rounds on its own, and a skill point is worth 5: four lines rounding up together put an item
+            // 6 or more over its target (DR-254). Take back the line that rounded up furthest, while that lands closer.
+            while (true)
+            {
+                double total = 0;
+                for (int i = 0; i < count; i++)
+                    total += perPoint[i] > 0 ? result[i] * perPoint[i] : 0;
+
+                double excess = total - target;
+                int worst = -1;
+                for (int i = 0; i < count; i++)
+                {
+                    if (perPoint[i] > 0 && result[i] > 1 && result[i] > want[i] &&
+                        (worst < 0 || (result[i] - want[i]) * perPoint[i] > (result[worst] - want[worst]) * perPoint[worst]))
+                    {
+                        worst = i;
+                    }
+                }
+
+                if (worst < 0 || perPoint[worst] >= 2 * excess)
+                    break;
+                result[worst]--;
+            }
+
             return result;
         }
 
