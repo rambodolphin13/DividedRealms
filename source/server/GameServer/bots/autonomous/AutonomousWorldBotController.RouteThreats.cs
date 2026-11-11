@@ -436,6 +436,30 @@ namespace DOL.GS
              AutonomousRouteBlockMemory.Crosses(AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, region), region,
                  new(bot.X, bot.Y), new(x, y), now));
 
+        /// <summary>Where the bot stands and the nearest blocker it remembers, for the log line of a search that every blocker emptied.</summary>
+        private string NearestRouteBlockerText(GameBot bot, long now)
+        {
+            Vector2 here = new(bot.X, bot.Y);
+            (string Owner, long Key)[] owners =
+            [
+                ("own", FailedGoalOwnerKey(bot)), ("party", WarbandGoalKey()),
+                ("realm", AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, bot.CurrentRegionID)),
+            ];
+            string text = $" at={bot.CurrentRegionID}:{bot.X},{bot.Y}";
+            float best = float.MaxValue;
+            foreach ((string owner, long key) in owners)
+            {
+                if (!AutonomousRouteBlockMemory.TryNearest(key, bot.CurrentRegionID, here, now, out Vector2 at, out float radius))
+                    continue;
+                float distance = Vector2.Distance(at, here);
+                if (distance >= best)
+                    continue;
+                best = distance;
+                text = $" at={bot.CurrentRegionID}:{bot.X},{bot.Y} blocker={(int)at.X},{(int)at.Y} reach={(int)radius} distance={(int)distance} from={owner}";
+            }
+            return text;
+        }
+
         private bool HasRouteBlockers(GameBot bot, long now) =>
             AutonomousRouteBlockMemory.HasAny(FailedGoalOwnerKey(bot), now) || AutonomousRouteBlockMemory.HasAny(WarbandGoalKey(), now) ||
             AutonomousRouteBlockMemory.HasAny(AutonomousRouteBlockMemory.WordOfMouthKey(bot.Realm, bot.Level, bot.CurrentRegionID), now);

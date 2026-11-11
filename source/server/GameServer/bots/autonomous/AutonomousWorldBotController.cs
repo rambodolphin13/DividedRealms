@@ -3911,7 +3911,8 @@ namespace DOL.GS
                 AutonomousRouteGoalFixMetrics.CampRepickBlocked();
             if (behindBlockers > 0)
                 if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_BLOCK_SKIP bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
-                         $"group={(sharedGroup ? _groupDirective.GroupId : "solo")} skipped={behindBlockers} left={camps.Count}");
+                         $"group={(sharedGroup ? _groupDirective.GroupId : "solo")} skipped={behindBlockers} left={camps.Count}" +
+                         (camps.Count == 0 ? NearestRouteBlockerText(bot, planNow) : string.Empty));
 
             // Once realm/accessibility/level/con filters have been applied, each
             // distinct location is drawn in proportion to its live spawns (capped).
