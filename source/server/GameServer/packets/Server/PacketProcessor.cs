@@ -163,7 +163,7 @@ namespace DOL.GS.PacketHandler
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, byte> _unhandledLogged = new();
 
         // Notices the 1.130 client sends on world entry and exit; official servers do not answer them either.
-        public static bool IsKnownUnhandledClientPacket(int code) => code is 0x1D or 0x41 or 0x42 or 0x43 or 0x98 or 0xAC or 0xB8;
+        public static bool IsKnownUnhandledClientPacket(int code) => code is 0x1D or 0x42 or 0x43 or 0xAC or 0xB8;
 
         public void ProcessInboundPacket(GSPacketIn packet)
         {
