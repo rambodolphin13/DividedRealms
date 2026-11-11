@@ -889,8 +889,8 @@ namespace DOL.GS.Quests
                     ushort look = BodiedModel(spawn.Name, spawn.Region);
                     if (look == 0)
                     {
-                        Log.Warn($"CLASSIC_QUEST_SPAWN_NO_MODEL quest={quest} step={step} name=\"{spawn.Name}\": not spawned (give it a Model or TemplateId)");
-                        return;
+                        Log.Warn($"CLASSIC_QUEST_SPAWN_NO_MODEL name=\"{spawn.Name}\" region={spawn.Region}: not spawned (give it a Model or TemplateId)");
+                        break;
                     }
                     npc.Model = look;
                 }
