@@ -109,6 +109,10 @@ namespace DOL.GS.ServerRules
             if (!CountsAsPlayer(target) || InBattleground(target))
                 return;
 
+            // A target still immune from the last one is not held: no credit.
+            if (target.effectListComponent?.ContainsEffectForEffectType(stun ? eEffect.StunImmunity : eEffect.MezImmunity) == true)
+                return;
+
             double credit = CrowdControlCredit(target.MaxHealth, stun);
 
             if (credit > 0)
