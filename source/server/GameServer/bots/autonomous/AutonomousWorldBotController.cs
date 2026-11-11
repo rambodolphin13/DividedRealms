@@ -3764,10 +3764,12 @@ namespace DOL.GS
                 campGiveUpSkipped |= blocked;
                 return blocked;
             }
-            // Nor a camp beyond the pack a camp was just given up for (AutonomousRouteBlockMemory).
+            // Nor a camp beyond the pack a camp was just given up for (AutonomousRouteBlockMemory). Asked last, of the
+            // camps that pass everything else: blockers alone must not leave a bot with no camp at all (DR-277).
             long planNow = GameLoop.GameLoopTime;
             bool routeBlockers = HasRouteBlockers(bot, planNow);
             int behindBlockers = 0;
+            List<(AutonomousBotDecisionEngine.Camp Camp, float X, float Y)> behindBlockerCamps = null;
             bool BehindBlocker(CampCatalogCell cell)
             {
                 bool behind = routeBlockers && IsBehindRouteBlocker(bot, cell.RegionId, cell.X, cell.Y, planNow);
@@ -3776,7 +3778,7 @@ namespace DOL.GS
             }
             foreach (CampCatalogCell cell in CampCatalogSnapshot()
                          .Where(cell => !rejectedDungeons.Contains(cell.Id) && reachableRegions.Contains(cell.RegionId) &&
-                                        !CampGiveUp(cell) && !BehindBlocker(cell) &&
+                                        !CampGiveUp(cell) &&
                                         (sharedGroup || !_recentFailedSoloCamps.ContainsKey(cell.Id)) &&
                                         !AutonomousCampRouteQuarantine.IsQuarantined(cell.Id) &&
                                         !AutonomousCampRouteQuarantine.IsFamilyQuarantined(cell.RegionId, cell.MonsterName) &&
@@ -3887,7 +3889,7 @@ namespace DOL.GS
 
                 destinations[cell.Id] = new(cell.Id, cell.MonsterName, cell.ZoneName, cell.RegionId,
                     cell.X, cell.Y, cell.Z, cell.LiveMobCount, cell.IsDungeon, cell.IsFrontier);
-                camps.Add(new(
+                AutonomousBotDecisionEngine.Camp option = new(
                     cell.Id,
                     cell.ZoneName,
                     cell.MonsterName,
@@ -3905,13 +3907,31 @@ namespace DOL.GS
                             cell.X, cell.Y, bot.Level, dangerUtc) ? AutonomousPveBossDanger.RoutePenaltyMinutes : 0) : 0,
                     averageLevel,
                     cell.IsDungeon ? AutonomousDungeonPopulationPolicy.Population(cell.RegionId) : 0,
-                    cell.IsDungeon ? AutonomousDungeonPopulationPolicy.Capacity(cell.RegionId, cell.LiveMobCount) : 0));
+                    cell.IsDungeon ? AutonomousDungeonPopulationPolicy.Capacity(cell.RegionId, cell.LiveMobCount) : 0);
+                if (BehindBlocker(cell))
+                    (behindBlockerCamps ??= new()).Add((option, cell.X, cell.Y));
+                else
+                    camps.Add(option);
             }
             if (campGiveUpSkipped)
                 AutonomousRouteGoalFixMetrics.CampRepickBlocked();
+            // Every camp that fits lies beyond a blocker: the ones that are not themselves inside a blocker's reach come
+            // back, and the route threat scan deals with the pack on the way as it does on any other walk.
+            int readmitted = 0;
+            if (camps.Count == 0 && behindBlockerCamps != null)
+            {
+                foreach ((AutonomousBotDecisionEngine.Camp camp, float x, float y) in behindBlockerCamps)
+                {
+                    if (IsInsideRouteBlocker(bot, camp.RegionId, x, y, planNow))
+                        continue;
+                    camps.Add(camp);
+                    readmitted++;
+                }
+            }
             if (behindBlockers > 0)
                 if (BotDiagnostics.Enabled) Log.Info($"AUTONOMOUS_ROUTE_BLOCK_SKIP bot={bot.Name} id={bot.DatabaseID} level={bot.Level} " +
-                         $"group={(sharedGroup ? _groupDirective.GroupId : "solo")} skipped={behindBlockers} left={camps.Count}");
+                         $"group={(sharedGroup ? _groupDirective.GroupId : "solo")} skipped={behindBlockers} left={camps.Count} readmitted={readmitted}" +
+                         (camps.Count == 0 || readmitted > 0 ? NearestRouteBlockerText(bot, planNow) : string.Empty));
 
             // Once realm/accessibility/level/con filters have been applied, each
             // distinct location is drawn in proportion to its live spawns (capped).
