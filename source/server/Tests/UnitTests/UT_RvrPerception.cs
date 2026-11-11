@@ -407,6 +407,14 @@ namespace DOL.GS.Tests
             Assert.That(AutonomousRvrPerception.MayAnswerCall(RvrCallDuty.RealmRaid), Is.False);
             Assert.That(AutonomousRvrPerception.MayAnswerCall(RvrCallDuty.BattlegroundWave), Is.False);
             Assert.That(AutonomousRvrPerception.MayAnswerCall(RvrCallDuty.PlayerGroup), Is.False);
+            // Living Server 1.2: the same rule read from a duty lease.
+            Assert.That(AutonomousRvrPerception.MayAnswerCall(eDutyLeaseKind.None), Is.True, "free");
+            Assert.That(AutonomousRvrPerception.MayAnswerCall(eDutyLeaseKind.RvrEvent), Is.True, "an RvR march");
+            Assert.That(AutonomousRvrPerception.MayAnswerCall(eDutyLeaseKind.BotGroupSession), Is.True, "its bot group is who the call is for");
+            Assert.That(AutonomousRvrPerception.MayAnswerCall(eDutyLeaseKind.RealmRaid), Is.False);
+            Assert.That(AutonomousRvrPerception.MayAnswerCall(eDutyLeaseKind.BattlegroundWave), Is.False);
+            Assert.That(AutonomousRvrPerception.MayAnswerCall(eDutyLeaseKind.PlayerGroup), Is.False);
+            Assert.That(AutonomousRvrPerception.MayAnswerCall(eDutyLeaseKind.BotLedGroupWithPlayer), Is.False);
         }
 
         [Test]

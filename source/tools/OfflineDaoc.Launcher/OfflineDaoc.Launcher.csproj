@@ -33,6 +33,11 @@
     <!-- IMPORT PROGRESS: the progress transfer's own engine, so a new folder takes saves by the same rules. -->
     <Compile Include="../OfflineDaoc.ProgressImport/ImportEngine.cs" Link="Updates/ImportEngine.cs" />
     <EmbeddedResource Include="../OfflineDaoc.ProgressImport/progress-policy.json" LogicalName="progress-policy.json" />
+    <!-- Living Server 1.2: the lore bible's channels shared with the server (the Herald's chronicle and bestiary), and the
+         lore files themselves, the same ones the server embeds (LauncherLore). -->
+    <Compile Include="../../server/GameServer/lorechannels/LoreChannelData.cs" Link="Lore/LoreChannelData.cs" />
+    <Compile Include="../../server/GameServer/lorechannels/LoreHerald.cs" Link="Lore/LoreHerald.cs" />
+    <EmbeddedResource Include="../../server/GameServer/bots/autonomous/data/lore/**/*.json" LogicalName="OfflineDaoc/lore/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Join Friend.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

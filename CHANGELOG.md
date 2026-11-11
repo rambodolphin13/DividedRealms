@@ -422,6 +422,36 @@ client). The original DAoC client is no longer supported, and the Sluaghbinder c
 - The Sluaghbinder is no longer offered anywhere: new characters can't choose it, no gamebots or /spawn companions are
   made as one, and its trainer, wisp, quest line and quest monsters are gone (existing installs: run
   tools/claude-version/remove_sluaghbinder_npcs.py once with the server stopped). Old characters still load.
+- Solo gamebots pick up the coin and items of their own kills again. The check for who may pick up a dropped bag
+  compared the owner by reference instead of by value, so a bot never counted as the owner of its own drops.
+- Bots buy the best equipment upgrade they can afford. They chose the best upgrade on a merchant's list first and,
+  when it cost more than they had, bought nothing, although cheaper upgrades were on the same list.
+- Relic campaigns: an army out to take a relic first takes the frontier keeps whose sentinels guard that relic keep.
+  Every keep a realm holds stands a 3x-health sentinel at its relic temple, and an army that marched straight in was
+  wiped by them (in one test 125 of 173 deaths at a relic keep were guards, 63 of them sentinels). The relic siege
+  follows once at most two sentinels are left.
+- High-end raid encounters (epic named monsters, the raid boss, a dungeon's final bosses): a player in the fight gets
+  one item in four straight into the bag and 25% of the coin; the bots share the rest. Other kills are unchanged.
+- Gamebots are drawn at a player's height (short, average or tall) instead of a random size that could make them
+  far taller than any player.
+- Bot relic raids can take a relic home. Before, a relic raid could never end in a capture:
+  - After the gates fall, the army goes up onto the enemy relic shrine (in four of the six relic keeps the relic sits
+    about 650 units from the keep centre and 830 higher, so the bots never saw it and the pad never held the 8 it
+    needs). A relic is lifted as soon as there is a way to it, not after every door of the keep is broken.
+  - The healthiest raider on the pad carries it and runs home: no fighting or looting on the way unless stunned or
+    cornered, and it opens its own keep's gates to reach its shrine (it used to stand outside them until the stuck
+    check made it drop the relic, over and over). The escort stays with it until the capture.
+  - Sieging bots with nothing else to fight hit the nearest gate by hand, as players did, instead of waiting for rams.
+    Ranged bots step in to a sentinel (relic temple guards take no damage from beyond 800).
+  - A relic campaign is kept, and retried, until its relic siege really starts; it ends after six hours without a
+    keep taken (not six hours from the start) or three steps in a row with no progress. Raids in progress survive a
+    server restart and are planned again about five minutes later; a relic being carried at a restart goes back to
+    the pad it was taken from.
+  - A relic that goes back to its pad by itself ends its carrier event (the leftover event blocked every new siege
+    for every realm for up to four hours), only living sentinels count, every refused pickup is logged with the
+    reason, and the frontier porters no longer teleport a player carrying a relic (bots already could not).
+- Gamebots face the monster they are hitting. A bot that walked to its own spot (closing in, a flank, behind for a
+  style) and stopped kept facing the way it walked while it swung; it now turns to its target.
 
 **World**
 - Abermenai, the 15-19 battleground, loads in the original game client. The client shipped it without terrain, so

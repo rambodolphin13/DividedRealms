@@ -304,6 +304,7 @@ namespace DOL.GS
 
         public bool Tick(BotBrain brain)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerTick); // AI_PROFILE: measures only
             GameBot bot = brain?.BotBody;
             if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.IsPlayerLedGroup)
                 return false;
@@ -522,7 +523,7 @@ namespace DOL.GS
                     if (AutonomousObjectiveAssignments.Is(bot, eAutonomousObjectiveKind.RvR) && StepInOnSentinel(brain, bot, bot.TargetObject as GameLiving))
                         return true;
                     if (bot.TargetObject is GameLiving target)
-                        SetStatus(bot, $"Fighting {target.Name}", GoalText(), $"Engaged level {target.EffectiveLevel} {target.Name}", target.Name);
+                        SetStatus(bot, $"Fighting {target.Name}", CombatGoalText(bot), $"Engaged level {target.EffectiveLevel} {target.Name}", target.Name);
                     return false;
                 }
 
@@ -946,6 +947,7 @@ namespace DOL.GS
 
         private bool TravelAcrossRegions(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerTravelRegions); // AI_PROFILE: measures only
             CampDestination camp = _camp;
             if (camp == null)
                 return true;
@@ -1105,6 +1107,7 @@ namespace DOL.GS
 
         private bool TryRouteToNeededService(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.TownService); // AI_PROFILE: measures only
             eWorldServiceKind? needed = AutonomousBotEconomy.GetNeededService(bot);
             if (needed is not eWorldServiceKind.RealmExchange and not eWorldServiceKind.Vendor and not eWorldServiceKind.SealMerchant)
             {
@@ -1353,6 +1356,7 @@ namespace DOL.GS
 
         private bool HandlePendingTraining(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.TownService); // AI_PROFILE: measures only
             if (!AutonomousObjectiveAssignments.WantsBetweenTaskTraining(bot) && !bot.IsAutonomousTrainingOverdue ||
                 !bot.HasSpendableAutonomousTrainingPoints)
             {
@@ -1522,6 +1526,7 @@ namespace DOL.GS
 
         private bool HandleGroupRendezvous(GameBot bot, AutonomousBotGroupCoordinator.Directive directive)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerRendezvous); // AI_PROFILE: measures only
             GameBot leader = directive.Leader;
             bool leaderStaging = directive.Phase == "Leader staging";
             if ((leaderStaging || directive.Phase == "Regrouping" && !directive.LeaderReadyForAssembly) && bot != leader)
@@ -1621,6 +1626,7 @@ namespace DOL.GS
         private bool HandleGroupCombatAndRecovery(BotBrain brain, GameBot bot,
             AutonomousBotGroupCoordinator.Directive directive)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerGroupCombat); // AI_PROFILE: measures only
             if (directive.GroupCombatActive)
             {
                 // A member fighting beyond assist range used to leave everyone else
@@ -1866,6 +1872,7 @@ namespace DOL.GS
 
         private bool FollowDynamicGroupLeader(GameBot bot, AutonomousBotGroupCoordinator.Directive directive)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerFollowLeader); // AI_PROFILE: measures only
             GameBot leader = directive.Leader;
             if (leader == null || !leader.IsAlive)
                 return true;
@@ -1986,6 +1993,7 @@ namespace DOL.GS
 
         private bool ExecuteRvr(BotBrain brain, GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerRvr); // AI_PROFILE: measures only
             bool dynamicWarband = _groupDirective?.IsDynamic == true &&
                                   _groupDirective.ObjectiveKind == eAutonomousObjectiveKind.RvR;
             string forceId = dynamicWarband ? _groupDirective.GroupId : $"rvr-{bot.DatabaseID}";
@@ -2265,6 +2273,10 @@ namespace DOL.GS
                 .Where(guard => guard.Component?.Keep != null && $"rvr-keep-{guard.Component.Keep.KeepID}" == _rvrDestination?.Id)
                 .Where(guard => !guard.IsPortalKeepGuard && AutonomousRvrKeepPolicy.IsSiegeObjective(guard.Component?.Keep))
                 .Where(guard => !closedDoor || guard is not GuardLord)
+                // Holding at a battleground rally: what comes at the rally, never the lord (the rally goes up together).
+                .Where(guard => _battlegroundRallyHold is not { } rally || !BattlegroundBrackets.IsBattlegroundRegion(bot.CurrentRegionID) ||
+                    guard is not GuardLord &&
+                    Vector3.DistanceSquared(rally, new(guard.X, guard.Y, guard.Z)) <= BattlegroundRallyEngageRadius * (float)BattlegroundRallyEngageRadius)
                 .Where(guard => GameServer.ServerRules.IsAllowedToAttack(bot, guard, true))
                 .Where(guard => PathfindingProvider.Instance.HasLineOfSight(bot.CurrentZone, new(bot.X, bot.Y, bot.Z),
                     new(guard.X, guard.Y, guard.Z), PathfindingProvider.Instance.BlockingDoorAvoidanceFilters))
@@ -3090,6 +3102,7 @@ namespace DOL.GS
 
         private bool WorkCamp(BotBrain brain, GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerWorkCamp); // AI_PROFILE: measures only
             if (HoldBeforeNewGroupPull(brain, bot)) return true;
             if (bot.GoalDiagnosticAttempt is { ArrivedUtc: null } attempt)
                 attempt.Arrive(DateTime.UtcNow);
@@ -3671,6 +3684,7 @@ namespace DOL.GS
 
         private void SelectCamp(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerSelectCamp); // AI_PROFILE: measures only
             if (_groupDirective?.IsDynamic == true && _groupDirective.Leader == bot &&
                 AutonomousRealmRaid.TryJoin(bot, out var raid))
             {
@@ -3773,7 +3787,11 @@ namespace DOL.GS
                                         IsZoneAccessible(bot.Realm, cell.Zone, bot.CurrentRegionID) &&
                                         AutonomousOrdinaryPveRealmPolicy.CanAssignCamp(bot.Realm, cell.RegionId,
                                             cell.Zone?.ID ?? 0, planningLevel, cell.NewbieShore) &&
-                                        AutonomousAuditedCampPolicy.CanAssignToParty(cell.Id, groupSize)))
+                                        AutonomousAuditedCampPolicy.CanAssignToParty(cell.Id, groupSize) &&
+                                        // Bot-led groups: a party hosting the player hunts where the player can walk or ride.
+                                        (_groupDirective?.HostedPlayer == null || !cell.IsFrontier &&
+                                         cell.RegionId != AutonomousDarknessFallsPolicy.RegionId &&
+                                         !BattlegroundBrackets.IsBattlegroundRegion(cell.RegionId))))
             {
                 // Filled into a reused buffer; only a camp that qualifies gets its own array (this per-cell
                 // filter was the largest single allocation in a 30 s trace, 2026-10-17).
@@ -4537,6 +4555,7 @@ namespace DOL.GS
 
         private bool HandleStableTravel(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerStableTravel); // AI_PROFILE: measures only
             if (!bot.IsOnStableMasterRoute)
                 return false;
             bot.MaintainStableMasterRoute();
@@ -4656,6 +4675,7 @@ namespace DOL.GS
 
         private bool HandleRealmRaidStableTravel(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerRaidTravel); // AI_PROFILE: measures only
             if (!RealmRaidStableTravel.TryOrder(bot, GameLoop.GameLoopTime, out var order, out string failure))
             {
                 if (failure != null)
@@ -4923,6 +4943,7 @@ namespace DOL.GS
             bool preciseArrival = false, bool retargetWhileMoving = false,
             [System.Runtime.CompilerServices.CallerMemberName] string caller = "")
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerIssuePath); // AI_PROFILE: measures only
             // A route order replaces the party formation follow (it resumes on the next follow turn).
             AutonomousGroupFormationFollow.Release(bot);
             _issuedPreciseArrival = preciseArrival;

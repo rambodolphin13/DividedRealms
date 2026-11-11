@@ -133,7 +133,7 @@ public static class TemporaryGroupStableTravel
     public static bool TryBringGroupmateAlong(GameBot bot)
     {
         if (bot is not { IsAutonomousWorldBot: true, IsTemporaryGroupHelper: false, IsOnStableMasterRoute: false, IsAlive: true } ||
-            bot.PlayerGroupLeader is not { IsAlive: true, ObjectState: GameObject.eObjectState.Active } player ||
+            PlayerTheBotTravelsWith(bot) is not { IsAlive: true, ObjectState: GameObject.eObjectState.Active } player ||
             player.Group == null || bot.Group != player.Group || player.CurrentZone == null ||
             !TransferOrigins.TryGetValue(player, out var origin) || DateTime.UtcNow - origin.Utc > TransferMarkerLifetime)
             return false;
@@ -150,10 +150,21 @@ public static class TemporaryGroupStableTravel
                 (int)Math.Round(destination.Z), player.Heading))
             return false;
         bot.EndReturnJourney();
+        // An invited gamebot follows the player again; a bot-led party's gamebot goes back to its own leader's orders.
         if (bot.Brain is BotBrain brain)
-            brain.FSM.SetCurrentState(eFSMStateType.FOLLOW);
+            brain.FSM.SetCurrentState(bot.IsPlayerLedGroup ? eFSMStateType.FOLLOW : eFSMStateType.IDLE);
         return true;
     }
+
+    /// <summary>
+    /// The real player an autonomous gamebot goes along with through a porter or a stable route: the player who leads it
+    /// (/invite), or the player its bot-led party hosts (docs/BOT-LED-GROUPS.md: "you board or ride first and the bots
+    /// come with you, as your invited bots do now"). Null for a bot on its own or in a bot-only party.
+    /// </summary>
+    public static GamePlayer PlayerTheBotTravelsWith(GameBot bot) =>
+        bot == null ? null : bot.PlayerGroupLeader ??
+            // B3: a realm raid's party with the player in it musters at the raid's hub; it doesn't ride with the player.
+            (BotLedGroups.ViewOf(bot.Group) is { RaidGuest: false } view ? view.Player : null);
 
     public static void MarkAcceptedPlayerTransfer(GamePlayer player)
     {

@@ -321,6 +321,12 @@ public static class AutonomousRvrPerception
     public static bool MayAnswerCall(RvrCallDuty duty) =>
         duty is RvrCallDuty.None or RvrCallDuty.RvrEvent or RvrCallDuty.BotGroup;
 
+    /// <summary>
+    /// Living Server 1.2: the same rule read from a duty lease (docs/DUTY-LEASE.md). Divided Realms asks both.
+    /// </summary>
+    public static bool MayAnswerCall(eDutyLeaseKind duty) =>
+        duty is eDutyLeaseKind.None or eDutyLeaseKind.RvrEvent or eDutyLeaseKind.BotGroupSession;
+
     /// <summary>Whether another group of the warband hears a relayed call, for a roll from 0 to 1. Pure.</summary>
     public static bool RelayReaches(double roll) => roll < WarbandRelayChance;
 

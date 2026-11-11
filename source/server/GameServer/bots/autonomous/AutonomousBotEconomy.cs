@@ -93,7 +93,7 @@ namespace DOL.GS;
                 AutonomousBotStatusPersistence.Queue(live);
             else
             {
-                lock (AutonomousBotStatusPersistence.DatabaseWriteLock)
+                using (AiProfile.Lock(AutonomousBotStatusPersistence.DatabaseWriteLock, AiSystem.LockDatabaseWrite))
                     GameServer.Database.SaveObject(bot);
             }
             return true;
@@ -119,7 +119,7 @@ namespace DOL.GS;
                 AutonomousBotStatusPersistence.Queue(live);
             else
             {
-                lock (AutonomousBotStatusPersistence.DatabaseWriteLock)
+                using (AiProfile.Lock(AutonomousBotStatusPersistence.DatabaseWriteLock, AiSystem.LockDatabaseWrite))
                     GameServer.Database.SaveObject(bot);
             }
             return true;
@@ -144,6 +144,7 @@ namespace DOL.GS;
 
     public static PurchaseCandidate FindBestUsefulExchangePurchase(GameBot bot, int maximumResults = 48)
     {
+        using var aiProfile = AiProfile.Scope(AiSystem.EconomyValuation); // AI_PROFILE: measures only
         if (bot?.Inventory == null || bot.DatabaseID <= 0)
             return null;
 
@@ -335,6 +336,7 @@ namespace DOL.GS;
         /// </summary>
         public static eWorldServiceKind? GetNeededService(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.EconomyValuation); // AI_PROFILE: measures only
             if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.Inventory == null ||
                 !AutonomousObjectiveAssignments.WantsBetweenTaskInventory(bot))
                 return null;
@@ -423,7 +425,7 @@ namespace DOL.GS;
         {
             removed = 0;
             if (!arrivedAtMerchant || bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper ||
-                bot.IsPlayerLedGroup || bot.Inventory == null || bot.DatabaseID <= 0 ||
+                BotDutyLeases.IsSpokenForByPlayer(bot) || bot.Inventory == null || bot.DatabaseID <= 0 ||
                 !IsBackpackFull(bot) || FindVendorTrashCandidate(bot) != null ||
                 FindValuableListingCandidate(bot) != null)
                 return false;
@@ -555,6 +557,7 @@ namespace DOL.GS;
 
         public static ListingCandidate FindValuableListingCandidate(GameBot bot)
     {
+        using var aiProfile = AiProfile.Scope(AiSystem.EconomyValuation); // AI_PROFILE: measures only
         if (bot?.Inventory == null || bot.DatabaseID <= 0 ||
             (!IsBackpackFull(bot) && !AutonomousObjectiveAssignments.IsBetweenPveTasks(bot)))
             return null;
@@ -585,6 +588,7 @@ namespace DOL.GS;
 
         public static DbInventoryItem FindVendorTrashCandidate(GameBot bot)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.EconomyValuation); // AI_PROFILE: measures only
             if (bot?.Inventory == null)
                 return null;
 
@@ -708,6 +712,7 @@ namespace DOL.GS;
 
         public static bool TryBuyUsefulVendorUpgrade(GameBot bot, GameMerchant merchant, out DbInventoryItem purchased, out long copper)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.EconomyValuation); // AI_PROFILE: measures only
             purchased = null;
             copper = 0;
             if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.Inventory == null ||
@@ -922,7 +927,7 @@ namespace DOL.GS;
             return false;
 
         lock (RealmExchangeBroker.TransactionLock)
-        lock (AutonomousBotStatusPersistence.DatabaseWriteLock)
+        using (AiProfile.Lock(AutonomousBotStatusPersistence.DatabaseWriteLock, AiSystem.LockDatabaseWrite))
         {
         string ownerId = GetOwnerId(bot.DatabaseID);
         if (!bot.Inventory.AllItems.Contains(item))
@@ -1004,7 +1009,7 @@ namespace DOL.GS;
     {
         lock (RealmExchangeBroker.TransactionLock)
         lock (typeof(AutonomousBotEconomy))
-        lock (AutonomousBotStatusPersistence.DatabaseWriteLock)
+        using (AiProfile.Lock(AutonomousBotStatusPersistence.DatabaseWriteLock, AiSystem.LockDatabaseWrite))
         {
             if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.PersistentRecord == null ||
                 bot.DatabaseID <= 0 || !RealmExchangeBroker.IsAvailableListing(item, bot.Realm) ||

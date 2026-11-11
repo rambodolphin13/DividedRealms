@@ -229,9 +229,14 @@ namespace DOL.AI.Brain
         // whoever stands in them; 145 raiders by the Magical Earthmender were swinging at them and 2 at the Earthmender.
         public static bool IsUntargetable(GameLiving living) => living is GameNPC { Flags: var flags } && (flags & GameNPC.eFlags.CANTTARGET) != 0;
 
+        /// <summary>Untargetable for this bot: as <see cref="IsUntargetable"/>, except a boss meant to be finished by spells for an
+        /// offensive caster (EpicEncounterTactics.FinishedBySpells: Lich Lord Sanguis's last 5%).</summary>
+        public bool IsUntargetableForMe(GameLiving living) => IsUntargetable(living) &&
+            !EpicEncounterTactics.MayFinishUntargetable(BotBody, living);
+
         public void ForceAddToAggroList(GameLiving living, long aggroAmount)
         {
-            if (IsUntargetable(living)) return;
+            if (IsUntargetableForMe(living)) return;
             if (!CompanionEngagementMode.Allows(Body, living)) return;
             if (_autonomousWorldController?.IgnoresTarget(living) == true) return;
             if (CompanionRaidSiege.Ignores(Body as GameBot, living)) return;
@@ -334,7 +339,7 @@ namespace DOL.AI.Brain
         protected virtual bool ShouldBeRemovedFromAggroList(GameLiving living)
         {
             return !living.IsAlive ||
-                   IsUntargetable(living) ||
+                   IsUntargetableForMe(living) ||
                    living.ObjectState != GameObject.eObjectState.Active ||
                    living.CurrentRegion != Body.CurrentRegion ||
                    !Body.IsWithinRadius(living, MAX_AGGRO_LIST_DISTANCE) ||
@@ -1394,6 +1399,13 @@ namespace DOL.AI.Brain
             // Beggars (bot_living_beggars): a few Crafters live on a corner of their capital and do nothing else.
             if (AutonomousBeggars.Think(this))
                 return;
+            // 1.2: thrown, teleported or jailed by an encounter script: land, then get back to the raid (or wait in the jail),
+            // before any follow, pull or rally order of this turn can send it elsewhere.
+            if (EncounterDisplacementRecovery.Think(BotBody))
+                return;
+            // 1.2: a raid party sent on an encounter errand (Jailer Vifil's tunnel guards) walks there, clears it and comes back.
+            if (EpicEncounterTactics.ThinkErrand(BotBody))
+                return;
             // Out of a boss's blast before anything else (Xanxicar's stomp), whatever the bot is doing.
             if (EpicEncounterTactics.ThinkBlast(BotBody))
                 return;
@@ -1812,6 +1824,7 @@ namespace DOL.AI.Brain
 
         private void MaybeAutonomousWorldChat()
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ChatBotTurn); // AI_PROFILE: measures only
             GameBot bot = BotBody;
             long nowTick = GameLoop.GameLoopTime;
             if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || nowTick < _nextAmbientChatCheckTick)
@@ -1885,6 +1898,7 @@ namespace DOL.AI.Brain
 
         private bool TryHandleAutonomousRealmExchange(RealmExchangeBroker arrivedBroker = null)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.EconomyExchange); // AI_PROFILE: measures only
             GameBot bot = BotBody;
             long now = GameLoop.GameLoopTime;
             if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.IsPlayerLedGroup ||
@@ -1998,6 +2012,7 @@ namespace DOL.AI.Brain
         /// </summary>
         private bool TryHandleAutonomousMerchantService(GameMerchant arrivedMerchant = null)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.EconomyMerchant); // AI_PROFILE: measures only
             GameBot bot = BotBody;
             long now = GameLoop.GameLoopTime;
             if (bot?.IsAutonomousWorldBot != true || bot.IsTemporaryGroupHelper || bot.IsPlayerLedGroup ||
@@ -2334,7 +2349,7 @@ namespace DOL.AI.Brain
             if (bot.IsCasting && IsSelfBladeturn(bot.castingComponent?.SpellHandler?.Spell) && !HasAggro)
                 return true;
             if (now < _nextSelfBladeturnTick || bot.IsOnStableMasterRoute ||
-                CompanionFollowPolicy.WaitingForLeaderToStop(bot) ||
+                CompanionFollowPolicy.WaitingForLeaderToStop(bot) || EpicEncounterTactics.NoBladeturnHere(bot) ||
                 !SelfBladeturnSafe(true, HasAggro, bot.IsAttacking,
                     bot.IsCasting || bot.castingComponent?.HasPendingSkillRequests == true,
                     bot.IsStunned || bot.IsMezzed || bot.IsSilenced,
@@ -2614,6 +2629,8 @@ namespace DOL.AI.Brain
                 .GroupBy(spell => spell.SpellType)
                 .Select(group => group.OrderByDescending(spell => spell.Level).First())
                 .Where(spell => !BotSongTwistPolicy.KeepsRunning(bot, spell)).ToList();
+            // No pulsing bladeturn by a fighting Legion (he eats it and blasts after five): the chant goes to another anchor.
+            if (EpicEncounterTactics.NoBladeturnHere(bot)) chants.RemoveAll(spell => spell.SpellType == eSpellType.Bladeturn);
             if (chants.Count == 0) return;
             Spell active = bot.effectListComponent.GetPulseEffects()
                 .FirstOrDefault(effect => !effect.IsEnding && !effect.IsEnded &&
@@ -3488,6 +3505,7 @@ namespace DOL.AI.Brain
         {
             if (!IsActive)
                 return;
+            NoteCastForStep();
 
             if (AutonomousDefensivePull.Hold(BotBody))
             {
@@ -3612,6 +3630,10 @@ namespace DOL.AI.Brain
                 // side styles (BotBrain.Flank, hand port from True165). Epic tactics above keep raids to themselves.
                 if (Body.TargetObject is GameLiving flankTarget && TryFlank(flankTarget))
                     return;
+                // Then, standing there and swinging, it circles a little now and then instead of standing like a post
+                // (BotBrain.CombatMovement). A tank holding aggro stays put; raids and player-led groups as before.
+                if (Body.TargetObject is GameLiving circleTarget && TryCircle(circleTarget))
+                    return;
                 if (Body.IsStealthed)
                     Body.Stealth(false);
 
@@ -3656,6 +3678,11 @@ namespace DOL.AI.Brain
                     Body.StopAttack();
                     return;
                 }
+
+                // A caster steps aside now and then right after a cast ended, never during one (BotBrain.CombatMovement).
+                if (rangedCaster && !OutOfPowerForOffense() && Body.TargetObject is GameLiving casterStepTarget &&
+                    TryCasterStep(casterStepTarget))
+                    return;
 
                 bool bowCycleOwnsAction = Body.attackComponent != null &&
                     Body.rangeAttackComponent != null &&
@@ -3740,6 +3767,18 @@ namespace DOL.AI.Brain
                             stance,
                             targetForcesMelee,
                             hasRangedCombatWeapon);
+                        // An epic rule says this target is fought with the distance weapon only (Funus: a melee swing from
+                        // a mercenary, armsman, infiltrator or scout heals him to full). Short of endurance for a shot the
+                        // bot waits; it never falls back to its melee weapon on him.
+                        if (EpicEncounterTactics.FightsAtRange(BotBody, livingTarget))
+                        {
+                            if (!hasRangedCombatWeapon)
+                            {
+                                if (Body.ActiveWeaponSlot != eActiveWeaponSlot.Distance) Body.StopAttack();
+                                return;
+                            }
+                            useRanged = true;
+                        }
                         if (useRanged)
                         {
                             if (Body.ActiveWeaponSlot != eActiveWeaponSlot.Distance)
@@ -3903,9 +3942,21 @@ namespace DOL.AI.Brain
             return true;
         }
 
+        /// <summary>
+        /// A bot may fall back to its melee weapon on <paramref name="target"/> (pressed in melee, or out of power) unless an
+        /// epic rule says it fights this target with its distance weapon only (Funus: a scout's, mercenary's, armsman's or
+        /// infiltrator's melee hit heals him to full). Play test duo13: every melee switch traced on Funus came from the
+        /// melee-pressure fallback, and 50 of his 51 heals were scouts swinging their swords while he stood on them.
+        /// </summary>
+        public static bool MayFallBackToMelee(GameBot bot, GameLiving target) =>
+            !EpicEncounterTactics.FightsAtRange(bot, target);
+
         private bool TryEngageUnderMeleePressure(GameLiving target)
         {
             if (target?.IsAlive != true || !Body.IsWithinRadius(target, Body.MeleeAttackRange + 35))
+                return false;
+            // The ranged branch of AttackMostWanted keeps the distance weapon; the rule's step-back opens the range.
+            if (!MayFallBackToMelee(BotBody, target))
                 return false;
 
             // Being close to an enemy is not itself an interruption. A caster
@@ -4125,6 +4176,7 @@ namespace DOL.AI.Brain
 
         private void QueueUsableMeleeStyle()
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.CombatStyle); // AI_PROFILE: measures only
             if (Body.styleComponent.NextCombatStyle != null || Body.ActiveWeapon == null)
                 return;
             Body.styleComponent.NextCombatStyle = BotMeleeStylePolicy.Select(BotBody,
@@ -4354,6 +4406,18 @@ namespace DOL.AI.Brain
                 !Body.IsWithinRadius(victim, GROUP_DEFENSE_ASSIST_RADIUS))
                 return false;
 
+            return TauntNow(target, false);
+        }
+
+        /// <summary>
+        /// An encounter tactic's taunt (EpicEncounterTactics.TauntDue: Govannon's demon, when his target is not a tank): the
+        /// class's taunt spell when one is ready (Paladin chants, Sluaghbinder), and a taunt style that fits the weapon in
+        /// hand as the next style (every tank class has them). True when a taunt spell was cast.
+        /// </summary>
+        public bool TauntForEncounter(GameLiving target) => IsTankClass && target != null && TauntNow(target, true);
+
+        private bool TauntNow(GameLiving target, bool usableStyleOnly)
+        {
             if (GameLoop.GameLoopTime >= _nextPriorityTauntTick)
             {
                 // Instant taunts (no cast time) are
@@ -4375,6 +4439,8 @@ namespace DOL.AI.Brain
 
             Style tauntStyle = BotBody.StylesTaunt?
                 .Where(style => style.Level <= Body.Level)
+                .Where(style => !usableStyleOnly || Body.ActiveWeapon != null &&
+                    StyleProcessor.CanUseStyle(Body.attackComponent?.attackAction?.LastAttackData, Body, style, Body.ActiveWeapon))
                 .OrderByDescending(style => style.Level)
                 .FirstOrDefault();
             if (tauntStyle != null)
@@ -4501,6 +4567,7 @@ namespace DOL.AI.Brain
 
         public virtual bool CheckSpells(eCheckSpellType type)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.CombatSpells); // AI_PROFILE: measures only
             if (Body == null || Body.Spells == null || Body.Spells.Count <= 0)
                 return false;
 
@@ -4886,6 +4953,10 @@ namespace DOL.AI.Brain
                 return "instant: not enough power";
             if (HealerHoldsSpell(spell))
                 return "instant: healer keeps power for heals";
+            // Living Server 1.2: as the cast-time check, nothing on a boss this bot must not hit (reavers' instant DoTs healed Funus).
+            if (EpicEncounterTactics.ForbidsSpell(BotBody, Body.TargetObject as GameLiving, spell) ||
+                EpicEncounterTactics.MustNotHit(BotBody, Body.TargetObject as GameLiving))
+                return "instant: the encounter's tactic forbids it";
             if (!BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType))
                 return "instant: Bard keeps mezzes for adds";
             if (spell.HasRecastDelay && Body.GetSkillDisabledDuration(spell) > 0)
@@ -4909,6 +4980,11 @@ namespace DOL.AI.Brain
             if (IsOutclassedDamageSpell(spell)) return "cast: outclassed by a higher damage spell";
             if (Body.TargetObject is not GameLiving target || !target.IsAlive) return "cast: no living target";
             if (HealerHoldsSpell(spell)) return "cast: healer keeps power for heals";
+            // Living Server 1.2 epic tactics: nothing the encounter forbids, no damage type the target is immune to (Orshom's
+            // Fire: cold only), and nothing at all on a boss this bot must not hit (Funus heals to full from the wrong class).
+            if (EpicEncounterTactics.ForbidsSpell(BotBody, target, spell) || EpicEncounterTactics.SpellWasted(target, spell) ||
+                EpicEncounterTactics.MustNotHit(BotBody, target))
+                return "cast: the encounter's tactic forbids it";
             if (!BardBotCrowdControlPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell.SpellType))
                 return "cast: Bard keeps mezzes for adds";
             if (!ShamanBotCombatPolicy.AllowsOrdinaryOffense((eCharacterClass)BotBody.CharacterClass.ID, spell))
@@ -4939,6 +5015,8 @@ namespace DOL.AI.Brain
         protected bool CanCastDefensiveSpell(Spell spell)
         {
             if (CompanionFollowPolicy.DeferBuff(BotBody, spell)) return false;
+            // Legion eats the bladeturn of his target, and five of them set off his soul blast (epic wave 3).
+            if (spell?.SpellType == eSpellType.Bladeturn && EpicEncounterTactics.NoBladeturnHere(BotBody)) return false;
             if (spell == null || spell.IsHarmful || spell.Level > Body.Level ||
                 !BotBody.CanAffordConcentration(spell) ||
                 BotSongTwistPolicy.IsReservedPulse(BotBody, spell) ||
@@ -4964,7 +5042,8 @@ namespace DOL.AI.Brain
 
             bool casted = false;
 
-            if (Body.TargetObject is GameLiving living && NeedsOffensiveSpellApplication(living, spell))
+            if (Body.TargetObject is GameLiving living && NeedsOffensiveSpellApplication(living, spell) &&
+                !EpicEncounterTactics.ForbidsSpell(BotBody, living, spell))
             {
                 AimGroundSpell(spell, living);
                 casted = Body.CastSpell(spell, m_mobSpellLine);
@@ -5449,6 +5528,7 @@ namespace DOL.AI.Brain
             {
                 target = null;
                 if (CompanionFollowPolicy.DeferBuff(BotBody, spell)) return false;
+                if (spell?.SpellType == eSpellType.Bladeturn && EpicEncounterTactics.NoBladeturnHere(BotBody)) return false;
 
                 if (spell.Level > Body.Level || Body.Mana < BotBody.PowerCost(spell) ||
                     !BotBody.CanAffordConcentration(spell) ||
@@ -5860,6 +5940,7 @@ namespace DOL.AI.Brain
 
         public bool CheckHeals()
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.CombatHeals); // AI_PROFILE: measures only
             const byte ManaThreshold = 90;
             const long CureDelay = 5000;
 
@@ -6063,6 +6144,27 @@ namespace DOL.AI.Brain
                     numNeedHealing = Math.Max(1, numNeedHealing);
                     if (raidPatient.HealthPercent < 40) numEmergency = Math.Max(1, numEmergency);
                 }
+            }
+
+            // 1.2: a raider an encounter just threw, teleported or jailed comes first (EncounterDisplacementRecovery.PreferPatient).
+            GameLiving displacedPatient = EncounterDisplacementRecovery.DisplacedPatient(BotBody, spellTarget, InSupportReach);
+            if (displacedPatient != null)
+            {
+                spellTarget = displacedPatient;
+                amountToHeal = Math.Max(amountToHeal, displacedPatient.MaxHealth - displacedPatient.Health);
+                numNeedHealing = Math.Max(1, numNeedHealing);
+                if (displacedPatient.HealthPercent < 40) numEmergency = Math.Max(1, numEmergency);
+            }
+
+            // 1.2 (epic wave 2): the raider a boss mechanic marks (a glare's, the party under Xanxicar's stomp, anyone under
+            // half beside Legion) comes next (EpicEncounterTactics.SignalPatient).
+            GameLiving markedPatient = displacedPatient == null ? EpicEncounterTactics.SignalPatient(BotBody, spellTarget, InSupportReach) : null;
+            if (markedPatient != null)
+            {
+                spellTarget = markedPatient;
+                amountToHeal = Math.Max(amountToHeal, markedPatient.MaxHealth - markedPatient.Health);
+                numNeedHealing = Math.Max(1, numNeedHealing);
+                if (markedPatient.HealthPercent < 40) numEmergency = Math.Max(1, numEmergency);
             }
 
             // Emergency heal

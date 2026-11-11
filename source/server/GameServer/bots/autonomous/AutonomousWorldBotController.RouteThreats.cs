@@ -105,6 +105,7 @@ namespace DOL.GS
         private bool GuardRoute(GameBot bot, Vector3 destination, bool alone, out bool turnedBack, bool mayTurnBack = true,
             bool rvrTravel = false)
         {
+            using var aiProfile = AiProfile.Scope(AiSystem.ControllerRouteThreats); // AI_PROFILE: measures only
             turnedBack = false;
             if (!AutonomousRouteThreatPolicy.Enabled || bot.Brain is not BotBrain brain ||
                 bot.CurrentZone == null || bot.CurrentZone.IsDungeon || bot.CurrentRegion?.IsDungeon == true ||

@@ -63,7 +63,9 @@ public sealed partial class AutonomousWorldBotController
     /// <summary>Whether this bot may leave what it is doing to answer a mate's call.</summary>
     public static bool MayAnswerRvrCall(GameBot bot) =>
         bot.IsAutonomousWorldBot && !bot.IsPlayerLedGroup && !bot.IsTemporaryGroupHelper &&
-        AutonomousRvrPerception.MayAnswerCall(RvrCallDutyOf(bot));
+        AutonomousRvrPerception.MayAnswerCall(RvrCallDutyOf(bot)) &&
+        // Living Server 1.2: and its duty lease allows it (a bot-led group hosting a player, a raid, a battleground assault).
+        AutonomousRvrPerception.MayAnswerCall(BotDutyLeases.KindOf(bot));
 
     /// <summary>
     /// Before the line-of-sight ray: true when the scan could not use this target anyway (a player-kind target this bot

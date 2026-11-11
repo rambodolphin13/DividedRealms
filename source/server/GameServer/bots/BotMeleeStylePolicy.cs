@@ -13,6 +13,8 @@ namespace DOL.GS
     /// after its landed opener first, then a back or side style when the bot is there (StyleProcessor checks the position), then
     /// reactive styles, the opener of a chain the bot knows, and plain styles by growth rate; taunt styles only for a grouped
     /// tank (whose deliberate taunt queue is kept as before); and two near-equal plain styles take turns.
+    /// Scoring ported from rambodolphin13/DividedRealms 0146664a (by rambodolphin13), merged with our #123: which styles are
+    /// eligible (<see cref="IsEligible"/>, <see cref="NeedsPosition"/>) stays ours.
     /// </summary>
     public static class BotMeleeStylePolicy
     {
@@ -25,7 +27,16 @@ namespace DOL.GS
         public const double RotationShare = 0.8;
         public const int TauntSpellId = 20000;
 
+        /// <summary>
+        /// Styles a bot may pick. Side, back and front styles count (owner 2026-11-08: bots never used them, so a bot
+        /// behind a boss swung its front styles): CanUseStyle checks the real angle to the target at selection and again at
+        /// the swing, so one is only picked when the bot really is beside or behind. Stealth openers stay out: bots do not
+        /// stalk (2.0, with what bots can know).
+        /// </summary>
         public static bool IsEligible(Style style) => style != null && !style.StealthRequirement;
+
+        /// <summary>A side, back or front style: usable only from that spot.</summary>
+        public static bool NeedsPosition(Style style) => style?.OpeningRequirementType == Style.eOpening.Positional;
 
         public static bool IsTauntStyle(Style style)
         {

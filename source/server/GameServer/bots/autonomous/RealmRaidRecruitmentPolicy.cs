@@ -352,6 +352,12 @@ public static class RealmRaidRecruitmentPolicy
         !forced && now >= ExtendedStagingDeadline(StagingDeadline(created, departedTick), lastArrivalTick) &&
         !(present >= required && !landed);
 
+    // Merge of 2026-11-01: the base's arrival extension and Living Server's scaled raid size (required) together.
+    public static bool StagingExpired(bool forced, long now, long created, long departedTick, int present, bool landed,
+        int required, long lastArrivalTick) =>
+        !forced && now >= ExtendedStagingDeadline(StagingDeadline(created, departedTick), lastArrivalTick) &&
+        !(present >= required && !landed);
+
     public static bool BattleExpired(bool forced, long now, long deadline) => !forced && now >= deadline;
 
     /// <summary>A raid party that lost members (but still exists) takes replacements up to its size when it joined.</summary>

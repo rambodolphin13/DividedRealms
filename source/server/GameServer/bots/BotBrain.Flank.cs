@@ -98,10 +98,10 @@ namespace DOL.AI.Brain
                 .FirstOrDefault();
         }
 
-        /// <summary>Raid parties and raid dungeons: raids place their own raiders. (Living Server also skips its epic
-        /// encounter tactics here; Divided Realms has no EpicEncounterTactics, so only the raid checks remain.)</summary>
+        /// <summary>Raid parties, raid dungeons and epic encounters: their own tactics place the raiders.</summary>
         private static bool InRaidOrEpicFight(GameBot bot, GameNPC target) =>
-            AutonomousRealmRaid.IsRaidDungeon(bot.CurrentRegionID) ||
+            EpicEncounterTactics.For(target) != null || EpicEncounterTactics.IsTacticPart(target) ||
+            EpicEncounterTactics.IsHazard(target) || AutonomousRealmRaid.IsRaidDungeon(bot.CurrentRegionID) ||
             bot.Group != null && AutonomousRealmRaid.GetView(bot.Group) != null;
 
         /// <summary>Where the bot would stand on its own floor, or null when the mesh has no walk there.</summary>
