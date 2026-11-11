@@ -1263,6 +1263,17 @@ namespace DOL.AI.Brain
                 _ambientWanderMovement = false;
                 return;
             }
+            // /bots stay (DR-248): hold the ordered spot instead of a formation slot or an idle wander; walk back after a fight.
+            if (PlayerBotStay.TryGetPost(BotBody, out Vector3 stayPost))
+            {
+                _ambientWanderMovement = false;
+                Body.StopFollowing();
+                if (PlayerBotStay.ShouldWalkBack(Body.GetDistanceTo(new Point3D((int)stayPost.X, (int)stayPost.Y, (int)stayPost.Z))))
+                    Body.PathTo(stayPost, Body.MaxSpeed);
+                else if (Body.IsMoving)
+                    Body.StopMoving();
+                return;
+            }
             if (!ambientWander && CompanionHealerCombatHold.Holds(BotBody, leader))
             {
                 // Stop a formation walk already under way; other movement is left alone.
