@@ -49,6 +49,21 @@ namespace DOL.GS
         private readonly Dictionary<string, GameNPC> _finals = new();
         private GameNPC _target;
         private int _probeCursor;
+        // Overnight run 2026-11-10 (4,500 bots): after "olcasar deepstalker" died in Galladoria the search for the next
+        // encounter spent 7.7 s in one game tick (SERVER_STALL, RealmRaid.Pulse) and 3.7 s a minute later. A candidate no
+        // party can reach is tried from up to six anchors, each anchor up to about forty corridor searches, and three
+        // candidates a pass. The search now stops once it has spent its time for this pass and goes on from the same
+        // candidate and anchor on the next one.
+        public const double ProbeBudgetMilliseconds = 100;
+        private GameNPC _probeResumeNpc;
+        private int _probeResumeAnchor;
+
+        /// <summary>The next-encounter search has used its time for this pass (pure).</summary>
+        public static bool ProbeBudgetSpent(double elapsedMilliseconds) => elapsedMilliseconds >= ProbeBudgetMilliseconds;
+
+        /// <summary>The anchor a candidate's search starts from: where it stopped last pass for the same candidate, else the first (pure).</summary>
+        public static int FirstProbeAnchor(bool sameCandidate, int resumeAnchor, int anchors) =>
+            sameCandidate ? Math.Clamp(resumeAnchor, 0, anchors) : 0;
         private static readonly Logging.Logger log = Logging.LoggerManager.Create(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private long _targetProgressTick, _targetStartTick, _holdSince, _nextHoldLog;
         // Lowest health points seen (not percent: a percent of Galladoria's 125,000-health Corrupt Primal of Fire is 1,250
@@ -1634,11 +1649,14 @@ namespace DOL.GS
                     .Where(p => p.Group == null || p.Group.LivingLeader == p)
                     .Select(p => new Vector3(p.X, p.Y, p.Z)), 6);
             int probes = 0;
+            long probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
             // Resume after the last examined candidate. With more blocked
             // spawns than the per-minute probe budget, always starting at zero
             // would retry the same expired failures and starve later rooms.
             for (int examined = 0; examined < candidates.Length && probes < 3; examined++)
             {
+                // Out of time for this pass: the next pass goes on with the next candidate.
+                if (examined > 0 && ProbeBudgetSpent(System.Diagnostics.Stopwatch.GetElapsedTime(probeStart).TotalMilliseconds)) break;
                 GameNPC npc = candidates[_probeCursor % candidates.Length];
                 _probeCursor = (_probeCursor + 1) % candidates.Length;
                 if (_routeRetry.GetValueOrDefault(npc) > now) continue;
@@ -1677,12 +1695,24 @@ namespace DOL.GS
                     nav.GetClosestPoint(zone, raw, 128, 128, RangedFlyerReach, nav.DefaultFilters) is Vector3 below && raw.Z - below.Z > 256)
                     raw = below;
                 Vector3 approach = default;
-                bool reachable = false;
-                foreach (Vector3 anchor in anchors)
+                bool reachable = false, outOfTime = false;
+                int firstAnchor = FirstProbeAnchor(ReferenceEquals(_probeResumeNpc, npc), _probeResumeAnchor, anchors.Length);
+                _probeResumeNpc = null;
+                for (int a = firstAnchor; a < anchors.Length; a++)
                 {
+                    Vector3 anchor = anchors[a];
                     Zone anchorZone = WorldMgr.GetRegion(_region)?.GetZone((int)anchor.X, (int)anchor.Y) ?? zone;
                     if (nav.HasNavmesh(anchorZone) && AutonomousZonePointApproach.TryResolve(nav, anchorZone, anchor, raw, 220, out approach))
                     { reachable = true; break; }
+                    if (a + 1 < anchors.Length && ProbeBudgetSpent(System.Diagnostics.Stopwatch.GetElapsedTime(probeStart).TotalMilliseconds))
+                    { _probeResumeNpc = npc; _probeResumeAnchor = a + 1; outOfTime = true; break; }
+                }
+                if (outOfTime)
+                {
+                    // The same candidate again on the next pass, from its next anchor; it is not set aside as unreachable.
+                    _probeCursor = (_probeCursor + candidates.Length - 1) % candidates.Length;
+                    Hold = true; Destination = Front; Status = "Scouting the way to " + npc.Name;
+                    return;
                 }
                 if (!reachable && _region == AutonomousDarknessFallsPolicy.RegionId && _objectives != null &&
                     TryDarknessFallsChain(nav, zone, raw, out Vector3[] chain))
