@@ -1,0 +1,2480 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-12T23:16:28.016081+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77821",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "SpellID": 77821,
+    "ClientEffect": 11233,
+    "Icon": 11233,
+    "Name": "Blizzardstrike",
+    "Description": "Offensive proc: chance to inflict an energy resist debuff on the target in melee.",
+    "Target": "Self",
+    "Range": 0,
+    "Power": 30,
+    "CastTime": 3.0,
+    "Damage": 0.0,
+    "DamageType": 0,
+    "Type": "OffensiveProc",
+    "Duration": 1200,
+    "Frequency": 25,
+    "Pulse": 0,
+    "PulsePower": 0,
+    "Radius": 0,
+    "RecastDelay": 0,
+    "ResurrectHealth": 0,
+    "ResurrectMana": 0,
+    "Value": 77623,
+    "Concentration": 0,
+    "LifeDrainReturn": 0,
+    "AmnesiaChance": 0,
+    "Message1": "Frost crystals form on your armor.",
+    "Message2": "Frost crystals form on {0}'s armor.",
+    "Message3": "Banestrike ends.",
+    "Message4": "Banestrike ends on {0}.",
+    "InstrumentRequirement": 0,
+    "SpellGroup": 77533,
+    "EffectGroup": 77533,
+    "SubSpellID": 0,
+    "MoveCast": 0,
+    "Uninterruptible": 0,
+    "IsFocus": 0,
+    "SharedTimerGroup": 0,
+    "IsPrimary": 0,
+    "IsSecondary": 0,
+    "AllowBolt": 0,
+    "PackageID": "local-round3-live-v1",
+    "TooltipId": 24723,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Spell_ID": "local-round3-live-v1-77821"
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-round3-live-v1-77821",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "LineName": "Valewalker Arb Path Spec (Live)",
+    "SpellID": 77821,
+    "Level": 50,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "LineXSpell_ID": "local-round3-live-v1-77821"
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-valk-mend-minor-heal-3",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "SpellID": 69145,
+    "ClientEffect": 3002,
+    "Icon": 3002,
+    "Name": "Minor Refinement",
+    "Description": "Valkyrie Mending; Class Library values, borrowed visual assets.",
+    "Target": "Realm",
+    "Range": 2000,
+    "Power": 2,
+    "CastTime": 2.3,
+    "Damage": 0,
+    "DamageType": 0,
+    "Type": "Heal",
+    "Duration": 0,
+    "Frequency": 0,
+    "Pulse": 0,
+    "PulsePower": 0,
+    "Radius": 0,
+    "RecastDelay": 0,
+    "ResurrectHealth": 0,
+    "ResurrectMana": 0,
+    "Value": 11.0,
+    "Concentration": 0,
+    "LifeDrainReturn": 0,
+    "AmnesiaChance": 0,
+    "Message1": null,
+    "Message2": null,
+    "Message3": null,
+    "Message4": null,
+    "InstrumentRequirement": 0,
+    "SpellGroup": 65001,
+    "EffectGroup": 0,
+    "SubSpellID": 0,
+    "MoveCast": 0,
+    "Uninterruptible": 0,
+    "IsFocus": 0,
+    "SharedTimerGroup": 0,
+    "IsPrimary": 0,
+    "IsSecondary": 0,
+    "AllowBolt": 0,
+    "PackageID": "local-valk-mending-v3",
+    "TooltipId": 3002,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Spell_ID": "local-valk-mend-minor-heal-3"
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-valk-mend-link-minor-heal-3",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "LineName": "Valkyrie Mending",
+    "SpellID": 69145,
+    "Level": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "LineXSpell_ID": "local-valk-mend-link-minor-heal-3"
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-valk-ow-link-acu-shear-fast-29",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "LineName": "Odin's Will",
+    "SpellID": 65125,
+    "Level": 29,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "LineXSpell_ID": "local-valk-ow-link-acu-shear-fast-29"
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11146",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11147",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11148",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11149",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11150",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11151",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11350",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11351",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11352",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11353",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11354",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11355",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11357",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11657",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11658",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11659",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11660",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11661",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11662",
+   "op": "update",
+   "before": {
+    "CastTime": 5.0
+   },
+   "after": {
+    "CastTime": 3.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11671",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 5.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11672",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 5.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11673",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 5.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11674",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 5.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11675",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 5.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11676",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 5.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11336",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11337",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11338",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11339",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11340",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11632",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11633",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11634",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11635",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11636",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11637",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11638",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11641",
+   "op": "update",
+   "before": {
+    "Range": 1000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11511",
+   "op": "update",
+   "before": {
+    "Range": 2000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11512",
+   "op": "update",
+   "before": {
+    "Range": 2000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11514",
+   "op": "update",
+   "before": {
+    "Range": 2000
+   },
+   "after": {
+    "Range": 1500
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77573",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-bainshee-test-v1-68127",
+   "op": "update",
+   "before": {
+    "RecastDelay": 0
+   },
+   "after": {
+    "RecastDelay": 5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5351",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5352",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5353",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5354",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5355",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5356",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5357",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "5358",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4844",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "165de139-1700-4297-aa00-b3a7fbbf7b11",
+   "op": "update",
+   "before": {
+    "Level": 50
+   },
+   "after": {
+    "Level": 41
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "19961180-3556-4df8-ae8c-75675ffbbc1a",
+   "op": "update",
+   "before": {
+    "Level": 41
+   },
+   "after": {
+    "Level": 31
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "5484ede7-0746-446a-b34d-754ddccc2034",
+   "op": "update",
+   "before": {
+    "Level": 41
+   },
+   "after": {
+    "Level": 43
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "8d2baddc-c3df-4b2c-bc47-c0a42e72f646",
+   "op": "update",
+   "before": {
+    "Level": 31
+   },
+   "after": {
+    "Level": 33
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "0d059cb8-4f32-406b-862e-3e30a8adb765",
+   "op": "update",
+   "before": {
+    "Level": 14
+   },
+   "after": {
+    "Level": 13
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-linked-live-v1-77287",
+   "op": "update",
+   "before": {
+    "Level": 40
+   },
+   "after": {
+    "Level": 45
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "10085",
+   "op": "update",
+   "before": {
+    "Duration": 5
+   },
+   "after": {
+    "Duration": 30
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "10084",
+   "op": "update",
+   "before": {
+    "Duration": 5
+   },
+   "after": {
+    "Duration": 30
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "10083",
+   "op": "update",
+   "before": {
+    "Duration": 5
+   },
+   "after": {
+    "Duration": 30
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "10082",
+   "op": "update",
+   "before": {
+    "Duration": 5,
+    "Radius": 0
+   },
+   "after": {
+    "Duration": 30,
+    "Radius": 350
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77244",
+   "op": "update",
+   "before": {
+    "Power": -20,
+    "Range": 2300
+   },
+   "after": {
+    "Power": -5,
+    "Range": 1250
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77246",
+   "op": "update",
+   "before": {
+    "Power": -20,
+    "Range": 2300
+   },
+   "after": {
+    "Power": -5,
+    "Range": 1250
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77248",
+   "op": "update",
+   "before": {
+    "Power": -20,
+    "Range": 2300
+   },
+   "after": {
+    "Power": -5,
+    "Range": 1250
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "aacb6d53-c2cf-4ca1-9b6c-2c47021a2763",
+   "op": "update",
+   "before": {
+    "Level": 46
+   },
+   "after": {
+    "Level": 42
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "fc6f608f-c312-49d7-bdee-37af733c32f0",
+   "op": "update",
+   "before": {
+    "Level": 34
+   },
+   "after": {
+    "Level": 32
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "b58b70ca-7100-4ced-a537-77d5916c3f57",
+   "op": "update",
+   "before": {
+    "Level": 37
+   },
+   "after": {
+    "Level": 39
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "b813cde3-c7f1-411f-82af-17b9ec598493",
+   "op": "update",
+   "before": {
+    "Level": 47
+   },
+   "after": {
+    "Level": 49
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "6c5e4c82-3299-424d-a483-d67a89a18031",
+   "op": "update",
+   "before": {
+    "Level": 43
+   },
+   "after": {
+    "Level": 45
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77292",
+   "op": "update",
+   "before": {
+    "Power": -10
+   },
+   "after": {
+    "Power": -15
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77294",
+   "op": "update",
+   "before": {
+    "Power": -10
+   },
+   "after": {
+    "Power": -15
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77296",
+   "op": "update",
+   "before": {
+    "Power": -10
+   },
+   "after": {
+    "Power": -15
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77240",
+   "op": "update",
+   "before": {
+    "Power": -20,
+    "Range": 2300
+   },
+   "after": {
+    "Power": -5,
+    "Range": 1250
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77242",
+   "op": "update",
+   "before": {
+    "Power": -20,
+    "Range": 2300
+   },
+   "after": {
+    "Power": -5,
+    "Range": 1250
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77250",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77252",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77254",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77256",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-linked-live-v1-77258",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "879",
+   "op": "update",
+   "before": {
+    "Duration": 15
+   },
+   "after": {
+    "Duration": 8
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4261",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Misleading Rapture.",
+    "Message2": "{0} is affected by Misleading Rapture.",
+    "Message3": "Misleading Rapture ends.",
+    "Message4": "Misleading Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4262",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Delusional Rapture.",
+    "Message2": "{0} is affected by Delusional Rapture.",
+    "Message3": "Delusional Rapture ends.",
+    "Message4": "Delusional Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4263",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Mystifying Rapture.",
+    "Message2": "{0} is affected by Mystifying Rapture.",
+    "Message3": "Mystifying Rapture ends.",
+    "Message4": "Mystifying Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4264",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Duplicitous Rapture.",
+    "Message2": "{0} is affected by Duplicitous Rapture.",
+    "Message3": "Duplicitous Rapture ends.",
+    "Message4": "Duplicitous Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4265",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Illusory Rapture.",
+    "Message2": "{0} is affected by Illusory Rapture.",
+    "Message3": "Illusory Rapture ends.",
+    "Message4": "Illusory Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4266",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Deceiving Rapture.",
+    "Message2": "{0} is affected by Deceiving Rapture.",
+    "Message3": "Deceiving Rapture ends.",
+    "Message4": "Deceiving Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4267",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Beguiling Rapture.",
+    "Message2": "{0} is affected by Beguiling Rapture.",
+    "Message3": "Beguiling Rapture ends.",
+    "Message4": "Beguiling Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4268",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Phantom Rapture.",
+    "Message2": "{0} is affected by Phantom Rapture.",
+    "Message3": "Phantom Rapture ends.",
+    "Message4": "Phantom Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4269",
+   "op": "update",
+   "before": {
+    "Type": "DirectDamage",
+    "Duration": 0,
+    "Value": 0.0,
+    "Message1": "",
+    "Message2": "",
+    "Message3": "",
+    "Message4": ""
+   },
+   "after": {
+    "Type": "DirectDamageWithDebuff",
+    "Duration": 8,
+    "Value": 10.0,
+    "Message1": "You are affected by Insidious Rapture.",
+    "Message2": "{0} is affected by Insidious Rapture.",
+    "Message3": "Insidious Rapture ends.",
+    "Message4": "Insidious Rapture ends on {0}."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70095",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70096",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70097",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70098",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70099",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70100",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70101",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70102",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70103",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70104",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70105",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70107",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70108",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-heretic-test-v1-70105",
+   "op": "update",
+   "before": {
+    "Level": 16
+   },
+   "after": {
+    "Level": 18
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-heretic-test-v1-70111",
+   "op": "update",
+   "before": {
+    "Level": 15
+   },
+   "after": {
+    "Level": 19
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-heretic-test-v1-70112",
+   "op": "update",
+   "before": {
+    "Level": 25
+   },
+   "after": {
+    "Level": 29
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-heretic-test-v1-70113",
+   "op": "update",
+   "before": {
+    "Level": 35
+   },
+   "after": {
+    "Level": 39
+   }
+  },
+  {
+   "table": "LineXSpell",
+   "key": "local-heretic-test-v1-70114",
+   "op": "update",
+   "before": {
+    "Level": 45
+   },
+   "after": {
+    "Level": 49
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70042",
+   "op": "update",
+   "before": {
+    "Duration": 20,
+    "RecastDelay": 30
+   },
+   "after": {
+    "Duration": 5,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70043",
+   "op": "update",
+   "before": {
+    "Duration": 20,
+    "RecastDelay": 30
+   },
+   "after": {
+    "Duration": 5,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70044",
+   "op": "update",
+   "before": {
+    "Duration": 20,
+    "RecastDelay": 30
+   },
+   "after": {
+    "Duration": 5,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70045",
+   "op": "update",
+   "before": {
+    "Duration": 20,
+    "RecastDelay": 30
+   },
+   "after": {
+    "Duration": 5,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70046",
+   "op": "update",
+   "before": {
+    "Duration": 20,
+    "RecastDelay": 30
+   },
+   "after": {
+    "Duration": 5,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70047",
+   "op": "update",
+   "before": {
+    "Duration": 20
+   },
+   "after": {
+    "Duration": 5
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-heretic-test-v1-70106",
+   "op": "update",
+   "before": {
+    "Radius": 0,
+    "RecastDelay": 0,
+    "CastTime": 2.8
+   },
+   "after": {
+    "Radius": 350,
+    "RecastDelay": 15,
+    "CastTime": 0.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67200",
+   "op": "update",
+   "before": {
+    "Range": 0,
+    "Duration": 30
+   },
+   "after": {
+    "Range": 500,
+    "Duration": 900
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67201",
+   "op": "update",
+   "before": {
+    "Range": 0,
+    "Duration": 30
+   },
+   "after": {
+    "Range": 500,
+    "Duration": 900
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67202",
+   "op": "update",
+   "before": {
+    "Range": 0,
+    "Duration": 30
+   },
+   "after": {
+    "Range": 500,
+    "Duration": 900
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67250",
+   "op": "update",
+   "before": {
+    "Duration": 30,
+    "RecastDelay": 60
+   },
+   "after": {
+    "Duration": 60,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67251",
+   "op": "update",
+   "before": {
+    "Duration": 30,
+    "RecastDelay": 60
+   },
+   "after": {
+    "Duration": 60,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67252",
+   "op": "update",
+   "before": {
+    "Duration": 30,
+    "RecastDelay": 60
+   },
+   "after": {
+    "Duration": 60,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67253",
+   "op": "update",
+   "before": {
+    "Duration": 30,
+    "RecastDelay": 60
+   },
+   "after": {
+    "Duration": 60,
+    "RecastDelay": 20
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67260",
+   "op": "update",
+   "before": {
+    "Duration": 2
+   },
+   "after": {
+    "Duration": 4
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67261",
+   "op": "update",
+   "before": {
+    "Duration": 4
+   },
+   "after": {
+    "Duration": 8
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67265",
+   "op": "update",
+   "before": {
+    "Duration": 2
+   },
+   "after": {
+    "Duration": 4
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67266",
+   "op": "update",
+   "before": {
+    "Duration": 4
+   },
+   "after": {
+    "Duration": 8
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67203",
+   "op": "update",
+   "before": {
+    "Range": 0,
+    "Duration": 30
+   },
+   "after": {
+    "Range": 500,
+    "Duration": 900
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67262",
+   "op": "update",
+   "before": {
+    "Duration": 6
+   },
+   "after": {
+    "Duration": 12
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-mauler-test-v1-67267",
+   "op": "update",
+   "before": {
+    "Duration": 6
+   },
+   "after": {
+    "Duration": 12
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4662",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4663",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4664",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4665",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4666",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4667",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "4668",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "1114",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "1116",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "1118",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-envenom-live-v1-77478",
+   "op": "update",
+   "before": {
+    "Range": 0,
+    "CastTime": 0.0
+   },
+   "after": {
+    "Range": 50,
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-hybrid-live-v1-74082",
+   "op": "update",
+   "before": {
+    "Power": 32
+   },
+   "after": {
+    "Power": 51
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-hybrid-live-v1-74083",
+   "op": "update",
+   "before": {
+    "Power": 50
+   },
+   "after": {
+    "Power": 75
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-hybrid-live-v1-74084",
+   "op": "update",
+   "before": {
+    "Power": 64
+   },
+   "after": {
+    "Power": 96
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-hybrid-live-v1-74085",
+   "op": "update",
+   "before": {
+    "Power": 75
+   },
+   "after": {
+    "Power": 112
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2711",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2712",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2713",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2714",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2715",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2716",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2717",
+   "op": "update",
+   "before": {
+    "CastTime": 3.5
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2971",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2972",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2973",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2974",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2975",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2976",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2977",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2978",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2979",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "3424",
+   "op": "update",
+   "before": {
+    "Duration": 150
+   },
+   "after": {
+    "Duration": 15
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "3422",
+   "op": "update",
+   "before": {
+    "Radius": 0
+   },
+   "after": {
+    "Radius": 250
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77667",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77659",
+   "op": "update",
+   "before": {
+    "CastTime": 3.0
+   },
+   "after": {
+    "CastTime": 0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "901",
+   "op": "update",
+   "before": {
+    "Duration": 14,
+    "CastTime": 2.5
+   },
+   "after": {
+    "Duration": 60,
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2611",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2612",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2613",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2614",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2615",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2616",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2617",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2618",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "2619",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77753",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-valk-ow-acu-shear-fast-29",
+   "op": "update",
+   "before": {
+    "Name": "Valkyrie's Supremecy"
+   },
+   "after": {
+    "Name": "Valkyrie's Supremacy"
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66180",
+   "op": "update",
+   "before": {
+    "RecastDelay": 0
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66181",
+   "op": "update",
+   "before": {
+    "RecastDelay": 0
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66182",
+   "op": "update",
+   "before": {
+    "RecastDelay": 0
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66183",
+   "op": "update",
+   "before": {
+    "RecastDelay": 0
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66184",
+   "op": "update",
+   "before": {
+    "RecastDelay": 0
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66185",
+   "op": "update",
+   "before": {
+    "RecastDelay": 0
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66110",
+   "op": "update",
+   "before": {
+    "RecastDelay": 5
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66111",
+   "op": "update",
+   "before": {
+    "RecastDelay": 5
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66112",
+   "op": "update",
+   "before": {
+    "RecastDelay": 5
+   },
+   "after": {
+    "RecastDelay": 10
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66113",
+   "op": "update",
+   "before": {
+    "RecastDelay": 5,
+    "Duration": 30
+   },
+   "after": {
+    "RecastDelay": 10,
+    "Duration": 32
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66121",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66122",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66123",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66124",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66125",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66087",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-warlock-test-v1-66088",
+   "op": "update",
+   "before": {
+    "CastTime": 0.0
+   },
+   "after": {
+    "CastTime": 2.0
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

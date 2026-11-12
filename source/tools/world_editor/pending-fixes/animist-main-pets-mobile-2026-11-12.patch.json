@@ -1,0 +1,294 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-12T23:16:30.739300+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "Spell",
+   "key": "11123",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11124",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11125",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11126",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11127",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11128",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11129",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11462",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11463",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11464",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11465",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11466",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11467",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11468",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11469",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which do damage. Target's movement speed is also slowed by the given percentage, which gives the caster more time before the target closes to melee range."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11671",
+   "op": "update",
+   "before": {
+    "DamageType": 1,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which attempt to \"taunt\" creatures to it, where it will then engage them in melee."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11672",
+   "op": "update",
+   "before": {
+    "DamageType": 1,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which attempt to \"taunt\" creatures to it, where it will then engage them in melee."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11673",
+   "op": "update",
+   "before": {
+    "DamageType": 1,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which attempt to \"taunt\" creatures to it, where it will then engage them in melee."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11674",
+   "op": "update",
+   "before": {
+    "DamageType": 1,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which attempt to \"taunt\" creatures to it, where it will then engage them in melee."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11675",
+   "op": "update",
+   "before": {
+    "DamageType": 1,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which attempt to \"taunt\" creatures to it, where it will then engage them in melee."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11676",
+   "op": "update",
+   "before": {
+    "DamageType": 1,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which attempt to \"taunt\" creatures to it, where it will then engage them in melee."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "11677",
+   "op": "update",
+   "before": {
+    "DamageType": 1,
+    "Description": "Turret which acts as a pet, controllable by the caster. This turret casts spells which attempt to \"taunt\" creatures to it, where it will then engage them in melee."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a pet that follows you and fights at your command, like other classes' pets. It is not a planted turret and needs no ground target."
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

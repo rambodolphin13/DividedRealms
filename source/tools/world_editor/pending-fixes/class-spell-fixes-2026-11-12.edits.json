@@ -1,0 +1,1628 @@
+[
+ {
+  "table": "Spell",
+  "copy": "local-round3-live-v1-77622",
+  "key": "local-round3-live-v1-77821",
+  "set": {
+   "SpellID": 77821,
+   "Name": "Blizzardstrike",
+   "Value": 77623,
+   "Description": "Offensive proc: chance to inflict an energy resist debuff on the target in melee.",
+   "Message1": "Frost crystals form on your armor.",
+   "Message2": "Frost crystals form on {0}'s armor.",
+   "TooltipId": 24723
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "insert": {
+   "LineXSpell_ID": "local-round3-live-v1-77821",
+   "LineName": "Valewalker Arb Path Spec (Live)",
+   "SpellID": 77821,
+   "Level": 50
+  }
+ },
+ {
+  "table": "Spell",
+  "insert": {
+   "SpellID": 69145,
+   "ClientEffect": 3002,
+   "Icon": 3002,
+   "Name": "Minor Refinement",
+   "Description": "Valkyrie Mending; Class Library values, borrowed visual assets.",
+   "Target": "Realm",
+   "Range": 2000,
+   "Power": 2,
+   "CastTime": 2.3,
+   "Type": "Heal",
+   "Value": 11.0,
+   "SpellGroup": 65001,
+   "PackageID": "local-valk-mending-v3",
+   "TooltipId": 3002,
+   "Spell_ID": "local-valk-mend-minor-heal-3"
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "insert": {
+   "LineXSpell_ID": "local-valk-mend-link-minor-heal-3",
+   "LineName": "Valkyrie Mending",
+   "SpellID": 69145,
+   "Level": 3
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "insert": {
+   "LineName": "Odin's Will",
+   "SpellID": 65125,
+   "Level": 29,
+   "LineXSpell_ID": "local-valk-ow-link-acu-shear-fast-29"
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11146",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11147",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11148",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11149",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11150",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11151",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11350",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11351",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11352",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11353",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11354",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11355",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11357",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11657",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11658",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11659",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11660",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11661",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11662",
+  "set": {
+   "CastTime": 3.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11671",
+  "set": {
+   "CastTime": 5.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11672",
+  "set": {
+   "CastTime": 5.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11673",
+  "set": {
+   "CastTime": 5.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11674",
+  "set": {
+   "CastTime": 5.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11675",
+  "set": {
+   "CastTime": 5.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11676",
+  "set": {
+   "CastTime": 5.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11336",
+  "set": {
+   "CastTime": 2.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11337",
+  "set": {
+   "CastTime": 2.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11338",
+  "set": {
+   "CastTime": 2.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11339",
+  "set": {
+   "CastTime": 2.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11340",
+  "set": {
+   "CastTime": 2.5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11632",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11633",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11634",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11635",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11636",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11637",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11638",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11641",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11511",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11512",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "11514",
+  "set": {
+   "Range": 1500
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-round3-live-v1-77573",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-bainshee-test-v1-68127",
+  "set": {
+   "RecastDelay": 5
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5351",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5352",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5353",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5354",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5355",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5356",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5357",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "5358",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4844",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "165de139-1700-4297-aa00-b3a7fbbf7b11",
+  "set": {
+   "Level": 41
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "19961180-3556-4df8-ae8c-75675ffbbc1a",
+  "set": {
+   "Level": 31
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "5484ede7-0746-446a-b34d-754ddccc2034",
+  "set": {
+   "Level": 43
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "8d2baddc-c3df-4b2c-bc47-c0a42e72f646",
+  "set": {
+   "Level": 33
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "0d059cb8-4f32-406b-862e-3e30a8adb765",
+  "set": {
+   "Level": 13
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "local-linked-live-v1-77287",
+  "set": {
+   "Level": 45
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 10085
+  },
+  "set": {
+   "Duration": 30
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 10084
+  },
+  "set": {
+   "Duration": 30
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 10083
+  },
+  "set": {
+   "Duration": 30
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 10082
+  },
+  "set": {
+   "Duration": 30,
+   "Radius": 350
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 77244
+  },
+  "set": {
+   "Power": -5,
+   "Range": 1250
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 77246
+  },
+  "set": {
+   "Power": -5,
+   "Range": 1250
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 77248
+  },
+  "set": {
+   "Power": -5,
+   "Range": 1250
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "aacb6d53-c2cf-4ca1-9b6c-2c47021a2763",
+  "set": {
+   "Level": 42
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "fc6f608f-c312-49d7-bdee-37af733c32f0",
+  "set": {
+   "Level": 32
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "b58b70ca-7100-4ced-a537-77d5916c3f57",
+  "set": {
+   "Level": 39
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "b813cde3-c7f1-411f-82af-17b9ec598493",
+  "set": {
+   "Level": 49
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "6c5e4c82-3299-424d-a483-d67a89a18031",
+  "set": {
+   "Level": 45
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77292",
+  "set": {
+   "Power": -15
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77294",
+  "set": {
+   "Power": -15
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77296",
+  "set": {
+   "Power": -15
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77240",
+  "set": {
+   "Power": -5,
+   "Range": 1250
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77242",
+  "set": {
+   "Power": -5,
+   "Range": 1250
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77250",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77252",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77254",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77256",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-linked-live-v1-77258",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "879",
+  "set": {
+   "Duration": 8
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4261",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Misleading Rapture.",
+   "Message2": "{0} is affected by Misleading Rapture.",
+   "Message3": "Misleading Rapture ends.",
+   "Message4": "Misleading Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4262",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Delusional Rapture.",
+   "Message2": "{0} is affected by Delusional Rapture.",
+   "Message3": "Delusional Rapture ends.",
+   "Message4": "Delusional Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4263",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Mystifying Rapture.",
+   "Message2": "{0} is affected by Mystifying Rapture.",
+   "Message3": "Mystifying Rapture ends.",
+   "Message4": "Mystifying Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4264",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Duplicitous Rapture.",
+   "Message2": "{0} is affected by Duplicitous Rapture.",
+   "Message3": "Duplicitous Rapture ends.",
+   "Message4": "Duplicitous Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4265",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Illusory Rapture.",
+   "Message2": "{0} is affected by Illusory Rapture.",
+   "Message3": "Illusory Rapture ends.",
+   "Message4": "Illusory Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4266",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Deceiving Rapture.",
+   "Message2": "{0} is affected by Deceiving Rapture.",
+   "Message3": "Deceiving Rapture ends.",
+   "Message4": "Deceiving Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4267",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Beguiling Rapture.",
+   "Message2": "{0} is affected by Beguiling Rapture.",
+   "Message3": "Beguiling Rapture ends.",
+   "Message4": "Beguiling Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4268",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Phantom Rapture.",
+   "Message2": "{0} is affected by Phantom Rapture.",
+   "Message3": "Phantom Rapture ends.",
+   "Message4": "Phantom Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4269",
+  "set": {
+   "Type": "DirectDamageWithDebuff",
+   "Duration": 8,
+   "Value": 10.0,
+   "Message1": "You are affected by Insidious Rapture.",
+   "Message2": "{0} is affected by Insidious Rapture.",
+   "Message3": "Insidious Rapture ends.",
+   "Message4": "Insidious Rapture ends on {0}."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70095",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70096",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70097",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70098",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70099",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70100",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70101",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70102",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70103",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70104",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70105",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70107",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-heretic-test-v1-70108",
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "local-heretic-test-v1-70105",
+  "set": {
+   "Level": 18
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "local-heretic-test-v1-70111",
+  "set": {
+   "Level": 19
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "local-heretic-test-v1-70112",
+  "set": {
+   "Level": 29
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "local-heretic-test-v1-70113",
+  "set": {
+   "Level": 39
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "local-heretic-test-v1-70114",
+  "set": {
+   "Level": 49
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 70042
+  },
+  "set": {
+   "Duration": 5,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 70043
+  },
+  "set": {
+   "Duration": 5,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 70044
+  },
+  "set": {
+   "Duration": 5,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 70045
+  },
+  "set": {
+   "Duration": 5,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 70046
+  },
+  "set": {
+   "Duration": 5,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 70047
+  },
+  "set": {
+   "Duration": 5
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 70106
+  },
+  "set": {
+   "Radius": 350,
+   "RecastDelay": 15,
+   "CastTime": 0.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67200",
+  "set": {
+   "Range": 500,
+   "Duration": 900
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67201",
+  "set": {
+   "Range": 500,
+   "Duration": 900
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67202",
+  "set": {
+   "Range": 500,
+   "Duration": 900
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67250",
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67251",
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67252",
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67253",
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67260",
+  "set": {
+   "Duration": 4
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67261",
+  "set": {
+   "Duration": 8
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67265",
+  "set": {
+   "Duration": 4
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67266",
+  "set": {
+   "Duration": 8
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-mauler-test-v1-67203",
+  "set": {
+   "Range": 500,
+   "Duration": 900
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67262
+  },
+  "set": {
+   "Duration": 12
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67267
+  },
+  "set": {
+   "Duration": 12
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67260
+  },
+  "set": {
+   "Duration": 4
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67261
+  },
+  "set": {
+   "Duration": 8
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67265
+  },
+  "set": {
+   "Duration": 4
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67266
+  },
+  "set": {
+   "Duration": 8
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67250
+  },
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67251
+  },
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67252
+  },
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 67253
+  },
+  "set": {
+   "Duration": 60,
+   "RecastDelay": 20
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4662",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4663",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4664",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4665",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4666",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4667",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "4668",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "1114",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "1116",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "1118",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-envenom-live-v1-77478",
+  "set": {
+   "Range": 50,
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-hybrid-live-v1-74082",
+  "set": {
+   "Power": 51
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-hybrid-live-v1-74083",
+  "set": {
+   "Power": 75
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-hybrid-live-v1-74084",
+  "set": {
+   "Power": 96
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-hybrid-live-v1-74085",
+  "set": {
+   "Power": 112
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2711",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2712",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2713",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2714",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2715",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2716",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2717",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2971",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2972",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2973",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2974",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2975",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2976",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2977",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2978",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2979",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "3424",
+  "set": {
+   "Duration": 15
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "3422",
+  "set": {
+   "Radius": 250
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-round3-live-v1-77667",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-round3-live-v1-77659",
+  "set": {
+   "CastTime": 0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "901",
+  "set": {
+   "Duration": 60,
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2611",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2612",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2613",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2614",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2615",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2616",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2617",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2618",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "2619",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "where": {
+   "SpellID": 77753
+  },
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-valk-ow-acu-shear-fast-29",
+  "set": {
+   "Name": "Valkyrie's Supremacy"
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66180",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66181",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66182",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66183",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66184",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66185",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66110",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66111",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66112",
+  "set": {
+   "RecastDelay": 10
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66113",
+  "set": {
+   "RecastDelay": 10,
+   "Duration": 32
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66121",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66122",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66123",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66124",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66125",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66087",
+  "set": {
+   "CastTime": 2.0
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-warlock-test-v1-66088",
+  "set": {
+   "CastTime": 2.0
+  }
+ }
+]
