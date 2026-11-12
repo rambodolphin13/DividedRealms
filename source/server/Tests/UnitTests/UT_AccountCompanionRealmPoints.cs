@@ -13,6 +13,19 @@ namespace DOL.UnitTests
     [TestFixture]
     public class UT_AccountCompanionRealmPoints
     {
+        private double _rate;
+
+        // Server properties are not loaded in unit tests (rp_rate reads 0): use the default rate of 1.
+        [SetUp]
+        public void SetRate()
+        {
+            _rate = DOL.GS.ServerProperties.Properties.RP_RATE;
+            DOL.GS.ServerProperties.Properties.RP_RATE = 1.0;
+        }
+
+        [TearDown]
+        public void RestoreRate() => DOL.GS.ServerProperties.Properties.RP_RATE = _rate;
+
         private static GameBot Bot(bool autonomous, bool helper, bool accountCompanion)
         {
             var bot = (GameBot)RuntimeHelpers.GetUninitializedObject(typeof(GameBot));
