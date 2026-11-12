@@ -1,5 +1,6 @@
 """Static checks of the class-slot patch against the pristine 1.130 client (skipped when it is absent)."""
 import hashlib
+import os
 import struct
 import unittest
 from pathlib import Path
@@ -7,6 +8,21 @@ from pathlib import Path
 import patch_class_slots as slots
 
 PRISTINE = Path(__file__).resolve().parents[3]/'artifacts/modern-client-test/backups/client-bundle-20261021-165832-708287/game.original.dll'
+if not PRISTINE.is_file():  # the same stock client test_make_client_patch.py uses
+    PRISTINE = Path(os.environ.get('OFFLINE_DAOC_PRISTINE_1130',
+                                   Path.home()/'Desktop/OpenDAoC/DAoC Full Client/Dark Age of Camelot'))/'game.dll'
+
+
+def with_two_more_per_realm():
+    """REALMS plus placeholder classes 68-73, two per realm, with each realm's widest race list."""
+    ids = {'Albion': (68, 69), 'Midgard': (70, 71), 'Hibernia': (72, 73)}
+    realms = {}
+    for name, realm in slots.REALMS.items():
+        races = max((slot.races for slot in realm['slots']), key=len)
+        more = tuple(slots.Slot(class_id, f'Future Class {class_id}', f'Placeholder text for class {class_id}.',
+                                races, (slots.STR, slots.CON, slots.DEX)) for class_id in ids[name])
+        realms[name] = dict(realm, slots=realm['slots'] + more)
+    return realms
 
 
 class ClassSlotPatchTests(unittest.TestCase):
@@ -15,6 +31,8 @@ class ClassSlotPatchTests(unittest.TestCase):
         if not PRISTINE.is_file():
             raise unittest.SkipTest('Pristine 1.130 game.dll is not available')
         cls.original = PRISTINE.read_bytes()
+        if hashlib.sha256(cls.original).hexdigest() != slots.SUPPORTED:
+            raise unittest.SkipTest('The 1.130 game.dll on this machine is not the pristine one')
         cls.patched, cls.layout = slots.patch(cls.original)
 
     def offset(self, data, va):
@@ -92,7 +110,7 @@ class ClassSlotPatchTests(unittest.TestCase):
 
     def test_flight_anim_hooks_return_and_branch_on_the_flight_flag(self):
         flag = struct.pack('<I', slots.FLIGHT_FLAG)
-        zero = self.layout['section_va'] + slots.FLIGHT_ZERO
+        zero = self.layout['section_va'] + self.layout['flight_zero']
         for site, original, back, kind in slots.FLIGHT_ANIM_HOOKS:
             stub = self.layout['stubs'][f'flight_anim_{site:x}']
             hook = self.offset(self.patched, site)
@@ -126,6 +144,63 @@ class ClassSlotPatchTests(unittest.TestCase):
         self.assertEqual(self.patched[pos:pos+5], bytes.fromhex('8d7e346a44'))
         self.assertGreater(0x44, max(s.class_id for s in slots.SLOTS))
 
+    def test_released_classes_keep_the_released_layout(self):
+        # The section grows only when a class list needs it; today's list must build exactly as it always has.
+        self.assertEqual((self.layout['code_area'], self.layout['slot_storage'], self.layout['flight_zero']),
+                         (slots.CODE_AREA, slots.SLOT_STORAGE, slots.FLIGHT_ZERO))
+        self.assertEqual(self.layout['class_array_size'], slots.CLASS_ARRAY_MIN)
+        self.assertEqual(slots.all_slots(slots.REALMS), slots.SLOTS)
+        self.assertGreater(slots.FIRST_FREE_CLASS, max(s.class_id for s in slots.SLOTS))
+
+    def test_two_more_classes_per_realm_fit(self):
+        realms = with_two_more_per_realm()
+        patched, layout = slots.patch(self.original, realms)
+        self.assertGreater(layout['code_size'], slots.CODE_AREA, 'six more entries outgrow the released code area')
+        self.assertLessEqual(layout['code_size'], layout['code_area'])
+        self.assertEqual(layout['class_array_size'], 74)
+        pos = self.offset(patched, slots.CLASS_ARRAY_SIZE[0])
+        self.assertEqual(patched[pos:pos+5], bytes.fromhex('8d7e346a4a'))
+        section = self.offset(patched, layout['section_va'])
+        strings_end = max(layout['text'].values())
+        self.assertLess(strings_end, layout['section_va'] + layout['slot_storage'])
+        self.assertEqual(patched[section+layout['slot_storage']:section+layout['flight_zero']+0x40],
+                         bytes(layout['flight_zero']+0x40-layout['slot_storage']))
+        for slot in layout['slots']:
+            pos = self.offset(patched, layout['text'][slot.class_id, 'name'])
+            self.assertEqual(patched[pos:pos+len(slot.name)+1], slot.name.encode()+b'\0')
+        names = self.offset(patched, layout['stubs']['name'])
+        stats = self.offset(patched, layout['stubs']['stats'])
+        for class_id in range(68, 74):
+            table = struct.pack('<I', slots.NAME_TABLE + slots.NAME_SLOT*class_id)
+            self.assertIn(b'\xbf'+table, patched[names:stats], class_id)        # mov edi, name table slot
+            self.assertIn(bytes([0x83, 0xfa, class_id, 0x75]), patched[stats:stats+0x200], class_id)  # stat case
+        order = list(realms)
+        for index, name in enumerate(order):
+            start = self.offset(patched, layout['stubs'][name])
+            end = self.offset(patched, layout['stubs'][order[index+1]] if index+1 < len(order) else layout['stubs']['flight'])
+            code = patched[start:end]
+            for slot in realms[name]['slots']:
+                self.assertEqual(code.count(bytes([0x6a, slot.class_id, 0xff, 0x75, 0x08])), 1, slot.name)
+            back = layout['stubs'][name] + len(code) + struct.unpack_from('<i', code, len(code)-4)[0]
+            self.assertEqual((code[-5], back), (0xE9, realms[name]['back']))
+            hook = self.offset(patched, realms[name]['hook'])
+            self.assertEqual(realms[name]['hook'] + 5 + struct.unpack_from('<i', patched, hook+1)[0], layout['stubs'][name])
+        self.assertEqual(slots.patch(self.original)[0], self.patched, 'the default build is unchanged by a larger one')
+
+    def test_refuses_class_lists_the_client_cannot_hold(self):
+        realms = with_two_more_per_realm()   # Albion now fills all 20 buttons
+        extra = slots.Slot(74, 'One Too Many', 'x', (1,), (slots.STR, slots.CON, slots.DEX))
+        full = dict(realms, Albion=dict(realms['Albion'], slots=realms['Albion']['slots'] + (extra,)))
+        with self.assertRaisesRegex(ValueError, 'class buttons'):
+            slots.patch(self.original, full)
+        for bad in (slots.Slot(67, 'Same ID', 'x', (5,), (slots.STR, slots.CON, slots.DEX)),
+                    slots.Slot(100, 'Past The Table', 'x', (5,), (slots.STR, slots.CON, slots.DEX)),
+                    slots.Slot(70, 'A' * slots.NAME_SLOT, 'x', (5,), (slots.STR, slots.CON, slots.DEX)),
+                    slots.Slot(70, 'No Races', 'x', (), (slots.STR, slots.CON, slots.DEX))):
+            midgard = dict(slots.REALMS['Midgard'], slots=slots.REALMS['Midgard']['slots'] + (bad,))
+            with self.assertRaises(ValueError, msg=bad.name):
+                slots.patch(self.original, dict(slots.REALMS, Midgard=midgard))
+
     def test_vampiir_flag_untouched_while_hover_is_off(self):
         if slots.TUATHA_HOVER:
             self.skipTest('Tuatha hover is on')
@@ -155,7 +230,10 @@ class ClassSlotPatchTests(unittest.TestCase):
     def test_layout_adds_buttons_for_every_new_slot(self):
         stock = PRISTINE.parents[3]/'classslots-staging/character_creation.original.xml'
         installed = PRISTINE.parents[2]/'runtime/client-modern/app/pregame/character_creation.xml'
-        layout = stock if stock.is_file() else installed
+        beside = PRISTINE.parent/'pregame/character_creation.xml'   # PRISTINE is a stock client folder's game.dll
+        layout = next((path for path in (stock, installed, beside) if path.is_file()), None)
+        if layout is None:
+            self.skipTest('No character_creation.xml on this machine')
         source = layout.read_bytes()
         if hashlib.sha256(source).hexdigest() != slots.LAYOUT_SUPPORTED:
             self.skipTest('Installed layout is already patched')
