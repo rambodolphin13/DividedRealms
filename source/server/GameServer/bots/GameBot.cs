@@ -2023,7 +2023,12 @@ namespace DOL.GS
         {
             if (IsAccountCompanion && amount > 0)
             {
-                GainAccountCompanionRealmPoints(amount);
+                // DR-287: a companion is a real character, so the realm point rate applies as for its player
+                // (GamePlayer.GainRealmPoints). Gamebots keep the plain amount.
+                if (modify)
+                    amount = CompanionRealmPointAmount(amount, ServerProperties.Properties.RP_RATE);
+                if (amount > 0)
+                    GainAccountCompanionRealmPoints(amount);
                 return;
             }
             if (!IsAutonomousWorldBot || amount <= 0)
@@ -2040,6 +2045,10 @@ namespace DOL.GS
                 AutonomousLivingServer.OnBotRealmLevel(this, previousRealmLevel);
             }
         }
+
+        /// <summary>Realm points at the server's rp_rate; -1 means no rate, as for a player.</summary>
+        public static long CompanionRealmPointAmount(long amount, double rate) =>
+            rate == -1 ? amount : (long)(amount * rate);
 
         public override void GainRealmPoints(long amount) => GainRealmPoints(amount, true);
 
