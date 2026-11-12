@@ -314,6 +314,9 @@ namespace DOL.GS
                 Spell payload = Payload(spell);
                 switch (spell.SpellType)
                 {
+                    // The movable level 40 pets are left to players: the shroom plan is built around a planted main turret.
+                    case eSpellType.SummonAnimistPet when Spells.SummonAnimistMainPet.IsMobilePet(spell):
+                        break;
                     case eSpellType.SummonAnimistPet:
                         switch (AnimistShroomPlanner.ClassifyMainPayload(payload))
                         {
