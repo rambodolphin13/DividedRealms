@@ -102,5 +102,8 @@ namespace DOL.GS
         DeathKnight = 66,
         // Hibernian royal class; native client slot 67, created from the Hibernia entry slot 63 used to have.
         TuathaSovereign = 67,
+        // 68-73 are kept for future classes, two per realm: Albion 68-69, Midgard 70-71, Hibernia 72-73
+        // (source/tools/classslots/patch_class_slots.py). Don't add a member until the class exists: character
+        // creation refuses any class that is not defined here, and bots, metrics and tests walk every member.
 	}
 }

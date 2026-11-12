@@ -19,10 +19,16 @@ Starts from the pristine 1.130 game.dll (the input of patch_modern_client.py) an
   * a longer camera zoom (CAMERA_MAX_EDITS): the distance clamp's 500 / 1500 maximums become CAMERA_MAX;
   * the creation screen's class-indexed entry array (container +0x34) sized for 68 classes instead of 63.
     Without this, registering class 63 writes one slot past the 0xFC-byte array and corrupts the heap
-    (first test install crashed opening character creation);
+    (first test install crashed opening character creation). The size follows the highest class in REALMS;
   * the creation screen's class buttons extended from 16 to 20 per realm (second test: Albion and Hibernia,
     which already had 16 classes, crashed looking up a missing class_16_text button). See SCREEN_EDITS and
     patch_layout(), which adds buttons class_16..class_19 to pregame/character_creation.xml.
+
+Adding a class: give it a Slot with the next free class ID (FIRST_FREE_CLASS and up) and put it in its realm's
+'slots' tuple in REALMS. The .slots section's code area, the class array and the string block grow to fit, and
+check_slots() refuses a class list the creation screen cannot show (BUTTONS per realm). With the classes listed
+here the output is byte for byte what it was before the section could grow. Class IDs above 67 pass the static
+checks only: none has been tried in the real client yet.
 
 The three Mauler entries, names and race lists are left stock, so the Mauler slots are real Maulers
 again. The server must use classes/native_custom_class_slots with this client. No game is executed.
@@ -80,7 +86,14 @@ DEATH_KNIGHT = Slot(66, 'Death Knight',
 TUATHA = Slot(67, 'Tuatha Sovereign',
               'Hibernian royal sovereign of the Tuatha De Danann: spirit magic, weapons and stealth, accompanied by a loyal Faerie Drake.',
               (9, 10, 11, 12, 15, 18, 21), (STR, PIE, CON))
+NAME_ONLY = (SLUAGHBINDER,)   # a class name and stat highlight, no creation entry
 SLOTS = (SLUAGHBINDER, STORM_SOVEREIGN, PENDRAGON, DEATH_KNIGHT, TUATHA)
+# Class IDs 68-73 are kept for future classes, two per realm: Albion 68-69, Midgard 70-71, Hibernia 72-73.
+# The server refuses to create any class that is not in eCharacterClass, so an ID is safe to add here first.
+FIRST_FREE_CLASS = 68
+MAX_CLASS = 99                # the client's class-name table has 100 slots
+# Classes the stock creation screen lists per realm (Mauler included); each takes one class button.
+STOCK_CLASSES = {'Albion': 16, 'Midgard': 15, 'Hibernia': 16}
 
 # Per realm: hook right after the Mauler entry's list clear, the original bytes replaced there, where to
 # return, and how the Mauler entry set its register-held fields in that function.
@@ -99,6 +112,7 @@ RESIST_HOOK, RESIST_ORIGINAL, RESIST_BACK = 0x41A639, '89904c93d400', 0x41A63F
 # Creation container constructor: vector at +0x34 indexed by class ID (written at 0x5AFCF4, bounds-checked
 # by size at 0x5B4236). 'lea edi,[esi+0x34]; push 0x3f' -> push 0x44 (classes 0-67).
 CLASS_ARRAY_SIZE = 0x5AFA55, '8d7e346a3f', '8d7e346a44'
+CLASS_ARRAY_MIN = 0x44        # the size every released build has used; larger only when a class ID needs it
 # 1.130's anim player (0x42BC86) gained a branch for attached personal horses. When a rider has none and the
 # call is the NPC-steed ride path (mode 2, only from 0x42C945), it replays walk/run/idle from the rider's own
 # speed (0x42BE10..0x42BE72), overwriting "Ride Horse" (slot 0x47): taxi riders stand. 1.127 has no such
@@ -115,7 +129,7 @@ FLIGHT_FLAG = 0xD90510
 # no entry for 3, so nothing is chosen and rider and mount freeze. While the flight flag is set, the three
 # local-player animation reads below see mode 0, a zeroed movement struct (speed 0) and no turn keys: rider and
 # mount play their standing idle in the air. Each: (site, original bytes, return address, kind).
-FLIGHT_ZERO = 0xC40          # section offset of a zeroed movement-struct stand-in (0x40 bytes)
+FLIGHT_ZERO = 0xC40          # section offset of a zeroed movement-struct stand-in (0x40 bytes); follows SLOT_STORAGE
 FLIGHT_ANIM_HOOKS = [
     # anim player 0x42BC86, local rider: speed [mv+0x38] -> [ebp+8], keys [0xD90514]&0xF -> eax, jmp 0x42BCC6
     (0x42BC9E, 'a19c14d9008b4038894508a11405d90083e00feb13', 0x42BCC6, 'player'),
@@ -198,7 +212,9 @@ SCREEN_EDITS = [
 # after it, with their adapter-pointer slots in this patch's own (writable) section.
 ADAPTER_HOOK, ADAPTER_ORIGINAL, ADAPTER_BACK = 0x5ADCB3, '6880a79500', 0x5ADCB8
 REGISTER_ADAPTER = 0x4B701A   # (owner, &slot, name) -> stores the new adapter in *slot; ret 0xC
-SLOT_STORAGE = 0xC00          # section offset of the extra adapter-pointer slots
+SLOT_STORAGE = 0xC00          # section offset of the extra adapter-pointer slots (moves up when the code or
+                              # strings outgrow the space below it; see section_layout())
+CODE_AREA = 0x800             # section offset where the strings start; the stubs live below it
 LAYOUT_SUPPORTED = '46d5de87dd1c4b2b3b1b1df3199556a0780ffe38d09f77ef41df7c4a9eda4a1c'
 
 REG = {'eax': 0, 'ecx': 1, 'edx': 2, 'ebx': 3, 'esp': 4, 'ebp': 5, 'esi': 6, 'edi': 7}
@@ -304,8 +320,8 @@ def name_stub(asm, names):
     asm.jmp(NAME_BACK)
 
 
-def stat_stub(asm):
-    for slot in SLOTS:
+def stat_stub(asm, slots):
+    for slot in slots:
         primary, secondary, tertiary = slot.stats
         case = bytes.fromhex('c701') + struct.pack('<I', primary) + bytes.fromhex('c74104') + struct.pack('<I', secondary)
         case += bytes.fromhex('c74108') + struct.pack('<I', tertiary) + bytes.fromhex('31c040c3')  # eax = 1, ret
@@ -407,7 +423,43 @@ def resist_stub(asm):
     asm.jmp(RESIST_BACK)
 
 
-def patch(original):
+def all_slots(realms):
+    """Every class the patch names, in class ID order."""
+    return tuple(sorted(NAME_ONLY + tuple(slot for realm in realms.values() for slot in realm['slots']),
+                        key=lambda slot: slot.class_id))
+
+
+def check_slots(realms):
+    """Refuse a class list the client cannot hold. Returns the classes in class ID order."""
+    slots = all_slots(realms)
+    ids = [slot.class_id for slot in slots]
+    if len(set(ids)) != len(ids):
+        raise ValueError('Two classes share a class ID')
+    for slot in slots:
+        if not 63 <= slot.class_id <= MAX_CLASS:
+            raise ValueError(f'Class ID {slot.class_id} is outside 63-{MAX_CLASS}: {slot.name}')
+        if len(slot.name) + 1 > NAME_SLOT:
+            raise ValueError('Class name too long: ' + slot.name)
+        if len(slot.stats) != 3 or not slot.races:
+            raise ValueError('A class needs three stats and at least one race: ' + slot.name)
+    for name, realm in realms.items():
+        shown = STOCK_CLASSES[name] + len(realm['slots'])
+        if shown > BUTTONS:
+            raise ValueError(f'{name} would list {shown} classes; the creation screen has {BUTTONS} class buttons')
+    return slots
+
+
+def section_layout(code_size, strings_size):
+    """(code area, adapter slot storage, flight zero block) as section offsets. The released sizes are the
+    minimum, so a build whose code and strings fit them is laid out exactly as before."""
+    code_area = max(CODE_AREA, align(code_size, 0x100))
+    storage = max(SLOT_STORAGE, align(code_area + strings_size, 0x40))
+    return code_area, storage, storage + align(4 * (BUTTONS - 16), 0x40)
+
+
+def patch(original, realms=None):
+    realms = REALMS if realms is None else realms
+    slots = check_slots(realms)
     if hashlib.sha256(original).hexdigest() != SUPPORTED:
         raise ValueError('Unsupported 1.130 game.dll SHA256; patch only the pristine client')
     data = bytearray(original)
@@ -443,56 +495,69 @@ def patch(original):
     rva = align(max(s[2]+max(s[1], s[3]) for s in sections), sa)
     va = BASE + rva
 
-    # Strings first (fixed offset), then code; every stub knows its own address.
-    strings = bytearray()
-    text = {}
-    for slot in SLOTS:
-        for kind, value in (('name', slot.name), ('description', slot.description)):
-            text[slot.class_id, kind] = va + 0x800 + len(strings)
-            strings += value.encode('latin-1') + b'\0'
-    asm = Asm(va)
-    stubs = {}
-    stubs['name'] = asm.here
-    name_stub(asm, [(slot, text[slot.class_id, 'name']) for slot in SLOTS])
-    stubs['stats'] = asm.here
-    stat_stub(asm)
-    stubs['resist'] = asm.here
-    resist_stub(asm)
-    if TUATHA_HOVER:
-        stubs['hover_select'] = asm.here
-        hover_select_stub(asm)
-        stubs['hover_world'] = asm.here
-        hover_world_stub(asm)
-        for site, original, back, kind in VAMPIIR_ONLY:
-            stubs[f'vampiir_{site:x}'] = asm.here
-            vampiir_only_stub(asm, original, back, kind)
-        stubs['hover_speed'] = asm.here
-        hover_speed_stub(asm)
-    adapter_names = []
-    for index in range(16, BUTTONS):
-        adapter_names.append(va + 0x800 + len(strings))
-        strings += f'class_{index}_text'.encode('latin-1') + b'\0'
-    stubs['adapters'] = asm.here
-    adapter_stub(asm, adapter_names, va + SLOT_STORAGE)
-    for realm_name, realm in REALMS.items():
-        stubs[realm_name] = asm.here
-        creation_stub(asm, realm, text)
-    stubs['flight'] = asm.here         # last, so the earlier stubs keep their addresses
-    flight_stub(asm)
-    for site, original, back, kind in FLIGHT_ANIM_HOOKS:
-        stubs[f'flight_anim_{site:x}'] = asm.here
-        flight_anim_stub(asm, original, back, kind, va + FLIGHT_ZERO)
-    if len(asm.code) > 0x800:
-        raise ValueError('Stubs exceed the reserved code area')
-    payload = bytes(asm.code).ljust(0x800, b'\xcc') + bytes(strings)
-    if len(payload) > SLOT_STORAGE:
-        raise ValueError('Strings overlap the adapter slot storage')
-    payload = payload.ljust(SLOT_STORAGE, b'\0') + b'\0' * (4 * (BUTTONS - 16))
-    if len(payload) > FLIGHT_ZERO:
-        raise ValueError('Adapter slots overlap the flight zero block')
-    payload = payload.ljust(FLIGHT_ZERO + 0x40, b'\0')
+    # Strings first (at the end of the code area), then code; every stub knows its own address. The size of
+    # the stubs does not depend on where the data sits, so a first pass measures and a second lays out to fit.
+    def build(code_area, storage, flight_zero):
+        strings = bytearray()
+        text = {}
+        for slot in slots:
+            for kind, value in (('name', slot.name), ('description', slot.description)):
+                text[slot.class_id, kind] = va + code_area + len(strings)
+                strings += value.encode('latin-1') + b'\0'
+        asm = Asm(va)
+        stubs = {}
+        stubs['name'] = asm.here
+        name_stub(asm, [(slot, text[slot.class_id, 'name']) for slot in slots])
+        stubs['stats'] = asm.here
+        stat_stub(asm, slots)
+        stubs['resist'] = asm.here
+        resist_stub(asm)
+        if TUATHA_HOVER:
+            stubs['hover_select'] = asm.here
+            hover_select_stub(asm)
+            stubs['hover_world'] = asm.here
+            hover_world_stub(asm)
+            for site, original, back, kind in VAMPIIR_ONLY:
+                stubs[f'vampiir_{site:x}'] = asm.here
+                vampiir_only_stub(asm, original, back, kind)
+            stubs['hover_speed'] = asm.here
+            hover_speed_stub(asm)
+        adapter_names = []
+        for index in range(16, BUTTONS):
+            adapter_names.append(va + code_area + len(strings))
+            strings += f'class_{index}_text'.encode('latin-1') + b'\0'
+        stubs['adapters'] = asm.here
+        adapter_stub(asm, adapter_names, va + storage)
+        for realm_name, realm in realms.items():
+            stubs[realm_name] = asm.here
+            creation_stub(asm, realm, text)
+        stubs['flight'] = asm.here         # last, so the earlier stubs keep their addresses
+        flight_stub(asm)
+        for site, original, back, kind in FLIGHT_ANIM_HOOKS:
+            stubs[f'flight_anim_{site:x}'] = asm.here
+            flight_anim_stub(asm, original, back, kind, va + flight_zero)
+        return asm, stubs, strings, text
 
-    for at, before, after in [CLASS_ARRAY_SIZE, RIDE_ANIM_EDIT]+SCREEN_EDITS+CAMERA_MAX_EDITS+FLIGHT_SPEED_EDITS:
+    asm, stubs, strings, text = build(CODE_AREA, SLOT_STORAGE, FLIGHT_ZERO)
+    code_area, storage, flight_zero = section_layout(len(asm.code), len(strings))
+    if (code_area, storage, flight_zero) != (CODE_AREA, SLOT_STORAGE, FLIGHT_ZERO):
+        measured = len(asm.code)
+        asm, stubs, strings, text = build(code_area, storage, flight_zero)
+        if len(asm.code) != measured:
+            raise ValueError('Stub size changed with the layout')
+    if len(asm.code) > code_area:
+        raise ValueError('Stubs exceed the reserved code area')
+    payload = bytes(asm.code).ljust(code_area, b'\xcc') + bytes(strings)
+    if len(payload) > storage:
+        raise ValueError('Strings overlap the adapter slot storage')
+    payload = payload.ljust(storage, b'\0') + b'\0' * (4 * (BUTTONS - 16))
+    if len(payload) > flight_zero:
+        raise ValueError('Adapter slots overlap the flight zero block')
+    payload = payload.ljust(flight_zero + 0x40, b'\0')
+
+    array_size = max(CLASS_ARRAY_MIN, max(slot.class_id for slot in slots) + 1)   # push imm8: below 0x80
+    class_array = CLASS_ARRAY_SIZE[0], CLASS_ARRAY_SIZE[1], '8d7e346a' + bytes([array_size]).hex()
+    for at, before, after in [class_array, RIDE_ANIM_EDIT]+SCREEN_EDITS+CAMERA_MAX_EDITS+FLIGHT_SPEED_EDITS:
         old, new = bytes.fromhex(before), bytes.fromhex(after)
         pos = offset(at)
         if len(old) != len(new) or data[pos:pos+len(old)] != old:
@@ -511,7 +576,7 @@ def patch(original):
             hook(site, original, stubs[f'vampiir_{site:x}'])
         hook(HOVER_SPEED[0], HOVER_SPEED[1], stubs['hover_speed'])
     hook(ADAPTER_HOOK, ADAPTER_ORIGINAL, stubs['adapters'])
-    for realm_name, realm in REALMS.items():
+    for realm_name, realm in realms.items():
         hook(realm['hook'], realm['original'], stubs[realm_name])
 
     raw_size = align(len(payload), fa)
@@ -528,7 +593,8 @@ def patch(original):
         checksum = (checksum & 0xffff)+(checksum >> 16)
     checksum = (checksum & 0xffff)+(checksum >> 16)
     struct.pack_into('<I', data, opt+64, checksum+len(data))
-    return bytes(data), dict(section_va=va, stubs=stubs, text=text)
+    return bytes(data), dict(section_va=va, stubs=stubs, text=text, slots=slots, class_array_size=array_size,
+                             code_size=len(asm.code), code_area=code_area, slot_storage=storage, flight_zero=flight_zero)
 
 
 def patch_layout(original):
