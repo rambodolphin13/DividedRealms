@@ -98,6 +98,17 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void IdleCompanionsTakeTheLordsPoints_OnceAndOnlyWhenPresent()
+        {
+            // DR-287: a healer companion that never hit the tower lord got none of its realm points.
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.TakesIdleLordShare(true, false, true, true), Is.True, "idle companion");
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.TakesIdleLordShare(true, true, true, true), Is.False, "already paid by damage");
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.TakesIdleLordShare(false, false, true, true), Is.False, "gamebot or /spawn helper");
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.TakesIdleLordShare(true, false, false, true), Is.False, "dead");
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.TakesIdleLordShare(true, false, true, false), Is.False, "out of range");
+        }
+
+        [Test]
         public void SpawnHelper_GainsNothing()
         {
             GameBot helper = Bot(false, true, false);
