@@ -12,12 +12,21 @@ namespace DOL.GS.Spells
 		protected SummonAnimistPet(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
 
 		/// <summary>
+		/// Turrets are planted on the caster's ground target. The movable pets added in patch 1.111 are not:
+		/// they appear beside the caster like any other class's pet.
+		/// </summary>
+		protected virtual bool UsesGroundTarget => true;
+
+		/// <summary>
 		/// Check whether it's possible to summon a pet.
 		/// </summary>
 		/// <param name="selectedTarget"></param>
 		/// <returns></returns>
 		public override bool CheckBeginCast(GameLiving selectedTarget)
 		{
+			if (!UsesGroundTarget)
+				return base.CheckBeginCast(selectedTarget);
+
 			if (!Caster.GroundTarget.IsValid)
 			{
 				if (Caster is GamePlayer)
@@ -44,6 +53,12 @@ namespace DOL.GS.Spells
 
 		public override void FinishSpellCast(GameLiving target)
 		{
+			if (!UsesGroundTarget)
+			{
+				base.FinishSpellCast(target);
+				return;
+			}
+
 			if (!Caster.GroundTarget.IsValid)
 			{
 				if (Caster is GamePlayer)
@@ -97,6 +112,12 @@ namespace DOL.GS.Spells
 
 		protected override void GetPetLocation(out int x, out int y, out int z, out ushort heading, out Region region)
 		{
+			if (!UsesGroundTarget)
+			{
+				base.GetPetLocation(out x, out y, out z, out heading, out region);
+				return;
+			}
+
 			x = Caster.GroundTarget.X;
 			y = Caster.GroundTarget.Y;
 			z = Caster.GroundTarget.Z;

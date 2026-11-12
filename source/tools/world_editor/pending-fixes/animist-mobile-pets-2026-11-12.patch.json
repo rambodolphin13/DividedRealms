@@ -1,0 +1,47 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-12T10:37:05.480951+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77769",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Guardian of the Forest (live 1.130a Arboreal Mastery)."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a guardian that follows you and fights at your command. It is a normal pet, not a planted turret."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77805",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Heart of the Grove (live 1.130a Creeping Path Spec (Live))."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a heart of the grove that follows you and fights at your command. It is a normal pet, not a planted turret."
+   }
+  },
+  {
+   "table": "Spell",
+   "key": "local-round3-live-v1-77806",
+   "op": "update",
+   "before": {
+    "DamageType": 0,
+    "Description": "Harbinger of War (live 1.130a Verdant Path Spec (Live))."
+   },
+   "after": {
+    "DamageType": 2,
+    "Description": "Summons a harbinger of war that follows you and fights at your command. It is a normal pet, not a planted turret."
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

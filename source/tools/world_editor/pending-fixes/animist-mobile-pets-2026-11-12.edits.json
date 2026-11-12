@@ -1,0 +1,26 @@
+[
+ {
+  "table": "Spell",
+  "key": "local-round3-live-v1-77769",
+  "set": {
+   "DamageType": 2,
+   "Description": "Summons a guardian that follows you and fights at your command. It is a normal pet, not a planted turret."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-round3-live-v1-77805",
+  "set": {
+   "DamageType": 2,
+   "Description": "Summons a heart of the grove that follows you and fights at your command. It is a normal pet, not a planted turret."
+  }
+ },
+ {
+  "table": "Spell",
+  "key": "local-round3-live-v1-77806",
+  "set": {
+   "DamageType": 2,
+   "Description": "Summons a harbinger of war that follows you and fights at your command. It is a normal pet, not a planted turret."
+  }
+ }
+]
