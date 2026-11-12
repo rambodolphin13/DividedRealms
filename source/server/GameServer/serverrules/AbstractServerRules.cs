@@ -1128,6 +1128,22 @@ namespace DOL.GS.ServerRules
                 AwardBotOnNpcKill(bot, totalDamage, killedNpc, botCountAndDamage, groupCountAndDamage,
                     expeditionMembers?.Contains(bot) != true);
             }
+            // DR-287: a keep or tower lord pays its full realm and bounty points to every account companion in a group
+            // that fought it, not only to the ones that hit it. A healer companion that only healed was left out.
+            if (killedNpc is GuardLord && groupCountAndDamage != null)
+            {
+                foreach (GameBot companion in groupCountAndDamage.Keys
+                             .SelectMany(group => group.GetMembersInTheGroup()).OfType<GameBot>().Distinct())
+                {
+                    if (TakesIdleLordShare(companion.IsAccountCompanion, botCountAndDamage.ContainsKey(companion),
+                            companion.IsAlive, companion.ObjectState is GameObject.eObjectState.Active &&
+                            companion.IsWithinRadius(killedNpc, WorldMgr.MAX_EXPFORKILL_DISTANCE)))
+                    {
+                        AwardCompanionLordPoints(companion, killedNpc);
+                    }
+                }
+            }
+
             if (expeditionMembers != null)
                 foreach (GameBot bot in expeditionMembers)
                 {
@@ -1847,6 +1863,25 @@ namespace DOL.GS.ServerRules
             return lord ? npcValue : Math.Max(0, Math.Min(earnerValue * 2, (int) (npcValue * damagePercent)));
         }
 
+        /// <summary>
+        /// DR-287: an account companion in a group that fought a keep or tower lord, alive and in reward range, takes the
+        /// lord's points even with no damage of its own. One already paid through its damage is not paid twice.
+        /// </summary>
+        public static bool TakesIdleLordShare(bool accountCompanion, bool alreadyPaid, bool alive, bool activeInRange) =>
+            accountCompanion && !alreadyPaid && alive && activeInRange;
+
+        /// <summary>A keep or tower lord's full realm and bounty points, as a player gets them.</summary>
+        private static void AwardCompanionLordPoints(GameBot companion, GameNPC lord)
+        {
+            int realmPoints = NpcKillPoints(lord.RealmPointsValue, true, 0, 1.0);
+            if (realmPoints > 0)
+                companion.GainRealmPoints(realmPoints, true);
+
+            int bountyPoints = NpcKillPoints(lord.BountyPointsValue, true, 0, 1.0);
+            if (bountyPoints > 0)
+                companion.GainBountyPoints(bountyPoints);
+        }
+
         private static void AwardBotOnNpcKill(GameBot botToAward,
             double npcTotalDamageReceived,
             GameNPC killedNpc,
@@ -1887,17 +1922,21 @@ namespace DOL.GS.ServerRules
             // (AwardPlayerOnNpcKill). Gamebots and /spawn helpers do not.
             if (accountCompanion && botToAward.IsAlive)
             {
-                bool lord = killedNpc is GuardLord;
-                int realmPoints = NpcKillPoints(killedNpc.RealmPointsValue, lord,
-                    AutonomousBotRealmPointRewards.GetPlayerEquivalentRealmPointValue(botToAward.Level, botToAward.RealmLevel),
-                    damagePercent);
-                if (realmPoints > 0)
-                    botToAward.GainRealmPoints(realmPoints, true);
+                if (killedNpc is GuardLord)
+                    AwardCompanionLordPoints(botToAward, killedNpc);
+                else
+                {
+                    int realmPoints = NpcKillPoints(killedNpc.RealmPointsValue, false,
+                        AutonomousBotRealmPointRewards.GetPlayerEquivalentRealmPointValue(botToAward.Level, botToAward.RealmLevel),
+                        damagePercent);
+                    if (realmPoints > 0)
+                        botToAward.GainRealmPoints(realmPoints, true);
 
-                int bountyPoints = NpcKillPoints(killedNpc.BountyPointsValue, lord,
-                    AutonomousBotRealmPointRewards.GetPlayerEquivalentBountyPointValue(botToAward.Level), damagePercent);
-                if (bountyPoints > 0)
-                    botToAward.GainBountyPoints(bountyPoints);
+                    int bountyPoints = NpcKillPoints(killedNpc.BountyPointsValue, false,
+                        AutonomousBotRealmPointRewards.GetPlayerEquivalentBountyPointValue(botToAward.Level), damagePercent);
+                    if (bountyPoints > 0)
+                        botToAward.GainBountyPoints(bountyPoints);
+                }
             }
 
             long xpCap = GameServer.ServerRules.GetExperienceForLiving(botToAward.Level);
