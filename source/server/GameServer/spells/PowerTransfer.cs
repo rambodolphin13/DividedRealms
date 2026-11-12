@@ -21,8 +21,15 @@ namespace DOL.GS.Spells
 		public override bool CheckBeginCast(GameLiving selectedTarget)
 		{
 			GameLiving owner = Owner();
-			if (owner == null || selectedTarget == null)
+			if (owner == null)
 				return false;
+
+			if (selectedTarget == null)
+			{
+				// Was silent: the caster saw nothing at all (class test 2026-11-12, DR-280/285).
+				MessageToLiving(owner, "You must select a target for this spell!", eChatType.CT_SpellResisted);
+				return false;
+			}
 
 			if (selectedTarget == Caster || selectedTarget == owner)
 			{
@@ -49,7 +56,11 @@ namespace DOL.GS.Spells
 			int powerDrained = -owner.ChangeMana(owner, eManaChangeType.Spell, -powerTransfer);
 
 			if (powerDrained <= 0)
+			{
+				// Was silent too: a caster with no power cast the spell and nothing was said.
+				MessageToLiving(owner, "You have no power to transfer!", eChatType.CT_SpellResisted);
 				return;
+			}
 
 			int powerHealed = target.ChangeMana(owner, eManaChangeType.Spell, powerDrained);
 

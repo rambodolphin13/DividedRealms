@@ -179,8 +179,14 @@ namespace DOL.GS
             if (!encounter || IsInTown(bot)) return false;
             // Enumerate learned spells only when a cast can actually be attempted.
             Kit kit = ReadKit(bot, allowed);
-            main = bot.ControlledBrain?.Body as TurretPet;
-            bool hasMain = main?.IsAlive == true && main.ObjectState == GameObject.eObjectState.Active;
+            // The main pet is a planted turret or, since the owner's rule of 2026-11-12 (only turrets use a ground
+            // target; main pets summon like any class's pet), a normal pet that follows the Animist. Either one counts
+            // as the main pet here; only a planted one is ever re-planted (the relocation above).
+            GameNPC mainPet = bot.ControlledBrain?.Body;
+            bool hasMain = mainPet?.IsAlive == true && mainPet.ObjectState == GameObject.eObjectState.Active;
+            if (hasMain && mainPet is not TurretPet && encounterTarget?.IsAlive == true &&
+                bot.ControlledBrain is IControlledBrain follower && mainPet.TargetObject != encounterTarget)
+                follower.Attack(encounterTarget);     // a following pet fights the bot's target, as other pet classes' do
 
             // The target is out of shroom reach (it moved, or the Animist has
             // not closed yet). Returning lets the ordinary approach move the
@@ -234,7 +240,7 @@ namespace DOL.GS
                     Vector3.Distance(Position(entry.Turret), ablativeSpot) <= PlantSpacing);
 
             bool burstReady = kit.Burst.Spell != null && hasMain && Affordable(bot, kit.Burst.Spell) &&
-                fight.EngagedNear(main, 350) && fight.AwakeHostilesNear(bot, Position(main), 450, anyCon: true) == 0;
+                fight.EngagedNear(mainPet, 350) && fight.AwakeHostilesNear(bot, Position(mainPet), 450, anyCon: true) == 0;
 
             Vector3 sporeSpot = BehindSpot(bot, encounterTarget, kit.Spore.Spell);
             bool sporeNeeded = extras && kit.Spore.Spell != null && bot.Group?.MemberCount > 1 && beingHit != null &&
@@ -247,9 +253,9 @@ namespace DOL.GS
             var situation = new AnimistShroomPlanner.Situation(
                 HasMain: hasMain,
                 CanSummonMain: kit.PreferredMain.Spell != null && AutonomousPetSupport.CanCast(bot, kit.PreferredMain.Spell),
-                MainHealthPercent: hasMain ? main.HealthPercent : 100,
+                MainHealthPercent: hasMain ? mainPet.HealthPercent : 100,
                 CanHealMain: kit.HealMain.Spell != null && AutonomousPetSupport.CanCast(bot, kit.HealMain.Spell) &&
-                             hasMain && bot.IsWithinRadius(main, kit.HealMain.Spell.CalculateEffectiveRange(bot)),
+                             hasMain && bot.IsWithinRadius(mainPet, kit.HealMain.Spell.CalculateEffectiveRange(bot)),
                 TargetDying: fight.Engaged.Count <= 1 && encounterTarget.HealthPercent < 15,
                 FightWorthBuffing: fight.FightWorthBuffing,
                 DamageShroomsNearFight: damageNear,
@@ -267,11 +273,11 @@ namespace DOL.GS
             {
                 AnimistShroomAction.SummonMain => Cast(bot, encounterTarget, kit.PreferredMain, bot,
                     BehindSpot(bot, encounterTarget, kit.PreferredMain.Spell)),
-                AnimistShroomAction.HealMain => Cast(bot, encounterTarget, kit.HealMain, main, null),
+                AnimistShroomAction.HealMain => Cast(bot, encounterTarget, kit.HealMain, mainPet, null),
                 AnimistShroomAction.PlantDamage => Cast(bot, encounterTarget, kit.DamageField, bot, damageSpot),
                 AnimistShroomAction.PlantVent => Cast(bot, encounterTarget, vent, bot, ventSpot),
                 AnimistShroomAction.PlantAblative => Cast(bot, encounterTarget, kit.Ablative, bot, ablativeSpot),
-                AnimistShroomAction.TurretBurst => Cast(bot, encounterTarget, kit.Burst, main, null),
+                AnimistShroomAction.TurretBurst => Cast(bot, encounterTarget, kit.Burst, mainPet, null),
                 AnimistShroomAction.PlantSpore => Cast(bot, encounterTarget, kit.Spore, bot, sporeSpot),
                 _ => false
             };
@@ -294,8 +300,8 @@ namespace DOL.GS
                 state.NextRelocation = now + RelocationCooldownMilliseconds;
             activity = action switch
             {
-                AnimistShroomAction.SummonMain => $"Deploying main turret: {used.Name}",
-                AnimistShroomAction.HealMain => $"Healing main turret: {used.Name}",
+                AnimistShroomAction.SummonMain => $"Summoning main pet: {used.Name}",
+                AnimistShroomAction.HealMain => $"Healing main pet: {used.Name}",
                 AnimistShroomAction.TurretBurst => $"Turret burst: {used.Name}",
                 _ => $"Planting field turret: {used.Name}"
             };
@@ -314,9 +320,6 @@ namespace DOL.GS
                 Spell payload = Payload(spell);
                 switch (spell.SpellType)
                 {
-                    // The movable level 40 pets are left to players: the shroom plan is built around a planted main turret.
-                    case eSpellType.SummonAnimistPet when Spells.SummonAnimistMainPet.IsMobilePet(spell):
-                        break;
                     case eSpellType.SummonAnimistPet:
                         switch (AnimistShroomPlanner.ClassifyMainPayload(payload))
                         {

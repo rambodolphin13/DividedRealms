@@ -412,6 +412,17 @@ namespace DOL.GS.Spells
 		}
 
 		/// <summary>
+		/// The target a cast is checked against. A player's cast is queued with no target on purpose (the target is the
+		/// one at cast time, not at queue time: GamePlayer.CastSpell), so CheckBeginCast used to be called with null and
+		/// only the base method went on to read the player's current target. Handlers that look at their selectedTarget
+		/// before calling base then refused every player cast: Cure Root "You cannot use this on yourself", Power
+		/// Transfer in silence, Shadow Step, Ally Stealth, Crowd Control Guard, Siege Shot and others (class test
+		/// 2026-11-12, DR-280/283/284/285/299). Bots and pets pass their target and were not affected.
+		/// </summary>
+		public static GameLiving SelectedTargetAtCastTime(GameLiving caster, GameLiving queuedTarget) =>
+			queuedTarget ?? (caster is GamePlayer player ? player.TargetObject as GameLiving : null);
+
+		/// <summary>
 		/// All checks before any casting begins
 		/// </summary>
 		/// <summary>Why the last CheckBeginCast refused when it sent the caster no message (NPC casters mostly), for the bot tester log.</summary>
@@ -1158,7 +1169,7 @@ namespace DOL.GS.Spells
 				{
 					BotTesterLog.CastStarted(this);
 					RefuseReason = null;
-					if (CheckBeginCast(Target))
+					if (CheckBeginCast(SelectedTargetAtCastTime(Caster, Target)))
 					{
 						_castStartTick = GameLoop.GameLoopTime;
 

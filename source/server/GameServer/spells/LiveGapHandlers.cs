@@ -108,7 +108,13 @@ namespace DOL.GS.Spells
 
         public override bool CheckBeginCast(GameLiving selectedTarget)
         {
-            if (selectedTarget == Caster || selectedTarget == null)
+            if (selectedTarget == null)
+            {
+                MessageToCaster("You must select a target for this spell!", eChatType.CT_SpellResisted);
+                return false;
+            }
+
+            if (selectedTarget == Caster)
             {
                 MessageToCaster("You cannot use this on yourself.", eChatType.CT_SpellResisted);
                 return false;
