@@ -50,6 +50,41 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void CompanionRealmPoints_UseTheServerRate()
+        {
+            // DR-287: the player's gains were multiplied by rp_rate and the companion's were not.
+            Assert.That(GameBot.CompanionRealmPointAmount(100, 3.0), Is.EqualTo(300));
+            Assert.That(GameBot.CompanionRealmPointAmount(100, 0.5), Is.EqualTo(50));
+            Assert.That(GameBot.CompanionRealmPointAmount(100, -1), Is.EqualTo(100), "-1 means no rate");
+
+            double rate = DOL.GS.ServerProperties.Properties.RP_RATE;
+            try
+            {
+                DOL.GS.ServerProperties.Properties.RP_RATE = 3.0;
+                GameBot companion = Bot(false, true, true);
+                Set(companion, nameof(GameBot.CompanionRealmPoints), 0L);
+                companion.GainRealmPoints(10, true);
+                Assert.That(companion.CompanionRealmPoints, Is.EqualTo(30));
+                companion.GainRealmPoints(10, false);
+                Assert.That(companion.CompanionRealmPoints, Is.EqualTo(40), "unmodified gains skip the rate");
+            }
+            finally
+            {
+                DOL.GS.ServerProperties.Properties.RP_RATE = rate;
+            }
+        }
+
+        [Test]
+        public void KeepLordsPayInFull_GuardsByDamageUpToTwiceTheEarnersWorth()
+        {
+            // DR-287: keep and tower lord realm points went to players only.
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.NpcKillPoints(5000, true, 900, 0.1), Is.EqualTo(5000), "lord");
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.NpcKillPoints(400, false, 900, 0.5), Is.EqualTo(200), "guard by damage");
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.NpcKillPoints(5000, false, 900, 1.0), Is.EqualTo(1800), "capped");
+            Assert.That(DOL.GS.ServerRules.AbstractServerRules.NpcKillPoints(0, true, 900, 1.0), Is.EqualTo(0), "lord worth nothing yet");
+        }
+
+        [Test]
         public void SpawnHelper_GainsNothing()
         {
             GameBot helper = Bot(false, true, false);

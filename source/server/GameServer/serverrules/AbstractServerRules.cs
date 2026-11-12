@@ -1448,17 +1448,8 @@ namespace DOL.GS.ServerRules
 
             void RewardRealmPoints()
             {
-                int npcRpValue = killedNpc.RealmPointsValue;
-                int realmPoints;
-
-                // Keeps and tower captures reward full RP and BP.
-                if (killedNpc is GuardLord)
-                    realmPoints = npcRpValue;
-                else
-                {
-                    int rpCap = playerToAward.RealmPointsValue * 2;
-                    realmPoints = Math.Min(rpCap, (int) (npcRpValue * damagePercent));
-                }
+                int realmPoints = NpcKillPoints(killedNpc.RealmPointsValue, killedNpc is GuardLord,
+                    playerToAward.RealmPointsValue, damagePercent);
 
                 if (realmPoints > 0)
                     playerToAward.GainRealmPoints(realmPoints);
@@ -1466,17 +1457,8 @@ namespace DOL.GS.ServerRules
 
             void RewardBountyPoints()
             {
-                int npcBpValue = killedNpc.BountyPointsValue;
-                int bountyPoints;
-
-                // Keeps and tower captures reward full RP and BP.
-                if (killedNpc is GuardLord)
-                    bountyPoints = npcBpValue;
-                else
-                {
-                    int bpCap = playerToAward.BountyPointsValue * 2;
-                    bountyPoints = Math.Min(bpCap, (int) (npcBpValue * damagePercent));
-                }
+                int bountyPoints = NpcKillPoints(killedNpc.BountyPointsValue, killedNpc is GuardLord,
+                    playerToAward.BountyPointsValue, damagePercent);
 
                 if (bountyPoints > 0)
                     playerToAward.GainBountyPoints(bountyPoints);
@@ -1853,6 +1835,18 @@ namespace DOL.GS.ServerRules
             return current;
         }
 
+        /// <summary>
+        /// Realm or bounty points for a share of a monster kill (guards, keep lords). A keep or tower lord pays its
+        /// full value; anything else pays by damage, capped at twice what the earner is worth.
+        /// </summary>
+        public static int NpcKillPoints(int npcValue, bool lord, int earnerValue, double damagePercent)
+        {
+            if (npcValue <= 0)
+                return 0;
+
+            return lord ? npcValue : Math.Max(0, Math.Min(earnerValue * 2, (int) (npcValue * damagePercent)));
+        }
+
         private static void AwardBotOnNpcKill(GameBot botToAward,
             double npcTotalDamageReceived,
             GameNPC killedNpc,
@@ -1888,6 +1882,24 @@ namespace DOL.GS.ServerRules
             }
 
             double damagePercent = Math.Min(1.0, contribution.Damage / npcTotalDamageReceived);
+
+            // DR-287: an account companion earns a guard's or keep lord's realm and bounty points as its player does
+            // (AwardPlayerOnNpcKill). Gamebots and /spawn helpers do not.
+            if (accountCompanion && botToAward.IsAlive)
+            {
+                bool lord = killedNpc is GuardLord;
+                int realmPoints = NpcKillPoints(killedNpc.RealmPointsValue, lord,
+                    AutonomousBotRealmPointRewards.GetPlayerEquivalentRealmPointValue(botToAward.Level, botToAward.RealmLevel),
+                    damagePercent);
+                if (realmPoints > 0)
+                    botToAward.GainRealmPoints(realmPoints, true);
+
+                int bountyPoints = NpcKillPoints(killedNpc.BountyPointsValue, lord,
+                    AutonomousBotRealmPointRewards.GetPlayerEquivalentBountyPointValue(botToAward.Level), damagePercent);
+                if (bountyPoints > 0)
+                    botToAward.GainBountyPoints(bountyPoints);
+            }
+
             long xpCap = GameServer.ServerRules.GetExperienceForLiving(botToAward.Level);
             xpCap = (long)(xpCap * Properties.XP_CAP_PERCENT / 100.0 * killedNpc.ExceedXPCapAmount);
             baseXpReward = (long)(Math.Min(baseXpReward, xpCap) * damagePercent);

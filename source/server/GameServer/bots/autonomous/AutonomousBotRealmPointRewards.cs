@@ -248,6 +248,23 @@ public static class AutonomousBotRealmPointRewards
                 AddContribution(player, pair.Value, player.Group, groupContributions);
         }
 
+        // DR-287: a player in a group that earned a share is paid it without damage of their own (healing, buffing),
+        // as on live. Their group's count and damage are unchanged.
+        foreach (Group group in groupContributions.Keys.ToArray())
+        {
+            foreach (GamePlayer member in group.GetPlayersInTheGroup())
+            {
+                if (playerContributions.ContainsKey(member) || hostileContributors.ContainsKey(member) || !member.IsAlive ||
+                    member.ObjectState is not GameObject.eObjectState.Active || member.Realm == killedBot.Realm ||
+                    !member.IsWithinRadius(killedBot, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+                {
+                    continue;
+                }
+
+                playerContributions[member] = new EntityCountTotalDamagePair(0, 0, member);
+            }
+        }
+
         if (playerContributions.Count == 0)
             return;
 
@@ -317,7 +334,7 @@ public static class AutonomousBotRealmPointRewards
                 }
 
                 bool deathBlow = ReferenceEquals(player, creditedKiller);
-                bool soloKill = damagePercent >= 1.0 && contributorCount == 1;
+                bool soloKill = damagePercent >= 1.0 && contributorCount == 1 && pair.Value.Count > 0;
                 player.UpdateKillStatsOnPlayerKill(killedBot.Realm, deathBlow, soloKill, realmPointsEarned);
                 BotTesterLog.PvpReward(killedBot, player, realmPointsEarned, bountyPointsPaid, experiencePaid, isWorthRealmPoints, damagePercent);
                 LogPlayerReward(killedBot, player, "paid", realmPointsEarned, bountyPointsPaid, experiencePaid, isWorthRealmPoints,
@@ -343,7 +360,19 @@ public static class AutonomousBotRealmPointRewards
             .Where(pair => pair.Key is GameBot bot && EarnsRealmPoints(bot) &&
                 bot.Realm != eRealm.None && (DOL.GS.ServerRules.HybridCoopRules.Enabled ? DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(bot, victim) : bot.Realm != victim.Realm))
             .Select(pair => (Bot: (GameBot)pair.Key, Damage: pair.Value)).ToArray();
-        foreach (var (bot, damage) in bots)
+
+        // DR-287: an account companion that did no damage (healing, buffing) still takes its group's share, as a
+        // group member does on live. It is paid, but adds nothing to the group's count or damage.
+        var idleCompanions = inRange
+            .Select(pair => pair.Key.Group).Where(group => group != null).Distinct()
+            .SelectMany(group => group.GetMembersInTheGroup()).OfType<GameBot>().Distinct()
+            .Where(bot => bot.IsAccountCompanion && !hostileContributors.ContainsKey(bot) && bot.IsAlive &&
+                bot.ObjectState == GameObject.eObjectState.Active &&
+                bot.IsWithinRadius(victim, WorldMgr.MAX_EXPFORKILL_DISTANCE) && bot.Realm != eRealm.None &&
+                (DOL.GS.ServerRules.HybridCoopRules.Enabled ? DOL.GS.ServerRules.HybridCoopRules.RewardEnemies(bot, victim) : bot.Realm != victim.Realm))
+            .Select(bot => (Bot: bot, Damage: 0.0));
+
+        foreach (var (bot, damage) in bots.Concat(idleCompanions).ToArray())
         {
             int groupCount;
             double groupDamage;
