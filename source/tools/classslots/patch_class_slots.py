@@ -9,6 +9,9 @@ Starts from the pristine 1.130 game.dll (the input of patch_modern_client.py) an
       63 Sluaghbinder (Hibernia), 64 Storm Sovereign (Midgard), 65 Pendragon Sovereign (Albion),
       66 Death Knight (Albion, the modern live Necromancer, registered right after the Pendragon entry),
       67 Tuatha Sovereign (Hibernia; it takes the Sluaghbinder's creation entry, class 63 keeps its name);
+      68-73 "Reserved", two per realm after the realm's other entries (Albion 68-69, Midgard 70-71,
+      Hibernia 72-73), open to every race of the realm. They hold a class button for a later class; the
+      server has no such class and refuses to create one;
   * (off: TUATHA_HOVER) the Vampiir hover alone for the player's own Tuatha Sovereign;
   * the creation primary/secondary/tertiary stat highlight for 63-66 (switch at 0x5B400A);
   * Codex's Storm Sovereign resist-display fix (0x41A639), which is class-independent;
@@ -24,11 +27,11 @@ Starts from the pristine 1.130 game.dll (the input of patch_modern_client.py) an
     which already had 16 classes, crashed looking up a missing class_16_text button). See SCREEN_EDITS and
     patch_layout(), which adds buttons class_16..class_19 to pregame/character_creation.xml.
 
-Adding a class: give it a Slot with the next free class ID (FIRST_FREE_CLASS and up) and put it in its realm's
-'slots' tuple in REALMS. The .slots section's code area, the class array and the string block grow to fit, and
-check_slots() refuses a class list the creation screen cannot show (BUTTONS per realm). With the classes listed
-here the output is byte for byte what it was before the section could grow. Class IDs above 67 pass the static
-checks only: none has been tried in the real client yet.
+Adding a class: turn one of its realm's Reserved slots into the class (name, description, races, stats) and
+add the class to the server's eCharacterClass. With no Reserved slot left, give it a Slot with the next free
+class ID (FIRST_FREE_CLASS and up) in its realm's 'slots' tuple in REALMS. The .slots section's code area, the
+class array and the string block grow to fit, and check_slots() refuses a class list the creation screen
+cannot show (BUTTONS per realm; Albion is full).
 
 The three Mauler entries, names and race lists are left stock, so the Mauler slots are real Maulers
 again. The server must use classes/native_custom_class_slots with this client. No game is executed.
@@ -52,6 +55,7 @@ KNOWN_NATIVE_CLIENTS = {
     '1806cc4c3df0e8abdb8365ee32987ebf200f90df4eaa53eec3ed1df24f6e009f',  # + native flight, camera zoom
     'ec754fbbed644f1b509cf507ff0051930755f180b28f75e80e582fc723bf8785',  # + flight idle anims, speed 350
     '40f29d2ad5693e6ef9d1c9a4d0558f0834565f10fe01519fd4463f323e8bf775',  # flight speed 450
+    'f6660890b738a6b98a5d88543dfa10ba7a7ebf9ebb7224eea311031038f5f73a',  # DR-dev-0.1d..0.1g, before the Reserved slots
 }
 BASE = 0x400000
 NAME_TABLE = 0xD92578
@@ -87,10 +91,23 @@ TUATHA = Slot(67, 'Tuatha Sovereign',
               'Hibernian royal sovereign of the Tuatha De Danann: spirit magic, weapons and stealth, accompanied by a loyal Faerie Drake.',
               (9, 10, 11, 12, 15, 18, 21), (STR, PIE, CON))
 NAME_ONLY = (SLUAGHBINDER,)   # a class name and stat highlight, no creation entry
-SLOTS = (SLUAGHBINDER, STORM_SOVEREIGN, PENDRAGON, DEATH_KNIGHT, TUATHA)
-# Class IDs 68-73 are kept for future classes, two per realm: Albion 68-69, Midgard 70-71, Hibernia 72-73.
-# The server refuses to create any class that is not in eCharacterClass, so an ID is safe to add here first.
-FIRST_FREE_CLASS = 68
+
+
+def reserved(class_id, races):
+    """A class button held for a later class. The server has no class with this ID and refuses to create it."""
+    return Slot(class_id, 'Reserved', 'This place is held for a future class. It cannot be created yet.',
+                races, (STR, CON, DEX))
+
+
+# Two per realm, open to every race of the realm so the button always shows.
+RESERVED = {
+    'Albion': (reserved(68, PENDRAGON.races), reserved(69, PENDRAGON.races)),
+    'Midgard': (reserved(70, STORM_SOVEREIGN.races), reserved(71, STORM_SOVEREIGN.races)),
+    'Hibernia': (reserved(72, TUATHA.races), reserved(73, TUATHA.races)),
+}
+SLOTS = (SLUAGHBINDER, STORM_SOVEREIGN, PENDRAGON, DEATH_KNIGHT, TUATHA) + tuple(
+    slot for realm in RESERVED.values() for slot in realm)
+FIRST_FREE_CLASS = 74
 MAX_CLASS = 99                # the client's class-name table has 100 slots
 # Classes the stock creation screen lists per realm (Mauler included); each takes one class button.
 STOCK_CLASSES = {'Albion': 16, 'Midgard': 15, 'Hibernia': 16}
@@ -99,11 +116,11 @@ STOCK_CLASSES = {'Albion': 16, 'Midgard': 15, 'Hibernia': 16}
 # return, and how the Mauler entry set its register-held fields in that function.
 #   flags: value for [ebp-0x44]/[ebp-0x40]/[ebp-0x1c]; field18: [ebp-0x18]; realm/count: pushed args.
 REALMS = {
-    'Albion':   dict(slots=(PENDRAGON, DEATH_KNIGHT), hook=0x5B0B85, original='8365b8006a07', back=0x5B0B8B,
+    'Albion':   dict(slots=(PENDRAGON, DEATH_KNIGHT) + RESERVED['Albion'], hook=0x5B0B85, original='8365b8006a07', back=0x5B0B8B,
                      flags='ebx', field18='edi', realm='ebx', count=3),
-    'Midgard':  dict(slots=(STORM_SOVEREIGN,), hook=0x5B22A5, original='8365b8008365c400', back=0x5B22AD,
+    'Midgard':  dict(slots=(STORM_SOVEREIGN,) + RESERVED['Midgard'], hook=0x5B22A5, original='8365b8008365c400', back=0x5B22AD,
                      flags=1, field18=2, realm=2, count=3),
-    'Hibernia': dict(slots=(TUATHA,), hook=0x5B352C, original='8365c4008365e000', back=0x5B3534,
+    'Hibernia': dict(slots=(TUATHA,) + RESERVED['Hibernia'], hook=0x5B352C, original='8365c4008365e000', back=0x5B3534,
                      flags=1, field18='ebx', realm='edi', count='edi'),
 }
 NAME_HOOK, NAME_ORIGINAL, NAME_BACK = 0x44EFD5, '8b0d6432d900', 0x44EFDB
@@ -112,7 +129,7 @@ RESIST_HOOK, RESIST_ORIGINAL, RESIST_BACK = 0x41A639, '89904c93d400', 0x41A63F
 # Creation container constructor: vector at +0x34 indexed by class ID (written at 0x5AFCF4, bounds-checked
 # by size at 0x5B4236). 'lea edi,[esi+0x34]; push 0x3f' -> push 0x44 (classes 0-67).
 CLASS_ARRAY_SIZE = 0x5AFA55, '8d7e346a3f', '8d7e346a44'
-CLASS_ARRAY_MIN = 0x44        # the size every released build has used; larger only when a class ID needs it
+CLASS_ARRAY_MIN = 0x44        # the size up to DR-dev-0.1g (classes 0-67); larger when a class ID needs it
 # 1.130's anim player (0x42BC86) gained a branch for attached personal horses. When a rider has none and the
 # call is the NPC-steed ride path (mode 2, only from 0x42C945), it replays walk/run/idle from the rider's own
 # speed (0x42BE10..0x42BE72), overwriting "Ride Horse" (slot 0x47): taxi riders stand. 1.127 has no such

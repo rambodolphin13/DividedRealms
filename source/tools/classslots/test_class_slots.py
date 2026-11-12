@@ -13,16 +13,10 @@ if not PRISTINE.is_file():  # the same stock client test_make_client_patch.py us
                                    Path.home()/'Desktop/OpenDAoC/DAoC Full Client/Dark Age of Camelot'))/'game.dll'
 
 
-def with_two_more_per_realm():
-    """REALMS plus placeholder classes 68-73, two per realm, with each realm's widest race list."""
-    ids = {'Albion': (68, 69), 'Midgard': (70, 71), 'Hibernia': (72, 73)}
-    realms = {}
-    for name, realm in slots.REALMS.items():
-        races = max((slot.races for slot in realm['slots']), key=len)
-        more = tuple(slots.Slot(class_id, f'Future Class {class_id}', f'Placeholder text for class {class_id}.',
-                                races, (slots.STR, slots.CON, slots.DEX)) for class_id in ids[name])
-        realms[name] = dict(realm, slots=realm['slots'] + more)
-    return realms
+def without_reserved():
+    """REALMS as released up to DR-dev-0.1g: no Reserved slots."""
+    return {name: dict(realm, slots=tuple(slot for slot in realm['slots'] if slot.name != 'Reserved'))
+            for name, realm in slots.REALMS.items()}
 
 
 class ClassSlotPatchTests(unittest.TestCase):
@@ -86,12 +80,13 @@ class ClassSlotPatchTests(unittest.TestCase):
             self.assertEqual(self.patched[pos:pos+len(slot.name)+1], slot.name.encode()+b'\0')
         for realm in slots.REALMS.values():
             stub = self.offset(self.patched, self.layout['stubs'][[k for k, v in slots.REALMS.items() if v is realm][0]])
-            code = self.patched[stub:stub+0x200]
+            code = self.patched[stub:stub+0x400]
             for slot in realm['slots']:
                 self.assertIn(bytes([0x6a, slot.class_id, 0xff, 0x75, 0x08]), code)  # push class; push [ebp+8]
-        self.assertEqual([s.class_id for s in slots.SLOTS], [63, 64, 65, 66, 67])
-        self.assertEqual([s.class_id for s in slots.REALMS['Albion']['slots']], [65, 66], 'Death Knight after Pendragon')
-        self.assertEqual([s.class_id for s in slots.REALMS['Hibernia']['slots']], [67], 'Tuatha takes the Sluaghbinder entry')
+        self.assertEqual([s.class_id for s in slots.SLOTS], list(range(63, 74)))
+        self.assertEqual([s.class_id for s in slots.REALMS['Albion']['slots']], [65, 66, 68, 69], 'Death Knight after Pendragon')
+        self.assertEqual([s.class_id for s in slots.REALMS['Midgard']['slots']], [64, 70, 71])
+        self.assertEqual([s.class_id for s in slots.REALMS['Hibernia']['slots']], [67, 72, 73], 'Tuatha takes the Sluaghbinder entry')
 
     def test_flight_stub_sets_and_clears_only_the_flight_flag(self):
         stub = self.layout['stubs']['flight']
@@ -141,20 +136,31 @@ class ClassSlotPatchTests(unittest.TestCase):
 
     def test_class_array_covers_new_slots(self):
         pos = self.offset(self.patched, slots.CLASS_ARRAY_SIZE[0])
-        self.assertEqual(self.patched[pos:pos+5], bytes.fromhex('8d7e346a44'))
-        self.assertGreater(0x44, max(s.class_id for s in slots.SLOTS))
+        self.assertEqual(self.patched[pos:pos+5], bytes.fromhex('8d7e346a4a'))
+        self.assertGreater(0x4a, max(s.class_id for s in slots.SLOTS))
 
-    def test_released_classes_keep_the_released_layout(self):
-        # The section grows only when a class list needs it; today's list must build exactly as it always has.
-        self.assertEqual((self.layout['code_area'], self.layout['slot_storage'], self.layout['flight_zero']),
+    def test_class_list_without_reserved_slots_is_the_01g_build(self):
+        # The section grows only when a class list needs it: the list released up to DR-dev-0.1g still builds
+        # that release's game.dll.
+        patched, layout = slots.patch(self.original, without_reserved())
+        self.assertEqual(hashlib.sha256(patched).hexdigest(),
+                         'f6660890b738a6b98a5d88543dfa10ba7a7ebf9ebb7224eea311031038f5f73a')
+        self.assertIn(hashlib.sha256(patched).hexdigest(), slots.KNOWN_NATIVE_CLIENTS)
+        self.assertEqual((layout['code_area'], layout['slot_storage'], layout['flight_zero']),
                          (slots.CODE_AREA, slots.SLOT_STORAGE, slots.FLIGHT_ZERO))
-        self.assertEqual(self.layout['class_array_size'], slots.CLASS_ARRAY_MIN)
+        self.assertEqual(layout['class_array_size'], slots.CLASS_ARRAY_MIN)
         self.assertEqual(slots.all_slots(slots.REALMS), slots.SLOTS)
         self.assertGreater(slots.FIRST_FREE_CLASS, max(s.class_id for s in slots.SLOTS))
 
-    def test_two_more_classes_per_realm_fit(self):
-        realms = with_two_more_per_realm()
-        patched, layout = slots.patch(self.original, realms)
+    def test_reserved_slots_two_per_realm(self):
+        realms = slots.REALMS
+        patched, layout = self.patched, self.layout
+        for name, realm in realms.items():
+            held = [slot for slot in realm['slots'] if slot.name == 'Reserved']
+            self.assertEqual(len(held), 2, name)
+            widest = max((slot.races for slot in realm['slots']), key=len)
+            self.assertTrue(all(slot.races == widest for slot in held), 'a Reserved button shows for every race')
+            self.assertLessEqual(slots.STOCK_CLASSES[name] + len(realm['slots']), slots.BUTTONS)
         self.assertGreater(layout['code_size'], slots.CODE_AREA, 'six more entries outgrow the released code area')
         self.assertLessEqual(layout['code_size'], layout['code_area'])
         self.assertEqual(layout['class_array_size'], 74)
@@ -185,18 +191,17 @@ class ClassSlotPatchTests(unittest.TestCase):
             self.assertEqual((code[-5], back), (0xE9, realms[name]['back']))
             hook = self.offset(patched, realms[name]['hook'])
             self.assertEqual(realms[name]['hook'] + 5 + struct.unpack_from('<i', patched, hook+1)[0], layout['stubs'][name])
-        self.assertEqual(slots.patch(self.original)[0], self.patched, 'the default build is unchanged by a larger one')
 
     def test_refuses_class_lists_the_client_cannot_hold(self):
-        realms = with_two_more_per_realm()   # Albion now fills all 20 buttons
+        realms = slots.REALMS   # Albion fills all 20 buttons
         extra = slots.Slot(74, 'One Too Many', 'x', (1,), (slots.STR, slots.CON, slots.DEX))
         full = dict(realms, Albion=dict(realms['Albion'], slots=realms['Albion']['slots'] + (extra,)))
         with self.assertRaisesRegex(ValueError, 'class buttons'):
             slots.patch(self.original, full)
         for bad in (slots.Slot(67, 'Same ID', 'x', (5,), (slots.STR, slots.CON, slots.DEX)),
                     slots.Slot(100, 'Past The Table', 'x', (5,), (slots.STR, slots.CON, slots.DEX)),
-                    slots.Slot(70, 'A' * slots.NAME_SLOT, 'x', (5,), (slots.STR, slots.CON, slots.DEX)),
-                    slots.Slot(70, 'No Races', 'x', (), (slots.STR, slots.CON, slots.DEX))):
+                    slots.Slot(80, 'A' * slots.NAME_SLOT, 'x', (5,), (slots.STR, slots.CON, slots.DEX)),
+                    slots.Slot(80, 'No Races', 'x', (), (slots.STR, slots.CON, slots.DEX))):
             midgard = dict(slots.REALMS['Midgard'], slots=slots.REALMS['Midgard']['slots'] + (bad,))
             with self.assertRaises(ValueError, msg=bad.name):
                 slots.patch(self.original, dict(slots.REALMS, Midgard=midgard))
