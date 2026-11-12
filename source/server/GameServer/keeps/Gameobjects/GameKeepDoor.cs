@@ -359,6 +359,12 @@ namespace DOL.GS.Keeps
                 else
                     keepPoint = GetPointFromHeading(Heading, distance );
 
+                // A player falls to the ground from the door's height; a bot does not. Discord 2026-11-12 (_frostalf,
+                // BornToReignGamingYT): a /raid passed a captured keep's door and hung in the air outside it, off the
+                // navmesh, so no follow path worked until a fight pulled it down. Bots land on the floor below.
+                if (player is GameNPC)
+                    keepz = CompanionKeepDoors.FloorZ(player.CurrentZone, keepPoint.X, keepPoint.Y, keepz);
+
                 //move player
                 return player.MoveTo(CurrentRegionID, keepPoint.X, keepPoint.Y, keepz, player.Heading);
         }

@@ -58,6 +58,24 @@ namespace DOL.GS
             return best;
         }
 
+        /// <summary>How far below a door's height a bot passing it looks for the ground (and a little above).</summary>
+        public const float FloorSearchBelow = 600, FloorSearchAbove = 48, FloorSearchSide = 64;
+
+        /// <summary>
+        /// The navmesh floor height under (x, y) near <paramref name="z"/> (the door's height), or z when there is no mesh or
+        /// no floor in reach. A door's height can sit above the ground: a player falls, an NPC would hang in the air there.
+        /// </summary>
+        public static int FloorZ(Zone zone, int x, int y, int z) => FloorZ(PathfindingProvider.Instance, zone, x, y, z);
+
+        public static int FloorZ(IPathfindingMgr nav, Zone zone, int x, int y, int z)
+        {
+            if (nav == null || zone == null || !nav.IsAvailable || !nav.HasNavmesh(zone)) return z;
+            Vector3? floor = nav.GetClosestPointInBounds(zone, new Vector3(x, y, z),
+                new Vector3(-FloorSearchSide, -FloorSearchSide, -FloorSearchBelow),
+                new Vector3(FloorSearchSide, FloorSearchSide, FloorSearchAbove), nav.DefaultFilters);
+            return floor is { } f && float.IsFinite(f.Z) ? (int)Math.Round(f.Z) : z;
+        }
+
         private static bool Friendly(AbstractGameKeep keep, GameBot bot) => DOL.GS.ServerRules.HybridCoopRules.Enabled
             ? !DOL.GS.ServerRules.HybridCoopRules.KeepEnemy(keep, bot)
             : keep.Realm == bot.Realm;

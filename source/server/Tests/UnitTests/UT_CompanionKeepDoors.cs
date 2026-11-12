@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
+
 using DOL.GS;
 using NUnit.Framework;
 
@@ -49,6 +51,37 @@ namespace DOL.UnitTests
                 new CompanionKeepDoors.Candidate(new(1000, 1150, 500), true, false),
             };
             Assert.That(CompanionKeepDoors.ChooseDoor(Inside, Outside, doors), Is.EqualTo(1));
+        }
+
+        /// <summary>A floor at one point; found only inside the asked box.</summary>
+        private sealed class Floor : PathfindingMgrBase
+        {
+            private readonly Vector3? _floor;
+            public Floor(Vector3? floor) => _floor = floor;
+            public override bool IsAvailable => true;
+            public override bool HasNavmesh(Zone zone) => true;
+            public override Vector3? GetClosestPointInBounds(Zone zone, Vector3 origin, Vector3 min, Vector3 max, EDtPolyFlags[] filters) =>
+                _floor is { } f && f.X >= origin.X + min.X && f.X <= origin.X + max.X && f.Y >= origin.Y + min.Y &&
+                f.Y <= origin.Y + max.Y && f.Z >= origin.Z + min.Z && f.Z <= origin.Z + max.Z ? f : null;
+        }
+
+        private static Zone AZone() => (Zone)RuntimeHelpers.GetUninitializedObject(typeof(Zone));
+
+        [Test]
+        public void ABotPassingADoorLandsOnTheGroundBelowIt()
+        {
+            // Discord 2026-11-12: the raid came out of the keep hanging in the air at the door's height.
+            Assert.That(CompanionKeepDoors.FloorZ(new Floor(new(1000, 1600, 380)), AZone(), 1000, 1600, 500), Is.EqualTo(380));
+        }
+
+        [Test]
+        public void NoFloorInReachKeepsTheDoorHeight()
+        {
+            Assert.That(CompanionKeepDoors.FloorZ(new Floor(null), AZone(), 1000, 1600, 500), Is.EqualTo(500));
+            Assert.That(CompanionKeepDoors.FloorZ(new Floor(new(1000, 1600, -400)), AZone(), 1000, 1600, 500), Is.EqualTo(500),
+                "a floor far below (a cellar, the moat) is not taken");
+            Assert.That(CompanionKeepDoors.FloorZ(new Floor(new(1000, 1600, 900)), AZone(), 1000, 1600, 500), Is.EqualTo(500),
+                "never up onto a wall walk");
         }
     }
 }
