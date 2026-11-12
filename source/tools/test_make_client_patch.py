@@ -260,7 +260,7 @@ class ClientPatchTests(unittest.TestCase):
                     if e.name != 'sf_wolfcloak256.dds':
                         self.assertEqual(installed.get(e.name), e.data, e.name)
         game = patch['Files'][0]
-        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', 'f6660890'))  # 2c7e306e0 (Vampiir hover); the test client and DR-dev-0.1d match
+        self.assertEqual((game['InputSha256'][:8], game['OutputSha256'][:8]), ('3915a495', 'f0fa6dd3'))  # + Reserved class slots 68-73; DR-dev-0.1d..0.1g were f6660890
         # The stock 1.130 loading screen in, the Divided Realms splash out, in one edit.
         splash = patch['Files'][2]
         self.assertEqual(splash['InputSha256'][:8], '9348c3a6')
