@@ -122,33 +122,9 @@ namespace DOL.GS.PacketHandler
 		/// will display the window.  Once the window is displayed to the client all handling of items in the window
 		/// is done in the move item request handlers
 		/// </summary>
-		/// <param name="items"></param>
-		/// <param name="windowType"></param>
 		protected override void SendInventoryItemsPartialUpdate(IDictionary<int, DbInventoryItem> items, eInventoryWindowType windowType)
 		{
-			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.InventoryUpdate)))
-			{
-				GameVault houseVault = m_gameClient.Player.ActiveInventoryObject as GameVault;
-				pak.WriteByte((byte)items.Count);
-				pak.WriteByte(0x00); // new in 189b+, show shield in left hand
-				pak.WriteByte((byte)((m_gameClient.Player.IsCloakInvisible ? 0x01 : 0x00) | (m_gameClient.Player.IsHelmInvisible ? 0x02 : 0x00))); // new in 189b+, cloack/helm visibility
-
-				if (windowType == eInventoryWindowType.HouseVault && houseVault != null)
-					pak.WriteByte((byte)(houseVault.Index + 1));    // Add the vault number to the window caption
-				else
-					pak.WriteByte((byte)((m_gameClient.Player.IsCloakHoodUp ? 0x01 : 0x00) | (int)m_gameClient.Player.rangeAttackComponent.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
-																																	  // ^ in 1.89b+, 0 bit - showing hooded cloack, if not hooded not show cloack at all ?
-				pak.WriteByte(m_gameClient.Player.VisibleActiveWeaponSlots);
-				pak.WriteByte((byte)windowType);
-
-				foreach (var entry in items)
-				{
-					pak.WriteByte((byte)(entry.Key));
-					WriteItemData(pak, entry.Value);
-				}
-
-				SendTCP(pak);
-			}
+			SendInventoryUpdatePackets(items, windowType);
 		}
 
 		/// <summary>
@@ -157,47 +133,104 @@ namespace DOL.GS.PacketHandler
 		/// </summary>
 		protected override void SendInventorySlotsUpdateRange(ICollection<eInventorySlot> slots, eInventoryWindowType windowType)
 		{
-			using (var pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.InventoryUpdate)))
+			SendInventoryUpdatePackets((slots ?? Array.Empty<eInventorySlot>()).Select(SlotEntry), windowType);
+		}
+
+		private KeyValuePair<int, DbInventoryItem> SlotEntry(eInventorySlot updatedSlot)
+		{
+			int clientSlot = (int)updatedSlot;
+
+			if (updatedSlot >= eInventorySlot.Consignment_First && updatedSlot <= eInventorySlot.Consignment_Last)
 			{
-				GameVault houseVault = m_gameClient.Player.ActiveInventoryObject as GameVault;
-
-				pak.WriteByte((byte)(slots == null ? 0 : slots.Count));
-				pak.WriteByte(0); // CurrentSpeed & 0xFF (not used for player, only for NPC)
-				pak.WriteByte((byte)((m_gameClient.Player.IsCloakInvisible ? 0x01 : 0x00) | (m_gameClient.Player.IsHelmInvisible ? 0x02 : 0x00))); // new in 189b+, cloack/helm visibility
-
-				if (windowType == eInventoryWindowType.HouseVault && houseVault != null)
-				{
-					pak.WriteByte((byte)(houseVault.Index + 1));    // Add the vault number to the window caption
-				}
-				else
-				{
-					pak.WriteByte((byte)((m_gameClient.Player.IsCloakHoodUp ? 0x01 : 0x00) | (int)m_gameClient.Player.rangeAttackComponent.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
-				}
-
-				pak.WriteByte((byte)m_gameClient.Player.VisibleActiveWeaponSlots);
-				pak.WriteByte((byte)windowType);
-
-				if (slots != null)
-				{
-					foreach (int updatedSlot in slots)
-					{
-						if (updatedSlot >= (int)eInventorySlot.Consignment_First && updatedSlot <= (int)eInventorySlot.Consignment_Last)
-						{
-							log.Error("PacketLib198:SendInventorySlotsUpdateBase - GameConsignmentMerchant inventory is no longer cached with player.  Use a Dictionary<int, InventoryItem> instead.");
-							pak.WriteByte((byte)(updatedSlot - (int)eInventorySlot.Consignment_First + (int)eInventorySlot.HousingInventory_First));
-						}
-						else
-						{
-							pak.WriteByte((byte)(updatedSlot));
-						}
-
-						WriteItemData(pak, m_gameClient.Player.Inventory.GetItem((eInventorySlot)(updatedSlot)));
-
-					}
-				}
-
-				SendTCP(pak);
+				log.Error("PacketLib198:SendInventorySlotsUpdateBase - GameConsignmentMerchant inventory is no longer cached with player.  Use a Dictionary<int, InventoryItem> instead.");
+				clientSlot = (int)updatedSlot - (int)eInventorySlot.Consignment_First + (int)eInventorySlot.HousingInventory_First;
 			}
+
+			return new KeyValuePair<int, DbInventoryItem>(clientSlot, m_gameClient.Player.Inventory.GetItem(updatedSlot));
+		}
+
+		/// <summary>
+		/// Writes the items as one or more InventoryUpdate packets. PacketProcessor.ValidatePacketSize discards any packet
+		/// over 2,048 bytes, and MAX_ITEMS_PER_PACKET (30) counts items, not bytes: 30 items with long names and charge
+		/// spell names went past it (an account vault gave 2,097 bytes, Discord 2026-11-12). A packet is closed before the
+		/// item that would overflow it. Only the first packet carries the window type; the rest are plain updates.
+		/// </summary>
+		protected void SendInventoryUpdatePackets(IEnumerable<KeyValuePair<int, DbInventoryItem>> entries, eInventoryWindowType windowType)
+		{
+			WriteSplitInventoryUpdate(entries,
+				first => BeginInventoryUpdatePacket(first ? windowType : eInventoryWindowType.Update),
+				(pak, entry) =>
+				{
+					pak.WriteByte((byte)entry.Key);
+					WriteItemData(pak, entry.Value);
+				},
+				FinishInventoryUpdatePacket,
+				MAX_PACKET_LENGTH);
+		}
+
+		/// <summary>
+		/// Packet splitting for <see cref="SendInventoryUpdatePackets"/>: writes each entry, and when one takes the packet past
+		/// <paramref name="maxLength"/> (or the one-byte count is full) cuts it off, finishes the packet with the entries before
+		/// it and starts the next. Every call of <paramref name="finish"/> gets the item count to put in the header.
+		/// </summary>
+		public static void WriteSplitInventoryUpdate<T>(IEnumerable<T> entries, Func<bool, GSTCPPacketOut> begin,
+			Action<GSTCPPacketOut, T> write, Action<GSTCPPacketOut, int> finish, int maxLength)
+		{
+			GSTCPPacketOut pak = begin(true);
+			int count = 0;
+
+			foreach (T entry in entries)
+			{
+				if (count == byte.MaxValue)
+				{
+					finish(pak, count);
+					pak = begin(false);
+					count = 0;
+				}
+
+				long start = pak.Length;
+				write(pak, entry);
+
+				if (pak.Length > maxLength && count > 0)
+				{
+					pak.SetLength(start);
+					finish(pak, count);
+					pak = begin(false);
+					count = 0;
+					write(pak, entry);
+				}
+
+				count++;
+			}
+
+			finish(pak, count);
+		}
+
+		private GSTCPPacketOut BeginInventoryUpdatePacket(eInventoryWindowType windowType)
+		{
+			GSTCPPacketOut pak = PooledObjectFactory.GetForTick<GSTCPPacketOut>().Init(GetPacketCode(eServerPackets.InventoryUpdate));
+			GameVault houseVault = m_gameClient.Player.ActiveInventoryObject as GameVault;
+			pak.WriteByte(0x00); // item count, set by FinishInventoryUpdatePacket
+			pak.WriteByte(0x00); // new in 189b+, show shield in left hand
+			pak.WriteByte((byte)((m_gameClient.Player.IsCloakInvisible ? 0x01 : 0x00) | (m_gameClient.Player.IsHelmInvisible ? 0x02 : 0x00))); // new in 189b+, cloack/helm visibility
+
+			if (windowType == eInventoryWindowType.HouseVault && houseVault != null)
+				pak.WriteByte((byte)(houseVault.Index + 1));    // Add the vault number to the window caption
+			else
+				pak.WriteByte((byte)((m_gameClient.Player.IsCloakHoodUp ? 0x01 : 0x00) | (int)m_gameClient.Player.rangeAttackComponent.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
+
+			pak.WriteByte(m_gameClient.Player.VisibleActiveWeaponSlots);
+			pak.WriteByte((byte)windowType);
+			return pak;
+		}
+
+		/// <summary>Byte 3 (after the two length bytes and the packet code) is the item count.</summary>
+		public const int InventoryUpdateCountOffset = 3;
+
+		private void FinishInventoryUpdatePacket(GSTCPPacketOut pak, int count)
+		{
+			pak.GetBuffer()[InventoryUpdateCountOffset] = (byte)count;
+			SendTCP(pak);
 		}
 
 		protected static int MAX_NAME_LENGTH = 55;

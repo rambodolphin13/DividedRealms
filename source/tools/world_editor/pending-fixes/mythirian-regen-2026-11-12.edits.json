@@ -1,0 +1,90 @@
+[
+ {
+  "table": "ItemTemplate",
+  "key": "Mythirian of Endurance",
+  "set": {
+   "Bonus1Type": 259,
+   "Bonus1": 2
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "mythirian_of_endurance",
+  "set": {
+   "Bonus1Type": 259,
+   "Bonus1": 2
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "Lesser Mythirian of Health",
+  "set": {
+   "Bonus1Type": 257,
+   "Bonus1": 20
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lesser_mythirian_of_health",
+  "set": {
+   "Bonus1Type": 257,
+   "Bonus1": 20
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "Average_mythirian_of_health",
+  "set": {
+   "Bonus1Type": 257,
+   "Bonus1": 35
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "Greater Mythirian of Health",
+  "set": {
+   "Bonus1Type": 257,
+   "Bonus1": 50
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "greater_mythirian_of_health",
+  "set": {
+   "Bonus1Type": 257,
+   "Bonus1": 50
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lesser_mythirian_of_power",
+  "set": {
+   "Bonus1Type": 258,
+   "Bonus1": 5
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "Average_mythirian_of_power",
+  "set": {
+   "Bonus1Type": 258,
+   "Bonus1": 10
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "Greater Mythirian of Power",
+  "set": {
+   "Bonus1Type": 258,
+   "Bonus1": 15
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "greater_mythirian_of_power",
+  "set": {
+   "Bonus1Type": 258,
+   "Bonus1": 15
+  }
+ }
+]

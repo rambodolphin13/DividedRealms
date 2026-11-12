@@ -1,0 +1,143 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-12T19:57:54.103885+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "ItemTemplate",
+   "key": "Mythirian of Endurance",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 152,
+    "Bonus1": 1
+   },
+   "after": {
+    "Bonus1Type": 259,
+    "Bonus1": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "mythirian_of_endurance",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 152,
+    "Bonus1": 1
+   },
+   "after": {
+    "Bonus1Type": 259,
+    "Bonus1": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lesser Mythirian of Health",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 150,
+    "Bonus1": 7
+   },
+   "after": {
+    "Bonus1Type": 257,
+    "Bonus1": 20
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lesser_mythirian_of_health",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 150
+   },
+   "after": {
+    "Bonus1Type": 257
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Average_mythirian_of_health",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 150,
+    "Bonus1": 30
+   },
+   "after": {
+    "Bonus1Type": 257,
+    "Bonus1": 35
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Greater Mythirian of Health",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 150,
+    "Bonus1": 17
+   },
+   "after": {
+    "Bonus1Type": 257,
+    "Bonus1": 50
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "greater_mythirian_of_health",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 150
+   },
+   "after": {
+    "Bonus1Type": 257
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lesser_mythirian_of_power",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 151
+   },
+   "after": {
+    "Bonus1Type": 258
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Average_mythirian_of_power",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 151
+   },
+   "after": {
+    "Bonus1Type": 258
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Greater Mythirian of Power",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 151,
+    "Bonus1": 5
+   },
+   "after": {
+    "Bonus1Type": 258,
+    "Bonus1": 15
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "greater_mythirian_of_power",
+   "op": "update",
+   "before": {
+    "Bonus1Type": 151,
+    "Bonus1": 20
+   },
+   "after": {
+    "Bonus1Type": 258,
+    "Bonus1": 15
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
