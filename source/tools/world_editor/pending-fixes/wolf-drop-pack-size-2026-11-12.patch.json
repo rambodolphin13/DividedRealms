@@ -1,0 +1,41 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-12T10:38:59.010975+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "ItemTemplate",
+   "key": "wolf_fang",
+   "op": "update",
+   "before": {
+    "PackSize": 20
+   },
+   "after": {
+    "PackSize": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "torn_wolf_pelt",
+   "op": "update",
+   "before": {
+    "PackSize": 100
+   },
+   "after": {
+    "PackSize": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "chunk_of_wolf_meat",
+   "op": "update",
+   "before": {
+    "PackSize": 100
+   },
+   "after": {
+    "PackSize": 1
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

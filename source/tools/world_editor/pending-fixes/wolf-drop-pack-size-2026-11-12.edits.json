@@ -1,0 +1,5 @@
+[
+ {"table": "ItemTemplate", "key": "wolf_fang", "set": {"PackSize": 1}},
+ {"table": "ItemTemplate", "key": "torn_wolf_pelt", "set": {"PackSize": 1}},
+ {"table": "ItemTemplate", "key": "chunk_of_wolf_meat", "set": {"PackSize": 1}}
+]
