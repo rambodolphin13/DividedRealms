@@ -1,0 +1,4694 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-12T20:55:09.198583+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_mauler_war_staff_all",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_mauler_fist_wrap_all",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_flamescarred_mauler_fist_wrap_all",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_frostshard_savage_slashing_claw_all",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_frostshard_savage_thrashing_claw_all",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_savage_slashing_glaive_all",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_savage_thrashing_glaive_all",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_cabalist_staff_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_cleric_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_friar_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_heretic_barbed_chain_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_heretic_flail_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_heretic_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_minstrel_harp_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_necromancer_staff_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_sorcerer_staff_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_theurgist_staff_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_abyssal_wizard_staff_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_armsman_arch_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_armsman_flamberge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_armsman_halberd_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_armsman_lance_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_armsman_mattock_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_armsman_pike_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_friar_quarter_staff_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_paladin_great_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_paladin_great_hammer_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_paladin_great_sword_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_chthonian_scout_longbow_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_armsman_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_armsman_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_armsman_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_cleric_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_heretic_barbed_chain_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_heretic_flail_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_heretic_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_infiltrator_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_infiltrator_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_mercenary_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_mercenary_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_mercenary_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_minstrel_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_minstrel_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_paladin_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_paladin_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_paladin_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_reaver_barbed_chain_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_reaver_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_reaver_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_reaver_flail_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_reaver_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_scout_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_darkflame_scout_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_flamescarred_infiltrator_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_flamescarred_infiltrator_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_flamescarred_mercenary_blade_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_flamescarred_mercenary_edge_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_flamescarred_mercenary_mace_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_hallowed_hammer_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_hallowed_sword_alb",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_berserker_heavy_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_berserker_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_berserker_heavy_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_healer_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_hunter_composite_bow_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_hunter_slashing_spear_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_hunter_spear_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_hunter_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_mauler_war_staff_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_savage_heavy_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_savage_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_savage_heavy_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_shadowblade_heavy_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_shadowblade_heavy_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_shaman_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_skald_heavy_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_skald_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_skald_heavy_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_thane_heavy_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_thane_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_thane_heavy_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_valkyrie_heavy_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_valkyrie_slashing_spear_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_valkyrie_spear_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_warrior_heavy_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_warrior_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_blighted_warrior_heavy_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_frostshard_berserker_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_frostshard_mauler_hand_wrap_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_frostshard_shadowblade_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_berserker_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_berserker_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_berserker_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_healer_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_hunter_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_mauler_fist_wrap_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_savage_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_savage_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_savage_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_shadowblade_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_shadowblade_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_shaman_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_skald_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_skald_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_skald_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_thane_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_thane_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_thane_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_valkyrie_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_warrior_axe_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_warrior_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_glacial_warrior_sword_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_hallowed_cleaver_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_hallowed_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_bonedancer_staff_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_healer_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_healer_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_runemaster_staff_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_shaman_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_shaman_heavy_hammer_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_spiritmaster_staff_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_icecursed_warlock_staff_mid",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_hallowed_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_hallowed_sword_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_blademaster_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_blademaster_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_blademaster_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_mauler_fist_wrap_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_nightshade_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_nightshade_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_ranger_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_infectious_ranger_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_champion_warblade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_champion_warhammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_hero_celtic_spear_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_hero_warblade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_hero_warhammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_mauler_war_staff_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_ranger_recurve_bow_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_malignant_valewalker_scythe_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_animist_staff_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_bainshee_staff_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_bard_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_bard_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_bard_harp_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_druid_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_druid_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_eldritch_staff_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_enchanter_staff_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_mentalist_staff_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_warden_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_miasmic_warden_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_bard_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_bard_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_blademaster_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_blademaster_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_blademaster_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_champion_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_champion_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_champion_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_druid_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_druid_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_hero_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_hero_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_hero_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_mauler_fist_wrap_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_nightshade_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_nightshade_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_ranger_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_ranger_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_vampiir_steel_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_warden_blade_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "bounty_venomous_warden_hammer_hib",
+   "op": "update",
+   "before": {
+    "Price": 0
+   },
+   "after": {
+    "Price": 25
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "cl15-blood-weapons-alb",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ClassType": "DOL.GS.GameDiamondSealsMerchant",
+    "TranslationId": "",
+    "Name": "Cruo",
+    "Suffix": "",
+    "Guild": "Blood Weapon Merchant",
+    "ExamineArticle": null,
+    "MessageArticle": null,
+    "X": 36995,
+    "Y": 23383,
+    "Z": 21934,
+    "Speed": 200,
+    "Heading": 3662,
+    "Region": 249,
+    "Model": 638,
+    "Size": 41,
+    "Strength": 252,
+    "Constitution": 36,
+    "Dexterity": 72,
+    "Quickness": 36,
+    "Intelligence": 30,
+    "Piety": 30,
+    "Empathy": 30,
+    "Charisma": 30,
+    "Level": 36,
+    "Realm": 1,
+    "EquipmentTemplateID": null,
+    "ItemsListTemplateID": "cl15_blood_weapons_alb",
+    "NPCTemplateID": 60164924,
+    "Race": 0,
+    "Flags": 0,
+    "AggroLevel": 200,
+    "AggroRange": 0,
+    "MeleeDamageType": 2,
+    "RespawnInterval": 180,
+    "FactionID": 191,
+    "BodyType": 0,
+    "HouseNumber": 0,
+    "Brain": null,
+    "PathID": null,
+    "OwnerID": "",
+    "RoamingRange": 0,
+    "IsCloakHoodUp": 0,
+    "Gender": 1,
+    "PackageID": "OfflineCL15BloodWeapons",
+    "VisibleWeaponSlots": 0,
+    "LastTimeRowUpdated": "2022-03-31 16:49:08",
+    "Mob_ID": "cl15-blood-weapons-alb"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-000",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_mauler_war_staff_all",
+    "PageNumber": 0,
+    "SlotPosition": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-000"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-001",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_mauler_fist_wrap_all",
+    "PageNumber": 0,
+    "SlotPosition": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-001"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-002",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_flamescarred_mauler_fist_wrap_all",
+    "PageNumber": 0,
+    "SlotPosition": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-002"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-003",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_frostshard_savage_slashing_claw_all",
+    "PageNumber": 0,
+    "SlotPosition": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-003"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-004",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_frostshard_savage_thrashing_claw_all",
+    "PageNumber": 0,
+    "SlotPosition": 4,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-004"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-005",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_glacial_savage_slashing_glaive_all",
+    "PageNumber": 0,
+    "SlotPosition": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-005"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-006",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_glacial_savage_thrashing_glaive_all",
+    "PageNumber": 0,
+    "SlotPosition": 6,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-006"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-007",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_cabalist_staff_alb",
+    "PageNumber": 0,
+    "SlotPosition": 7,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-007"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-008",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_cleric_mace_alb",
+    "PageNumber": 0,
+    "SlotPosition": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-008"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-009",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_friar_mace_alb",
+    "PageNumber": 0,
+    "SlotPosition": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-009"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-010",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_heretic_barbed_chain_alb",
+    "PageNumber": 0,
+    "SlotPosition": 10,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-010"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-011",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_heretic_flail_alb",
+    "PageNumber": 0,
+    "SlotPosition": 11,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-011"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-012",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_heretic_mace_alb",
+    "PageNumber": 0,
+    "SlotPosition": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-012"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-013",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_minstrel_harp_alb",
+    "PageNumber": 0,
+    "SlotPosition": 13,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-013"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-014",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_necromancer_staff_alb",
+    "PageNumber": 0,
+    "SlotPosition": 14,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-014"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-015",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_sorcerer_staff_alb",
+    "PageNumber": 0,
+    "SlotPosition": 15,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-015"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-016",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_theurgist_staff_alb",
+    "PageNumber": 0,
+    "SlotPosition": 16,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-016"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-017",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_abyssal_wizard_staff_alb",
+    "PageNumber": 0,
+    "SlotPosition": 17,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-017"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-018",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_armsman_arch_mace_alb",
+    "PageNumber": 0,
+    "SlotPosition": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-018"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-019",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_armsman_flamberge_alb",
+    "PageNumber": 0,
+    "SlotPosition": 19,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-019"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-020",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_armsman_halberd_alb",
+    "PageNumber": 0,
+    "SlotPosition": 20,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-020"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-021",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_armsman_lance_alb",
+    "PageNumber": 0,
+    "SlotPosition": 21,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-021"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-022",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_armsman_mattock_alb",
+    "PageNumber": 0,
+    "SlotPosition": 22,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-022"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-023",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_armsman_pike_alb",
+    "PageNumber": 0,
+    "SlotPosition": 23,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-023"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-024",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_friar_quarter_staff_alb",
+    "PageNumber": 0,
+    "SlotPosition": 24,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-024"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-025",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_paladin_great_edge_alb",
+    "PageNumber": 0,
+    "SlotPosition": 25,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-025"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-026",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_paladin_great_hammer_alb",
+    "PageNumber": 0,
+    "SlotPosition": 26,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-026"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-027",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_paladin_great_sword_alb",
+    "PageNumber": 0,
+    "SlotPosition": 27,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-027"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-028",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_chthonian_scout_longbow_alb",
+    "PageNumber": 0,
+    "SlotPosition": 28,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-028"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-029",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_armsman_blade_alb",
+    "PageNumber": 0,
+    "SlotPosition": 29,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-029"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-030",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_armsman_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-030"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-031",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_armsman_mace_alb",
+    "PageNumber": 1,
+    "SlotPosition": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-031"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-032",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_cleric_mace_alb",
+    "PageNumber": 1,
+    "SlotPosition": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-032"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-033",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_heretic_barbed_chain_alb",
+    "PageNumber": 1,
+    "SlotPosition": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-033"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-034",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_heretic_flail_alb",
+    "PageNumber": 1,
+    "SlotPosition": 4,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-034"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-035",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_heretic_mace_alb",
+    "PageNumber": 1,
+    "SlotPosition": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-035"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-036",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_infiltrator_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 6,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-036"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-037",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_infiltrator_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 7,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-037"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-038",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_mercenary_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-038"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-039",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_mercenary_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-039"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-040",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_mercenary_mace_alb",
+    "PageNumber": 1,
+    "SlotPosition": 10,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-040"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-041",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_minstrel_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 11,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-041"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-042",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_minstrel_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-042"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-043",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_paladin_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 13,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-043"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-044",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_paladin_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 14,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-044"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-045",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_paladin_mace_alb",
+    "PageNumber": 1,
+    "SlotPosition": 15,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-045"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-046",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_reaver_barbed_chain_alb",
+    "PageNumber": 1,
+    "SlotPosition": 16,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-046"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-047",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_reaver_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 17,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-047"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-048",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_reaver_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-048"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-049",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_reaver_flail_alb",
+    "PageNumber": 1,
+    "SlotPosition": 19,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-049"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-050",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_reaver_mace_alb",
+    "PageNumber": 1,
+    "SlotPosition": 20,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-050"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-051",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_scout_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 21,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-051"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-052",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_darkflame_scout_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 22,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-052"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-053",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_flamescarred_infiltrator_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 23,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-053"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-054",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_flamescarred_infiltrator_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 24,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-054"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-055",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_flamescarred_mercenary_blade_alb",
+    "PageNumber": 1,
+    "SlotPosition": 25,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-055"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-056",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_flamescarred_mercenary_edge_alb",
+    "PageNumber": 1,
+    "SlotPosition": 26,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-056"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-057",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_flamescarred_mercenary_mace_alb",
+    "PageNumber": 1,
+    "SlotPosition": 27,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-057"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-058",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_hallowed_hammer_alb",
+    "PageNumber": 1,
+    "SlotPosition": 28,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-058"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_alb-059",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_alb",
+    "ItemTemplateID": "bounty_hallowed_sword_alb",
+    "PageNumber": 1,
+    "SlotPosition": 29,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_alb-059"
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "cl15-blood-weapons-mid",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ClassType": "DOL.GS.GameDiamondSealsMerchant",
+    "TranslationId": null,
+    "Name": "Blodo",
+    "Suffix": null,
+    "Guild": "Blood Weapon Merchant",
+    "ExamineArticle": null,
+    "MessageArticle": null,
+    "X": 13375,
+    "Y": 13904,
+    "Z": 22384,
+    "Speed": 0,
+    "Heading": 4080,
+    "Region": 249,
+    "Model": 638,
+    "Size": 42,
+    "Strength": 252,
+    "Constitution": 36,
+    "Dexterity": 72,
+    "Quickness": 36,
+    "Intelligence": 30,
+    "Piety": 30,
+    "Empathy": 30,
+    "Charisma": 30,
+    "Level": 36,
+    "Realm": 2,
+    "EquipmentTemplateID": null,
+    "ItemsListTemplateID": "cl15_blood_weapons_mid",
+    "NPCTemplateID": 60162268,
+    "Race": 0,
+    "Flags": 0,
+    "AggroLevel": 0,
+    "AggroRange": 0,
+    "MeleeDamageType": 2,
+    "RespawnInterval": 180,
+    "FactionID": 191,
+    "BodyType": 0,
+    "HouseNumber": 0,
+    "Brain": null,
+    "PathID": null,
+    "OwnerID": "",
+    "RoamingRange": 0,
+    "IsCloakHoodUp": 0,
+    "Gender": 1,
+    "PackageID": "OfflineCL15BloodWeapons",
+    "VisibleWeaponSlots": 0,
+    "LastTimeRowUpdated": "2026-04-05 05:21:17",
+    "Mob_ID": "cl15-blood-weapons-mid"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-000",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_chthonian_mauler_war_staff_all",
+    "PageNumber": 0,
+    "SlotPosition": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-000"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-001",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_darkflame_mauler_fist_wrap_all",
+    "PageNumber": 0,
+    "SlotPosition": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-001"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-002",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_flamescarred_mauler_fist_wrap_all",
+    "PageNumber": 0,
+    "SlotPosition": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-002"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-003",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_frostshard_savage_slashing_claw_all",
+    "PageNumber": 0,
+    "SlotPosition": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-003"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-004",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_frostshard_savage_thrashing_claw_all",
+    "PageNumber": 0,
+    "SlotPosition": 4,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-004"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-005",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_savage_slashing_glaive_all",
+    "PageNumber": 0,
+    "SlotPosition": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-005"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-006",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_savage_thrashing_glaive_all",
+    "PageNumber": 0,
+    "SlotPosition": 6,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-006"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-007",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_berserker_heavy_axe_mid",
+    "PageNumber": 0,
+    "SlotPosition": 7,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-007"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-008",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_berserker_heavy_hammer_mid",
+    "PageNumber": 0,
+    "SlotPosition": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-008"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-009",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_berserker_heavy_sword_mid",
+    "PageNumber": 0,
+    "SlotPosition": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-009"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-010",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_healer_heavy_hammer_mid",
+    "PageNumber": 0,
+    "SlotPosition": 10,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-010"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-011",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_hunter_composite_bow_mid",
+    "PageNumber": 0,
+    "SlotPosition": 11,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-011"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-012",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_hunter_slashing_spear_mid",
+    "PageNumber": 0,
+    "SlotPosition": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-012"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-013",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_hunter_spear_mid",
+    "PageNumber": 0,
+    "SlotPosition": 13,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-013"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-014",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_hunter_sword_mid",
+    "PageNumber": 0,
+    "SlotPosition": 14,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-014"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-015",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_mauler_war_staff_mid",
+    "PageNumber": 0,
+    "SlotPosition": 15,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-015"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-016",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_savage_heavy_axe_mid",
+    "PageNumber": 0,
+    "SlotPosition": 16,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-016"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-017",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_savage_heavy_hammer_mid",
+    "PageNumber": 0,
+    "SlotPosition": 17,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-017"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-018",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_savage_heavy_sword_mid",
+    "PageNumber": 0,
+    "SlotPosition": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-018"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-019",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_shadowblade_heavy_axe_mid",
+    "PageNumber": 0,
+    "SlotPosition": 19,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-019"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-020",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_shadowblade_heavy_sword_mid",
+    "PageNumber": 0,
+    "SlotPosition": 20,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-020"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-021",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_shaman_heavy_hammer_mid",
+    "PageNumber": 0,
+    "SlotPosition": 21,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-021"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-022",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_skald_heavy_axe_mid",
+    "PageNumber": 0,
+    "SlotPosition": 22,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-022"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-023",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_skald_heavy_hammer_mid",
+    "PageNumber": 0,
+    "SlotPosition": 23,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-023"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-024",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_skald_heavy_sword_mid",
+    "PageNumber": 0,
+    "SlotPosition": 24,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-024"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-025",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_thane_heavy_axe_mid",
+    "PageNumber": 0,
+    "SlotPosition": 25,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-025"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-026",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_thane_heavy_hammer_mid",
+    "PageNumber": 0,
+    "SlotPosition": 26,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-026"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-027",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_thane_heavy_sword_mid",
+    "PageNumber": 0,
+    "SlotPosition": 27,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-027"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-028",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_valkyrie_heavy_sword_mid",
+    "PageNumber": 0,
+    "SlotPosition": 28,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-028"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-029",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_valkyrie_slashing_spear_mid",
+    "PageNumber": 0,
+    "SlotPosition": 29,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-029"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-030",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_valkyrie_spear_mid",
+    "PageNumber": 1,
+    "SlotPosition": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-030"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-031",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_warrior_heavy_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-031"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-032",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_warrior_heavy_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-032"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-033",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_blighted_warrior_heavy_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-033"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-034",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_frostshard_berserker_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 4,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-034"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-035",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_frostshard_mauler_hand_wrap_mid",
+    "PageNumber": 1,
+    "SlotPosition": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-035"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-036",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_frostshard_shadowblade_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 6,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-036"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-037",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_berserker_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 7,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-037"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-038",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_berserker_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-038"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-039",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_berserker_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-039"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-040",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_healer_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 10,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-040"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-041",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_hunter_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 11,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-041"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-042",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_mauler_fist_wrap_mid",
+    "PageNumber": 1,
+    "SlotPosition": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-042"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-043",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_savage_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 13,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-043"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-044",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_savage_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 14,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-044"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-045",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_savage_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 15,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-045"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-046",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_shadowblade_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 16,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-046"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-047",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_shadowblade_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 17,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-047"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-048",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_shaman_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-048"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-049",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_skald_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 19,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-049"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-050",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_skald_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 20,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-050"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-051",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_skald_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 21,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-051"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-052",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_thane_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 22,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-052"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-053",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_thane_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 23,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-053"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-054",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_thane_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 24,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-054"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-055",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_valkyrie_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 25,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-055"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-056",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_warrior_axe_mid",
+    "PageNumber": 1,
+    "SlotPosition": 26,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-056"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-057",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_warrior_hammer_mid",
+    "PageNumber": 1,
+    "SlotPosition": 27,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-057"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-058",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_glacial_warrior_sword_mid",
+    "PageNumber": 1,
+    "SlotPosition": 28,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-058"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-059",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_hallowed_cleaver_mid",
+    "PageNumber": 1,
+    "SlotPosition": 29,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-059"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-060",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_hallowed_hammer_mid",
+    "PageNumber": 2,
+    "SlotPosition": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-060"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-061",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_bonedancer_staff_mid",
+    "PageNumber": 2,
+    "SlotPosition": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-061"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-062",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_healer_hammer_mid",
+    "PageNumber": 2,
+    "SlotPosition": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-062"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-063",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_healer_heavy_hammer_mid",
+    "PageNumber": 2,
+    "SlotPosition": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-063"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-064",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_runemaster_staff_mid",
+    "PageNumber": 2,
+    "SlotPosition": 4,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-064"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-065",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_shaman_hammer_mid",
+    "PageNumber": 2,
+    "SlotPosition": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-065"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-066",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_shaman_heavy_hammer_mid",
+    "PageNumber": 2,
+    "SlotPosition": 6,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-066"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-067",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_spiritmaster_staff_mid",
+    "PageNumber": 2,
+    "SlotPosition": 7,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-067"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_mid-068",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_mid",
+    "ItemTemplateID": "bounty_icecursed_warlock_staff_mid",
+    "PageNumber": 2,
+    "SlotPosition": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_mid-068"
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "cl15-blood-weapons-hib",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ClassType": "DOL.GS.GameDiamondSealsMerchant",
+    "TranslationId": "",
+    "Name": "Fuilo",
+    "Suffix": "",
+    "Guild": "Blood Weapon Merchant",
+    "ExamineArticle": null,
+    "MessageArticle": null,
+    "X": 42080,
+    "Y": 41884,
+    "Z": 20333,
+    "Speed": 200,
+    "Heading": 2012,
+    "Region": 249,
+    "Model": 638,
+    "Size": 40,
+    "Strength": 252,
+    "Constitution": 36,
+    "Dexterity": 72,
+    "Quickness": 36,
+    "Intelligence": 30,
+    "Piety": 30,
+    "Empathy": 30,
+    "Charisma": 30,
+    "Level": 36,
+    "Realm": 3,
+    "EquipmentTemplateID": null,
+    "ItemsListTemplateID": "cl15_blood_weapons_hib",
+    "NPCTemplateID": 60162201,
+    "Race": 0,
+    "Flags": 0,
+    "AggroLevel": 200,
+    "AggroRange": 0,
+    "MeleeDamageType": 2,
+    "RespawnInterval": 180,
+    "FactionID": 191,
+    "BodyType": 0,
+    "HouseNumber": 0,
+    "Brain": null,
+    "PathID": null,
+    "OwnerID": "",
+    "RoamingRange": 0,
+    "IsCloakHoodUp": 0,
+    "Gender": 1,
+    "PackageID": "OfflineCL15BloodWeapons",
+    "VisibleWeaponSlots": 0,
+    "LastTimeRowUpdated": "2022-03-31 14:15:12",
+    "Mob_ID": "cl15-blood-weapons-hib"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-000",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_chthonian_mauler_war_staff_all",
+    "PageNumber": 0,
+    "SlotPosition": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-000"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-001",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_darkflame_mauler_fist_wrap_all",
+    "PageNumber": 0,
+    "SlotPosition": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-001"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-002",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_flamescarred_mauler_fist_wrap_all",
+    "PageNumber": 0,
+    "SlotPosition": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-002"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-003",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_frostshard_savage_slashing_claw_all",
+    "PageNumber": 0,
+    "SlotPosition": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-003"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-004",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_frostshard_savage_thrashing_claw_all",
+    "PageNumber": 0,
+    "SlotPosition": 4,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-004"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-005",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_glacial_savage_slashing_glaive_all",
+    "PageNumber": 0,
+    "SlotPosition": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-005"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-006",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_glacial_savage_thrashing_glaive_all",
+    "PageNumber": 0,
+    "SlotPosition": 6,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-006"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-007",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_hallowed_blade_hib",
+    "PageNumber": 0,
+    "SlotPosition": 7,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-007"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-008",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_hallowed_sword_hib",
+    "PageNumber": 0,
+    "SlotPosition": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-008"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-009",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_blademaster_blade_hib",
+    "PageNumber": 0,
+    "SlotPosition": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-009"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-010",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_blademaster_hammer_hib",
+    "PageNumber": 0,
+    "SlotPosition": 10,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-010"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-011",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_blademaster_steel_hib",
+    "PageNumber": 0,
+    "SlotPosition": 11,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-011"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-012",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_mauler_fist_wrap_hib",
+    "PageNumber": 0,
+    "SlotPosition": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-012"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-013",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_nightshade_blade_hib",
+    "PageNumber": 0,
+    "SlotPosition": 13,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-013"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-014",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_nightshade_steel_hib",
+    "PageNumber": 0,
+    "SlotPosition": 14,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-014"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-015",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_ranger_blade_hib",
+    "PageNumber": 0,
+    "SlotPosition": 15,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-015"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-016",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_infectious_ranger_steel_hib",
+    "PageNumber": 0,
+    "SlotPosition": 16,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-016"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-017",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_champion_warblade_hib",
+    "PageNumber": 0,
+    "SlotPosition": 17,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-017"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-018",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_champion_warhammer_hib",
+    "PageNumber": 0,
+    "SlotPosition": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-018"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-019",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_hero_celtic_spear_hib",
+    "PageNumber": 0,
+    "SlotPosition": 19,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-019"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-020",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_hero_warblade_hib",
+    "PageNumber": 0,
+    "SlotPosition": 20,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-020"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-021",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_hero_warhammer_hib",
+    "PageNumber": 0,
+    "SlotPosition": 21,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-021"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-022",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_mauler_war_staff_hib",
+    "PageNumber": 0,
+    "SlotPosition": 22,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-022"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-023",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_ranger_recurve_bow_hib",
+    "PageNumber": 0,
+    "SlotPosition": 23,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-023"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-024",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_malignant_valewalker_scythe_hib",
+    "PageNumber": 0,
+    "SlotPosition": 24,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-024"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-025",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_animist_staff_hib",
+    "PageNumber": 0,
+    "SlotPosition": 25,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-025"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-026",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_bainshee_staff_hib",
+    "PageNumber": 0,
+    "SlotPosition": 26,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-026"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-027",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_bard_blade_hib",
+    "PageNumber": 0,
+    "SlotPosition": 27,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-027"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-028",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_bard_hammer_hib",
+    "PageNumber": 0,
+    "SlotPosition": 28,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-028"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-029",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_bard_harp_hib",
+    "PageNumber": 0,
+    "SlotPosition": 29,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-029"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-030",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_druid_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-030"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-031",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_druid_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-031"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-032",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_eldritch_staff_hib",
+    "PageNumber": 1,
+    "SlotPosition": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-032"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-033",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_enchanter_staff_hib",
+    "PageNumber": 1,
+    "SlotPosition": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-033"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-034",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_mentalist_staff_hib",
+    "PageNumber": 1,
+    "SlotPosition": 4,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-034"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-035",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_warden_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-035"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-036",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_miasmic_warden_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 6,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-036"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-037",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_bard_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 7,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-037"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-038",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_bard_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-038"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-039",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_blademaster_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-039"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-040",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_blademaster_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 10,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-040"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-041",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_blademaster_steel_hib",
+    "PageNumber": 1,
+    "SlotPosition": 11,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-041"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-042",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_champion_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-042"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-043",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_champion_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 13,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-043"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-044",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_champion_steel_hib",
+    "PageNumber": 1,
+    "SlotPosition": 14,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-044"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-045",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_druid_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 15,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-045"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-046",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_druid_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 16,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-046"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-047",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_hero_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 17,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-047"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-048",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_hero_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-048"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-049",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_hero_steel_hib",
+    "PageNumber": 1,
+    "SlotPosition": 19,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-049"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-050",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_mauler_fist_wrap_hib",
+    "PageNumber": 1,
+    "SlotPosition": 20,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-050"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-051",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_nightshade_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 21,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-051"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-052",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_nightshade_steel_hib",
+    "PageNumber": 1,
+    "SlotPosition": 22,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-052"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-053",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_ranger_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 23,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-053"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-054",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_ranger_steel_hib",
+    "PageNumber": 1,
+    "SlotPosition": 24,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-054"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-055",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_vampiir_steel_hib",
+    "PageNumber": 1,
+    "SlotPosition": 25,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-055"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-056",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_warden_blade_hib",
+    "PageNumber": 1,
+    "SlotPosition": 26,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-056"
+   }
+  },
+  {
+   "table": "MerchantItem",
+   "key": "cl15_blood_weapons_hib-057",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "ItemListID": "cl15_blood_weapons_hib",
+    "ItemTemplateID": "bounty_venomous_warden_hammer_hib",
+    "PageNumber": 1,
+    "SlotPosition": 27,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "MerchantItem_ID": "cl15_blood_weapons_hib-057"
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
