@@ -67,6 +67,10 @@ namespace DOL.GS.Spells
             if (!healed && Spell.CastTime == 0)
                 m_startReuseTimer = false;
 
+            // Heals never cast their sub-spells: Druid Regenerating heals lost their heal-over-time, Arawn's Heal its
+            // cleanse, and the Shaman Warding heals their 10 s damage reduction (class audit 2026-11-13).
+            CastSubSpells(target ?? Caster);
+
             return true;
         }
 
