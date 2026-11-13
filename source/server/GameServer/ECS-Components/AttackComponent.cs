@@ -962,7 +962,8 @@ namespace DOL.GS
                             DbInventoryItem attackWeapon = owner.ActiveWeapon;
                             DbInventoryItem leftWeapon = owner.ActiveLeftWeapon;
 
-                            bool IsShieldSwipe = style.ID == 600;
+                            // Old DOL rows use client id 600; the 2026-11-01 live style rebuild uses 7006 (DR-309).
+                            bool IsShieldSwipe = style.ID is 600 or 7006 || string.Equals(style.Name, "Shield Swipe", StringComparison.OrdinalIgnoreCase);
                             int numTargetsCanHit;
 
                             // Tribal Assault: Hits 1 extra target.
