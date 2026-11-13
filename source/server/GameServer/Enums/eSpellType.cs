@@ -557,5 +557,7 @@ namespace DOL.GS
         CharmableDecoy,
         // Cabalist pet sacrifice line (DR-094, spells/Cabalist/SimulacrumSacrifice.cs)
         SimulacrumSacrifice,
+        // Warden Stone Breaker proc (DR-328, spells/StonePurgeSpellHandler.cs)
+        StonePurge,
     }
 }
