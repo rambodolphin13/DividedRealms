@@ -18,7 +18,10 @@ namespace DOL.GS.Spells
 		public override double CalculateDamageBase(GameLiving target) { return Spell.Damage; }
 		public override void ApplyEffectOnTarget(GameLiving target)
 		{
-			base.ApplyEffectOnTarget(Caster);
+			// Live Doom Hammer: the Thane throws his hammer for direct damage and is disarmed for the spell's
+			// duration. The old code passed the Thane to the base method, so it put a timed effect on (or with
+			// no duration, damaged) the Thane himself (DR-321).
+			OnDirectEffect(target);
 			Caster.attackComponent.StopAttack();
 			Caster.DisarmedTime = Caster.CurrentRegion.Time + Spell.Duration;
 
@@ -30,9 +33,6 @@ namespace DOL.GS.Spells
 				foreach (GamePlayer visPlayer in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 					visPlayer.Out.SendSpellEffectAnimation(Caster, target, (ushort) Spell.ResurrectMana, 0, false, 0x01);
 			}
-
-			if ((Spell.Duration > 0 && Spell.Target != eSpellTarget.AREA) || Spell.Concentration>0)
-				OnDirectEffect(target);
 		}
 		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
 		{

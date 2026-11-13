@@ -393,10 +393,13 @@ namespace DOL.GS.Styles
 					{
 						List<StyleProcInfo> procsToExecute = new();
 						bool onlyExecuteClassSpecific = false;
+						// Bots resolve their class like players, so a class-specific proc row replaces the shared
+						// ClassID 0 row for them too (DR-310/311: bots fired both).
+						int livingClassId = Specialization.ResolveClassId(living);
 
 						foreach (StyleProcInfo proc in style.Procs)
 						{
-							if (player != null && proc.ClassId == player.CharacterClass.ID)
+							if (livingClassId != 0 && proc.ClassId == livingClassId)
 							{
 								procsToExecute.Add(proc);
 								onlyExecuteClassSpecific = true;
@@ -849,6 +852,9 @@ namespace DOL.GS.Styles
 						if (hasClassSpecificProc && proc.ClassId != player.CharacterClass.ID)
 							continue;
 						else if (!hasClassSpecificProc && proc.ClassId != 0)
+							continue;
+						// A Chance 0 class row only blocks the shared proc for that class; it never fires, so don't list it.
+						if (proc.Chance <= 0)
 							continue;
 
 						ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(player.Client.Player, proc.Spell, styleLine);
