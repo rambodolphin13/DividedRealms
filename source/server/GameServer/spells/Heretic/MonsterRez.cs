@@ -8,7 +8,7 @@ namespace DOL.GS.Spells
 	/// <summary>
 	/// Heretic Reanimate Corpse (Class Library, 1.127): raises a dead friend at the spell's health/power, clears
 	/// resurrection sickness, and the risen body becomes a monster whose pulse (the SubSpellID MonsterDoT spell) hits
-	/// enemies around it on landing and again every Frequency until Duration ends. Damage is the Heretic's. The old
+	/// enemies around it on landing and again every Frequency for Value seconds. Damage is the Heretic's. The old
 	/// code cast monster spell 14078, which is not in the world, so the monster never appeared (DR-333).
 	/// </summary>
 	[SpellHandler(eSpellType.ReanimateCorpse)]
@@ -31,7 +31,9 @@ namespace DOL.GS.Spells
 				return;
 
 			int every = pulse.Frequency > 0 ? pulse.Frequency : 6000;
-			long ends = GameLoop.GameLoopTime + Math.Max(pulse.Duration, every);
+			// The pulse is a direct-damage spell, so its Duration must stay 0 (a Duration would make it a timed effect with no
+			// damage); Value holds how many seconds the corpse keeps pulsing.
+			long ends = GameLoop.GameLoopTime + Math.Max((long) (pulse.Value * 1000), every);
 			ushort region = living.CurrentRegionID;
 			GameLiving heretic = m_caster;
 
