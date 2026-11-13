@@ -69,7 +69,15 @@ namespace DOL.GS.Spells
 
             // Heals never cast their sub-spells: Druid Regenerating heals lost their heal-over-time, Arawn's Heal its
             // cleanse, and the Shaman Warding heals their 10 s damage reduction (class audit 2026-11-13).
-            CastSubSpells(target ?? Caster);
+            // The shared CastSubSpells path skips any spell with a SubSpellID (pets, bombers, archery and gifts use that
+            // column for payloads), so a heal casts its own.
+            if (Spell.SubSpellID > 0 && Spell.SubSpellID != Spell.ID && SkillBase.GetSpellByID(Spell.SubSpellID) is Spell subSpell)
+            {
+                if (Caster is GameNPC npc)
+                    subSpell = npc.GetScaledSpell(subSpell);
+
+                ScriptMgr.CreateSpellHandler(m_caster, subSpell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells))?.StartSpell(target ?? Caster);
+            }
 
             return true;
         }
