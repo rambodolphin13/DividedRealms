@@ -19,6 +19,9 @@ namespace DOL.GS.Spells
 		protected readonly ListDictionary m_resTimersByLiving = new ListDictionary();
 		private readonly Lock _lock = new();
 
+		/// <summary>True for resurrections that leave no resurrection sickness (Heretic Reanimate Corpse, 1.127).</summary>
+		protected virtual bool ClearsResurrectionSickness => false;
+
 		public override string ShortDescription => $"Brings the target back to life, restores {Spell.ResurrectHealth}% health and {Spell.ResurrectMana}% power and endurance and suffers no experience or constitution loss.";
 
 		public ResurrectSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
@@ -153,7 +156,7 @@ namespace DOL.GS.Spells
 				double rezSickEffectiveness = 1;
 
 				// Must check PR first since PR also has ResurrectHealth == 100 but should not apply rez sick.
-				if (IsPerfectRecovery())
+				if (IsPerfectRecovery() || ClearsResurrectionSickness)
                 {
                     rezSickEffectiveness = 0;
                 }

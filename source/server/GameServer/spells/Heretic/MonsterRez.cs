@@ -6,32 +6,50 @@ using DOL.GS.Effects;
 namespace DOL.GS.Spells
 {
 	/// <summary>
-	/// Summary description for ReanimateCorpe.
+	/// Heretic Reanimate Corpse (Class Library, 1.127): raises a dead friend at the spell's health/power, clears
+	/// resurrection sickness, and the risen body becomes a monster whose pulse (the SubSpellID MonsterDoT spell) hits
+	/// enemies around it on landing and again every Frequency until Duration ends. Damage is the Heretic's. The old
+	/// code cast monster spell 14078, which is not in the world, so the monster never appeared (DR-333).
 	/// </summary>
 	[SpellHandler(eSpellType.ReanimateCorpse)]
 	public class MonsterRez : ResurrectSpellHandler
 	{
-		// Constructor
-		public MonsterRez(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
-        {
-        }
+		private const string PROPERTY = "HERETIC_MONSTER_PULSE";
 
-		protected override void ResurrectResponceHandler(GamePlayer player, byte response)
+		public MonsterRez(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
 		{
-			base.ResurrectResponceHandler(player, response);
-			if (response == 1)
-				ResurrectLiving (player);
 		}
-		
+
+		protected override bool ClearsResurrectionSickness => true;
+
 		protected override void ResurrectLiving(GameLiving living)
 		{
 			base.ResurrectLiving(living);
 
-			SpellLine line = SkillBase.GetSpellLine("Summon Monster");
-			Spell castSpell = SkillBase.GetSpellByID(14078);
+			Spell pulse = SkillBase.GetSpellByID(Spell.SubSpellID);
+			if (pulse == null || pulse.SpellType != eSpellType.MonsterDoT || living == null || !living.IsAlive)
+				return;
 
-			ISpellHandler spellhandler = ScriptMgr.CreateSpellHandler(m_caster, castSpell, line);
-			spellhandler.StartSpell(living);
+			int every = pulse.Frequency > 0 ? pulse.Frequency : 6000;
+			long ends = GameLoop.GameLoopTime + Math.Max(pulse.Duration, every);
+			ushort region = living.CurrentRegionID;
+			GameLiving heretic = m_caster;
+
+			living.TempProperties.GetProperty<ECSGameTimer>(PROPERTY)?.Stop();
+			ECSGameTimer timer = new(living, _ =>
+			{
+				if (!living.IsAlive || living.ObjectState != GameObject.eObjectState.Active || living.CurrentRegionID != region ||
+					heretic == null || !heretic.IsAlive || GameLoop.GameLoopTime > ends)
+				{
+					living.TempProperties.RemoveProperty(PROPERTY);
+					return 0;
+				}
+
+				ScriptMgr.CreateSpellHandler(heretic, pulse, SpellLine)?.StartSpell(living);
+				return every;
+			});
+			living.TempProperties.SetProperty(PROPERTY, timer);
+			timer.Start(1);
 		}
 	}
 

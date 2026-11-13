@@ -559,5 +559,7 @@ namespace DOL.GS
         SimulacrumSacrifice,
         // Warden Stone Breaker proc (DR-328, spells/StonePurgeSpellHandler.cs)
         StonePurge,
+        // Friar Tranquility group pulse (DR-332, spells/FriarTranquilitySpellHandler.cs)
+        FriarTranquility,
     }
 }
