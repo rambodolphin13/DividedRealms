@@ -667,6 +667,8 @@ namespace DOL.GS.Trials
                 return;
             }
 
+            // His brain walks him back to where he spawned whenever he stops (sandbox 2026-11-14: he never left the starter).
+            deserter.SpawnPoint = new(deserter);
             bool escorted = run.Sweeping || Ml5.Party(run).Any(member => member.IsAlive && member.IsWithinRadius(deserter, EscortRange));
             if (!escorted)
             {
