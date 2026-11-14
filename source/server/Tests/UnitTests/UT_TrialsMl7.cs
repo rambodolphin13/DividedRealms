@@ -76,9 +76,66 @@ namespace DOL.UnitTests
         [Test]
         public void Apophian_GrowsUpToTheCap()
         {
-            Assert.That(Ml7.ApophianLevel(0), Is.EqualTo(60));
-            Assert.That(Ml7.ApophianLevel(90), Is.EqualTo(63));
+            Assert.That(Ml7.ApophianLevel(0), Is.EqualTo(55));   // live: a Dissos starts at 55
+            Assert.That(Ml7.ApophianLevel(29), Is.EqualTo(55));
+            Assert.That(Ml7.ApophianLevel(90), Is.EqualTo(61));
             Assert.That(Ml7.ApophianLevel(9000), Is.EqualTo(70));
+        }
+
+        [Test]
+        public void Challenges_LastTenMinutesLikeLive()
+        {
+            foreach (TrialDefinition challenge in Steps().Skip(2).Take(4))
+                Assert.That(challenge.Phases[0].SurviveSeconds, Is.EqualTo(600), challenge.Key);
+        }
+
+        [Test]
+        public void Credit_EveryStepChecksWhoEarnsIt()
+        {
+            List<TrialDefinition> steps = Steps();
+            Assert.That(steps.All(trial => trial.Earns != null));
+            foreach (TrialDefinition challenge in steps.Skip(2).Take(4))
+                Assert.That(challenge.Earns.Method.Name, Is.EqualTo(nameof(Ml7.QualifiedAndAlive)), challenge.Key);
+            foreach (TrialDefinition step in steps.Skip(6))
+                Assert.That(step.Earns.Method.Name, Is.EqualTo(nameof(Ml7.Qualified)), step.Key);
+        }
+
+        [TestCase(0, false)]
+        [TestCase(1, false)]
+        [TestCase(2, true)]
+        [TestCase(11, false)]
+        [TestCase(12, true)]
+        [TestCase(22, true)]
+        public void Casts_OnTheirOwnClock(int age, bool casts)
+        {
+            Assert.That(Ml7.CastsAt(age, Ml7.ReachDelaySeconds, 10), Is.EqualTo(casts));
+        }
+
+        [Test]
+        public void Typhon_OpensOnlyBrieflyAfterAnEssenceHit()
+        {
+            Assert.That(Ml7.TyphonOpen(0, 50000), Is.False);
+            Assert.That(Ml7.TyphonOpen(48000, 50000), Is.True);
+            Assert.That(Ml7.TyphonOpen(50000 - Ml7.TyphonOpenMs - 1, 50000), Is.False);
+        }
+
+        [Test]
+        public void Pillars_KillOrderAndPlatesFollowLive()
+        {
+            TrialDefinition pillars = Steps()[7];
+            List<string> named = pillars.Phases.SelectMany(phase => phase.Mobs).Where(mob => !mob.Objective).Select(mob => mob.Name).Distinct().ToList();
+            Assert.That(named.Take(4), Is.EqualTo(new[] { "Katorii", "Katorii's Breath", "Katorii's Touch", "Katorii's Blood" }));
+            Assert.That(pillars.Phases.Count(phase => phase.Mobs.Any(mob => mob.Objective)), Is.EqualTo(3));
+            Assert.That(pillars.Phases.Last().Pulses, Is.Empty, "Katorii loses her deadly gaze once vulnerable");
+        }
+
+        [Test]
+        public void FacingTyphon_EndsOnEitherKeeper()
+        {
+            TrialDefinition facing = Steps()[8];
+            Assert.That(facing.Phases, Has.Count.EqualTo(1));
+            Assert.That(facing.Phases[0].Done, Is.Not.Null);
+            Assert.That(facing.Phases[0].Mobs.Select(mob => mob.Tag), Is.EquivalentTo(new[] { "north", "south" }));
         }
 
         [TestCase(100, 0)]

@@ -177,7 +177,12 @@ namespace DOL.GS.Trials
                 : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
             foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
-                MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
+            {
+                if (definition.Earns == null || definition.Earns(run, player))
+                    MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
+                else
+                    player.Out.SendMessage($"You took part in {definition.Name}, but earn no credit for it this time.", PacketHandler.eChatType.CT_Important, PacketHandler.eChatLoc.CL_SystemWindow);
+            }
         }
 
         public static void Finished(TrialRun run)
