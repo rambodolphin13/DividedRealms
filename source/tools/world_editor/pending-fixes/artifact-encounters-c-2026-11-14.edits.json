@@ -1,0 +1,8 @@
+[
+ {"table": "NpcTemplate", "key": "98396180", "set": {"AggroLevel": 0, "Flags": 16}},
+ {"table": "NpcTemplate", "key": "98387443", "set": {"AggroLevel": 0, "Flags": 16}},
+ {"table": "NpcTemplate", "key": "98393386", "set": {"AggroLevel": 0, "Flags": 16}},
+ {"table": "Mob", "key": "artifact-anchor-1043-0", "set": {"X": 498235, "Y": 534364, "Z": 10622}},
+ {"table": "Mob", "key": "artifact-anchor-1043-1", "set": {"X": 498235, "Y": 534364, "Z": 10622}},
+ {"table": "Mob", "key": "artifact-anchor-1043-2", "set": {"X": 498235, "Y": 534364, "Z": 10622}}
+]
