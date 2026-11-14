@@ -176,7 +176,10 @@ namespace DOL.GS.Trials
             IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
                 : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
-            foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
+            // A participant who logged out mid-run leaves a stale object behind: crediting it writes a step row the
+            // relogged character never loads, and its MLLevel change is never saved.
+            foreach (GamePlayer player in players.Where(player => player.ObjectState == GameObject.eObjectState.Active &&
+                player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
                 MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
         }
 

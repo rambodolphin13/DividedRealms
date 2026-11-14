@@ -19,6 +19,11 @@ namespace DOL.GS.Trials
         public const int JudgementWarningSeconds = 8;
         public const int JarReturnSeconds = 90;
         public const int FountainReach = 300;
+        public const int HapyCopyFadePercent = 60;
+        public const int LionStrikeSeconds = 8;
+        public const int LionStrikeDamage = 300;
+        public const int AddSecondsNearUnjudged = 20;
+        public const int AddSecondsAllMummies = 45;
 
         public static readonly int[] DuamutefSplits = { 65, 35 };
         public static readonly int[] HapySplits = { 75, 50, 25 };
@@ -26,6 +31,8 @@ namespace DOL.GS.Trials
         private static readonly TrialPoint Fountain = new(32166, 28385, 15610);
         private static readonly TrialPoint Dock = new(37735, 30124, 15507, 750);
         private static readonly TrialPoint AmmutRow = new(50466, 36712, 17104, 1036);
+        public static readonly TrialPoint ReflectionNorth = new(234262, 400048, 9108, 3060);
+        public static readonly TrialPoint ReflectionSouth = new(234229, 403299, 9108, 3072);
         private static readonly TrialPoint TempleLanding = new(49766, 36712, 17104, 1024);
 
         private static readonly TrialMobSpec Scarab = new()
@@ -36,7 +43,7 @@ namespace DOL.GS.Trials
 
         private static readonly TrialMobSpec HapyCopy = new()
         {
-            Name = "Echo of Hapy", Model = 1177, Level = 60, Size = 50, Health = 1200, DamageFactor = 0.6,
+            Name = "Echo of Hapy", Model = 1177, Level = 60, Size = 50, Health = 3000, DamageFactor = 0.6,
             Count = HapyCopyCount, Spread = 400, Required = false, Tag = "hapycopy", MeleeDamage = eDamageType.Slash,
         };
 
@@ -181,10 +188,6 @@ namespace DOL.GS.Trials
                     {
                         new TrialMobSpec { Name = "Echo of Imsety", Model = 1172, Level = 65, Size = 50, Health = 16000, DamageFactor = 1.0, Spread = 200, Tag = "imsety" },
                     },
-                    Pulses =
-                    {
-                        new TrialPulse { IntervalSeconds = 5, Damage = 140, Radius = 400, SourceTag = "lion", DamageType = eDamageType.Heat },
-                    },
                     OnTick = ImsetyTick,
                 },
             },
@@ -195,7 +198,7 @@ namespace DOL.GS.Trials
             ML = 5, Step = 5, Name = "Ma'ati's Reflection", Scope = TrialScope.Group, Zone = TrialZone.Oceanus,
             Anchor = new TrialPoint(234262, 400048, 9108, 3060),
             StarterName = "Mirror Seeker", StarterModel = MauModel,
-            Intro = "Two great crocodiles lie either side of the Necropolis door. The mirror of Ra was fed to one of them long ago, and it still throws back what strikes it. Open up the first, then cross the entrance and find the second.",
+            Intro = "Two great crocodiles lie either side of the Necropolis door, one to the north and one to the south. The mirror of Ra was swallowed long ago, and either of them will give it up. Pull one away from the door and open it up.",
             Victory = "The mirror of Ra comes free, and the light on the sand goes still.",
             Replaces = new[] { "Cau Surae" },
             TimeLimitSeconds = 1200,
@@ -203,18 +206,12 @@ namespace DOL.GS.Trials
             {
                 new TrialPhase
                 {
-                    Announce = "Cau Surae rises from the sand.",
+                    Announce = "The crocodiles either side of the door rise from the sand. Either one will do.",
+                    KillCount = 1,
                     Mobs =
                     {
-                        new TrialMobSpec { Name = "Cau Surae", Model = 1260, Level = 64, Size = 200, Health = 15000, DamageFactor = 1.0, Spread = 400, MeleeDamage = eDamageType.Crush },
-                    },
-                },
-                new TrialPhase
-                {
-                    Announce = "Nothing in its belly. The second crocodile stirs south of the door, and light glints between its teeth.",
-                    Mobs =
-                    {
-                        new TrialMobSpec { Name = "Cau Surae", Model = 1260, Level = 64, Size = 200, Health = 15000, DamageFactor = 1.0, At = new TrialPoint(234229, 403299, 9108, 3072), Reflect = 0.1, MeleeDamage = eDamageType.Crush },
+                        new TrialMobSpec { Name = "Cau Surae", Model = 1260, Level = 64, Size = 200, Health = 15000, DamageFactor = 1.0, At = ReflectionNorth, MeleeDamage = eDamageType.Crush, Tag = "cau" },
+                        new TrialMobSpec { Name = "Cau Surae", Model = 1260, Level = 64, Size = 200, Health = 15000, DamageFactor = 1.0, At = ReflectionSouth, MeleeDamage = eDamageType.Crush, Tag = "cau" },
                     },
                 },
             },
@@ -404,7 +401,7 @@ namespace DOL.GS.Trials
             ML = 5, Step = 10, Name = "Ammut's Appetite", Scope = TrialScope.Raid, Zone = TrialZone.Maati,
             Anchor = Dock,
             StarterName = "Aken", StarterModel = MummyModel,
-            Intro = "You bear the river's token, so I will row you to the one who eats the unworthy. The four canopic jars you stole wait for you in her temple, for your deeds carried them there. Break the liver to heal, the lungs to turn aside her judgement, the stomach to clear crocodiles, the intestines to clear anubites. When she names someone, stand clear of them.",
+            Intro = "You bear the river's token, so I will row you to the one who eats the unworthy. The four canopic jars you stole wait for you in her temple, for your deeds carried them there. Break the liver to heal, the lungs to turn aside her judgement, the stomach to clear crocodiles, the intestines to clear anubites. When she names someone, stand clear of them. Those who walk as the dead are beneath her notice: she judges only the living, and the living draw her servants faster.",
             Victory = "Ammut falls, and the river carries you back in silence.",
             Replaces = new[] { "Ammut", "Aken" },
             TimeLimitSeconds = 2100,
@@ -441,6 +438,29 @@ namespace DOL.GS.Trials
 
         /// <summary>Health a swarm feeds Duamutef each second.</summary>
         public static int ScarabHeal(int scarabs, int maxHealth) => scarabs * maxHealth / 400;
+
+        /// <summary>Live: hitting Duamutef while he is shrunk stops the scarabs feeding him that second.</summary>
+        public static int SwarmHeal(int scarabs, int maxHealth, bool struck) => struck ? 0 : ScarabHeal(scarabs, maxHealth);
+
+        /// <summary>Live: a copy only has to be hurt a little before its strength runs out and it vanishes.</summary>
+        public static bool CopyFades(int healthPercent) => healthPercent <= HapyCopyFadePercent;
+
+        /// <summary>
+        /// Live: Ammut judges only those not in mummy form, and anyone who has finished 5.9 (or is past Master Level 5)
+        /// may take that form again. Bots and pets count as their owning player; a bot with no owner counts as a mummy.
+        /// </summary>
+        public static bool IsMummy(GameLiving living) => living switch
+        {
+            GamePlayer player => MummyFor(player.MLLevel, player.HasFinishedMLStep(5, 9)),
+            GameBot { Owner: GamePlayer owner } => IsMummy(owner),
+            GameNPC { Brain: DOL.AI.Brain.IControlledBrain controlled } when controlled.GetPlayerOwner() is GamePlayer owner => IsMummy(owner),
+            _ => true,
+        };
+
+        public static bool MummyFor(int masterLevel, bool finishedToken) => masterLevel >= 5 || finishedToken;
+
+        /// <summary>Live: the adds dropped off once only mummies stood near Ammut.</summary>
+        public static int AddSeconds(bool unjudgedNear) => unjudgedNear ? AddSecondsNearUnjudged : AddSecondsAllMummies;
 
         /// <summary>Health each copy that outlasts its strength gives back to Hapy.</summary>
         public static int HapyCopyHeal(int maxHealth) => maxHealth * 4 / 100;
@@ -511,9 +531,9 @@ namespace DOL.GS.Trials
                 if (PassedThresholds(echo.HealthPercent, DuamutefSplits) <= run.Get<int>("splits"))
                     return;
                 run.Set("swarm", true);
-                echo.Immune = true;
+                run.Set("swarmHealth", echo.Health);
                 echo.Size = 30;
-                run.Tell("The Echo of Duamutef shrinks away into a swarm of scarabs!");
+                run.Tell("The Echo of Duamutef shrinks away into a swarm of scarabs! Keep striking him and they cannot feed him.");
                 run.Spawn(Scarab);
                 return;
             }
@@ -521,13 +541,16 @@ namespace DOL.GS.Trials
             int scarabs = run.Mobs("scarab").Count();
             if (scarabs > 0)
             {
-                echo.ChangeHealth(echo, eHealthChangeType.Regenerate, ScarabHeal(scarabs, echo.MaxHealth));
+                bool struck = echo.Health < run.Get("swarmHealth", echo.Health);
+                int heal = SwarmHeal(scarabs, echo.MaxHealth, struck);
+                if (heal > 0)
+                    echo.ChangeHealth(echo, eHealthChangeType.Regenerate, heal);
+                run.Set("swarmHealth", echo.Health);
                 return;
             }
 
             run.Set("swarm", false);
             run.Set("splits", PassedThresholds(echo.HealthPercent, DuamutefSplits));
-            echo.Immune = false;
             echo.Size = 100;
             run.Tell("With its swarm gone, the Echo of Duamutef swells back to full size.");
         }
@@ -550,6 +573,12 @@ namespace DOL.GS.Trials
                 run.Spawn(HapyCopy);
                 return;
             }
+
+            List<TrialMob> faded = run.Mobs("hapycopy").Where(copy => CopyFades(copy.HealthPercent)).ToList();
+            foreach (TrialMob copy in faded)
+                copy.Delete();
+            if (faded.Count > 0)
+                run.Tell(faded.Count == 1 ? "A wounded copy of Hapy runs out of strength and vanishes." : $"{faded.Count} wounded copies of Hapy run out of strength and vanish.");
 
             List<TrialMob> copies = run.Mobs("hapycopy").ToList();
             int age = run.Get<int>("copyAge") + 1;
@@ -577,6 +606,16 @@ namespace DOL.GS.Trials
             {
                 run.Tell("A lion pads out of the wall at the Echo of Imsety's call.");
                 run.Spawn(Lion);
+            }
+            if (!Every(run, "lionStrike", LionStrikeSeconds))
+                return;
+            foreach (TrialMob lion in run.Mobs("lion").ToList())
+            {
+                if (RandomHostile(run, lion, 1500) is GameLiving target)
+                {
+                    run.Tell($"A lion of Imsety breathes fire at {target.Name}!");
+                    Strike(run, lion, target, LionStrikeDamage, eDamageType.Heat);
+                }
             }
         }
 
@@ -623,7 +662,8 @@ namespace DOL.GS.Trials
                 return;
             }
 
-            if (Every(run, "adds", 20))
+            bool unjudgedNear = run.Hostiles(ammut, 3000).Any(living => !IsMummy(living));
+            if (Every(run, "adds", AddSeconds(unjudgedNear)))
             {
                 if (run.Mobs("anubis").Count() < 3)
                     run.Spawn(Anubis);
@@ -647,9 +687,10 @@ namespace DOL.GS.Trials
             {
                 if (!Every(run, "judgement", JudgementSeconds))
                     return;
-                judged = RandomHostile(run, ammut, 3000);
-                if (judged == null)
+                List<GameLiving> unjudged = run.Hostiles(ammut, 3000).Where(target => !IsMummy(target)).ToList();
+                if (unjudged.Count == 0)
                     return;
+                judged = unjudged[Util.Random(unjudged.Count - 1)];
                 run.Set("judged", judged);
                 run.Set("sentence", JudgementWarningSeconds);
                 run.Tell($"Ammut weighs {judged.Name} and finds them wanting! Stand clear of {judged.Name}!");
