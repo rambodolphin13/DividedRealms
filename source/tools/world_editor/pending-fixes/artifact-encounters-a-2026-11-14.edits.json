@@ -1,0 +1,75 @@
+[
+ {
+  "table": "Mob",
+  "key": "artifact-anchor-1020-0",
+  "set": {
+   "Z": 11868
+  }
+ },
+ {
+  "table": "Mob",
+  "key": "artifact-anchor-1020-1",
+  "set": {
+   "Z": 11868
+  }
+ },
+ {
+  "table": "Mob",
+  "key": "artifact-anchor-1020-2",
+  "set": {
+   "Z": 11868
+  }
+ },
+ {
+  "table": "Mob",
+  "key": "artifact-anchor-1013-0",
+  "set": {
+   "Z": 8050
+  }
+ },
+ {
+  "table": "Mob",
+  "key": "artifact-anchor-1013-1",
+  "set": {
+   "Z": 8002
+  }
+ },
+ {
+  "table": "Mob",
+  "key": "mid_100012478",
+  "set": {
+   "AggroLevel": 0,
+   "AggroRange": 0,
+   "Flags": 16
+  }
+ },
+ {
+  "table": "Mob",
+  "key": "alb_100012478",
+  "set": {
+   "AggroLevel": 0,
+   "AggroRange": 0,
+   "Flags": 16
+  }
+ },
+ {
+  "table": "Mob",
+  "key": "100012478",
+  "set": {
+   "AggroLevel": 0,
+   "AggroRange": 0,
+   "Flags": 16
+  }
+ },
+ {
+  "table": "NpcTemplate",
+  "where": {
+   "TemplateId": 60167268
+  },
+  "set": {
+   "AggroLevel": 0,
+   "AggroRange": 0,
+   "Flags": 16
+  }
+ }
+]

@@ -1,0 +1,123 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-14T13:52:44.571380+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "Mob",
+   "key": "artifact-anchor-1020-0",
+   "op": "update",
+   "before": {
+    "Z": 12403
+   },
+   "after": {
+    "Z": 11868
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "artifact-anchor-1020-1",
+   "op": "update",
+   "before": {
+    "Z": 12403
+   },
+   "after": {
+    "Z": 11868
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "artifact-anchor-1020-2",
+   "op": "update",
+   "before": {
+    "Z": 12403
+   },
+   "after": {
+    "Z": 11868
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "artifact-anchor-1013-0",
+   "op": "update",
+   "before": {
+    "Z": 8010
+   },
+   "after": {
+    "Z": 8050
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "artifact-anchor-1013-1",
+   "op": "update",
+   "before": {
+    "Z": 7970
+   },
+   "after": {
+    "Z": 8002
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "mid_100012478",
+   "op": "update",
+   "before": {
+    "AggroLevel": 60,
+    "AggroRange": 500,
+    "Flags": 0
+   },
+   "after": {
+    "AggroLevel": 0,
+    "AggroRange": 0,
+    "Flags": 16
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "alb_100012478",
+   "op": "update",
+   "before": {
+    "AggroLevel": 60,
+    "AggroRange": 500,
+    "Flags": 0
+   },
+   "after": {
+    "AggroLevel": 0,
+    "AggroRange": 0,
+    "Flags": 16
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "100012478",
+   "op": "update",
+   "before": {
+    "AggroLevel": 60,
+    "AggroRange": 500,
+    "Flags": 0
+   },
+   "after": {
+    "AggroLevel": 0,
+    "AggroRange": 0,
+    "Flags": 16
+   }
+  },
+  {
+   "table": "NpcTemplate",
+   "key": "98397098",
+   "op": "update",
+   "before": {
+    "AggroLevel": 200,
+    "AggroRange": 500,
+    "Flags": 0
+   },
+   "after": {
+    "AggroLevel": 0,
+    "AggroRange": 0,
+    "Flags": 16
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
