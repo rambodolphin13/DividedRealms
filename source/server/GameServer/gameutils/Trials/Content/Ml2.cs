@@ -14,7 +14,9 @@ namespace DOL.GS.Trials
         private const ushort PriestModel = 1034;
         private const ushort RobedModel = 1033;
         private const ushort BruteModel = 1032;
-        private const ushort OrbModel = 1391;
+        // 1391 is in no monster row of the 1.130 client and no world mob uses it; 966 is the world's energy orb and wisp.
+        private const ushort OrbModel = 966;
+        private const ushort ChestModel = 2362;
         private const ushort TritonModel = 33745;
         private const ushort TritonMageModel = 33746;
         private const ushort TritonGuardModel = 33744;
@@ -106,6 +108,19 @@ namespace DOL.GS.Trials
         /// <summary>Live 2.7: Fear is a solo test, so only the one who reached the chest earns it; Terror and Horror credit the party.</summary>
         public static bool PoisonEarns<T>(string poison, T fearer, T player, T leader) where T : class =>
             poison != "Fear" || player == (fearer ?? leader);
+
+        /// <summary>
+        /// Plain temple monsters standing in a solo arena (a sobekite observer stands 460 from the platform top and joined
+        /// Amenemhat in the 2026-11-14 sandbox fight) are removed for the run, as live cleared the 2.7 and 2.8 approaches (1.71).
+        /// </summary>
+        private static void ClearWorldMonsters(TrialRun run, TrialPoint at, ushort radius)
+        {
+            foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(run.Starter.CurrentRegionID, at.X, at.Y, at.Z, radius).ToList())
+            {
+                if (npc is not TrialMob && TrialManager.ShouldClear(npc))
+                    npc.Delete();
+            }
+        }
 
         private static void RecordSetter(TrialRun run, TrialMob piece)
         {
@@ -726,7 +741,7 @@ namespace DOL.GS.Trials
                     run.Spawn(new TrialMobSpec
                     {
                         Name = "chest of Fear",
-                        Model = OrbModel,
+                        Model = ChestModel,
                         Size = 40,
                         Level = 55,
                         At = FearChest,
@@ -820,7 +835,11 @@ namespace DOL.GS.Trials
                                 Tag = "amenemhat",
                             },
                         },
-                        OnStart = run => Ml12Kit.MoveParty(run, PlatformTop),
+                        OnStart = run =>
+                        {
+                            ClearWorldMonsters(run, PlatformTop, 700);
+                            Ml12Kit.MoveParty(run, PlatformTop);
+                        },
                         OnTick = run =>
                         {
                             TrialMob amenemhat = run.Mobs("amenemhat").FirstOrDefault();
