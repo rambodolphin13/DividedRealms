@@ -943,7 +943,6 @@ namespace DOL.GS.Trials
                         {
                             Expire(run);
                             SendCobras(run);
-                            Rally(run, "guide");
                             TrialMob kynthia = run.Mobs("kynthia").FirstOrDefault();
                             TrialMob guide = run.Mobs("guide").FirstOrDefault();
                             if (kynthia == null || guide == null || !kynthia.InCombat && !guide.InCombat)
