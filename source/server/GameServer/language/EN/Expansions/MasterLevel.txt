@@ -115,16 +115,16 @@ SendMasterLevelWindow.Complete.ML2.Step7:	[Completed] missing text
 SendMasterLevelWindow.Complete.ML2.Step8:	[Completed] missing text
 SendMasterLevelWindow.Complete.ML2.Step9:	[Completed] missing text
 SendMasterLevelWindow.Complete.ML2.Step10:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step1:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step2:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step3:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step4:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step5:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step6:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step7:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step8:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step9:	[Completed] missing text
-SendMasterLevelWindow.Complete.ML3.Step10:	[Completed] missing text
+SendMasterLevelWindow.Complete.ML3.Step1:	[Completed] Moirai has been vanquished, and the runic power is yours!
+SendMasterLevelWindow.Complete.ML3.Step2:	[Completed] Kepa has fallen, her power is yours!
+SendMasterLevelWindow.Complete.ML3.Step3:	[Completed] Casta has been defeated, another runic power is yours!
+SendMasterLevelWindow.Complete.ML3.Step4:	[Completed] Another runic power has been gathered, Laodamedia is defeated!
+SendMasterLevelWindow.Complete.ML3.Step5:	[Completed] Antioos has been defeated, another runic power is yours!
+SendMasterLevelWindow.Complete.ML3.Step6:	[Completed] You have defeated the glowing barracuda, and gathered another runic power!
+SendMasterLevelWindow.Complete.ML3.Step7:	[Completed] Shraogh's reign has ended, and another runic power is in your grasp!
+SendMasterLevelWindow.Complete.ML3.Step8:	[Completed] The runic sting ray has fallen, and another runic power has been absorbed!
+SendMasterLevelWindow.Complete.ML3.Step9:	[Completed] Sinovia the octopus has been defeated, the runic power conveyed!
+SendMasterLevelWindow.Complete.ML3.Step10:	[Completed] Medusa has been vanquished; you are victorious in another trial!
 SendMasterLevelWindow.Complete.ML4.Step1:	[Completed] missing text
 SendMasterLevelWindow.Complete.ML4.Step2:	[Completed] missing text
 SendMasterLevelWindow.Complete.ML4.Step3:	[Completed] missing text
