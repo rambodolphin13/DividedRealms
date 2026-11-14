@@ -645,7 +645,7 @@ namespace DOL.GS.Trials
 
         private static TrialMobSpec Dormant(string name, int x, int y, int z, ushort heading, string tag) => new()
         {
-            Name = name, Model = 998, Level = 65, Size = 60, At = new TrialPoint(x, y, z, heading), Objective = true, Required = false,
+            Name = name, Model = 998, Level = 65, Size = 60, At = new TrialPoint(x, y, z, heading), Objective = true, Required = false, Tag = tag,
             ObjectiveText = $"You hold the control crystal up to {name}.", OnDeath = Touched,
         };
 
@@ -1116,6 +1116,9 @@ namespace DOL.GS.Trials
             Intro = "The skin is still warm. The iaculi of this pit eat one another, and the one that has eaten every kind becomes the Puissant Iaculus. A hungry one is feeding now on four kin: armoured, venomous, spitting and rending. Each kin it eats gives it that kin's gift, so kill what you can before it does, then kill the Puissant.",
             Victory = "The Puissant Iaculus coils and lies still.",
             Replaces = new[] { "Puissant Iaculus" },
+            // The pit holds 26 aggressive world iaculi within 700 (aggro 500); the trial brings its own, and the default 450
+            // left six that killed the sweep tester at the starter (live pass 2026-11-14).
+            ClearRadius = 800,
             Phases =
             {
                 new TrialPhase

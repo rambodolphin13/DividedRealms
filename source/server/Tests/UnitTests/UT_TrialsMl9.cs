@@ -119,6 +119,8 @@ namespace DOL.UnitTests
             TrialPhase phase = Trials[3].Phases.Single();
             Assert.That(Trials[3].Phases, Has.Count.EqualTo(1), "one phase, so the kings can be taken in any order");
             Assert.That(phase.Mobs.Count(mob => mob.Objective), Is.EqualTo(4));
+            // Each king carries its own tag: without it the wake picked no mechanics and the step never ended (sandbox 2026-11-14).
+            Assert.That(phase.Mobs.Where(mob => mob.Objective).Select(mob => mob.Tag), Is.EquivalentTo(new[] { "tactician", "brave", "terrible", "coward" }));
             Assert.That(phase.Mobs.Single(mob => !mob.Objective).Name, Is.EqualTo("avriel controller"));
             Assert.That(phase.Done, Is.Not.Null);
         }
