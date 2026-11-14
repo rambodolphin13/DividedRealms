@@ -105,6 +105,25 @@ namespace DOL.GS
             return true;
         }
 
+        /// <summary>
+        /// Raises a character whose next Master Level has every step recorded but who was never promoted (a step credited
+        /// while they were relogging). Without this every further step is "already finished" and the level never comes.
+        /// </summary>
+        public static bool PromoteFinishedLevel(GamePlayer player)
+        {
+            int next = player.MLLevel + 1;
+            if (player.Level < GamePlayer.MAX_LEVEL || next > GamePlayer.ML_MAX_LEVEL)
+                return false;
+            byte steps = player.GetStepCountForML((byte)next);
+            if (steps == 0 || player.GetCountMLStepsCompleted((byte)next) < steps)
+                return false;
+            player.MLLevel = next;
+            player.MLExperience = 0;
+            player.Out.SendMessage($"You have reached Master Level {player.MLLevel}!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+            Refresh(player);
+            return true;
+        }
+
         public static bool ChoosePath(GamePlayer player, string name, out string message)
         {
             List<Specialization> paths = Paths(player);
@@ -212,6 +231,7 @@ namespace DOL.GS
             if (sender is GamePlayer player)
             {
                 EnsureTraining(player);
+                PromoteFinishedLevel(player);
                 ChampionRules.RemindToVisitKing(player);
                 if (player.MLLevel > 0 || player.ChampionLevel > 0)
                     SyncPassives(player);

@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using DOL.Events;
+using DOL.GS.PacketHandler;
+using DOL.GS.ServerProperties;
 using static DOL.GS.Trials.Ml34Kit;
 
 namespace DOL.GS.Trials
@@ -49,6 +52,32 @@ namespace DOL.GS.Trials
             new(313600, 430848, 8128), new(327680, 424192, 8048), new(342272, 432256, 8128),
         };
 
+        /// <summary>
+        /// A standing way out of the hidden valley in every realm's copy. On live a player who logged out down there
+        /// relogged to reach the portal home; here the run's own portal is gone once the run ends.
+        /// </summary>
+        [GameServerStartedEvent]
+        public static void PlaceValleyExits(DOLEvent e, object sender, EventArgs arguments)
+        {
+            if (!Properties.ML_TRIALS_ENABLED)
+                return;
+            foreach (ushort regionId in TrialManager.RegionsOf(TrialZone.Oceanus))
+            {
+                try
+                {
+                    Region region = WorldMgr.GetRegion(regionId);
+                    if (region == null)
+                        continue;
+                    TrialPoint at = On(Valley, 250, 2, 4);
+                    new ValleyExit { CurrentRegion = region, X = at.X, Y = at.Y, Z = at.Z }.AddToWorld();
+                }
+                catch (Exception ex)
+                {
+                    TrialManager.Log.Error($"The valley exit could not be placed in region {regionId}", ex);
+                }
+            }
+        }
+
         public static IEnumerable<TrialDefinition> Trials()
         {
             yield return Sting();
@@ -63,9 +92,67 @@ namespace DOL.GS.Trials
             yield return TheRisingPyramid();
         }
 
+        /// <summary>
+        /// The arch-like rock at 5k, 25k Land of Atum, where every firsthand report has the adult scorpions, then
+        /// three giants, then Colossal (guide, Nov 22 to Dec 12). Z is the client's terrain under the guide loc.
+        /// </summary>
+        public static readonly TrialPoint StingCamp = new(234376, 418216, 8159);
+
+        /// <summary>Yellow, orange and red to a level 50, as the reports describe the three giants.</summary>
+        public static readonly byte[] GiantLevels = { 51, 53, 56 };
+
+        /// <summary>The towns and camps of the Fortress of Storms, and the gate and temple, for the leash.</summary>
+        public static readonly TrialPoint StormsAnchor = new(295500, 406000, 8169);
+        public static readonly TrialPoint[] StormsTowns = { new(289024, 407552, 8360), new(277248, 415104, 8336), new(266752, 399232, 7984) };
+        public static readonly TrialPoint[][] StormsCamps =
+        {
+            new TrialPoint[] { new(292736, 404096, 7952), new(290816, 413952, 7752), new(293760, 409216, 7672) },
+            new TrialPoint[] { new(281600, 417280, 7880), new(275840, 419840, 7872), new(271744, 415104, 8328) },
+            new TrialPoint[] { new(260992, 402560, 8048), new(259328, 399104, 7952), new(268416, 407040, 8312) },
+        };
+        /// <summary>The far western camp lies 36,800 from the scout; at 36,000 a party fighting there counted as fled.</summary>
+        public const int StormsLeash = 45000;
+        public static readonly TrialPoint StormsGate = new(277737, 404022, 8040);
+        public static readonly TrialPoint SetiThrone = new(277632, 399779, 8722);
+
+        /// <summary>Blood: the pyramid peak, the start of the hidden valley and Daehien's lair.</summary>
+        public static readonly TrialPoint Peak = new(256300, 425600, 9344);
+        public static readonly TrialPoint Valley = new(346240, 404352, 8824);
+        public static readonly TrialPoint DaehienLair = new(353613, 406725, 8824);
+
+        /// <summary>Seconds after Daehien dies before the portal carries the party home; under the sweep's six.</summary>
+        public const int HomeSeconds = 5;
+
+        /// <summary>The nearest walkable point, so waves on uneven sand don't hang in the air or sink into it.</summary>
+        private static TrialPoint Ground(TrialRun run, TrialPoint point)
+        {
+            Zone zone = run.Starter.CurrentRegion?.GetZone(point.X, point.Y);
+            IPathfindingMgr nav = PathfindingProvider.Instance;
+            if (zone == null || nav == null || !nav.IsAvailable || !nav.HasNavmesh(zone))
+                return point;
+            Vector3? floor = nav.GetClosestPoint(zone, new Vector3(point.X, point.Y, point.Z), 96, 96, 600, nav.DefaultFilters);
+            return floor is { } spot ? new TrialPoint((int)spot.X, (int)spot.Y, (int)spot.Z, point.Heading) : point;
+        }
+
+        /// <summary>The kit's wave, set down on the ground. Hides <see cref="Ml34Kit.Wave"/> for this file only.</summary>
+        private static void Wave(TrialRun run, TrialMobSpec spec, int designCount, TrialPoint center, int radius)
+        {
+            int count = Scaled(designCount, run.HealthScale);
+            for (int i = 0; i < count; i++)
+                run.Spawn(At(spec, Ground(run, On(center, radius, i, count))));
+        }
+
         private static TrialDefinition Sting()
         {
-            TrialPoint camp = new(331500, 418106, 8373);
+            TrialPoint camp = StingCamp;
+
+            void Giants(TrialRun run)
+            {
+                for (int i = 0; i < GiantLevels.Length; i++)
+                    run.Spawn(At(Mob("giant scorpion", Scorpion, GiantLevels[i], 100, 5000, 0.9, tag: "giant", melee: eDamageType.Thrust),
+                        Ground(run, On(camp, 500, i, GiantLevels.Length))));
+            }
+
             return new TrialDefinition
             {
                 ML = 4,
@@ -76,7 +163,7 @@ namespace DOL.GS.Trials
                 Anchor = camp,
                 StarterName = "Mau Scorpion Tracker",
                 StarterModel = Mau,
-                Intro = "Thin out the scorpions here and the big ones come to see why. Thin those and something far older climbs down off the rocks. " +
+                Intro = "The adult scorpions nest under this arch of rock. Kill every one of them and the giants come to see why. Kill those and something far older climbs down off the rocks. " +
                     "We call it Colossal. It carries a bloodstone in its gut, and the crocodiles of the Iter want that stone back.",
                 Victory = "Colossal curls up and dies. The Bloodstone is yours in all but name: the statues of the Iter will know you.",
                 Replaces = new[] { "Colossal" },
@@ -85,21 +172,24 @@ namespace DOL.GS.Trials
                 {
                     new TrialPhase
                     {
-                        Announce = "The rocks rattle with scorpions.",
-                        OnStart = run => Wave(run, Mob("large scorpion", Scorpion, 58, 58, 3000, 0.7, tag: "large", melee: eDamageType.Thrust), 5, camp, 450),
-                        Done = Cleared("large"),
+                        Announce = "The rocks rattle with adult scorpions.",
+                        OnStart = run => Wave(run, Mob("adult scorpion", Scorpion, 54, 77, 3000, 0.7, tag: "adult", melee: eDamageType.Thrust), 5, camp, 450),
+                        Done = Cleared("adult"),
                     },
                     new TrialPhase
                     {
-                        Announce = "Three giants answer the noise.",
-                        OnStart = run => Wave(run, Mob("giant scorpion", Scorpion, 62, 112, 5000, 0.9, tag: "giant", melee: eDamageType.Thrust), 3, camp, 500),
+                        Announce = "Three giant scorpions answer the noise.",
+                        OnStart = Giants,
                         Done = Cleared("giant"),
                     },
                     new TrialPhase
                     {
                         Announce = "Look up! Colossal drops from the rocks.",
-                        Mobs = { Mob("Colossal", Scorpion, 66, 150, 20000, 1.1, On(camp, 300, 0, 2), "colossal", melee: eDamageType.Thrust) },
-                        OnStart = run => Wave(run, Mob("young scorpion", Scorpion, 56, 41, 2000, 0.6, tag: "young", required: false, melee: eDamageType.Thrust), 3, camp, 600),
+                        OnStart = run =>
+                        {
+                            run.Spawn(At(Mob("Colossal", Scorpion, 66, 150, 20000, 1.1, tag: "colossal", melee: eDamageType.Thrust), Ground(run, On(camp, 300, 0, 2))));
+                            Wave(run, Mob("young scorpion", Scorpion, 54, 40, 2000, 0.6, tag: "young", required: false, melee: eDamageType.Thrust), 3, camp, 600);
+                        },
                         Done = Cleared("colossal"),
                     },
                 },
@@ -153,16 +243,14 @@ namespace DOL.GS.Trials
 
         private static TrialDefinition Storms()
         {
-            TrialPoint gate = new(277737, 404022, 8040);
-            TrialPoint seti = new(277632, 399779, 8722);
+            TrialPoint gate = StormsGate;
+            TrialPoint seti = SetiThrone;
+            string[] names = { "the eastern town", "the town before the fortress", "the western town" };
+            string[] keys = { "east", "front", "western" };
 
             List<TrialPhase> phases = new();
-            phases.AddRange(TakeTown("the eastern town", "east", new TrialPoint(289024, 407552, 8360),
-                new[] { new TrialPoint(292736, 404096, 7952), new TrialPoint(290816, 413952, 7752), new TrialPoint(293760, 409216, 7672) }));
-            phases.AddRange(TakeTown("the town before the fortress", "front", new TrialPoint(277248, 415104, 8336),
-                new[] { new TrialPoint(281600, 417280, 7880), new TrialPoint(275840, 419840, 7872), new TrialPoint(271744, 415104, 8328) }));
-            phases.AddRange(TakeTown("the western town", "western", new TrialPoint(266752, 399232, 7984),
-                new[] { new TrialPoint(260992, 402560, 8048), new TrialPoint(259328, 399104, 7952), new TrialPoint(268416, 407040, 8312) }));
+            for (int i = 0; i < StormsTowns.Length; i++)
+                phases.AddRange(TakeTown(names[i], keys[i], StormsTowns[i], StormsCamps[i]));
             phases.Add(new TrialPhase
             {
                 Announce = "All three towns burn. The fortress gate stands open, and its garrison comes out to meet you.",
@@ -193,7 +281,7 @@ namespace DOL.GS.Trials
                 Name = "Storms",
                 Scope = TrialScope.Raid,
                 Zone = TrialZone.Oceanus,
-                Anchor = new TrialPoint(295500, 406000, 8169),
+                Anchor = StormsAnchor,
                 StarterName = "Mau Rebel Scout",
                 StarterModel = Mau,
                 Intro = "The Fortress of Storms lives off three towns, and each town lives off three camps. Go at the fortress first and all of them fall on you. " +
@@ -202,7 +290,7 @@ namespace DOL.GS.Trials
                 Victory = "The Fortress of Storms burns and Seti lies dead. The Storm Crystal is yours in all but name.",
                 Replaces = new[] { "Seti the Pharaoh" },
                 TimeLimitSeconds = 2400,
-                LeashRange = 36000,
+                LeashRange = StormsLeash,
                 Phases = phases,
             };
         }
@@ -210,6 +298,15 @@ namespace DOL.GS.Trials
         private static TrialDefinition Roar()
         {
             TrialPoint den = new(289594, 437217, 7917);
+
+            // The fire and the Eye come down where he died, which is wherever the fight dragged him.
+            TrialMobSpec King()
+            {
+                TrialMobSpec king = Mob("Tutankhsekhmet", Lion, 65, 62, 18000, 1.1, On(den, 300, 0, 2), "lion king", melee: eDamageType.Slash);
+                king.OnDeath = (run, mob) => run.Set("pyre", Where(mob));
+                return king;
+            }
+
             return new TrialDefinition
             {
                 ML = 4,
@@ -230,20 +327,27 @@ namespace DOL.GS.Trials
                     new TrialPhase
                     {
                         Announce = "A great roar rolls across the dunes.",
-                        Mobs = { Mob("Tutankhsekhmet", Lion, 65, 62, 18000, 1.1, On(den, 300, 0, 2), "lion king", melee: eDamageType.Slash) },
+                        Mobs = { King() },
                         OnStart = run => Wave(run, Mob("sacred lion", Lion, 58, 50, 3000, 0.7, tag: "pride", required: false, melee: eDamageType.Slash), 4, den, 450),
                         Done = Cleared("lion king"),
                     },
                     new TrialPhase
                     {
                         Announce = "The Fires of Seth fall from the sky!",
-                        Pulses = { new TrialPulse { IntervalSeconds = 3, Damage = 180, Radius = 800, Message = "Fire rains down around Tutankhsekhmet's body." } },
+                        OnTick = run =>
+                        {
+                            if (!Every(run, "fire", 3))
+                                return;
+                            Hurt(run, run.Starter, Ring(run, run.Get("pyre", den), 0, 800), 180, eDamageType.Heat);
+                            run.Tell("Fire rains down around Tutankhsekhmet's body.");
+                        },
                         SurviveSeconds = 13,
                     },
                     new TrialPhase
                     {
                         Announce = "The fire dies. Something glitters in the ash.",
-                        Mobs = { Clickable("Eye of Ra", Gem, 12, On(den, 150, 1, 2), "The Eye of Ra is warm in your hand.") },
+                        OnStart = run => run.Spawn(Clickable("Eye of Ra", Gem, 12, run.Get("pyre", On(den, 150, 1, 2)), "The Eye of Ra is warm in your hand.")),
+                        Done = run => !run.Mobs().Any(mob => mob.Spec.Objective),
                     },
                 },
             };
@@ -467,11 +571,25 @@ namespace DOL.GS.Trials
             };
         }
 
+        /// <summary>A run that fails in the hidden valley must not leave anyone stranded there.</summary>
+        private static void BringHome(TrialRun run)
+        {
+            List<GameLiving> stranded = Party(run).Where(living => InValley(Where(living))).ToList();
+            for (int i = 0; i < stranded.Count; i++)
+            {
+                TrialPoint spot = On(Peak, 120, i, stranded.Count);
+                stranded[i].MoveTo(run.Starter.CurrentRegionID, spot.X, spot.Y, spot.Z, spot.Heading);
+            }
+        }
+
+        /// <summary>Within reach of the valley floor, from the portal's landing to past Daehien's lair.</summary>
+        public static bool InValley(TrialPoint point) => Distance(point, Valley) < 15000 || Distance(point, DaehienLair) < 15000;
+
         private static TrialDefinition Blood()
         {
-            TrialPoint peak = new(256300, 425600, 9344);
-            TrialPoint valley = new(346240, 404352, 8824);
-            TrialPoint daehien = new(353613, 406725, 8824);
+            TrialPoint peak = Peak;
+            TrialPoint valley = Valley;
+            TrialPoint daehien = DaehienLair;
             int[] lanes = { -500, 0, 500 };
             const int ClosestRing = 600;
 
@@ -537,6 +655,11 @@ namespace DOL.GS.Trials
                 RequiresSteps = new[] { 7 },
                 TimeLimitSeconds = 1800,
                 LeashRange = 120000,
+                OnEnd = (run, won) =>
+                {
+                    if (!won)
+                        BringHome(run);
+                },
                 Phases =
                 {
                     new TrialPhase
@@ -568,7 +691,7 @@ namespace DOL.GS.Trials
                         },
                         OnTick = run =>
                         {
-                            if (!Every(run, "home", 10))
+                            if (!Every(run, "home", HomeSeconds))
                                 return;
                             MoveParty(run, peak);
                             run.Set("back", true);
@@ -754,6 +877,36 @@ namespace DOL.GS.Trials
                     },
                 },
             };
+        }
+    }
+
+    /// <summary>The portal at the mouth of Daehien's valley that returns anyone to the pyramid peak.</summary>
+    public class ValleyExit : GameNPC
+    {
+        public ValleyExit()
+        {
+            Name = "Portal to the Peak";
+            GuildName = "Master Level Trial";
+            Model = 1438;
+            Size = 50;
+            Level = 50;
+            Flags = eFlags.PEACE;
+            Realm = eRealm.None;
+            RespawnInterval = -1;
+        }
+
+        public override bool Interact(GamePlayer player)
+        {
+            if (!base.Interact(player))
+                return false;
+            if (!IsWithinRadius(player, WorldMgr.INTERACT_DISTANCE))
+            {
+                player.Out.SendMessage("You are too far away.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                return false;
+            }
+            TrialPoint spot = Ml34Kit.On(Ml4.Peak, 120, Random.Shared.Next(8), 8);
+            player.MoveTo(CurrentRegionID, spot.X, spot.Y, spot.Z, spot.Heading);
+            return true;
         }
     }
 }

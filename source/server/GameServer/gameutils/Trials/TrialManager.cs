@@ -176,9 +176,17 @@ namespace DOL.GS.Trials
             IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
                 : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
-            foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
+            foreach (GamePlayer player in players.Select(Online).Where(player => player != null).Distinct()
+                .Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
                 MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
         }
+
+        /// <summary>
+        /// The player's object in the world now. One who relogged mid-run is a new object: crediting the old one wrote the
+        /// step to the database but not to the character in play, so a tenth step never raised the Master Level.
+        /// </summary>
+        private static GamePlayer Online(GamePlayer player) =>
+            player.ObjectState == GameObject.eObjectState.Active ? player : ClientService.Instance.GetPlayerByExactName(player.Name);
 
         public static void Finished(TrialRun run)
         {

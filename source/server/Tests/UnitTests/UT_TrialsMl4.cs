@@ -110,5 +110,61 @@ namespace DOL.UnitTests
             Assert.That(Ml34Kit.Along(a, b, 0.5, 0), Is.EqualTo(new TrialPoint(500, 0, 150)));
             Assert.That(Ml34Kit.Along(a, b, 0.5, 100).Y, Is.EqualTo(100));
         }
+
+        [Test]
+        public void Sting_IsAtTheAtumArch()
+        {
+            TrialDefinition sting = Ml4.Trials().Single(trial => trial.Step == 1);
+            Assert.That(sting.Anchor, Is.EqualTo(Ml4.StingCamp));
+            Assert.That(sting.Anchor.X - 28 * 8192, Is.InRange(4000, 6000), "5k Land of Atum");
+            Assert.That(sting.Anchor.Y - 48 * 8192, Is.InRange(24000, 26000), "25k Land of Atum");
+            Assert.That(sting.Phases, Has.Count.EqualTo(3));
+        }
+
+        [Test]
+        public void Sting_GiantsAreYellowOrangeAndRed()
+        {
+            Assert.That(Ml4.GiantLevels, Has.Length.EqualTo(3));
+            Assert.That(Ml4.GiantLevels, Is.Ordered.Ascending);
+            Assert.That(Ml4.GiantLevels[0], Is.InRange(50, 51));
+            Assert.That(Ml4.GiantLevels[2], Is.InRange(54, 57));
+        }
+
+        [Test]
+        public void Storms_EveryTownAndCampIsInsideTheLeash()
+        {
+            TrialDefinition storms = Ml4.Trials().Single(trial => trial.Step == 2);
+            TrialPoint[] stops = Ml4.StormsTowns.Concat(Ml4.StormsCamps.SelectMany(camps => camps)).Append(Ml4.StormsGate).Append(Ml4.SetiThrone).ToArray();
+            Assert.That(stops, Has.Length.EqualTo(14));
+            // A party fights a few hundred units past a camp's centre: leave room for the chase.
+            foreach (TrialPoint stop in stops)
+                Assert.That(Ml34Kit.Distance(storms.Anchor, stop) + 2000, Is.LessThan(storms.LeashRange), stop.ToString());
+        }
+
+        [Test]
+        public void Blood_ReturnsHomeBeforeTheSweepGivesUp()
+        {
+            Assert.That(Ml4.HomeSeconds, Is.LessThan(6));
+            TrialDefinition blood = Ml4.Trials().Single(trial => trial.Step == 8);
+            Assert.That(blood.OnEnd, Is.Not.Null, "a failed run must bring the party out of the valley");
+        }
+
+        [Test]
+        public void Blood_ValleyIsFarFromThePeak()
+        {
+            Assert.That(Ml4.InValley(Ml4.Valley), Is.True);
+            Assert.That(Ml4.InValley(Ml4.DaehienLair), Is.True);
+            Assert.That(Ml4.InValley(Ml4.Peak), Is.False);
+            Assert.That(Ml4.InValley(Ml4.StingCamp), Is.False);
+            foreach (TrialPoint statue in Ml4.Statues)
+                Assert.That(Ml4.InValley(statue), Is.False, statue.ToString());
+        }
+
+        [Test]
+        public void EveryCreditStepNeedsOnlyEarlierSteps()
+        {
+            foreach (TrialDefinition trial in Ml4.Trials())
+                Assert.That(TrialManager.Required(trial), Is.All.LessThan(trial.Step), trial.Key);
+        }
     }
 }
