@@ -19,7 +19,9 @@ namespace DOL.GS.Trials
         private const int LavaWindowSeconds = 40;
         /// <summary>Live: every Mediator challenge lasts exactly ten minutes.</summary>
         public const int ChallengeSeconds = 600;
-        private const int MaxApophians = 8;
+        // Live had no limit. 8 alive wiped a player with seven bots at six minutes once the 30 s level-ups stopped
+        // healing the Dissos (bot playtest 2026-11-14): bots cannot hold back from killing him.
+        private const int MaxApophians = 4;
         /// <summary>Feuding kills per race in 7.2 (live: about 30 minutes of faction farming each).</summary>
         public const int FeudKills = 5;
         /// <summary>Live: a new Rage of the Volurgons every 20 seconds, at most nine.</summary>
@@ -361,7 +363,7 @@ namespace DOL.GS.Trials
                         if (age % 30 != 0)
                             continue;
                         SetLevelKeepHealth(mob, ApophianLevel(age));
-                        mob.DamageFactor = run.DamageScale * (0.8 + age / 900.0);
+                        mob.DamageFactor = run.DamageScale * (0.8 + age / 1800.0);
                     }
                     Bolts(run, "apophian", now, 12, 150, 1500, eDamageType.Energy);
                 },
@@ -472,11 +474,11 @@ namespace DOL.GS.Trials
                     {
                         int now = Count(run, "seconds");
                         // Bot playtest 2026-11-14: 9000 health, Reach 300 every 10 s and up to six alive wiped a player
-                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 6000 health, at most four alive,
+                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 4500 health, at most four alive,
                         // and the Reach on arrival then every 20 s (EnaraReach).
                         if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 4)
                         {
-                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 6000, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
+                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 4500, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
                             Resist(enara, 50, eProperty.Resist_Heat);
                             Resist(enara, -25, eProperty.Resist_Cold);
                             run.Tell("A Shaitan Enara appears, gathering heat!");
@@ -498,9 +500,11 @@ namespace DOL.GS.Trials
                     OnTick = run =>
                     {
                         int seconds = Count(run, "seconds");
-                        if (seconds % 20 != 2 || run.Mobs("hephaestian").Count() >= 6)
+                        // Bot playtest 2026-11-14: a player with seven bots killed a 5000-health Katarch in about a minute
+                        // while one came every 20 s, and wiped at three and a half minutes. 3000 health, at most four.
+                        if (seconds % 20 != 2 || run.Mobs("hephaestian").Count() >= 4)
                             return;
-                        TrialMobSpec spec = Foe("Hephaestian Katarch", Hephaestian, 67, 60, 5000, 0.7, spots[seconds / 20 % spots.Length], "hephaestian", eDamageType.Heat, false);
+                        TrialMobSpec spec = Foe("Hephaestian Katarch", Hephaestian, 67, 60, 3000, 0.7, spots[seconds / 20 % spots.Length], "hephaestian", eDamageType.Heat, false);
                         spec.Reflect = 0.1;
                         Resist(run.Spawn(spec), -25, eProperty.Resist_Cold);
                     },
