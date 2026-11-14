@@ -14,7 +14,9 @@ namespace DOL.GS.Trials
         private const ushort PriestModel = 1034;
         private const ushort RobedModel = 1033;
         private const ushort BruteModel = 1032;
-        private const ushort OrbModel = 1391;
+        // 1391 is in no monster row of the 1.130 client and no world mob uses it; 966 is the world's energy orb and wisp.
+        private const ushort OrbModel = 966;
+        private const ushort ChestModel = 2362;
         private const ushort TritonModel = 33745;
         private const ushort TritonMageModel = 33746;
         private const ushort TritonGuardModel = 33744;
@@ -90,6 +92,55 @@ namespace DOL.GS.Trials
         /// <summary>Three on Runihura is safe. Four draws the spikes.</summary>
         public static bool SpikesFall(int crowded) => crowded >= 4;
 
+        /// <summary>
+        /// The drop into the pool takes an eighth of the winner's health but never the last of it: live winners landed in
+        /// the water (sandbox 2026-11-14: a winner at 10% died to the old flat eighth after earning the step).
+        /// </summary>
+        public static int FallDamage(int health, int maxHealth) => Math.Max(0, Math.Min(maxHealth / 8, health - 1));
+
+        /// <summary>Share of a Chaths piece each move takes: three moves a piece even after the piece regenerates between them.</summary>
+        public const double BoardBlow = 0.4;
+
+        /// <summary>Live 2.6: five to ten eidolons came with each statue.</summary>
+        public const int EidolonsPerStatue = 6;
+
+        /// <summary>Live 2.3 and 2.9: players dead when the last foe fell got no credit.</summary>
+        private static bool AliveEarns(TrialRun run, GamePlayer player) => player.IsAlive;
+
+        /// <summary>
+        /// Live 2.5: only players who set a piece were credited. A board finished without clicks (the GM sweep)
+        /// credits the leader.
+        /// </summary>
+        public static bool SetterEarns<T>(ICollection<T> setters, T player, T leader) where T : class =>
+            setters == null || setters.Count == 0 ? player == leader : setters.Contains(player);
+
+        /// <summary>Live 2.7: Fear is a solo test, so only the one who reached the chest earns it; Terror and Horror credit the party.</summary>
+        public static bool PoisonEarns<T>(string poison, T fearer, T player, T leader) where T : class =>
+            poison != "Fear" || player == (fearer ?? leader);
+
+        /// <summary>
+        /// Plain temple monsters standing in a solo arena (a sobekite observer stands 460 from the platform top and joined
+        /// Amenemhat in the 2026-11-14 sandbox fight) are removed for the run, as live cleared the 2.7 and 2.8 approaches (1.71).
+        /// </summary>
+        private static void ClearWorldMonsters(TrialRun run, TrialPoint at, ushort radius)
+        {
+            foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(run.Starter.CurrentRegionID, at.X, at.Y, at.Z, radius).ToList())
+            {
+                if (npc is not TrialMob && TrialManager.ShouldClear(npc))
+                    npc.Delete();
+            }
+        }
+
+        private static void RecordSetter(TrialRun run, TrialMob piece)
+        {
+            if (piece.CompletedBy == null)
+                return;
+            HashSet<GamePlayer> setters = run.Get<HashSet<GamePlayer>>("setters");
+            if (setters == null)
+                run.Set("setters", setters = new HashSet<GamePlayer>());
+            setters.Add(piece.CompletedBy);
+        }
+
         private static TrialPhase LeaveChamber(string announce, TrialPoint gate)
         {
             return new TrialPhase
@@ -129,8 +180,8 @@ namespace DOL.GS.Trials
                 StarterName = "Wounded Temple Keeper",
                 StarterModel = PriestModel,
                 Intro = "They come out of the walls, stranger. They will not show themselves to a crowd, but they cannot pass by one who looks helpless. " +
-                    "Sit here in the alcove with your back to the stone, and keep your friends close by. When Ka'a comes for you, make him regret it. Ata will follow him.",
-                Victory = "Ata dies in the alcove he crept out of. The keepers can breathe again, for now.",
+                    "Sit here in the alcove with your back to the stone, and keep your friends close by. Ka'a or Ata, whichever of the imposter's knives comes for you, make him regret it.",
+                Victory = "The assassin dies in the alcove he crept out of. The keepers can breathe again, for now.",
                 TimeLimitSeconds = 1500,
                 Phases =
                 {
@@ -143,32 +194,16 @@ namespace DOL.GS.Trials
                     new TrialPhase
                     {
                         Announce = "The wall grinds open behind you!",
-                        OnStart = KaaStrikes,
-                        Done = run => !run.Mobs("kaa").Any() && !run.Mobs("shadow").Any(),
-                    },
-                    new TrialPhase
-                    {
-                        Announce = "Something else moves in the tunnel. Ata is here!",
-                        Mobs =
-                        {
-                            new TrialMobSpec
-                            {
-                                Name = "Ata",
-                                Model = RobedModel,
-                                Size = 55,
-                                Level = 65,
-                                Health = 45000,
-                                DamageFactor = 1.1,
-                                MeleeDamage = eDamageType.Thrust,
-                                At = Ml12Kit.Ring(EastAlcove, 300, 1, 4),
-                                Tag = "ata",
-                            },
-                        },
-                        OnTick = AtaPoison,
+                        OnStart = AssassinStrikes,
+                        OnTick = AssassinPoison,
+                        Done = run => !run.Mobs("assassin").Any(),
                     },
                 },
             };
         }
+
+        /// <summary>Live: either assassin's death gave the step. Which one waits behind the wall is chance.</summary>
+        public static string Assassin(int roll) => roll == 0 ? "Ka'a" : "Ata";
 
         private static void WatchTheBait(TrialRun run)
         {
@@ -183,34 +218,38 @@ namespace DOL.GS.Trials
                 run.Set("sprung", true);
         }
 
-        private static void KaaStrikes(TrialRun run)
+        private static void AssassinStrikes(TrialRun run)
         {
-            TrialPoint behind = new(run.Leader.X, run.Leader.Y + 150, run.Leader.Z);
-            TrialMob kaa = run.Spawn(new TrialMobSpec
+            bool near = Ml12Kit.Near(run.Leader.X, run.Leader.Y, run.Definition.Anchor, 600);
+            TrialPoint bait = near ? new TrialPoint(run.Leader.X, run.Leader.Y, run.Leader.Z) : EastAlcove;
+            TrialPoint behind = new(bait.X, bait.Y + 150, bait.Z);
+            TrialMob assassin = run.Spawn(new TrialMobSpec
             {
-                Name = "Ka'a",
+                Name = Assassin(Util.Random(0, 1)),
                 Model = RobedModel,
-                Size = 52,
-                Level = 62,
-                Health = 8000,
-                DamageFactor = 1.0,
+                Size = 55,
+                Level = 65,
+                Health = 42000,
+                DamageFactor = 1.1,
                 MeleeDamage = eDamageType.Thrust,
                 At = behind,
-                Tag = "kaa",
+                Tag = "assassin",
             });
-            run.Spawn(Shadow(Ml12Kit.Ring(behind, 300, 1, 4)));
-            run.Spawn(Shadow(Ml12Kit.Ring(behind, 300, 3, 4)));
-            Ml12Kit.Strike(run, kaa, run.Leader, 250, eDamageType.Thrust);
+            TrialMobSpec shadow = Shadow(Ml12Kit.Ring(behind, 300, 1, 4));
+            shadow.Required = false;
+            run.Spawn(shadow);
+            if (near && run.Leader.IsAlive)
+                Ml12Kit.Strike(run, assassin, run.Leader, 250, eDamageType.Thrust);
         }
 
-        private static void AtaPoison(TrialRun run)
+        private static void AssassinPoison(TrialRun run)
         {
-            TrialMob ata = run.Mobs("ata").FirstOrDefault();
-            if (ata == null || !Ml12Kit.Every(run, "venom", 8))
+            TrialMob assassin = run.Mobs("assassin").FirstOrDefault();
+            if (assassin == null || !Ml12Kit.Every(run, "venom", 8))
                 return;
-            GameLiving target = Ml12Kit.RandomHostile(run, ata, 800);
+            GameLiving target = Ml12Kit.RandomHostile(run, assassin, 800);
             if (target != null)
-                Ml12Kit.Strike(run, ata, target, 130, eDamageType.Body);
+                Ml12Kit.Strike(run, assassin, target, 130, eDamageType.Body);
         }
 
         private static TrialDefinition StalkingTerror()
@@ -291,6 +330,7 @@ namespace DOL.GS.Trials
                 Intro = "My people and the Speos fight over what they stole from this temple, and the Speos are winning. Break their camp here in the flooded depths and kill their chieftain. " +
                     "Whatever you find you may keep: finishing this stands for the Cracked, Stone and Cellar keys, and for the four old relics Onuris will ask after.",
                 Victory = "The Speos chieftain is dead. You take a ring of old keys and four battered relics from his hoard.",
+                Earns = AliveEarns,
                 TimeLimitSeconds = 1800,
                 Phases =
                 {
@@ -439,6 +479,8 @@ namespace DOL.GS.Trials
                     "the bishop, the knight and a pawn. Then stand back and let them fight. Do not lift a hand: strategy is not fought, it is arranged.",
                 Victory = "Chaths bows over his fallen king. Your strategy has beaten his.",
                 RequiresSteps = new[] { 4 },
+                ResetSeconds = 60,
+                Earns = (run, player) => SetterEarns(run.Get<HashSet<GamePlayer>>("setters"), player, run.Leader),
                 Replaces = new[]
                 {
                     "Chaths", "King", "Queen", "Rook", "Bishop", "Knight", "Pawn",
@@ -484,6 +526,7 @@ namespace DOL.GS.Trials
                 At = at,
                 Objective = true,
                 ObjectiveText = text,
+                OnDeath = RecordSetter,
             };
         }
 
@@ -510,6 +553,7 @@ namespace DOL.GS.Trials
                 DamageFactor = 0.5,
                 At = piece.At,
                 AggroRange = 0,
+                Immune = true,
                 Tag = "enemy",
             }).ToList();
         }
@@ -524,7 +568,7 @@ namespace DOL.GS.Trials
             if (target == null)
                 return;
             run.Tell($"Your pieces close on {target.Name}.");
-            Ml12Kit.Wound(run, target, 0.34);
+            Ml12Kit.Wound(run, target, BoardBlow);
         }
 
         private static TrialDefinition TestOfTactics()
@@ -570,7 +614,7 @@ namespace DOL.GS.Trials
 
         private static TrialPhase Statue(string announce, string name, ushort model, TrialPoint at, int health)
         {
-            List<TrialMobSpec> mobs = Ml12Kit.Circle(Amphitheater, 500, 4, spot => new TrialMobSpec
+            List<TrialMobSpec> mobs = Ml12Kit.Circle(Amphitheater, 500, EidolonsPerStatue, spot => new TrialMobSpec
             {
                 Name = "sobekite eidolon",
                 Model = OrbModel,
@@ -646,6 +690,7 @@ namespace DOL.GS.Trials
                     "Touch Terror and she will come for you. Touch Horror if you bring an army, for it is the same road, and worse. Only one, mind.",
                 Victory = "Djedkare nods. You have chosen your poison and swallowed it.",
                 RequiresSteps = new[] { 3 },
+                Earns = (run, player) => PoisonEarns(run.Get<string>("poison"), run.Get<GamePlayer>("fearer"), player, run.Leader),
                 Replaces = new[] { "Djedkare" },
                 TimeLimitSeconds = 1500,
                 Phases =
@@ -705,13 +750,14 @@ namespace DOL.GS.Trials
                     run.Spawn(new TrialMobSpec
                     {
                         Name = "chest of Fear",
-                        Model = OrbModel,
+                        Model = ChestModel,
                         Size = 40,
                         Level = 55,
                         At = FearChest,
                         Objective = true,
                         ObjectiveText = "You lay your hand on the chest, and the fear lifts.",
                         Tag = "test",
+                        OnDeath = (r, chest) => r.Set("fearer", chest.CompletedBy),
                     });
                     foreach (TrialMobSpec spec in Ml12Kit.Circle(FearChest, 400, 4, at => new TrialMobSpec
                     {
@@ -777,6 +823,7 @@ namespace DOL.GS.Trials
                     "If you beat me, do not expect a dry way down.",
                 Victory = "You have stood fast, alone.",
                 TimeLimitSeconds = 900,
+                ResetSeconds = 20,
                 Phases =
                 {
                     new TrialPhase
@@ -789,7 +836,7 @@ namespace DOL.GS.Trials
                                 Name = "Amenemhat",
                                 Model = PriestModel,
                                 Size = 50,
-                                Level = 58,
+                                Level = 50,
                                 Health = 3000,
                                 DamageFactor = 0.5,
                                 MeleeDamage = eDamageType.Slash,
@@ -797,7 +844,11 @@ namespace DOL.GS.Trials
                                 Tag = "amenemhat",
                             },
                         },
-                        OnStart = run => Ml12Kit.MoveParty(run, PlatformTop),
+                        OnStart = run =>
+                        {
+                            ClearWorldMonsters(run, PlatformTop, 700);
+                            Ml12Kit.MoveParty(run, PlatformTop);
+                        },
                         OnTick = run =>
                         {
                             TrialMob amenemhat = run.Mobs("amenemhat").FirstOrDefault();
@@ -810,7 +861,8 @@ namespace DOL.GS.Trials
                         Announce = "The platform drops out from under you!",
                         OnStart = run =>
                         {
-                            run.Leader.TakeDamage(run.Starter, eDamageType.Crush, run.Leader.MaxHealth / 8, 0);
+                            if (run.Leader.IsAlive)
+                                run.Leader.TakeDamage(run.Starter, eDamageType.Crush, FallDamage(run.Leader.Health, run.Leader.MaxHealth), 0);
                             Ml12Kit.MoveParty(run, SouthGate);
                         },
                         SurviveSeconds = 2,
@@ -834,6 +886,7 @@ namespace DOL.GS.Trials
                 Intro = "So you have the Stone Key, and the staff of Kaletor, the shield of Buliss, the sword of Dimitri and the staff of Thao. No, keep your hands still: I can smell them on you from the depths. " +
                     "Those four once beat this temple. Give me leave and I will call them back to test you. Kaletor's fire is the worst of it, so see to him first.",
                 Victory = "The four Battle Masters lie still, and Onuris takes back the relics. He has things to tell you about an imposter.",
+                Earns = AliveEarns,
                 RequiresSteps = new[] { 3 },
                 Replaces = new[] { "Onuris" },
                 TimeLimitSeconds = 1800,
@@ -845,9 +898,9 @@ namespace DOL.GS.Trials
                         Mobs =
                         {
                             Master("Buliss", BruteModel, 66, 30000, 1.2, 0, eDamageType.Crush),
-                            Master("Dimitri", BruteModel, 60, 12000, 0.9, 1, eDamageType.Slash),
-                            Master("Kaletor", RobedModel, 63, 14000, 0.6, 2, eDamageType.Heat),
-                            Master("Thao", RobedModel, 63, 14000, 0.6, 3, eDamageType.Cold),
+                            Master("Dimitri", BruteModel, 51, 12000, 0.9, 1, eDamageType.Slash),
+                            Master("Kaletor", RobedModel, 55, 14000, 0.6, 2, eDamageType.Heat),
+                            Master("Thao", RobedModel, 55, 14000, 0.6, 3, eDamageType.Cold),
                         },
                         Pulses =
                         {

@@ -9,6 +9,8 @@ namespace DOL.GS.Trials
         public TrialMobSpec Spec { get; }
         public bool Immune { get; set; }
         public bool Finished { get; private set; }
+        /// <summary>The player who clicked this objective; null when it was finished another way.</summary>
+        public GamePlayer CompletedBy { get; private set; }
 
         private readonly int _maxHealth;
 
@@ -79,6 +81,7 @@ namespace DOL.GS.Trials
             }
             if (!string.IsNullOrEmpty(Spec.ObjectiveText))
                 player.Out.SendMessage(Spec.ObjectiveText, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            CompletedBy = player;
             Complete();
             return true;
         }

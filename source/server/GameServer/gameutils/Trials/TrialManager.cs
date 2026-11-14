@@ -179,7 +179,27 @@ namespace DOL.GS.Trials
             // Credit the character in play now: a participant who relogged mid-run is a new object (crediting the stale one
             // writes a step the relogged character never loads); one still logged out earns nothing.
             foreach (GamePlayer player in players.Select(Online).Where(player => player != null).Distinct().Where(player => MayEarn(player, run)))
-                MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
+            {
+                if (Earns(run, player))
+                    MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
+                else
+                    player.Out.SendMessage($"You took part in {definition.Name}, but earn no credit for it this time.", PacketHandler.eChatType.CT_Important, PacketHandler.eChatLoc.CL_SystemWindow);
+            }
+        }
+
+        // The step's own live rule (TrialDefinition.Earns). A broken rule must not stop the run from finishing (the
+        // starter would stay busy), so it credits instead.
+        private static bool Earns(TrialRun run, GamePlayer player)
+        {
+            try
+            {
+                return run.Definition.Earns?.Invoke(run, player) != false;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Trial {run.Definition.Key} credit rule failed", e);
+                return true;
+            }
         }
 
         /// <summary>

@@ -135,6 +135,11 @@ namespace DOL.GS.Trials
         public int LeashRange = 8000;
         /// <summary>Runs as a run ends, won or lost, before monsters leave. The flag is true on success.</summary>
         public Action<TrialRun, bool> OnEnd;
+        /// <summary>
+        /// Which of the players in range on success earn the step; null credits them all. For live rules such as
+        /// "the dead get nothing" or "only the one who opened the chest".
+        /// </summary>
+        public Func<TrialRun, GamePlayer, bool> Earns;
         public List<TrialPhase> Phases = new();
         public string Key => $"{ML}.{Step}";
     }
