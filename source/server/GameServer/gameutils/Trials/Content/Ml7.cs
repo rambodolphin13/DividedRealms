@@ -536,7 +536,11 @@ namespace DOL.GS.Trials
             Anchor = new TrialPoint(32000, 19400, 15678),
             StarterName = "Watcher of the Chamber",
             StarterModel = Idol,
-            Replaces = new[] { "Flame of Volcanus" },
+            // Live: the controlled faction mobs only come out while the Flame is gone. The world keeps about forty of them
+            // (aggro 90, range 400) on and around the island; they joined the bot playtest fight (2026-11-14) and a
+            // controlled volurgon killed the leader at one minute. Removed in a 2700 box that covers island and corridor.
+            Replaces = new[] { "Flame of Volcanus", "controlled apophian", "controlled hephaestian", "controlled shaitan", "controlled volurgon", "mastered hephaestian" },
+            ReplaceRadius = 2700,
             Intro = "North of here the rock itself burns. The Flame of Volcanus guards the way to Typhon's gate, ringed by flame spheres that are never all gone while it lives. The spheres circle and cast fire at whoever they please, and chasing them is wasted effort. Put out the Flame and nothing else.",
             Victory = "The Flame of Volcanus gutters out, and the chamber lies open.",
             TimeLimitSeconds = 1800,
