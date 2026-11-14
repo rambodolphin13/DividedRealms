@@ -118,5 +118,83 @@ namespace DOL.UnitTests
         {
             Assert.That(Ml2.Poisons, Is.EqualTo(new[] { "Fear", "Terror", "Horror" }));
         }
+
+        [Test]
+        public void DeathFromShadow_EndsOnOneAssassinEitherName()
+        {
+            Assert.That(Ml2.Assassin(0), Is.EqualTo("Ka'a"));
+            Assert.That(Ml2.Assassin(1), Is.EqualTo("Ata"));
+            Assert.That(Step(1).Phases, Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        public void Credit_DeadGetNothingOnlyWhereLiveSaidSo()
+        {
+            Assert.That(Step(3).Earns, Is.Not.Null);
+            Assert.That(Step(9).Earns, Is.Not.Null);
+            Assert.That(Step(5).Earns, Is.Not.Null);
+            Assert.That(Step(7).Earns, Is.Not.Null);
+            foreach (int step in new[] { 1, 2, 4, 6, 8, 10 })
+                Assert.That(Step(step).Earns, Is.Null, $"2.{step}");
+        }
+
+        [Test]
+        public void Chess_CreditsOnlyPlayersWhoSetAPiece()
+        {
+            string leader = "leader", friend = "friend", idle = "idle";
+            var setters = new System.Collections.Generic.HashSet<string> { friend };
+            Assert.That(Ml2.SetterEarns(setters, friend, leader), Is.True);
+            Assert.That(Ml2.SetterEarns(setters, leader, leader), Is.False);
+            Assert.That(Ml2.SetterEarns(setters, idle, leader), Is.False);
+            Assert.That(Ml2.SetterEarns<string>(null, leader, leader), Is.True, "swept board credits the leader");
+            Assert.That(Ml2.SetterEarns<string>(null, idle, leader), Is.False);
+        }
+
+        [Test]
+        public void Chess_EnemyPiecesCannotBeFoughtByHand()
+        {
+            TrialPhase board = Step(5).Phases[1];
+            Assert.That(board.Mobs.All(mob => mob.Immune && mob.AggroRange == 0), Is.True);
+            Assert.That(Step(5).Phases[0].Mobs.All(mob => mob.Objective && mob.OnDeath != null), Is.True);
+            Assert.That(Step(5).ResetSeconds, Is.LessThanOrEqualTo(60));
+        }
+
+        [Test]
+        public void Poison_FearIsSoloTerrorAndHorrorCreditTheParty()
+        {
+            string leader = "leader", friend = "friend";
+            Assert.That(Ml2.PoisonEarns("Fear", friend, friend, leader), Is.True);
+            Assert.That(Ml2.PoisonEarns("Fear", friend, leader, leader), Is.False);
+            Assert.That(Ml2.PoisonEarns<string>("Fear", null, leader, leader), Is.True);
+            Assert.That(Ml2.PoisonEarns<string>("Fear", null, friend, leader), Is.False);
+            Assert.That(Ml2.PoisonEarns("Terror", null, friend, leader), Is.True);
+            Assert.That(Ml2.PoisonEarns("Horror", null, friend, leader), Is.True);
+        }
+
+        [Test]
+        public void StandFast_FoeConsYellowAndResetsQuickly()
+        {
+            TrialMobSpec amenemhat = Step(8).Phases[0].Mobs.Single();
+            Assert.That(amenemhat.Level, Is.EqualTo(50));
+            Assert.That(Step(8).ResetSeconds, Is.LessThanOrEqualTo(30));
+        }
+
+        [Test]
+        public void BattleMasters_ConAsReported()
+        {
+            var masters = Step(9).Phases[0].Mobs.ToDictionary(mob => mob.Name, mob => mob.Level);
+            Assert.That(masters["Buliss"], Is.GreaterThanOrEqualTo(57), "heavy tank purple");
+            Assert.That(masters["Dimitri"], Is.InRange(50, 51), "light tank yellow");
+            Assert.That(masters["Kaletor"], Is.InRange(54, 56), "PBAoE red");
+            Assert.That(masters["Thao"], Is.InRange(54, 56), "rooter red");
+        }
+
+        [Test]
+        public void TestOfTactics_StatuesBringFiveToTenEidolons()
+        {
+            Assert.That(Ml2.EidolonsPerStatue, Is.InRange(5, 10));
+            foreach (TrialPhase phase in Step(6).Phases.Where(phase => phase.Mobs.Any(mob => mob.Tag == "statue")))
+                Assert.That(phase.Mobs.Count(mob => mob.Tag == "eidolon"), Is.EqualTo(Ml2.EidolonsPerStatue));
+        }
     }
 }

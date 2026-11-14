@@ -177,7 +177,24 @@ namespace DOL.GS.Trials
                 : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
             foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
-                MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
+            {
+                if (Earns(run, player))
+                    MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
+            }
+        }
+
+        // A broken rule must not stop the run from finishing (the starter would stay busy), so it credits instead.
+        private static bool Earns(TrialRun run, GamePlayer player)
+        {
+            try
+            {
+                return run.Definition.Earns?.Invoke(run, player) != false;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Trial {run.Definition.Key} credit rule failed", e);
+                return true;
+            }
         }
 
         public static void Finished(TrialRun run)
