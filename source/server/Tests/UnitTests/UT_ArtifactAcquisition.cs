@@ -107,6 +107,21 @@ namespace DOL.UnitTests
             }
         }
 
+        /// <summary>
+        /// Encounter pass 2026-11-14: wave encounters multiplied every add's health too (factor / 5), so a tier 1 Coral
+        /// Games fighter took about 15,000 damage and the 54 adds over a million. Live waves were normal mobs; their
+        /// number was the challenge. Zo'arkat and Bruiser keep a strong last boss and adds at twice normal health.
+        /// </summary>
+        [TestCase("1009")]
+        [TestCase("1011")]
+        public void WaveEncounters_KeepAddsNearNormalHealth(string artifactId)
+        {
+            ArtifactEncounterDef encounter = ArtifactEncounters.Find(artifactId);
+            Assert.That(encounter.Stages, Has.Length.GreaterThanOrEqualTo(5));
+            Assert.That(encounter.HealthFactor / 5, Is.LessThanOrEqualTo(2));
+            Assert.That(encounter.HealthFactor, Is.GreaterThanOrEqualTo(12), "the last boss stays a group fight");
+        }
+
         [Test]
         public void CreditNames_LoseTheirSuffix()
         {

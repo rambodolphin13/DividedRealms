@@ -153,7 +153,7 @@ namespace DOL.GS
 
         /// <summary>
         /// Whether the scholar should offer this version: the right realm and class, a weapon or armour type of the
-        /// player's own realm, a left-hand weapon only for classes that fight with one, and a skill the class has
+        /// player's own realm, a left axe only for classes that fight with one in the off hand, and a skill the class has
         /// (a Warrior was offered nine Crocodile's Tooth versions, one of them usable).
         /// </summary>
         public static bool CanUse(GamePlayer player, DbItemTemplate template)
@@ -185,7 +185,10 @@ namespace DOL.GS
             if (type is eObjectType.Studded or eObjectType.Chain && realm == eRealm.Hibernia)
                 return false;
 
-            if (template.Item_Type == (int) eInventorySlot.LeftHandWeapon && type != eObjectType.Shield && !canUseLeftHand)
+            // A weapon made for the left hand also fits the main hand (GamePlayerInventory lets it), so only a left axe,
+            // which has no main-hand use, needs a dual wielder. Live let Armsmen, Paladins and Warriors use the
+            // left-hand Crocodile's Tooth daggers in the main hand.
+            if (type == eObjectType.LeftAxe && !canUseLeftHand)
                 return false;
 
             return true;
