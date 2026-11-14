@@ -24,6 +24,10 @@ namespace DOL.GS.Trials
         public const int FeudKills = 5;
         /// <summary>Live: a new Rage of the Volurgons every 20 seconds, at most nine.</summary>
         public const int RageEverySeconds = 20, MaxRages = 9;
+        /// <summary>Each Rage's burn every four seconds within 300 (design size; scaled with the party).</summary>
+        public const int RageBurn = 150;
+        /// <summary>Shaitan's Reach (design size), cast two seconds after an Enara appears and every 20 seconds after.</summary>
+        public const int EnaraReach = 250;
         /// <summary>Live: a new Shaitan Enara every 20 seconds, whatever you do; she casts Shaitan's Reach two seconds after she appears.</summary>
         public const int EnaraEverySeconds = 20, ReachDelaySeconds = 2;
         /// <summary>Live: each blow on Typhon's Essence leaves Typhon open for two or three seconds.</summary>
@@ -356,7 +360,7 @@ namespace DOL.GS.Trials
                         int age = Age(run, mob, now);
                         if (age % 30 != 0)
                             continue;
-                        mob.Level = ApophianLevel(age);
+                        SetLevelKeepHealth(mob, ApophianLevel(age));
                         mob.DamageFactor = run.DamageScale * (0.8 + age / 900.0);
                     }
                     Bolts(run, "apophian", now, 12, 150, 1500, eDamageType.Energy);
@@ -377,8 +381,9 @@ namespace DOL.GS.Trials
                     Level = 60,
                     Size = 70,
                     // A Rage comes every 20 s and only Mandra's death takes one away, so she must die inside 20 s to keep
-                    // level. 7000 left a lone level 50 Warrior far behind on the sandbox (2026-11-14).
-                    Health = 4000,
+                    // level. 7000 left a lone level 50 Warrior far behind on the sandbox (2026-11-14); at 4000 a player with
+                    // seven bots took 27-51 s a kill and the Rages piled up (bot playtest 2026-11-14).
+                    Health = 3000,
                     DamageFactor = 0.9,
                     At = spots[seconds % spots.Length],
                     Tag = "mandra",
@@ -402,15 +407,29 @@ namespace DOL.GS.Trials
                     Level = 70,
                     Size = 60,
                     Health = 5000,
-                    DamageFactor = 0.1,
+                    DamageFactor = 0.01,
                     At = spots[(seconds + 2) % spots.Length],
                     Tag = "rage",
                     Immune = true,
                     Required = false,
-                    AggroRange = 3000,
+                    // Live: the Rage is a burning area that cannot be killed, not a fighter. It no longer aggroes and
+                    // swings, because bots answered its blows and spent the fight on an immune target; it drifts
+                    // toward the nearest of the party instead (RageDrift) and burns with its pulse.
+                    AggroRange = 0,
                     MeleeDamage = eDamageType.Heat,
                 }));
                 rage.MaxSpeedBase = 80;
+            }
+
+            // The Rages creep after the nearest living member of the party, slow enough to walk away from.
+            void RageDrift(TrialRun run)
+            {
+                foreach (TrialMob rage in run.Mobs("rage").ToList())
+                {
+                    GameLiving nearest = run.Hostiles(rage, 4000).OrderBy(living => rage.GetDistanceTo(living)).FirstOrDefault();
+                    if (nearest != null && rage.GetDistanceTo(nearest) > 100)
+                        rage.WalkTo(new Vector3(nearest.X, nearest.Y, nearest.Z), 80);
+                }
             }
 
             return Challenge(4, "Volurgon's Challenge", "Mediator of the Volurgons", Volurgon, "volurgons", MediatorVolurgon, ArenaVolurgon,
@@ -418,10 +437,14 @@ namespace DOL.GS.Trials
                 new TrialPhase
                 {
                     Announce = "Kill Mandra, again and again, before her rages fill the room.",
-                    Pulses = { new TrialPulse { IntervalSeconds = 4, Damage = 250, Radius = 300, SourceTag = "rage" } },
+                    // Live: about three Rage hits kill. 250 every 4 s killed all seven bots in one tick (they stand in it,
+                    // a player steps out); 150 keeps the Rages the thing to fear without wiping a bot group that can't dodge.
+                    Pulses = { new TrialPulse { IntervalSeconds = 4, Damage = RageBurn, Radius = 300, SourceTag = "rage" } },
                     OnTick = run =>
                     {
                         int seconds = Count(run, "seconds");
+                        if (seconds % 3 == 0)
+                            RageDrift(run);
                         if (Gone(run, "mandra") && seconds >= run.Get("next", 1))
                         {
                             run.Set("next", int.MaxValue);
@@ -448,14 +471,17 @@ namespace DOL.GS.Trials
                     OnTick = run =>
                     {
                         int now = Count(run, "seconds");
-                        if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 6)
+                        // Bot playtest 2026-11-14: 9000 health, Reach 300 every 10 s and up to six alive wiped a player
+                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 6000 health, at most four alive,
+                        // and the Reach on arrival then every 20 s (EnaraReach).
+                        if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 4)
                         {
-                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 9000, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
+                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 6000, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
                             Resist(enara, 50, eProperty.Resist_Heat);
                             Resist(enara, -25, eProperty.Resist_Cold);
                             run.Tell("A Shaitan Enara appears, gathering heat!");
                         }
-                        AreaCasts(run, "enara", now, ReachDelaySeconds, 10, 300, 450, eDamageType.Heat, "The Enara casts Shaitan's Reach!");
+                        AreaCasts(run, "enara", now, ReachDelaySeconds, EnaraEverySeconds, EnaraReach, 450, eDamageType.Heat, "The Enara casts Shaitan's Reach!");
                     },
                 });
         }

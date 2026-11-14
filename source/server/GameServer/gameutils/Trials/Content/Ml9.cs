@@ -730,7 +730,8 @@ namespace DOL.GS.Trials
                 run.Set("braveKills", kills);
                 if (kills == BraveFrenzyKills)
                 {
-                    brave.Level += 2;
+                    // Not brave.Level += 2: the level setter refills health (see Ml7Kit.SetLevelKeepHealth).
+                    Ml7Kit.SetLevelKeepHealth(brave, (byte)(brave.Level + 2));
                     brave.DamageFactor *= 1.5;
                     run.Tell("The Brave roars over his eighth victim and grows stronger!");
                 }
