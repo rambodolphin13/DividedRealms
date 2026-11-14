@@ -196,5 +196,20 @@ namespace DOL.UnitTests
             foreach (TrialPhase phase in Step(6).Phases.Where(phase => phase.Mobs.Any(mob => mob.Tag == "statue")))
                 Assert.That(phase.Mobs.Count(mob => mob.Tag == "eidolon"), Is.EqualTo(Ml2.EidolonsPerStatue));
         }
+
+        [Test]
+        public void StandFast_FallNeverKillsTheWinner()
+        {
+            Assert.That(Ml2.FallDamage(2000, 2000), Is.EqualTo(250));
+            Assert.That(Ml2.FallDamage(200, 2000), Is.EqualTo(199));
+            Assert.That(Ml2.FallDamage(1, 2000), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Board_ThreeMovesTakeAPiece()
+        {
+            Assert.That(3 * Ml2.BoardBlow, Is.GreaterThanOrEqualTo(1.0));
+            Assert.That(2 * Ml2.BoardBlow, Is.LessThan(1.0));
+        }
     }
 }

@@ -92,6 +92,15 @@ namespace DOL.GS.Trials
         /// <summary>Three on Runihura is safe. Four draws the spikes.</summary>
         public static bool SpikesFall(int crowded) => crowded >= 4;
 
+        /// <summary>
+        /// The drop into the pool takes an eighth of the winner's health but never the last of it: live winners landed in
+        /// the water (sandbox 2026-11-14: a winner at 10% died to the old flat eighth after earning the step).
+        /// </summary>
+        public static int FallDamage(int health, int maxHealth) => Math.Max(0, Math.Min(maxHealth / 8, health - 1));
+
+        /// <summary>Share of a Chaths piece each move takes: three moves a piece even after the piece regenerates between them.</summary>
+        public const double BoardBlow = 0.4;
+
         /// <summary>Live 2.6: five to ten eidolons came with each statue.</summary>
         public const int EidolonsPerStatue = 6;
 
@@ -559,7 +568,7 @@ namespace DOL.GS.Trials
             if (target == null)
                 return;
             run.Tell($"Your pieces close on {target.Name}.");
-            Ml12Kit.Wound(run, target, 0.34);
+            Ml12Kit.Wound(run, target, BoardBlow);
         }
 
         private static TrialDefinition TestOfTactics()
@@ -852,7 +861,8 @@ namespace DOL.GS.Trials
                         Announce = "The platform drops out from under you!",
                         OnStart = run =>
                         {
-                            run.Leader.TakeDamage(run.Starter, eDamageType.Crush, run.Leader.MaxHealth / 8, 0);
+                            if (run.Leader.IsAlive)
+                                run.Leader.TakeDamage(run.Starter, eDamageType.Crush, FallDamage(run.Leader.Health, run.Leader.MaxHealth), 0);
                             Ml12Kit.MoveParty(run, SouthGate);
                         },
                         SurviveSeconds = 2,
