@@ -26,6 +26,8 @@ namespace DOL.GS.Trials
             [TrialZone.Pyramid] = new ushort[] { 45, 88, 145 },
             [TrialZone.Volcanus] = new ushort[] { 46, 89, 146 },
             [TrialZone.Aerus] = new ushort[] { 47, 90, 147 },
+            // One region for every realm; Populate places a single starter there.
+            [TrialZone.Celestius] = new ushort[] { 91, 91, 91 },
         };
 
         private static readonly List<TrialStarter> Starters = new();
@@ -76,7 +78,7 @@ namespace DOL.GS.Trials
 
             foreach (TrialDefinition definition in TrialCatalog.All)
             {
-                foreach (ushort regionId in Regions[definition.Zone])
+                foreach (ushort regionId in Regions[definition.Zone].Distinct())
                 {
                     try
                     {

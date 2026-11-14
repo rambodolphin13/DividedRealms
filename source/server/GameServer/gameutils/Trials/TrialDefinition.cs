@@ -25,6 +25,8 @@ namespace DOL.GS.Trials
         Pyramid,
         Volcanus,
         Aerus,
+        /// <summary>Region 91, one copy shared by all realms (Master Level 10).</summary>
+        Celestius,
     }
 
     [Flags]
