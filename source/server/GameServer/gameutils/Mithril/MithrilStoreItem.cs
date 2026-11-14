@@ -25,6 +25,9 @@ namespace DOL.GS
 
         public MithrilStoreItem(DbItemUnique template) : base(template) { }
 
+        /// <summary>Used when a saved item is loaded from the database.</summary>
+        public MithrilStoreItem(DbInventoryItem item) : base(item) { }
+
         public override bool Use(GamePlayer player)
         {
             string id = Id_nb?.ToLowerInvariant() ?? string.Empty;
