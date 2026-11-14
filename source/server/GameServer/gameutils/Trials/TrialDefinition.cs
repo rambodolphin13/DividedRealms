@@ -136,7 +136,7 @@ namespace DOL.GS.Trials
         /// <summary>Runs as a run ends, won or lost, before monsters leave. The flag is true on success.</summary>
         public Action<TrialRun, bool> OnEnd;
         /// <summary>
-        /// Which of the players in range on success earn the step; null credits them all. For live rules such as
+        /// Which of the players in range on success earn the step; null credits them all (ML2, ML7). For live rules such as
         /// "the dead get nothing" or "only the one who opened the chest".
         /// </summary>
         public Func<TrialRun, GamePlayer, bool> Earns;
