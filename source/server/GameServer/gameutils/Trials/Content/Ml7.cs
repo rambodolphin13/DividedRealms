@@ -376,7 +376,9 @@ namespace DOL.GS.Trials
                     Model = Volurgon,
                     Level = 60,
                     Size = 70,
-                    Health = 7000,
+                    // A Rage comes every 20 s and only Mandra's death takes one away, so she must die inside 20 s to keep
+                    // level. 7000 left a lone level 50 Warrior far behind on the sandbox (2026-11-14).
+                    Health = 4000,
                     DamageFactor = 0.9,
                     At = spots[seconds % spots.Length],
                     Tag = "mandra",
