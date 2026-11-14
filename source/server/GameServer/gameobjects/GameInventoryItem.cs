@@ -542,6 +542,16 @@ namespace DOL.GS
                 output.Insert(oldCount, " ");
             }
 
+            if (CraftingToolBonus.TryGet(Id_nb, out CraftingToolBonus.Bonus tool))
+            {
+                output.Add($"Crafting tool ({tool.Skill}), while worn:");
+                output.Add($"- Bonus to frequency of crafting skill gain: {tool.SkillGainPercent}%");
+                output.Add($"- Bonus to speed of crafting: {tool.SpeedPercent}%");
+                if (tool.MinQuality > 0)
+                    output.Add($"- Bonus to minimum crafting quality: {tool.MinQuality}%");
+                output.Add(" ");
+            }
+
             oldCount = output.Count;
 
             WriteFocusLine(output, Bonus1Type, Bonus1);

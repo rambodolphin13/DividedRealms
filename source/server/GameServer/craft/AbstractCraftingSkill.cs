@@ -633,7 +633,7 @@ namespace DOL.GS
 					chance = 100;
 			}
 
-			return chance;
+			return CraftingToolBonus.ApplyGain(chance, CraftingToolBonus.For(player, m_eskill));
 		}
 
 		/// <summary>Chance to gain a point at this skill value, before a capital city's bonus.</summary>
@@ -670,6 +670,7 @@ namespace DOL.GS
 			// Player does check for capital city bonus as well
 			int craftingTime = (int)(BaseCraftingTime(recipe) / player.CraftingSpeed);
 			craftingTime = FinishCraftingTime(craftingTime, player.GetCraftingSkillValue(m_eskill), recipe, player.Realm);
+			craftingTime = CraftingToolBonus.ApplySpeed(craftingTime, CraftingToolBonus.For(player, m_eskill));
 
 			if (player.Client.Account.PrivLevel > 1)
 			{
@@ -760,7 +761,8 @@ namespace DOL.GS
 		/// </summary>
 		private int GetQuality(GamePlayer player, int recipeLevel)
 		{
-			return QualityAt(player.GetCraftingSkillValue(m_eskill), recipeLevel);
+			return CraftingToolBonus.ApplyQuality(QualityAt(player.GetCraftingSkillValue(m_eskill), recipeLevel),
+				CraftingToolBonus.For(player, m_eskill));
 		}
 
 		/// <summary>Crafted item quality at this skill value.</summary>
