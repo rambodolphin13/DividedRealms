@@ -61,6 +61,13 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void BoundChambers_ClearTheImportedPack()
+        {
+            foreach (int step in new[] { 6, 7, 8 })
+                Assert.That(Step(step).ClearRadius, Is.EqualTo(Ml5.ChamberClearRadius), $"5.{step}");
+        }
+
+        [Test]
         public void Credit_ChainsInLiveOrder()
         {
             Assert.That(Step(9).RequiresSteps, Is.EqualTo(new[] { 6, 7, 8 }));

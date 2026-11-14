@@ -19,6 +19,8 @@ namespace DOL.GS.Trials
         public const int JudgementWarningSeconds = 8;
         public const int JarReturnSeconds = 90;
         public const int FountainReach = 300;
+        /// <summary>The imported bound ones in the 5.6-5.8 chambers are the live encounter; the trial brings its own (DR-151).</summary>
+        public const int ChamberClearRadius = 1000;
         public const int HapyCopyFadePercent = 60;
         public const int LionStrikeSeconds = 8;
         public const int LionStrikeDamage = 300;
@@ -222,6 +224,7 @@ namespace DOL.GS.Trials
             ML = 5, Step = 6, Name = "Ma'atis' Preservation", Scope = TrialScope.Group, Zone = TrialZone.Maati,
             Anchor = new TrialPoint(31227, 55077, 8848),
             StarterName = "Keeper of the Resin", StarterModel = MummyModel,
+            ClearRadius = ChamberClearRadius,
             Intro = "The bound ones here were sealed with the resin that preserves. It passes from each that falls to the next, and whichever stands last holds all of it and fights with all of its strength. Finish them and the resin is yours.",
             Victory = "The last of the bound ones falls and you take up the Resin of the Ways. Its keeping is recorded, and Mahaf will know it.",
             TimeLimitSeconds = 1200,
@@ -245,6 +248,7 @@ namespace DOL.GS.Trials
             ML = 5, Step = 7, Name = "Ma'atis' Mask", Scope = TrialScope.Group, Zone = TrialZone.Maati,
             Anchor = new TrialPoint(35213, 58989, 8848),
             StarterName = "Keeper of the Mask", StarterModel = MummyModel,
+            ClearRadius = ChamberClearRadius,
             Intro = "The one who wears the mask cannot be touched while the bound ones around it stand. Break the ring around it first. You will need that mask before you can face Ammut.",
             Victory = "The mask lifts away in your hands: the Mask of the Ways. Its keeping is recorded, and Mahaf will know it.",
             TimeLimitSeconds = 1200,
@@ -268,6 +272,7 @@ namespace DOL.GS.Trials
             ML = 5, Step = 8, Name = "Ma'atis' Wrap", Scope = TrialScope.Group, Zone = TrialZone.Maati,
             Anchor = new TrialPoint(39723, 55141, 8848),
             StarterName = "Keeper of the Wrap", StarterModel = MummyModel,
+            ClearRadius = ChamberClearRadius,
             Intro = "The wrappings you need are wound around the one at the back of this chamber, and the others will not let you reach it. They come in two waves. Hold together until it steps forward.",
             Victory = "You unwind the Wrap of the Ways from what is left. Its keeping is recorded, and Mahaf will know it.",
             TimeLimitSeconds = 1200,
