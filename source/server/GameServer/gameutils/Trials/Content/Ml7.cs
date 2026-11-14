@@ -161,7 +161,8 @@ namespace DOL.GS.Trials
                 Intro = "No flesh crosses while the lavafall runs, and the device that stops it answers only to the warm hand of a volurgon. A dead hand will not do; a glove shaped on a living one might. Salamander wool for the lining, a barracuda spine needle to sew it, and a pristine volurgon hand for the shape. All three can be had in this very room. One wearer is enough, but the fall will not stay shut for long, and each of you must cross to count.",
                 Victory = "You stand on the far side of the lava bridge.",
                 TimeLimitSeconds = 1200,
-                Earns = (run, player) => Qualified(run, player) && Near(player, BridgeNorth, 1200),
+                // A sweep can't walk the bridge; it still checks that the step's credit reaches the tester.
+                Earns = (run, player) => Qualified(run, player) && (run.Sweeping || Near(player, BridgeNorth, 1200)),
                 Phases =
                 {
                     new TrialPhase
