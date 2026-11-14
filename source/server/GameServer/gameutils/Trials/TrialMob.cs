@@ -41,6 +41,18 @@ namespace DOL.GS.Trials
             if (Spec.Objective || Immune || !Run.MayHurt(source) || !Spec.Hurts.HasFlag(KindOf(source, damageType)))
                 return;
 
+            if (Spec.OnHit != null)
+            {
+                int adjusted = Spec.OnHit(this, source, damageType, damageAmount + criticalAmount);
+                if (adjusted <= 0)
+                    return;
+                if (adjusted != damageAmount + criticalAmount)
+                {
+                    damageAmount = adjusted;
+                    criticalAmount = 0;
+                }
+            }
+
             base.TakeDamage(source, damageType, damageAmount, criticalAmount);
 
             if (Spec.Reflect > 0 && source is GameLiving attacker && attacker.IsAlive)

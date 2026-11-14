@@ -69,6 +69,11 @@ namespace DOL.GS.Trials
         /// <summary>Lets several specs be found together with <see cref="TrialRun.Mobs(string)"/>.</summary>
         public string Tag;
         public Action<TrialRun, TrialMob> OnDeath;
+        /// <summary>
+        /// Adjusts each hit that gets past <see cref="Hurts"/>: returns the damage to take, 0 or less to ignore it.
+        /// Runs on the attacker's thread, so it must not spawn, remove or touch the run's Get/Set state.
+        /// </summary>
+        public Func<TrialMob, GameObject, eDamageType, int, int> OnHit;
     }
 
     /// <summary>Area damage on a timer, from each living monster with the given tag or, without one, the anchor.</summary>

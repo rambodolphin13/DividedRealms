@@ -63,7 +63,10 @@ namespace DOL.UnitTests
         [Test]
         public void OtherTrialsHaveNoExtraRefusal()
         {
-            Assert.That(Ml9.Trials().All(trial => trial.Refuse == null), Is.True);
+            // ML9's only refusal is Aerus's own Master Level 8 entry rule (live-pass 2026-11-14).
+            Assert.That(Ml9.Trials().All(trial => trial.Refuse == Ml9.AerusGate), Is.True);
+            Assert.That(Ml9.AerusGate(Leader(7)), Is.Not.Null);
+            Assert.That(Ml9.AerusGate(Leader(8)), Is.Null);
         }
     }
 }
