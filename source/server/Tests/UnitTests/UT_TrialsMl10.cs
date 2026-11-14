@@ -93,6 +93,13 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void Bosses_CarryTheNamesTheWorldLootRowsUse()
+        {
+            // MobXLootTemplate rows in the test world: sagittarius, centaurus, leo, draco; LootTemplate "scorpious".
+            Assert.That(Trials.Select(trial => Boss(trial).Name.ToLowerInvariant()), Is.EqualTo(new[] { "sagittarius", "scorpious", "centaurus", "leo", "draco" }));
+        }
+
+        [Test]
         public void Sagittarius_IgnoresSpellsButNotSteel()
         {
             TrialMobSpec boss = Boss(Trials[0]);

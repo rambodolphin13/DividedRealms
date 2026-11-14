@@ -28,6 +28,12 @@ namespace DOL.GS.Trials
         public const int BowIntervalSeconds = 30;
         public const int MaxBows = 4;
 
+        /// <summary>
+        /// The in-game name live gave him (Allakhazam), which is also the name the world's loot rows use ("scorpious").
+        /// The step and the /master window keep "Scorpius".
+        /// </summary>
+        public const string ScorpiusMobName = "Scorpious";
+
         public const ushort Stone = 1823;
         public const ushort StarryCentaur = 1255;
         public const ushort StarryLion = 1256;
@@ -213,7 +219,7 @@ namespace DOL.GS.Trials
                 Mobs =
                 {
                     Portal(),
-                    new TrialMobSpec { Name = "Scorpius", Model = StarryScorpion, Level = 70, Size = 150, Health = 120000, DamageFactor = 1.6, At = BossPoint, MeleeDamage = eDamageType.Thrust, Tag = "boss" },
+                    new TrialMobSpec { Name = ScorpiusMobName, Model = StarryScorpion, Level = 70, Size = 150, Health = 120000, DamageFactor = 1.6, At = BossPoint, MeleeDamage = eDamageType.Thrust, Tag = "boss" },
                 },
                 OnStart = run => Calm(run, "portal"),
                 OnTick = ScorpiusTick,
@@ -336,7 +342,7 @@ namespace DOL.GS.Trials
             if (mortal != run.Get("mortal", false))
             {
                 run.Set("mortal", mortal);
-                boss.Name = mortal ? "Cheiron" : "Centaurus";
+                // The name stays "Centaurus" so that his loot rows (MobXLootTemplate "centaurus") still drop if he dies mortal.
                 boss.Model = mortal ? MortalCentaur : StarryCentaur;
                 boss.Size = (byte)(mortal ? 90 : 130);
                 run.Tell(mortal ? "The god falls away, and Cheiron stands there, mortal!" : "Centaurus blazes back into his divine form!");
