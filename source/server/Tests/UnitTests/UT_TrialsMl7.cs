@@ -130,6 +130,19 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void Feud_SendsOneFoeAtATimeAndPaysForIt()
+        {
+            TrialDefinition feud = Steps()[1];
+            Assert.That(feud.Phases, Has.Count.EqualTo(4));
+            foreach (TrialPhase phase in feud.Phases)
+            {
+                Assert.That(phase.Mobs, Has.Count.EqualTo(1));
+                Assert.That(phase.Mobs[0].Required, Is.True, "feuding kills drop loot as live");
+                Assert.That(phase.Done, Is.Not.Null);
+            }
+        }
+
+        [Test]
         public void FacingTyphon_EndsOnEitherKeeper()
         {
             TrialDefinition facing = Steps()[8];

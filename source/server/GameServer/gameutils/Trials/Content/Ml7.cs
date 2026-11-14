@@ -20,6 +20,8 @@ namespace DOL.GS.Trials
         /// <summary>Live: every Mediator challenge lasts exactly ten minutes.</summary>
         public const int ChallengeSeconds = 600;
         private const int MaxApophians = 8;
+        /// <summary>Feuding kills per race in 7.2 (live: about 30 minutes of faction farming each).</summary>
+        public const int FeudKills = 5;
         /// <summary>Live: a new Rage of the Volurgons every 20 seconds, at most nine.</summary>
         public const int RageEverySeconds = 20, MaxRages = 9;
         /// <summary>Live: a new Shaitan Enara every 20 seconds, whatever you do; she casts Shaitan's Reach two seconds after she appears.</summary>
@@ -210,11 +212,36 @@ namespace DOL.GS.Trials
 
         private static TrialDefinition KnowYourOpponents()
         {
-            static TrialPhase Feud(string race, ushort model, int x, int y, string announce) => new()
+            // Live: faction is farmed off single feuding mobs, one pull at a time. Five spawned together at once
+            // killed a prepared level 50 Warrior in the sandbox (2026-11-14), so they come one after another.
+            static TrialPhase Feud(string race, ushort model, int x, int y, string announce)
             {
-                Announce = announce,
-                Mobs = AtEach(Circle(new TrialPoint(x, y, 15675), 220, 5), at => Foe($"{race} feudist", model, 62, 55, 4000, 0.9, at)).ToList(),
-            };
+                TrialPoint[] spots = Circle(new TrialPoint(x, y, 15675), 220, FeudKills).ToArray();
+                string key = $"feud.{race}";
+                TrialMobSpec Next(int index) => new()
+                {
+                    Name = $"{race} feudist",
+                    Model = model,
+                    Level = 62,
+                    Size = 55,
+                    Health = 4000,
+                    DamageFactor = 0.9,
+                    At = spots[index % spots.Length],
+                    OnDeath = (run, _) =>
+                    {
+                        int killed = run.Get(key, 0) + 1;
+                        run.Set(key, killed);
+                        if (killed < FeudKills)
+                            run.Spawn(Next(killed));
+                    },
+                };
+                return new TrialPhase
+                {
+                    Announce = announce,
+                    Mobs = { Next(0) },
+                    Done = run => run.Get(key, 0) >= FeudKills,
+                };
+            }
 
             return new TrialDefinition
             {
