@@ -174,10 +174,42 @@ namespace DOL.GS.Trials
         {
             TrialDefinition definition = run.Definition;
             IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
-                : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
+                : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Concat(BattleGroupOf(run)).Distinct();
 
             foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
+            {
+                if (player.MLLevel + 1 == definition.ML && CreditBlockers(definition, step => player.HasFinishedMLStep(definition.ML, step)) is { Length: > 0 } missing)
+                {
+                    player.Out.SendMessage($"This trial does not count for you until you finish step{(missing.Length > 1 ? "s" : "")} {string.Join(", ", missing)} of Master Level {definition.ML}.",
+                        DOL.GS.PacketHandler.eChatType.CT_Important, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
+                    continue;
+                }
                 MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
+            }
+        }
+
+        /// <summary>
+        /// Steps a player must have before a trial counts for them. Live: "you need .1-.9 done to get credit for .10"
+        /// (Gaheris ToA guide, ML1; Prima ToA p.48: "Complete the other encounters"), so helpers without them
+        /// may fight but earn nothing. Other steps' requirements stand for items one bearer can carry for the
+        /// whole party, so they gate only the leader who starts the run.
+        /// </summary>
+        public static int[] CreditBlockers(TrialDefinition definition, Func<int, bool> finished) =>
+            definition.Step == 10 ? Required(definition).Where(step => !finished(step)).ToArray() : Array.Empty<int>();
+
+        /// <summary>Battlegroup trials credit the leader's whole battlegroup in range, as live does (Prima ToA ch. 4 "Credit: Battlegroup").</summary>
+        private static IEnumerable<GamePlayer> BattleGroupOf(TrialRun run)
+        {
+            if (run.Definition.Scope != TrialScope.Raid || run.Leader.TempProperties.GetProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY) is not BattleGroup battlegroup)
+                return Enumerable.Empty<GamePlayer>();
+            try
+            {
+                return battlegroup.Members.Keys.OfType<GamePlayer>().ToList();
+            }
+            catch (InvalidOperationException)
+            {
+                return Enumerable.Empty<GamePlayer>(); // changed while read: credit the group as before
+            }
         }
 
         public static void Finished(TrialRun run)

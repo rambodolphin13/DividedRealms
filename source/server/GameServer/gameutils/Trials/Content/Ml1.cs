@@ -23,20 +23,37 @@ namespace DOL.GS.Trials
         private const int PurrosEvery = 8;
         private const int MirrorOrbSeconds = 30;
 
-        /// <summary>Each purros that dies, however it dies, costs Zopureo this share of his health.</summary>
-        public const double PurrosShare = 0.125;
+        /// <summary>
+        /// Each purros that dies, however it dies, costs Zopureo this share of his health. Live: 2-3% a purros and
+        /// 5-7 minutes of pulling (Gaheris ToA guide); kept a little faster so a bot group is not stuck for long.
+        /// </summary>
+        public const double PurrosShare = 0.04;
+
+        /// <summary>Below this share of health Zopureo can be struck directly (Prima ToA p.42-43: whittle him to about 5% with his pets, then melee him).</summary>
+        public const int ZopureoSpentPercent = 10;
 
         private static readonly TrialPoint SunkaioSpot = new(432028, 544158, 8320);
         private static readonly TrialPoint ZopureoSpot = new(431700, 544400, 8320);
         private static readonly TrialPoint AithosSpot = new(432401, 543998, 8335);
 
-        /// <summary>Rocks near Lornas where a thief can hide, with the way he points.</summary>
-        public static readonly (TrialPoint Spot, string Way)[] Hideouts =
+        /// <summary>
+        /// The four faction territories of Mesothalassa where the brothers spawn (Prima ToA p.43: Borjad at 5k 19.8k,
+        /// 26.8k 43.9k, 23.4k 7.2k, 54.3k 23.3k; Borjan beside each). Each spot is the nearest world row to the Prima
+        /// location, for a Z on the sea floor. Both brothers go to the territory Lornas names.
+        /// </summary>
+        public static readonly (TrialPoint Borjad, TrialPoint Borjan, string Way)[] Hideouts =
         {
-            (new TrialPoint(353328, 552047, 6510), "south, on the big rock past the weed beds"),
-            (new TrialPoint(357641, 549915, 6432), "east, among the plants on the plateau"),
-            (new TrialPoint(351827, 549920, 6528), "west, where the rock falls away"),
+            (new TrialPoint(332731, 544249, 4861), new TrialPoint(332973, 545582, 4883), "west, past the triton shamans on the far rocks"),
+            (new TrialPoint(354412, 567638, 4919), new TrialPoint(354113, 566329, 4616), "south and west of Mesothalassa, on the big rock in Melos territory"),
+            (new TrialPoint(351970, 531192, 6062), new TrialPoint(355364, 531508, 5834), "north, in Skyros territory near Kitra Sanctuary"),
+            (new TrialPoint(381804, 547560, 5413), new TrialPoint(382275, 548319, 5489), "east, in Naxos territory"),
         };
+
+        /// <summary>The farthest hideout is about 27,500 from Lornas; the run must not count that as leaving.</summary>
+        public const int RetrievalLeash = 32000;
+
+        /// <summary>The champions meet the challenger's level, a level or two above (Gaheris ToA guide; Prima ToA p.45: they adjust to your level).</summary>
+        public const byte ChampionLevel = 52;
 
         public static readonly string[] Champions = { "Agnon", "Sethrendar", "Xalarian", "Jilena", "Malison", "Regent" };
 
@@ -87,12 +104,8 @@ namespace DOL.GS.Trials
             yield return ConqueringTheSea();
         }
 
-        /// <summary>The two hideouts a roll picks. They always differ.</summary>
-        public static (int First, int Second) PickHideouts(int roll)
-        {
-            int first = Math.Abs(roll) % Hideouts.Length;
-            return (first, (first + 1) % Hideouts.Length);
-        }
+        /// <summary>The territory a roll picks.</summary>
+        public static int PickHideout(int roll) => Math.Abs(roll % Hideouts.Length);
 
         /// <summary>Cetus breaks for his lair at 75%, 50% and 25%, and no more than that.</summary>
         public static bool CetusFlees(int healthPercent, int flights) => flights < 3 && healthPercent <= 75 - 25 * flights;
@@ -110,8 +123,9 @@ namespace DOL.GS.Trials
                 StarterName = "Ianetor",
                 StarterModel = 1194,
                 Intro = "So you have come to play with fire! Three of the great burning ones sleep on this island, and I can wake them. " +
-                    "Beat Sunkaio first, and fight him up close: he hurls flame at anyone who hangs back. Leave Zopureo alone, for no blade will bite him. " +
-                    "Kill the purros he breeds and each one that dies burns him down. Aithos comes last. Stand well clear of each other for that one.",
+                    "Beat Sunkaio first, and fight him up close: he hurls flame at anyone who hangs back. Leave Zopureo alone, for no blade will bite him until he is nearly spent. " +
+                    "Kill the purros he breeds and each one that dies burns him down; when he is all but burnt out, finish him. Aithos comes last. Stand well clear of each other for that one. " +
+                    "The game begins a minute after you accept, so gather in the middle of the island.",
                 Victory = "Ianetor laughs and claps as the last flames gutter out. You have survived his game!",
                 Replaces = new[] { "Ianetor", "Sunkaio", "Aithos" },
                 TimeLimitSeconds = 1800,
@@ -119,8 +133,8 @@ namespace DOL.GS.Trials
                 {
                     new TrialPhase
                     {
-                        Announce = "The ground grows hot. You have half a minute to reach the middle of the island.",
-                        SurviveSeconds = 30,
+                        Announce = "The ground grows hot. You have a minute to reach the middle of the island.",
+                        SurviveSeconds = 60,
                     },
                     new TrialPhase
                     {
@@ -205,8 +219,14 @@ namespace DOL.GS.Trials
 
         private static void BreedPurros(TrialRun run)
         {
-            if (!run.Mobs("zopureo").Any())
+            TrialMob zopureo = run.Mobs("zopureo").FirstOrDefault();
+            if (zopureo == null)
                 return;
+            if (zopureo.Immune && zopureo.HealthPercent <= ZopureoSpentPercent)
+            {
+                zopureo.Immune = false;
+                run.Tell("Zopureo gutters low! Now your blades can reach him.");
+            }
 
             Dictionary<TrialMob, int> fuses = run.Get<Dictionary<TrialMob, int>>("fuses");
             if (fuses == null)
@@ -280,18 +300,23 @@ namespace DOL.GS.Trials
                 Anchor = new TrialPoint(354560, 549120, 6488, 1752),
                 StarterName = "Lornas",
                 StarterModel = TritonMageModel,
-                Intro = "Two brothers robbed me, Borjan and Borjad, and they have gone to ground on the rock plateaus. My scouts can tell you where. " +
-                    "Catching one is enough, for either one carries what they took. Mind that he does not stay put once he is hurt.",
+                Intro = "Two brothers robbed me, Borjan and Borjad, and they have gone to ground in the faction territories, where my people cannot follow. My scouts can tell you which. " +
+                    "Search the rock plateaus there; they are always near a large rock. Catching one is enough, for either one carries what they took. Mind that he does not stay put once he is hurt.",
                 Victory = "You drag what was stolen back to Lornas, and he thanks you for it.",
                 Replaces = new[] { "Lornas" },
-                TimeLimitSeconds = 1500,
+                LeashRange = RetrievalLeash,
+                TimeLimitSeconds = 1800,
                 Phases =
                 {
                     new TrialPhase
                     {
                         Announce = "The thieves are somewhere close. Listen for where Lornas points.",
                         OnStart = PlaceThieves,
-                        OnTick = ThiefSlips,
+                        OnTick = run =>
+                        {
+                            ThiefSlips(run);
+                            RepeatDirections(run);
+                        },
                         Done = run => run.Get<bool>("caught"),
                     },
                 },
@@ -300,11 +325,18 @@ namespace DOL.GS.Trials
 
         private static void PlaceThieves(TrialRun run)
         {
-            (int first, int second) = PickHideouts(Util.Random(0, Hideouts.Length - 1));
-            run.Spawn(Thief("Borjan", Hideouts[first].Spot));
-            run.Spawn(Thief("Borjad", Hideouts[second].Spot));
-            run.Tell($"Lornas says: Borjan was seen to the {Hideouts[first].Way}.");
-            run.Tell($"Lornas says: Borjad was seen to the {Hideouts[second].Way}.");
+            int area = PickHideout(Util.Random(0, Hideouts.Length - 1));
+            run.Set("area", area);
+            run.Spawn(Thief("Borjad", Hideouts[area].Borjad));
+            run.Spawn(Thief("Borjan", Hideouts[area].Borjan));
+            run.Tell($"Lornas says: the brothers were last seen {Hideouts[area].Way}.");
+        }
+
+        /// <summary>Lornas repeats his directions now and then, as he would if you went back to ask.</summary>
+        private static void RepeatDirections(TrialRun run)
+        {
+            if (Ml12Kit.Every(run, "directions", 90))
+                run.Tell($"Lornas calls after you: look {Hideouts[run.Get("area", 0)].Way}.");
         }
 
         private static TrialMobSpec Thief(string name, TrialPoint at)
@@ -616,7 +648,7 @@ namespace DOL.GS.Trials
                     Name = Champions[i],
                     Model = ChampionModels[i],
                     Size = 50,
-                    Level = 55,
+                    Level = ChampionLevel,
                     At = ChampionSeats[i],
                     Objective = true,
                     ObjectiveText = $"{Champions[i]} accepts your challenge.",
@@ -640,7 +672,7 @@ namespace DOL.GS.Trials
                 Name = name,
                 Model = ChampionModels[index],
                 Size = 50,
-                Level = 55,
+                Level = ChampionLevel,
                 Health = 2400,
                 DamageFactor = 0.45,
                 At = ChampionSeats[index],
@@ -732,52 +764,57 @@ namespace DOL.GS.Trials
                 Anchor = new TrialPoint(433401, 546420, 8481, 3777),
                 StarterName = "Ianetor",
                 StarterModel = 1194,
-                Intro = "Kirkleis hates the face in his mirror, and he has sown his island with traps. The gem you won from my game shows you where they lie: touch each one and it goes dead. " +
-                    "The belt you took from Fadrin is your shield in his temple. Whoever began this trial carries its calm, so keep close to that one when the curse goes out. " +
-                    "You need no item for this: having finished the Survivor and Barrier trials stands for the gem and the belt.",
+                Intro = "Kirkleis hates the face in his mirror, and he has sown his island with traps. Walk near one and it springs nedfalls on you. " +
+                    "The gem from my game keeps the traps quiet around whoever carries it, and you can touch a trap to kill it. " +
+                    "Fadrin's belt turns Kirkleis' fireballs aside from its wearer and those who keep close. You can win without either, but it hurts more. " +
+                    "Whoever among you has finished my Survivor trial carries the gem; whoever has finished the Barrier trial wears the belt.",
                 Victory = "Kirkleis lies still, and for once the mirror shows him nothing.",
-                RequiresSteps = new[] { 1, 4 },
+                // Live needs neither item (Prima ToA p.45: "certainly possible to complete this encounter without either").
+                RequiresSteps = Array.Empty<int>(),
                 Replaces = new[] { "Kirkleis" },
                 TimeLimitSeconds = 1800,
                 Phases =
                 {
                     new TrialPhase
                     {
-                        Announce = "The traps around the temple are live! Find them and touch each one.",
-                        Mobs = BuildTraps(),
-                        Pulses =
+                        Announce = "Kirkleis turns from his mirror, and the traps across his island wake!",
+                        Mobs = BuildCurses(),
+                        OnStart = AnnounceGemAndBelt,
+                        OnTick = run =>
                         {
-                            new TrialPulse { IntervalSeconds = 10, Damage = 120, Radius = 900, SourceTag = "trap", DamageType = eDamageType.Cold },
+                            TrapsBite(run);
+                            KirkleisCurse(run);
                         },
-                        OnTick = SpringNedfalls,
-                    },
-                    new TrialPhase
-                    {
-                        Announce = "The last trap dies. Kirkleis turns from his mirror!",
-                        Mobs =
-                        {
-                            new TrialMobSpec
-                            {
-                                Name = "Kirkleis",
-                                Model = 995,
-                                Size = 150,
-                                Level = 63,
-                                Health = 42000,
-                                DamageFactor = 1.1,
-                                MeleeDamage = eDamageType.Slash,
-                                At = new TrialPoint(435315, 549214, 8370, 1683),
-                                Tag = "kirkleis",
-                            },
-                        },
-                        OnTick = KirkleisCurse,
+                        Done = run => !run.Mobs("kirkleis").Any(),
                     },
                 },
             };
         }
 
-        private static List<TrialMobSpec> BuildTraps()
+        /// <summary>Within this distance of a gem carrier the traps neither bite nor spring (DOL guide: "anyone within that radius won't trip the traps").</summary>
+        public const int GemRadius = 500;
+
+        /// <summary>Within this distance of a belt wearer Kirkleis' fireballs turn aside.</summary>
+        public const int BeltRadius = 500;
+
+        /// <summary>Players in the run who stand for an item: the gem is step 1's, the belt step 4's.</summary>
+        public static IEnumerable<GamePlayer> Bearers(TrialRun run, int step) =>
+            run.Players.Where(player => player.IsAlive && player.ObjectState == GameObject.eObjectState.Active && player.HasFinishedMLStep(1, step));
+
+        private static bool Shielded(GameLiving target, IEnumerable<GamePlayer> bearers, int radius) =>
+            bearers.Any(bearer => bearer.CurrentRegion == target.CurrentRegion && target.IsWithinRadius(bearer, radius));
+
+        private static void AnnounceGemAndBelt(TrialRun run)
         {
-            return NedfallTraps.Select((at, index) => new TrialMobSpec
+            GamePlayer gem = Bearers(run, 1).FirstOrDefault();
+            GamePlayer belt = Bearers(run, 4).FirstOrDefault();
+            run.Tell(gem != null ? $"Ianetor's gem glows in {gem.Name}'s pack. Keep close to {gem.Name} near the traps." : "No one carries Ianetor's gem. Mind the traps.");
+            run.Tell(belt != null ? $"Fadrin's belt hums on {belt.Name}. Keep close to {belt.Name} when Kirkleis throws fire." : "No one wears Fadrin's belt. Kirkleis' fire will find you all.");
+        }
+
+        private static List<TrialMobSpec> BuildCurses()
+        {
+            List<TrialMobSpec> mobs = NedfallTraps.Select(at => new TrialMobSpec
             {
                 Name = "Nedfall trap",
                 Model = NedfallModel,
@@ -785,19 +822,62 @@ namespace DOL.GS.Trials
                 Level = 55,
                 At = at,
                 Objective = true,
-                ObjectiveText = "Ianetor's gem answers from afar, and the trap goes dead.",
+                ObjectiveText = "You smother the trap and it goes dead.",
+                Required = false,
                 Tag = "trap",
+                OnDeath = (run, trap) =>
+                {
+                    if (!Bearers(run, 1).Any())
+                    {
+                        run.Tell("The trap springs as you touch it!");
+                        SpringAt(run, trap);
+                    }
+                    trap.Delete();
+                },
             }).ToList();
+            mobs.Add(new TrialMobSpec
+            {
+                Name = "Kirkleis",
+                Model = 995,
+                Size = 150,
+                Level = 63,
+                Health = 42000,
+                DamageFactor = 1.1,
+                MeleeDamage = eDamageType.Slash,
+                At = new TrialPoint(435315, 549214, 8370, 1683),
+                Tag = "kirkleis",
+            });
+            return mobs;
         }
 
-        private static void SpringNedfalls(TrialRun run)
+        /// <summary>Every 10 seconds each live trap bites whoever is near it and away from the gem; every 20 one of them springs nedfalls.</summary>
+        private static void TrapsBite(TrialRun run)
         {
-            if (!Ml12Kit.Every(run, "spring", 20) || run.Mobs("nedfall").Count() >= 6)
+            bool bite = Ml12Kit.Every(run, "trapbite", 10);
+            bool spring = Ml12Kit.Every(run, "spring", 20) && run.Mobs("nedfall").Count() < 6;
+            if (!bite && !spring)
                 return;
-            List<TrialMob> live = run.Mobs("trap").ToList();
-            if (live.Count == 0)
-                return;
-            TrialMob trap = live[Util.Random(live.Count - 1)];
+
+            List<GamePlayer> gems = Bearers(run, 1).ToList();
+            List<TrialMob> tripped = new();
+            foreach (TrialMob trap in run.Mobs("trap").ToList())
+            {
+                List<GameLiving> near = run.Hostiles(trap, 900).Where(target => !Shielded(target, gems, GemRadius)).ToList();
+                if (near.Count == 0)
+                    continue;
+                tripped.Add(trap);
+                if (bite)
+                {
+                    foreach (GameLiving target in near)
+                        Ml12Kit.Strike(run, run.Starter, target, 120, eDamageType.Cold);
+                }
+            }
+            if (spring && tripped.Count > 0)
+                SpringAt(run, tripped[Util.Random(tripped.Count - 1)]);
+        }
+
+        private static void SpringAt(TrialRun run, TrialMob trap)
+        {
             TrialPoint at = new(trap.X, trap.Y, trap.Z);
             foreach (TrialMobSpec spec in Ml12Kit.Circle(at, 200, 2, spot => new TrialMobSpec
             {
@@ -819,11 +899,11 @@ namespace DOL.GS.Trials
         private static void KirkleisCurse(TrialRun run)
         {
             TrialMob kirkleis = run.Mobs("kirkleis").FirstOrDefault();
-            if (kirkleis == null || !Ml12Kit.Every(run, "curse", 9))
+            if (kirkleis == null || !kirkleis.InCombat || !Ml12Kit.Every(run, "curse", 9))
                 return;
-            run.Tell("Kirkleis' curse rolls out across the temple!");
-            Ml12Kit.Burst(run, kirkleis, kirkleis, 1200, 220, eDamageType.Heat,
-                target => run.Leader.IsAlive && target.IsWithinRadius(run.Leader, 500));
+            List<GamePlayer> belts = Bearers(run, 4).ToList();
+            run.Tell(belts.Count > 0 ? "Kirkleis hurls fire across the temple, and it bends away from the belt!" : "Kirkleis hurls fire across the temple!");
+            Ml12Kit.Burst(run, kirkleis, kirkleis, 1200, 220, eDamageType.Heat, target => Shielded(target, belts, BeltRadius));
         }
 
         private static TrialDefinition TheMonument()
@@ -1166,7 +1246,8 @@ namespace DOL.GS.Trials
                 StarterModel = OrbModel,
                 Intro = "The globe hums as you near it. The crown, the ring, the ruby and the mirror have answered to you, and having finished the nine trials stands for carrying them. " +
                     "When Cetus turns to flee to his lair, a ruby light will kindle by the pillars: touch it in time or he comes back healed. " +
-                    "While he is still strong the mirror beside this globe can loose its orbs on him, once. Whoever began this trial bears the mirror, and his death-ray turns aside from that one.",
+                    "While he is still strong the mirror beside this globe can loose its orbs on him, once. Whoever began this trial bears the mirror, and his death-ray turns aside from that one. " +
+                    "Anyone may help, but only those who have finished the nine earlier trials earn this one.",
                 Victory = "Cetus sinks to the floor of his pit, and the sea is conquered!",
                 Replaces = new[] { "Cetus" },
                 TimeLimitSeconds = 2400,
