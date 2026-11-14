@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using DOL.GS;
 using DOL.GS.Trials;
 using NUnit.Framework;
 
@@ -65,13 +66,15 @@ namespace DOL.UnitTests
             Assert.That(Trials.SelectMany(trial => trial.Replaces).Intersect(common), Is.Empty);
         }
 
-        [Test]
-        public void Kyros_CyclesThroughFourForms()
+        [TestCase(eRealm.Albion, false, Ml9.KyrosShape.Armsman)]
+        [TestCase(eRealm.Albion, true, Ml9.KyrosShape.Wizard)]
+        [TestCase(eRealm.Hibernia, false, Ml9.KyrosShape.Champion)]
+        [TestCase(eRealm.Hibernia, true, Ml9.KyrosShape.Enchanter)]
+        [TestCase(eRealm.Midgard, false, Ml9.KyrosShape.Warrior)]
+        [TestCase(eRealm.Midgard, true, Ml9.KyrosShape.Runemaster)]
+        public void Kyros_BecomesTheRealmAndKindOfWhoeverHitHim(eRealm realm, bool caster, Ml9.KyrosShape shape)
         {
-            Assert.That(Ml9.KyrosForm(1), Is.EqualTo(0));
-            Assert.That(Ml9.KyrosForm(Ml9.KyrosFormSeconds), Is.EqualTo(1));
-            Assert.That(Ml9.KyrosForm(Ml9.KyrosFormSeconds * 3), Is.EqualTo(3));
-            Assert.That(Ml9.KyrosForm(Ml9.KyrosFormSeconds * 4), Is.EqualTo(0));
+            Assert.That(Ml9.KyrosShapeFor(realm, caster), Is.EqualTo(shape));
         }
 
         [Test]
@@ -82,12 +85,86 @@ namespace DOL.UnitTests
         }
 
         [Test]
-        public void Terrible_BreedsButStopsAtEight()
+        public void Lachlen_IsSpokenToBeforeHisExplorersTurn()
         {
-            Assert.That(Ml9.TerribleBrood(0), Is.EqualTo(1));
-            Assert.That(Ml9.TerribleBrood(3), Is.EqualTo(3));
-            Assert.That(Ml9.TerribleBrood(6), Is.EqualTo(2));
-            Assert.That(Ml9.TerribleBrood(8), Is.EqualTo(0));
+            List<TrialPhase> phases = Trials[1].Phases;
+            Assert.That(phases[0].Mobs.Single().Objective, Is.True);
+            Assert.That(phases[0].Mobs.Single().Name, Is.EqualTo("Lachlen"));
+            Assert.That(phases[1].Mobs.Count(mob => mob.Name == "Weary Explorer"), Is.EqualTo(6));
+            Assert.That(phases[2].Mobs.Single().Name, Is.EqualTo("Lachlen"));
+        }
+
+        [Test]
+        public void Lethos_AndAllFourAdvisorsMustFall()
+        {
+            TrialPhase phase = Trials[2].Phases.Single();
+            Assert.That(phase.Mobs.Where(mob => mob.Required).Select(mob => mob.Name), Is.EquivalentTo(new[]
+            {
+                "Lethos the Unifier", "Advisor Anzelm", "Advisor Timanthes", "Advisor Zarlanthus", "Advisor Gyges",
+            }));
+            Assert.That(phase.Mobs.Where(mob => mob.Name.StartsWith("Advisor")).All(mob => mob.Immune && mob.AggroRange == 0), "advisors sleep until Lethos is struck");
+        }
+
+        [Test]
+        public void Lethos_TakesAnAdvisorsGiftWhileHeStands_ThenPassesHisOwnToTheRest()
+        {
+            Assert.That(Ml9.Heirs("gyges", true, new[] { "lethos", "anzelm" }), Is.EqualTo(new[] { "lethos" }));
+            Assert.That(Ml9.Heirs("lethos", false, new[] { "anzelm", "gyges" }), Is.EqualTo(new[] { "anzelm", "gyges" }));
+            Assert.That(Ml9.Heirs("gyges", false, new[] { "anzelm" }), Is.EqualTo(new[] { "anzelm" }));
+        }
+
+        [Test]
+        public void Kings_WakeOnlyWithTheControllersCrystal_InAnyOrder()
+        {
+            TrialPhase phase = Trials[3].Phases.Single();
+            Assert.That(Trials[3].Phases, Has.Count.EqualTo(1), "one phase, so the kings can be taken in any order");
+            Assert.That(phase.Mobs.Count(mob => mob.Objective), Is.EqualTo(4));
+            Assert.That(phase.Mobs.Single(mob => !mob.Objective).Name, Is.EqualTo("avriel controller"));
+            Assert.That(phase.Done, Is.Not.Null);
+        }
+
+        [Test]
+        public void Ghosts_ResistMatterAndFearHeat()
+        {
+            Assert.That(Ml9.GhostDamage(eDamageType.Matter, 100), Is.LessThan(100));
+            Assert.That(Ml9.GhostDamage(eDamageType.Heat, 100), Is.GreaterThan(Ml9.GhostDamage(eDamageType.Crush, 100)));
+            Assert.That(Ml9.GhostDamage(eDamageType.Crush, 100), Is.GreaterThan(Ml9.GhostDamage(eDamageType.Slash, 100)));
+            Assert.That(Ml9.GhostDamage(eDamageType.Slash, 100), Is.GreaterThan(Ml9.GhostDamage(eDamageType.Thrust, 100)));
+            Assert.That(Ml9.GhostDamage(eDamageType.Thrust, 100), Is.GreaterThan(100));
+        }
+
+        [Test]
+        public void Nelos_TeachesALessonAfterFiveUses()
+        {
+            Assert.That(Ml9.StudentsLearn(Ml9.NelosLessons - 1), Is.False);
+            Assert.That(Ml9.StudentsLearn(Ml9.NelosLessons), Is.True);
+            Assert.That(Ml9.NelosAbilities, Is.EquivalentTo(new[] { "pbaoe", "heal", "stun" }));
+        }
+
+        [Test]
+        public void Katri_IsTheOnlyKillThatCounts_AndHoldsAtThreeQuarters()
+        {
+            TrialDefinition patrol = Trials[5];
+            Assert.That(patrol.Phases.SelectMany(phase => phase.Mobs).Where(mob => mob.Required).Select(mob => mob.Name), Is.EqualTo(new[] { "Katri" }));
+            Assert.That(Ml9.KatriFloor, Is.EqualTo(75));
+            Assert.That(Ml9.KatriGuardians, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Iaculus_ResistsBodyAndFearsCold()
+        {
+            Assert.That(Ml9.IaculusDamage(eDamageType.Body, 100), Is.LessThan(100));
+            Assert.That(Ml9.IaculusDamage(eDamageType.Cold, 100), Is.GreaterThan(100));
+            Assert.That(Ml9.IaculusDamage(eDamageType.Slash, 100), Is.EqualTo(100));
+        }
+
+        [Test]
+        public void Sphinxes_AnyOneOfThreeIsEnough()
+        {
+            TrialPhase phase = Trials[7].Phases.Single();
+            Assert.That(phase.Mobs.Select(mob => mob.Name), Is.EquivalentTo(new[] { "Chan", "Kiran", "Roshan" }));
+            Assert.That(phase.Mobs.All(mob => mob.AggroRange == 0 && !mob.Required), "neutral until struck");
+            Assert.That(phase.Done, Is.Not.Null);
         }
 
         [Test]
@@ -96,6 +173,20 @@ namespace DOL.UnitTests
             Assert.That(Ml9.PastChan(Ml9.BypassX + 1, 12049), Is.True);
             Assert.That(Ml9.PastChan(Ml9.BypassX, 12049), Is.False);
             Assert.That(Ml9.PastChan(Ml9.BypassX + 1, 15900), Is.False);
+        }
+
+        [Test]
+        public void Neola_ComesAfterThirtySisters()
+        {
+            Assert.That(Ml9.NeolaSisters, Is.EqualTo(30));
+            Assert.That(Trials[8].Phases, Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        public void Aerus_AdmitsOnlyMasterLevelEight()
+        {
+            Assert.That(Trials.All(trial => trial.Refuse != null));
+            Assert.That(Ml9.AerusMasterLevel, Is.EqualTo(8));
         }
 
         [TestCase(3, 75)]
@@ -114,6 +205,8 @@ namespace DOL.UnitTests
             Assert.That(Ml9.PhoenixFireball(3), Is.LessThanOrEqualTo(300));
             Assert.That(Ml9.PhoenixFireball(0), Is.Zero);
             Assert.That(Ml9.PhoenixFlare(0), Is.Zero);
+            Assert.That(Ml9.PhoenixFireballReach(3), Is.LessThan(Ml9.PhoenixFireballReach(2)));
+            Assert.That(Ml9.PhoenixFireballReach(2), Is.LessThan(Ml9.PhoenixFireballReach(1)));
         }
 
         [Test]
