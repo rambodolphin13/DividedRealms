@@ -273,7 +273,7 @@ namespace DOL.GS
 			GamePlayer player = source as GamePlayer;
 			if (player != null)
 			{
-				switch (item.Id_nb)
+				switch (MithrilBalance.BaseItemId(item.Id_nb))
 				{
 					case "respec_single":
 						{

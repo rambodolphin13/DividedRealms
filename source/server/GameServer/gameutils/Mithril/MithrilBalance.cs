@@ -76,6 +76,17 @@ namespace DOL.GS
             return Math.Max(1, Properties.MITHRIL_NAMED_KILL * npc.Level / 10);
         }
 
+        /// <summary>
+        /// Mithril store copies of respec stones (mithril_respec_full, ...) are priced in Mithril but work exactly like the
+        /// stones they copy: trainers and the throne see the original id.
+        /// </summary>
+        public static string BaseItemId(string id)
+        {
+            const string prefix = "mithril_respec_";
+
+            return id != null && id.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? id["mithril_".Length..] : id;
+        }
+
         public static int ForQuest(int questLevel)
         {
             return Properties.MITHRIL_QUEST <= 0 ? 0 : Properties.MITHRIL_QUEST + Math.Max(0, questLevel) / 10;

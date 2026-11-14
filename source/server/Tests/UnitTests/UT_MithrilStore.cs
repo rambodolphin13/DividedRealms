@@ -81,6 +81,15 @@ public class UT_MithrilStore
     }
 
     [Test]
+    public void MithrilRespecCopiesWorkLikeTheStones()
+    {
+        Assert.That(MithrilBalance.BaseItemId("mithril_respec_full"), Is.EqualTo("respec_full"));
+        Assert.That(MithrilBalance.BaseItemId("mithril_respec_cl"), Is.EqualTo("respec_cl"));
+        Assert.That(MithrilBalance.BaseItemId("respec_single"), Is.EqualTo("respec_single"));
+        Assert.That(MithrilBalance.BaseItemId("mithril_xp_potion"), Is.EqualTo("mithril_xp_potion"));
+    }
+
+    [Test]
     public void BodyModelKeepsSizeAndFaceBits()
     {
         int creation = (2 << 11) | 32;
