@@ -26,6 +26,8 @@ namespace DOL.GS.Trials
             [TrialZone.Pyramid] = new ushort[] { 45, 88, 145 },
             [TrialZone.Volcanus] = new ushort[] { 46, 89, 146 },
             [TrialZone.Aerus] = new ushort[] { 47, 90, 147 },
+            // One region for every realm; Populate places a single starter there.
+            [TrialZone.Celestius] = new ushort[] { 91, 91, 91 },
         };
 
         private static readonly List<TrialStarter> Starters = new();
@@ -76,7 +78,7 @@ namespace DOL.GS.Trials
 
             foreach (TrialDefinition definition in TrialCatalog.All)
             {
-                foreach (ushort regionId in Regions[definition.Zone])
+                foreach (ushort regionId in Regions[definition.Zone].Distinct())
                 {
                     try
                     {
@@ -173,12 +175,19 @@ namespace DOL.GS.Trials
         public static void Award(TrialRun run)
         {
             TrialDefinition definition = run.Definition;
-            IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
-                : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
+            // A player who relogged during the run is a new object; the old one must not be credited or saved over them.
+            GamePlayer leader = Current(run.Leader);
+            IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { leader }
+                : run.Players.Select(Current).Concat(leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
-            foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
+            foreach (GamePlayer player in players.Where(player => player.ObjectState == GameObject.eObjectState.Active &&
+                player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
                 MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
         }
+
+        /// <summary>The live object for a character, which is a new one after a relog.</summary>
+        public static GamePlayer Current(GamePlayer player) =>
+            player.ObjectState == GameObject.eObjectState.Active ? player : ClientService.Instance?.GetPlayerByExactName(player.Name) ?? player;
 
         public static void Finished(TrialRun run)
         {

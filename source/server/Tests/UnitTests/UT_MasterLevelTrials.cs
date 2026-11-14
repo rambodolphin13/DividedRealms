@@ -71,10 +71,10 @@ namespace DOL.UnitTests
         }
 
         [Test]
-        public void Regions_EachZoneHasThreeRealmCopies()
+        public void Regions_EachZoneHasThreeRealmCopies_ExceptCelestius()
         {
             foreach (TrialZone zone in Enum.GetValues<TrialZone>())
-                Assert.That(TrialManager.RegionsOf(zone).Distinct().Count(), Is.EqualTo(3), zone.ToString());
+                Assert.That(TrialManager.RegionsOf(zone).Distinct().Count(), Is.EqualTo(zone == TrialZone.Celestius ? 1 : 3), zone.ToString());
         }
     }
 }
