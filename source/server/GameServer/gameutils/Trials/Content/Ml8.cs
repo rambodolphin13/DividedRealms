@@ -526,27 +526,27 @@ namespace DOL.GS.Trials
                 StarterName = ServantName,
                 StarterModel = Servant,
                 Replaces = new[] { "Chief Arsene", "Chief Oighrig" },
-                Intro = "One of the centaur lieutenants keeps Agne's left leg in his camp, and the old trial asked every hero to beat a lieutenant anyway. Go to the camp. Their scout will see you and blow his horn, and the lieutenant will come with his whole warband: spears, bows, a healer and a caster. The lieutenant is the one that matters.",
+                Intro = "One of the centaur lieutenants keeps Agne's left leg in his camp, and the old trial asked every hero to beat a lieutenant anyway. Their scout is already looking for you. When he finds you he blows his horn, and the lieutenant rides out to that spot with his whole warband: spears, bows, a healer and a caster. The lieutenant is the one that matters.",
                 Victory = "Chief Oighrig falls, and Agne's left leg is yours.",
                 TimeLimitSeconds = 1500,
                 Phases =
                 {
                     new TrialPhase
                     {
-                        Announce = "A centaur scout watches you from the camp.",
-                        Mobs = { Foe("centaur scout superior", Bowman, 60, 64, 3000, 0.8, new TrialPoint(365839, 705537, 8080), "scout", eDamageType.Thrust, false) },
+                        Announce = "A centaur scout has spotted you and comes to look.",
+                        Mobs = { Foe("centaur scout superior", Bowman, 60, 64, 3000, 0.8, new TrialPoint(366994, 709577, 8080), "scout", eDamageType.Thrust, false) },
                         Done = run => Gone(run, "scout") || run.Mobs("scout").Any(scout => scout.InCombat),
                     },
                     new TrialPhase
                     {
-                        Announce = "The scout's horn sounds! Chief Oighrig gallops in with his warband.",
+                        Announce = "The scout's horn sounds! Chief Oighrig gallops out of his camp with his warband.",
                         Mobs =
                         {
                             Foe("Chief Oighrig", Bowman, 65, 65, 18000, 1.4, camp, "band", eDamageType.Thrust),
-                            Foe("centaur impaler", Centaur, 62, 57, 4000, 1.0, ring[0], "band", eDamageType.Thrust, false),
-                            Foe("centaur impaler", Centaur, 62, 57, 4000, 1.0, ring[1], "band", eDamageType.Thrust, false),
-                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.9, ring[2], "band", eDamageType.Thrust, false),
-                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.9, ring[3], "band", eDamageType.Thrust, false),
+                            Foe("centaur impaler", Centaur, 62, 57, 4000, 0.8, ring[0], "band", eDamageType.Thrust, false),
+                            Foe("centaur impaler", Centaur, 62, 57, 4000, 0.8, ring[1], "band", eDamageType.Thrust, false),
+                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.7, ring[2], "band", eDamageType.Thrust, false),
+                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.7, ring[3], "band", eDamageType.Thrust, false),
                             Foe("centaur healer", Bowman, 60, 60, 2500, 0.6, ring[4], "healer", required: false),
                             Foe("centaur arcanist", Centaur, 62, 57, 2500, 0.6, ring[5], "nuker", required: false),
                             Foe("centaur advisor", Bowman, 60, 62, 2500, 0.6, ring[6], "band", required: false),
@@ -801,13 +801,14 @@ namespace DOL.GS.Trials
             // Prima: level 56 to look at, twice the hit points, half the damage taken, and mending below 90%.
             TrialMobSpec Statue(TrialPoint at) => new()
             {
-                Name = "self-maintaining statue",
+                Name = "cracked self-maintaining statue",
                 Model = Servant,
                 Level = 56,
                 Size = 50,
                 Health = 7000,
                 DamageFactor = 0.9,
                 At = at,
+                AggroRange = 300,
                 Tag = "statue",
                 Required = false,
                 OnDeath = (run, mob) =>
