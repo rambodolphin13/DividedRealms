@@ -61,7 +61,8 @@ KEYS = {'Mob': 'Mob_ID', 'WorldObject': 'WorldObject_ID', 'Door': 'Door_ID', 'Zo
 # Player saves (accounts, characters, inventories, houses, guilds, bots) are never listed.
 DATA_TABLES = {
     'World': ['Mob', 'WorldObject', 'Door', 'Zones', 'Regions', 'Area', 'BindPoint', 'ZonePoint', 'Teleport',
-              'JumpPoint', 'StartupLocation', 'Path', 'PathPoints', 'Keep', 'KeepPosition', 'Relic', 'Battleground'],
+              'JumpPoint', 'StartupLocation', 'Path', 'PathPoints', 'Keep', 'KeepComponent', 'KeepPosition',
+              'KeepHookPoint', 'Relic', 'Battleground'],
     'NPCs': ['NpcTemplate', 'NPCEquipment', 'MobXAmbientBehaviour', 'Faction', 'LinkedFaction'],
     'Items & loot': ['ItemTemplate', 'MerchantItem', 'LootTemplate', 'MobXLootTemplate', 'LootGenerator', 'LootOTD',
                      'MobDropTemplate', 'DropTemplateXItemTemplate', 'StarterEquipment', 'Salvage', 'SalvageYield',
