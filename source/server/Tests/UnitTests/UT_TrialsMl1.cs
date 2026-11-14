@@ -74,11 +74,11 @@ namespace DOL.UnitTests
         [Test]
         public void Credit_FinaleNeedsTheNineForEachPlayer()
         {
+            // TrialManager.Award (MayEarn) skips anyone missing Required(definition): only the finale may have any.
             TrialDefinition cetus = Ml1.Trials().Last();
-            Assert.That(TrialManager.CreditBlockers(cetus, step => step != 7), Is.EqualTo(new[] { 7 }));
-            Assert.That(TrialManager.CreditBlockers(cetus, _ => true), Is.Empty);
+            Assert.That(TrialManager.Required(cetus), Is.EqualTo(Enumerable.Range(1, 9)));
             foreach (TrialDefinition trial in Ml1.Trials().Where(trial => trial.Step < 10))
-                Assert.That(TrialManager.CreditBlockers(trial, _ => false), Is.Empty, $"{trial.Key} must credit helpers who lack earlier steps");
+                Assert.That(TrialManager.Required(trial), Is.Empty, $"{trial.Key} must credit helpers who lack earlier steps");
         }
 
         [Test]
