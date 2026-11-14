@@ -845,10 +845,10 @@ namespace DOL.GS.Trials
                         Mobs = spots.Select(Statue).ToList(),
                         OnTick = run =>
                         {
-                            if (Count(run, "mend") % 4 != 0)
+                            if (Count(run, "mend") % 5 != 0)
                                 return;
                             foreach (TrialMob statue in run.Mobs("statue").Where(statue => StatueMends(statue.HealthPercent)))
-                                Mend(statue, 4);
+                                Mend(statue, 2);
                         },
                         Done = run => run.Get("torso", false),
                     },
