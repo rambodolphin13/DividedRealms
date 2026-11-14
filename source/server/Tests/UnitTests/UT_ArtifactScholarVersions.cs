@@ -37,6 +37,22 @@ namespace DOL.UnitTests
             Assert.That(ArtifactCatalog.IsVersionFor(eRealm.Midgard, Warrior, false, Version(eObjectType.Shield, eInventorySlot.LeftHandWeapon)), Is.True, "shields are fine");
         }
 
+        /// <summary>
+        /// Encounter pass 2026-11-14: an Armsman with Crocodile's Tooth credit was told no version fits, because every
+        /// Albion version is a left-hand dagger. Live listed Armsman, Paladin, Warrior and Thane as users: a left-hand
+        /// weapon also goes in the main hand.
+        /// </summary>
+        [Test]
+        public void LeftHandWeaponsAreOfferedForTheMainHand()
+        {
+            Assert.That(ArtifactCatalog.IsVersionFor(eRealm.Albion, (int) eCharacterClass.Armsman, false,
+                Version(eObjectType.ThrustWeapon, eInventorySlot.LeftHandWeapon)), Is.True, "Armsman dagger");
+            Assert.That(ArtifactCatalog.IsVersionFor(eRealm.Midgard, Warrior, false,
+                Version(eObjectType.Sword, eInventorySlot.LeftHandWeapon)), Is.True, "Warrior sword");
+            Assert.That(ArtifactCatalog.IsVersionFor(eRealm.Hibernia, (int) eCharacterClass.Hero, false,
+                Version(eObjectType.Piercing, eInventorySlot.LeftHandWeapon)), Is.True, "Hero piercer");
+        }
+
         [Test]
         public void ArmourOfAnotherRealmIsNotOffered()
         {
