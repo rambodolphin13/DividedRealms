@@ -231,7 +231,7 @@ namespace DOL.UnitTests
             CastaJewels jewels = new(0.0);
             Assert.That(jewels.Blow(eDamageType.Slash, false, 100, 1.0, out _, out bool hardened), Is.Zero);
             Assert.That(hardened && jewels.Hardened == eDamageType.Slash, Is.True);
-            Assert.That(jewels.Blow(eDamageType.Slash, false, 100, 1.0, out _, out _), Is.EqualTo(75));
+            Assert.That(jewels.Blow(eDamageType.Slash, false, 100, 1.0, out _, out _), Is.EqualTo(50));
             Assert.That(jewels.Blow(eDamageType.Crush, false, 100, 1.0, out _, out _), Is.Zero, "another type gets through");
             for (int i = 0; i < CastaJewels.BraceletSeconds; i++)
                 jewels.Second();

@@ -34,7 +34,7 @@ namespace DOL.GS.Trials
     {
         public const int ChipsToShatter = 2;
         public const int BraceletSeconds = 7;
-        public const double BraceletResist = 0.75;
+        public const double BraceletResist = 0.5;
 
         private readonly double _chipChance;
         private int _bracelet;
