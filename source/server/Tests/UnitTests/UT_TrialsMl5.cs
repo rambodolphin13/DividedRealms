@@ -83,7 +83,7 @@ namespace DOL.UnitTests
         public void Tokens_AreStoodForByEarlierSteps()
         {
             Assert.That(Step(5, 9).RequiresSteps, Is.EqualTo(new[] { 6, 7, 8 }));
-            Assert.That(Step(6, 7).RequiresSteps, Is.EqualTo(new[] { 4, 5, 6 }));
+            Assert.That(TrialManager.Required(Step(6, 7)), Is.Empty, "6.7 takes any two of 6.4-6.6 through its refusal");
         }
 
         [Test]
