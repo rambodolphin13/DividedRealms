@@ -70,7 +70,7 @@ namespace DOL.UnitTests
             }
             for (int i = 0; i < 6; i++)
             {
-                TrialPoint bow = Ml10.Ring(Ml10.ArenaCentre, i, 6, 700);
+                TrialPoint bow = Ml10.Ring(Ml10.ArenaCentre, i, 6, 600);
                 Assert.That(bow.X, Is.InRange(30100, 33650));
                 Assert.That(bow.Y, Is.InRange(29700, 30850));
             }

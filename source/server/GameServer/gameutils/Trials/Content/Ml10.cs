@@ -176,7 +176,7 @@ namespace DOL.GS.Trials
                 {
                     TrialMob bow = run.Spawn(new TrialMobSpec
                     {
-                        Name = "astral bow", Model = Swirl, Level = 52, Size = 60, Health = 3000, DamageFactor = 0.6, At = Ring(ArenaCentre, (seconds / BowIntervalSeconds * 2 + i) % 6, 6, 700),
+                        Name = "astral bow", Model = Swirl, Level = 52, Size = 60, Health = 3000, DamageFactor = 0.6, At = Ring(ArenaCentre, (seconds / BowIntervalSeconds * 2 + i) % 6, 6, 600),
                         MeleeDamage = eDamageType.Thrust, AggroRange = 0, Required = false, Tag = "bow",
                     });
                     bow.MaxSpeedBase = 0;
