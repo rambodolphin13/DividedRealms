@@ -940,6 +940,25 @@ namespace DOL.GS
             if (fromItem is IGameInventoryItem gameInventoryItem && gameInventoryItem.Combine(m_player, toItem))
                 return true;
 
+            Transmog.Result look = Transmog.Use(fromItem, toItem, out string lookMessage);
+
+            if (look != Transmog.Result.NotATool)
+            {
+                if (lookMessage != null)
+                    m_player.Out.SendMessage(lookMessage, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                if (look is Transmog.Result.Applied or Transmog.Result.Erased)
+                {
+                    RemoveCountFromStack(fromItem, 1);
+                    InventoryLogging.LogInventoryAction(m_player, "(pattern)", eInventoryActionType.Other, fromItem.Template);
+                }
+
+                if (look is Transmog.Result.Recorded)
+                    m_changedSlots.Add((eInventorySlot) fromItem.SlotPosition);
+
+                return look != Transmog.Result.Refused;
+            }
+
             //Is the fromItem a dye or dyepack?
             //TODO shouldn't be done with model check
             switch (fromItem.Model)
@@ -1120,6 +1139,13 @@ namespace DOL.GS
 
         #region Dyes
 
+        public const string OmniDyePrefix = "mithril_omni_dye";
+
+        public static bool IsOmniDye(DbInventoryItem dye)
+        {
+            return dye?.Id_nb != null && dye.Id_nb.StartsWith(OmniDyePrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
         protected virtual bool DyeItem(DbInventoryItem dye, DbInventoryItem objectToDye)
         {
             bool canApply = false;
@@ -1128,6 +1154,13 @@ namespace DOL.GS
             int itemObjType = objectToDye.Object_Type;
             int itemItemType = objectToDye.Item_Type;
 
+            // Mithril store omni dyes (live 1.124): any armor, shield, instrument, cloak, weapon, saddle or barding.
+            if (IsOmniDye(dye))
+            {
+                canApply = itemObjType is >= 1 and <= 26 or >= 32 and <= 38 or 42 or 45
+                    || itemObjType == 41 && itemItemType is 7 or 8 or 26;
+            }
+            else
             switch (dye.Model)
             {
                 case 229: //Dyes

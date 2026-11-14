@@ -808,6 +808,18 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("rates", "XP_PVP_Cap_Percent", "Maximum XP a player can earn killing another player, given in percent of their level. Default is 125%", 125)]
 		public static int XP_PVP_CAP_PERCENT;
 
+		[ServerProperty("mithril", "mithril_named_kill", "Mithril for killing a named monster, per 10 monster levels (at least 1).", 1)]
+		public static int MITHRIL_NAMED_KILL;
+
+		[ServerProperty("mithril", "mithril_boss_kill", "Mithril for killing an epic or boss monster (level 60+ named, GameEpicNPC).", 25)]
+		public static int MITHRIL_BOSS_KILL;
+
+		[ServerProperty("mithril", "mithril_rvr_kill", "Mithril for an enemy realm kill that gave realm points.", 3)]
+		public static int MITHRIL_RVR_KILL;
+
+		[ServerProperty("mithril", "mithril_quest", "Mithril for finishing a quest, plus 1 per 10 quest levels.", 2)]
+		public static int MITHRIL_QUEST;
+
 		/// <summary>
 		/// The Experience Rate
 		/// </summary>

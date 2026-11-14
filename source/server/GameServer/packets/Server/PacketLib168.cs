@@ -1346,8 +1346,9 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte((byte) m_gameClient.Player.Copper);
 				pak.WriteByte((byte) m_gameClient.Player.Silver);
 				pak.WriteShort((ushort) m_gameClient.Player.Gold);
-				pak.WriteShort((ushort) m_gameClient.Player.Mithril);
-				pak.WriteShort((ushort) m_gameClient.Player.Platinum);
+				// The Mithril field shows the account's Mithril store balance in every zone; coin Mithril shows as platinum.
+				pak.WriteShort(MithrilBalance.DisplayValue(MithrilBalance.Get(m_gameClient.Player)));
+				pak.WriteShort(MithrilBalance.DisplayPlatinum(m_gameClient.Player.Mithril, m_gameClient.Player.Platinum));
 				SendTCP(pak);
 			}
 		}

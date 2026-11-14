@@ -1426,6 +1426,7 @@ namespace DOL.GS.ServerRules
 
             RewardRealmPoints();
             RewardBountyPoints();
+            MithrilBalance.Add(playerToAward, MithrilBalance.ForNpcKill(killedNpc), killedNpc.Name);
 
             long xpCap = CalculateXpCap();
             baseXpReward = Math.Min(baseXpReward, xpCap);
@@ -2204,6 +2205,8 @@ namespace DOL.GS.ServerRules
 
                 RewardRealmPoints(out realmPointsEarned);
                 RewardBountyPoints();
+                if (realmPointsEarned > 0)
+                    MithrilBalance.Add(playerToAward, ServerProperties.Properties.MITHRIL_RVR_KILL, "realm kill");
                 RewardExperience();
                 RewardMoney();
             }

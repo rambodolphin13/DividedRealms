@@ -99,7 +99,7 @@ public sealed class EpicCommandHandler : AbstractCommandHandler, ICommandHandler
             }
             var finished = new DbCharacterXDataQuest(target.QuestPlayerID, id) { Step = 0, Count = 1 };
             GameServer.Database.AddObject(finished);
-            target.AddFinishedQuest(new DataQuest(target, row, finished));
+            target.AddFinishedQuest(new DataQuest(target, row, finished), false);
         }
         target.Out.SendQuestListUpdate();
         QuestIndicators.Refresh(target); // the markers around the character follow the new quest lists at once

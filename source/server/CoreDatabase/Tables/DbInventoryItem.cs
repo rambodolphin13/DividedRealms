@@ -130,6 +130,24 @@ namespace DOL.Database
 			set { Dirty = true;m_emblem = value; }
 		}
 		
+		protected int m_lookModel;
+		/// <summary>Pattern (transmog) look: when above 0 the item shows this model instead of its template's.</summary>
+		[DataElement(AllowDbNull = false)]
+		public virtual int LookModel
+		{
+			get { return m_lookModel; }
+			set { Dirty = true; m_lookModel = value; }
+		}
+
+		protected int m_lookSlot;
+		/// <summary>On a recorded pattern: the Item_Type (slot or hand) of the item whose look it holds.</summary>
+		[DataElement(AllowDbNull = false)]
+		public virtual int LookSlot
+		{
+			get { return m_lookSlot; }
+			set { Dirty = true; m_lookSlot = value; }
+		}
+
 		protected byte m_salvageextension;
 		[DataElement(AllowDbNull = true)]
 		public virtual byte SalvageExtension
@@ -370,6 +388,8 @@ namespace DOL.Database
 			m_poisonSpellID = dbInventoryItem.PoisonSpellID;
 			m_experience = dbInventoryItem.Experience;
 			m_ownerLot = dbInventoryItem.OwnerLot;
+			m_lookModel = dbInventoryItem.LookModel;
+			m_lookSlot = dbInventoryItem.LookSlot;
             _realmExchangeListedUtc = dbInventoryItem.RealmExchangeListedUtc;
 		}
 
@@ -598,9 +618,10 @@ namespace DOL.Database
 			get {return Template.Id_nb; }
 			set { Template.Id_nb = value;}
 		}
+		/// <summary>The model the client shows: a pattern look when one is applied, otherwise the template's.</summary>
 		public virtual int Model
 		{
-			get { return Template.Model; }
+			get { return m_lookModel > 0 ? m_lookModel : Template.Model; }
 			set { Template.Model = value;}
 		}
 		public virtual int Effect

@@ -254,6 +254,18 @@ namespace DOL.Database
 			set { Dirty = true; m_soloCharactersTraded = value; }
 		}
 		
+		private long m_mithril;
+
+		/// <summary>
+		/// Mithril store balance, shared by every character on the account (live: account-wide store currency).
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public long Mithril
+		{
+			get { return m_mithril; }
+			set { Dirty = true; m_mithril = value; }
+		}
+
 		/// <summary>
 		/// Gets the account DiscordID
 		/// </summary>

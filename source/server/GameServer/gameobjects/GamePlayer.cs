@@ -10699,7 +10699,7 @@ namespace DOL.GS
                         continue;
 
                     if (quest.Step < 0)
-                        AddFinishedQuest(quest);
+                        AddFinishedQuest(quest, false);
                     else
                         QuestList.TryAdd(quest, (byte) activeQuestCount++);
 
@@ -11523,12 +11523,22 @@ namespace DOL.GS
         /// Add a quest to the players finished list
         /// </summary>
         /// <param name="quest"></param>
+        /// <summary>Marks a quest finished just now: also pays the quest's Mithril.</summary>
         public void AddFinishedQuest(AbstractQuest quest)
+        {
+            AddFinishedQuest(quest, true);
+        }
+
+        /// <param name="justFinished">False when loading finished quests from the database or a GM marks one done (no Mithril).</param>
+        public void AddFinishedQuest(AbstractQuest quest, bool justFinished)
         {
             lock (_questListFinishedLock)
             {
                 _questListFinished.Add(quest);
             }
+
+            if (justFinished && quest != null)
+                MithrilBalance.Add(this, MithrilBalance.ForQuest(quest.Level), quest.Name);
         }
 
         public void RemoveFinishedQuest(AbstractQuest quest)
