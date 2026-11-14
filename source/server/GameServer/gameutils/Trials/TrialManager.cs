@@ -176,9 +176,17 @@ namespace DOL.GS.Trials
             IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
                 : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
-            foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
+            foreach (GamePlayer player in players.Where(player => MayEarn(player, run)))
                 MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
         }
+
+        /// <summary>
+        /// Credit goes to party members in range, alive or dead, who have finished the steps the trial needs. The leader is
+        /// checked before a run starts; a helper short of them (a finale with steps 1-9 open) earns nothing, as on live.
+        /// </summary>
+        public static bool MayEarn(GamePlayer player, TrialRun run) =>
+            player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, run.Definition.LeashRange) &&
+            MissingSteps(player, run.Definition).Length == 0;
 
         public static void Finished(TrialRun run)
         {
