@@ -310,7 +310,7 @@ namespace DOL.GS.Trials
                 {
                     new TrialPhase
                     {
-                        Announce = "The thieves are somewhere close. Listen for where Lornas points.",
+                        Announce = "Lornas sends his scouts out. Listen for where he points.",
                         OnStart = PlaceThieves,
                         OnTick = run =>
                         {
