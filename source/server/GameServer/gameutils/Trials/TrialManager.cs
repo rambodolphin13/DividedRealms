@@ -176,9 +176,9 @@ namespace DOL.GS.Trials
             IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
                 : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
-            // A participant who logged out mid-run leaves a stale object behind: crediting it writes a step row the
-            // relogged character never loads, and its MLLevel change is never saved.
-            foreach (GamePlayer player in players.Where(player => player.ObjectState == GameObject.eObjectState.Active && MayEarn(player, run)))
+            // Credit the character in play now: a participant who relogged mid-run is a new object (crediting the stale one
+            // writes a step the relogged character never loads); one still logged out earns nothing.
+            foreach (GamePlayer player in players.Select(Online).Where(player => player != null).Distinct().Where(player => MayEarn(player, run)))
                 MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
         }
 
@@ -189,6 +189,13 @@ namespace DOL.GS.Trials
         public static bool MayEarn(GamePlayer player, TrialRun run) =>
             player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, run.Definition.LeashRange) &&
             MissingSteps(player, run.Definition).Length == 0;
+
+        /// <summary>
+        /// The player's object in the world now. One who relogged mid-run is a new object: crediting the old one wrote the
+        /// step to the database but not to the character in play, so a tenth step never raised the Master Level.
+        /// </summary>
+        private static GamePlayer Online(GamePlayer player) =>
+            player.ObjectState == GameObject.eObjectState.Active ? player : ClientService.Instance.GetPlayerByExactName(player.Name);
 
         public static void Finished(TrialRun run)
         {
