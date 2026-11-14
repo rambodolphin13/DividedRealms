@@ -175,19 +175,12 @@ namespace DOL.GS.Trials
         public static void Award(TrialRun run)
         {
             TrialDefinition definition = run.Definition;
-            // A player who relogged during the run is a new object; the old one must not be credited or saved over them.
-            GamePlayer leader = Current(run.Leader);
-            IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { leader }
-                : run.Players.Select(Current).Concat(leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
+            IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
+                : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
 
-            foreach (GamePlayer player in players.Where(player => player.ObjectState == GameObject.eObjectState.Active &&
-                player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
+            foreach (GamePlayer player in players.Where(player => player.CurrentRegion == run.Starter.CurrentRegion && player.IsWithinRadius(run.Starter, definition.LeashRange)))
                 MasterLevelRules.CompleteTrialStep(player, definition.ML, definition.Step);
         }
-
-        /// <summary>The live object for a character, which is a new one after a relog.</summary>
-        public static GamePlayer Current(GamePlayer player) =>
-            player.ObjectState == GameObject.eObjectState.Active ? player : ClientService.Instance?.GetPlayerByExactName(player.Name) ?? player;
 
         public static void Finished(TrialRun run)
         {
