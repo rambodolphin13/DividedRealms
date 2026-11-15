@@ -525,7 +525,11 @@ namespace DOL.GS.Trials
                 Anchor = new TrialPoint(366490, 709300, 8083),
                 StarterName = ServantName,
                 StarterModel = Servant,
-                Replaces = new[] { "Chief Arsene", "Chief Oighrig" },
+                // Bot playtest 2026-11-14: the starter stands inside a world centaur camp (aggro 60, range 500, a dozen
+                // within 2,000 in each realm copy); they joined the warband and wiped a player with seven bots in 90 s.
+                // The camp is cleared while trials are on, so the fight is the scout, the chief and his band.
+                Replaces = new[] { "Chief Arsene", "Chief Oighrig", "centaur warrior", "centaur mage", "centaur craftsman", "centaur guard", "centaur commoner", "centaur scout superior", "centaur forager" },
+                ReplaceRadius = 3500,
                 Intro = "One of the centaur lieutenants keeps Agne's left leg in his camp, and the old trial asked every hero to beat a lieutenant anyway. Their scout is already looking for you. When he finds you he blows his horn, and the lieutenant rides out to that spot with his whole warband: spears, bows, a healer and a caster. The lieutenant is the one that matters.",
                 Victory = "Chief Oighrig falls, and Agne's left leg is yours.",
                 TimeLimitSeconds = 1500,
@@ -542,16 +546,17 @@ namespace DOL.GS.Trials
                         Announce = "The scout's horn sounds! Chief Oighrig gallops out of his camp with his warband.",
                         Mobs =
                         {
-                            Foe("Chief Oighrig", Bowman, 65, 65, 18000, 1.4, camp, "band", eDamageType.Thrust),
-                            Foe("centaur impaler", Centaur, 62, 57, 4000, 0.8, ring[0], "band", eDamageType.Thrust, false),
-                            Foe("centaur impaler", Centaur, 62, 57, 4000, 0.8, ring[1], "band", eDamageType.Thrust, false),
-                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.7, ring[2], "band", eDamageType.Thrust, false),
-                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.7, ring[3], "band", eDamageType.Thrust, false),
-                            Foe("centaur healer", Bowman, 60, 60, 2500, 0.6, ring[4], "healer", required: false),
-                            Foe("centaur arcanist", Centaur, 62, 57, 2500, 0.6, ring[5], "nuker", required: false),
-                            Foe("centaur advisor", Bowman, 60, 62, 2500, 0.6, ring[6], "band", required: false),
+                            // Bot playtest 2026-11-14: the whole band at once went straight for the bot healers. Softer troops.
+                            Foe("Chief Oighrig", Bowman, 65, 65, 12000, 1.2, camp, "band", eDamageType.Thrust),
+                            Foe("centaur impaler", Centaur, 62, 57, 2500, 0.7, ring[0], "band", eDamageType.Thrust, false),
+                            Foe("centaur impaler", Centaur, 62, 57, 2500, 0.7, ring[1], "band", eDamageType.Thrust, false),
+                            Foe("centaur archer", Bowman, 60, 54, 2000, 0.6, ring[2], "band", eDamageType.Thrust, false),
+                            Foe("centaur archer", Bowman, 60, 54, 2000, 0.6, ring[3], "band", eDamageType.Thrust, false),
+                            Foe("centaur healer", Bowman, 60, 60, 1800, 0.5, ring[4], "healer", required: false),
+                            Foe("centaur arcanist", Centaur, 62, 57, 1800, 0.5, ring[5], "nuker", required: false),
+                            Foe("centaur advisor", Bowman, 60, 62, 1800, 0.5, ring[6], "band", required: false),
                         },
-                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 150, Radius = 1200, SourceTag = "nuker", DamageType = eDamageType.Heat, Message = "The centaur arcanist hurls fire!" } },
+                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 100, Radius = 1200, SourceTag = "nuker", DamageType = eDamageType.Heat, Message = "The centaur arcanist hurls fire!" } },
                         OnStart = run =>
                         {
                             foreach (TrialMob centaur in run.Mobs().Where(mob => mob.Spec.Tag is "band" or "healer" or "nuker"))

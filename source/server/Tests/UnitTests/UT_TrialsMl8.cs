@@ -66,8 +66,10 @@ namespace DOL.UnitTests
         [Test]
         public void Replaces_NeverTakesACommonCreature()
         {
+            // A region-wide replace of a common creature would empty whole zones; a local one (8.4's camp) is allowed.
             string[] common = { "cobra guardian", "self-maintaining statue", "centaur guard" };
-            Assert.That(Steps().SelectMany(trial => trial.Replaces).Intersect(common), Is.Empty);
+            Assert.That(Steps().Where(trial => trial.ReplaceRadius <= 0).SelectMany(trial => trial.Replaces).Intersect(common), Is.Empty);
+            Assert.That(Steps().Where(trial => trial.ReplaceRadius > 0).All(trial => trial.ReplaceRadius <= 5000), Is.True);
         }
 
         [Test]
