@@ -42,9 +42,10 @@ namespace DOL.GS.Trials
 
         /// <summary>
         /// The fountain room holds sixteen world eternal lost at level 65, and anubites stand at the bier and the snake
-        /// stair; the trial brings its own of each. They stand aside while a 5.9 run lasts.
+        /// stair, and two an-uat hesen neteri and two merzaue hold the river bridge (with them a full bot group wiped at the
+        /// bridge, bot playtest 2026-11-14); the trial brings its own of each. They stand aside while a 5.9 run lasts.
         /// </summary>
-        public static TrialPoint[] TokenHushPoints => new[] { Fountain, new TrialPoint(35348, 34189, 15012), new TrialPoint(35520, 37538, 13456) };
+        public static TrialPoint[] TokenHushPoints => new[] { Fountain, new TrialPoint(32686, 30074, 15502), new TrialPoint(36938, 28007, 15504), new TrialPoint(35348, 34189, 15012), new TrialPoint(35520, 37538, 13456) };
         public const int TokenHushRadius = 1200;
 
         private static void HushChamber(TrialRun run) => Ml4.Hush(run, new[] { run.Definition.Anchor }, ChamberHushRadius);
