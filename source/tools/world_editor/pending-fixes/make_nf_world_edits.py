@@ -41,6 +41,9 @@ SKIP_CLASSES = {'DOL.GS.HiberniaTeleporter', 'DOL.GS.MidgardTeleporter', 'DOL.GS
 CLASS_MAP = {'DOL.GS.Scripts.Recharger': 'DOL.GS.Recharger', 'DOL.GS.SpellTokenMerchant': 'DOL.GS.GameNPC'}
 # gaheris sql/64-move-frontier-returns.sql: three returns landed beside the border keep passage.
 RETURN_MOVES = {(421257, 485590): (421281, 483193), (333634, 419960): (332041, 418130), (703994, 737935): (703922, 735941)}
+# EoD's Labyrinth exits up to the centre island are Agramon-era: on the 1.130 Ellan Vannin island they land ~1,000 units
+# under the ground. Snapped to the nearest floor of the 1.130 zone 163 navmesh (2026-11-15).
+EXIT_FIX = {735: (525847, 439490, 10300), 736: (547123, 480127, 10130), 737: (505344, 478284, 10290)}
 report = []
 
 
@@ -73,7 +76,8 @@ def main():
                                           int(r['Width']) * 8192, int(r['Height']) * 8192))
     for z in load(eod, 'Zones'):
         if int(z['RegionID']) in regions and int(z['ZoneID']) not in our_zone_ids:
-            support.append({'table': 'Zones', 'insert': strip(z, cols['Zones'])})
+            # EoD's row key is already used by another zone in our world (UNIQUE Zones.Zones_ID, sandbox 2026-11-15)
+            support.append({'table': 'Zones', 'insert': {**strip(z, cols['Zones']), 'Zones_ID': f'nf-zone-{z["ZoneID"]}'}})
             boxes[int(z['RegionID'])].append((int(z['ZoneID']), int(z['OffsetX']) * 8192, int(z['OffsetY']) * 8192,
                                               int(z['Width']) * 8192, int(z['Height']) * 8192))
             say('Zones row added:', z['ZoneID'], z['Name'])
@@ -198,6 +202,27 @@ def main():
         support.append({'table': 'WorldObject', 'insert': strip(o, cols['WorldObject'])})
         objects += 1
 
+    # ------------------------------------------------------------------ keep patrol routes
+    # A keep patrol walks the Path named after its KeepPosition TemplateID (points relative to the component). The
+    # new-style positions batch 1 brought in had none, so 738 NF patrol guards stood still at boot.
+    paths_added = points_added = 0
+    if not labyrinth:
+        patrol_ids = {r[0] for r in db.execute("SELECT TemplateID FROM KeepPosition WHERE ClassType LIKE '%Patrol%'")}
+        have_paths = {r[0] for r in db.execute('SELECT PathID FROM Path')}
+        path_cols = [r[1] for r in db.execute('PRAGMA table_info(Path)')]
+        point_cols = [r[1] for r in db.execute('PRAGMA table_info(PathPoints)')]
+        wanted = patrol_ids - have_paths
+        for p in load(eod, 'Path'):
+            if p['PathID'] in wanted:
+                support.append({'table': 'Path', 'insert': strip(p, path_cols)})
+                paths_added += 1
+        for p in load(eod, 'PathPoints'):
+            if p['PathID'] in wanted:
+                support.append({'table': 'PathPoints', 'insert': strip(p, point_cols)})
+                points_added += 1
+        say('keep patrol paths added:', paths_added, 'with', points_added, 'points | patrol templates still without a path:',
+            sorted(wanted - {p['PathID'] for p in load(eod, 'Path')}))
+
     # ------------------------------------------------------------------ areas (NF realm towns: Catterick Hamlet, Godrborg, Crair Treflan)
     area_cols = [r[1] for r in db.execute('PRAGMA table_info(Area)')]
     our_areas = {(int(r[0]), (r[1] or '').lower()) for r in db.execute('SELECT Region, Description FROM Area')}
@@ -227,6 +252,9 @@ def main():
                 ins['ClassType'] = ''
             if (int(ins['TargetX']), int(ins['TargetY'])) in RETURN_MOVES:
                 ins['TargetX'], ins['TargetY'] = RETURN_MOVES[(int(ins['TargetX']), int(ins['TargetY']))]
+                moved += 1
+            if zid in EXIT_FIX:
+                ins['TargetX'], ins['TargetY'], ins['TargetZ'] = EXIT_FIX[zid]
                 moved += 1
             support.append({'table': 'ZonePoint', 'insert': ins})
             zp_added += 1
