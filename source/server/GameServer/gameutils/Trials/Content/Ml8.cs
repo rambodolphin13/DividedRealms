@@ -796,7 +796,9 @@ namespace DOL.GS.Trials
                                 return;
                             }
                             // Prima: melee on the statue can chip off a chunk that fights under Dawar's control.
-                            if (WasHit(run, statue) && Util.Chance(8) && run.Mobs("chip").Count() < 4)
+                            // 8% a second up to four chips: they went for the bot healers while the party was on Dawar and
+                            // wiped a player with seven bots with Dawar at 14% (bot playtest 2026-11-14). 3%, up to two.
+                            if (WasHit(run, statue) && Util.Chance(3) && run.Mobs("chip").Count() < 2)
                             {
                                 run.Tell("A chunk breaks from the statue and gets up!");
                                 run.Spawn(Foe("animated statue", 986, 60, 35, 2500, 0.8, Circle(new TrialPoint(statue.X, statue.Y, statue.Z), 150, 1).First(), "chip", required: false));
