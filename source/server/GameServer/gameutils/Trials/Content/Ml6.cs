@@ -95,7 +95,7 @@ namespace DOL.GS.Trials
             yield return Lateef();
             yield return Infestation();
             yield return Flames();
-            yield return WithHush(Siraadi(), new[] { SiraadiPlatform }, HushRadius);
+            yield return WithHush(Siraadi(), new[] { SiraadiPlatform }, SiraadiHushRadius);
             yield return WithHush(Ankhkare(), new[] { UraeusPen, PlebianPen, SalamanderPen, new TrialPoint(539324, 578368, 10699) }, HushRadius);
             yield return Efreet();
             yield return WithHush(Fortress(), new[] { new TrialPoint(550793, 539622, 10833) }, HushRadius);
@@ -110,7 +110,12 @@ namespace DOL.GS.Trials
         /// </summary>
         public const int HushRadius = 1600;
 
+        /// <summary>World chanters stand up to 1,850 from the platform centre; one of them still joined at 1,600.</summary>
+        public const int SiraadiHushRadius = 2200;
+
         public static readonly TrialPoint SiraadiPlatform = new(485430, 562826, 9592);
+        public static readonly TrialPoint AnkhkareGuardians = new(532184, 582248, 10660);
+        public static readonly TrialPoint AnkhkareSpot = new(531684, 582548, 10660, 2586);
 
         public static TrialDefinition WithHush(TrialDefinition definition, TrialPoint[] points, int radius)
         {
@@ -395,10 +400,6 @@ namespace DOL.GS.Trials
                 new TrialPhase
                 {
                     Announce = "Ankhkare rises to the north-west, and three more guardians with him. Keep your fighters bunched and go to him!",
-                    Mobs =
-                    {
-                        new TrialMobSpec { Name = "Ankhkare's Guardian", Model = SphinxModel, Level = 62, Health = 8000, DamageFactor = 1.0, Count = 3, At = new TrialPoint(532184, 582248, 10831), MeleeDamage = eDamageType.Slash },
-                    },
                     OnStart = AnkhkareRises,
                     Pulses =
                     {
@@ -609,10 +610,18 @@ namespace DOL.GS.Trials
         private static void AnkhkareRises(TrialRun run)
         {
             int paid = OfferingSteps.Count(step => Holds(run, step));
+            // Both stood at Z 10831, the height of the ledge the world rows use; the floor under them is 10650. Ankhkare
+            // walked down, but his three guardians hung 184 above the party, out of reach, and the run could not end
+            // (bot playtest 2026-11-14). Both are now set on the navmesh floor.
+            run.Spawn(new TrialMobSpec
+            {
+                Name = "Ankhkare's Guardian", Model = SphinxModel, Level = 62, Health = 8000, DamageFactor = 1.0, Count = 3,
+                At = Ml4.Ground(run, AnkhkareGuardians), MeleeDamage = eDamageType.Slash,
+            });
             run.Spawn(new TrialMobSpec
             {
                 Name = "Ankhkare", Model = SphinxModel, Level = (byte)(paid >= OfferingSteps.Length ? 69 : 70), Size = 150, Health = AnkhkareHealth(paid),
-                DamageFactor = paid >= OfferingSteps.Length ? 1.3 : 1.5, At = new TrialPoint(531684, 582548, 10831, 2586), Tag = "ankhkare", MeleeDamage = eDamageType.Slash,
+                DamageFactor = paid >= OfferingSteps.Length ? 1.3 : 1.5, At = Ml4.Ground(run, AnkhkareSpot), Tag = "ankhkare", MeleeDamage = eDamageType.Slash,
             });
             foreach (int unpaid in OfferingSteps.Where(step => !Holds(run, step)))
             {

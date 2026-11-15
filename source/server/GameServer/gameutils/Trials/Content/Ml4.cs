@@ -124,7 +124,7 @@ namespace DOL.GS.Trials
         public const int HomeSeconds = 5;
 
         /// <summary>The nearest walkable point, so waves on uneven sand don't hang in the air or sink into it.</summary>
-        private static TrialPoint Ground(TrialRun run, TrialPoint point)
+        internal static TrialPoint Ground(TrialRun run, TrialPoint point)
         {
             Zone zone = run.Starter.CurrentRegion?.GetZone(point.X, point.Y);
             IPathfindingMgr nav = PathfindingProvider.Instance;
