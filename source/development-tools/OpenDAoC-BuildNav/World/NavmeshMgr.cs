@@ -44,6 +44,9 @@ namespace CEM.World
             using (Zone2Obj exp = new(z))
                 exp.Export();
 
+            if (Program.Arguments.SealCracks && File.Exists(obj))
+                ObjCrackSealer.Seal(obj);
+
             if (Program.Arguments.ExportObjOnly)
                 return;
 
@@ -99,6 +102,18 @@ namespace CEM.World
             else if (ladders.Count > 0)
             {
                 Log.Warn($"Zone {z}: ladders found but pass-1 navmesh missing; skipping ladder links.");
+            }
+
+            // Last pass: two-way links where large pieces only meet at a step too tall for Recast.
+            if (Program.Arguments.StepLinks && File.Exists(nav))
+            {
+                var steps = NavStepLinker.FindLinks(nav);
+                if (steps.Count > 0)
+                {
+                    int written = GeomSetWriter.AppendOffMeshConnections(gset, steps, 0.9f);
+                    Log.Normal($"Appended {written} step off-mesh connection(s) to {gset}");
+                    RunRecast(gset, nav, z.Name, pass: 3);
+                }
             }
 
             if (!File.Exists(nav))

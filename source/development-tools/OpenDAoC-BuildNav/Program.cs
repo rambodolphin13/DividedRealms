@@ -179,6 +179,12 @@ namespace CEM
 
             [Argument("normal-priority", Description = "Run at normal priority")]
             public bool NormalPriority { get; set; }
+
+            [Argument("seal-cracks", Description = "Bridge narrow floor cracks between pieces before Recast (dungeons such as the Labyrinth)")]
+            public bool SealCracks { get; set; }
+
+            [Argument("step-links", Description = "Join large mesh pieces that only meet at a too-tall step with two-way off-mesh links")]
+            public bool StepLinks { get; set; }
         }
     }
 }
