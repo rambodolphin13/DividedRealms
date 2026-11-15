@@ -95,11 +95,38 @@ namespace DOL.GS.Trials
             yield return Lateef();
             yield return Infestation();
             yield return Flames();
-            yield return Siraadi();
-            yield return Ankhkare();
+            yield return WithHush(Siraadi(), new[] { SiraadiPlatform }, HushRadius);
+            yield return WithHush(Ankhkare(), new[] { UraeusPen, PlebianPen, SalamanderPen, new TrialPoint(539324, 578368, 10699) }, HushRadius);
             yield return Efreet();
-            yield return Fortress();
-            yield return Chimera();
+            yield return WithHush(Fortress(), new[] { new TrialPoint(550793, 539622, 10833) }, HushRadius);
+            yield return WithHush(Chimera(), new[] { new TrialPoint(550183, 558467, 10763) }, HushRadius);
+        }
+
+        /// <summary>
+        /// Where the live encounter is the world's own camp, that camp stands aside while a run lasts and comes back after
+        /// (<see cref="Ml4.Hush"/>). Siraadi's platform holds 12 world chanters and 9 prema beside the trial's own; with
+        /// them a full bot group wiped at the third pillar (bot playtest 2026-11-14). Ankhkare's pens hold 5 uraeus and 7
+        /// salamanders, the fortress gate 6 taur, the Chimera's room 3 elite defenders.
+        /// </summary>
+        public const int HushRadius = 1600;
+
+        public static readonly TrialPoint SiraadiPlatform = new(485430, 562826, 9592);
+
+        public static TrialDefinition WithHush(TrialDefinition definition, TrialPoint[] points, int radius)
+        {
+            Action<TrialRun> first = definition.Phases[0].OnStart;
+            definition.Phases[0].OnStart = run =>
+            {
+                Ml4.Hush(run, points, radius);
+                first?.Invoke(run);
+            };
+            Action<TrialRun, bool> end = definition.OnEnd;
+            definition.OnEnd = (run, won) =>
+            {
+                end?.Invoke(run, won);
+                Ml4.Unhush(run);
+            };
+            return definition;
         }
 
         private static TrialDefinition Hunt() => new()

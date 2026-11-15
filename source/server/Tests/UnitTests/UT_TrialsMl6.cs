@@ -118,5 +118,16 @@ namespace DOL.UnitTests
             Assert.That(TrialCatalog.All.Count(trial => trial.ML == 6), Is.EqualTo(10));
             Assert.That(TrialCatalog.Validate().Where(error => error.StartsWith("6.")), Is.Empty);
         }
+
+        [Test]
+        public void WorldCampsComeBackWhenTheRunEnds()
+        {
+            Dictionary<int, TrialDefinition> steps = Ml6.Trials().ToDictionary(trial => trial.Step);
+            foreach (int step in new[] { 6, 7, 9, 10 })
+            {
+                Assert.That(steps[step].OnEnd, Is.Not.Null, $"6.{step}");
+                Assert.That(steps[step].Phases[0].OnStart, Is.Not.Null, $"6.{step}");
+            }
+        }
     }
 }
