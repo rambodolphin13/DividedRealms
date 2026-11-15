@@ -6219,7 +6219,14 @@ namespace DOL.GS
             return eRealm.None;
         }
 
+        // With co-op on, the bots' frontier is the open-frontier war of coop_war_zones (New Frontiers and its
+        // dungeons by default); Old Frontiers and its dungeons are then co-op lands like any other.
         private static bool IsFrontierZone(ushort regionId, ushort zoneId) =>
+            DOL.GS.ServerRules.HybridCoopRules.Enabled
+                ? DOL.GS.ServerRules.HybridCoopRules.IsFrontierWarZone(regionId, zoneId)
+                : IsOldFrontierZone(regionId, zoneId);
+
+        private static bool IsOldFrontierZone(ushort regionId, ushort zoneId) =>
             AutonomousDungeonPolicy.IsSharedFrontierDungeon(regionId) ||
             regionId == 1 && zoneId is 11 or 12 or 14 or 15 ||
             regionId == 100 && zoneId is 111 or 112 or 113 or 115 ||

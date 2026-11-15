@@ -17,6 +17,9 @@ public class UT_HybridCoopRules
     private GameServer _previous;
     private bool _enabled;
     private int _claimLimit;
+    private string _warZones;
+    // The fight tests use zone 11 of region 1 (an Old Frontiers zone) as their war zone.
+    private const string TestWarZones = HybridCoopRules.DefaultWarZones + ",1:11";
     private readonly List<GameNPC> _pets = new();
     private class Server : GameServer
     {
@@ -66,6 +69,8 @@ public class UT_HybridCoopRules
         _previous = GameServer.Instance;
         _enabled = GS.ServerProperties.Properties.HYBRID_COOP_PVP;
         _claimLimit = GS.ServerProperties.Properties.GUILDS_CLAIM_LIMIT;
+        _warZones = GS.ServerProperties.Properties.COOP_WAR_ZONES;
+        GS.ServerProperties.Properties.COOP_WAR_ZONES = TestWarZones;
         GameServer.LoadTestDouble((Server)RuntimeHelpers.GetUninitializedObject(typeof(Server)));
     }
     [TearDown]
@@ -80,6 +85,7 @@ public class UT_HybridCoopRules
         _pets.Clear();
         GS.ServerProperties.Properties.HYBRID_COOP_PVP = _enabled;
         GS.ServerProperties.Properties.GUILDS_CLAIM_LIMIT = _claimLimit;
+        GS.ServerProperties.Properties.COOP_WAR_ZONES = _warZones;
         GameServer.LoadTestDouble(_previous);
     }
     private static Region Region(ushort id)
@@ -109,14 +115,47 @@ public class UT_HybridCoopRules
         pet.SetOwnBrain(new ControlledMobBrain(owner)); _pets.Add(pet); return pet;
     }
 
-    [TestCase(1,0,false)] [TestCase(1,11,true)] [TestCase(1,12,true)] [TestCase(1,14,true)] [TestCase(1,15,true)]
-    [TestCase(100,100,false)] [TestCase(100,111,true)] [TestCase(100,112,true)] [TestCase(100,113,true)] [TestCase(100,115,true)]
-    [TestCase(200,200,false)] [TestCase(200,210,true)] [TestCase(200,211,true)] [TestCase(200,212,true)] [TestCase(200,214,true)]
+    // Owner 2026-11-15: Old Frontiers, home and expansion lands, dungeons and raid copy 248 are co-op; New Frontiers,
+    // battlegrounds, Summoner's Hall 233, Passage of Conflict, Labyrinth and Darkness Falls stay realm war.
+    [TestCase(1,0,false)] [TestCase(1,11,false)] [TestCase(1,12,false)] [TestCase(1,14,false)] [TestCase(1,15,false)]
+    [TestCase(100,100,false)] [TestCase(100,111,false)] [TestCase(100,115,false)]
+    [TestCase(200,200,false)] [TestCase(200,210,false)] [TestCase(200,214,false)]
+    [TestCase(163,163,true)] [TestCase(163,171,true)] [TestCase(233,233,true)] [TestCase(244,244,true)] [TestCase(245,245,true)]
     [TestCase(249,249,true)] [TestCase(250,250,true)] [TestCase(251,251,true)] [TestCase(252,252,true)] [TestCase(253,253,true)]
-    [TestCase(163,171,true)] [TestCase(165,165,true)] [TestCase(238,238,true)]
-    [TestCase(101,101,false)] [TestCase(2,11,false)] [TestCase(151,151,false)]
-    public void WarBoundariesKeepHomeLandsCitiesHousingAndSIProtected(int region, int zone, bool war) =>
+    [TestCase(165,165,true)] [TestCase(234,234,true)] [TestCase(238,238,true)] [TestCase(242,242,true)]
+    [TestCase(248,248,false)] [TestCase(243,243,false)] [TestCase(246,246,false)] [TestCase(247,247,false)]
+    [TestCase(276,276,false)] [TestCase(277,277,false)]
+    [TestCase(101,101,false)] [TestCase(2,11,false)] [TestCase(151,151,false)] [TestCase(51,51,false)] [TestCase(73,73,false)]
+    public void DefaultWarZonesAreNewFrontiersItsDungeonsDFAndBattlegrounds(int region, int zone, bool war)
+    {
+        GS.ServerProperties.Properties.COOP_WAR_ZONES = HybridCoopRules.DefaultWarZones;
         Assert.That(HybridCoopRules.IsWarLocation((ushort)region, (ushort)zone), Is.EqualTo(war));
+    }
+
+    [Test]
+    public void WarZoneSettingTakesRegionsRangesAndSingleZones()
+    {
+        GS.ServerProperties.Properties.COOP_WAR_ZONES = "163, 234-236;1:11 100:111-113 junk 5-2 7:";
+        Assert.That(HybridCoopRules.IsWarLocation(163, 171), Is.True);
+        Assert.That(HybridCoopRules.IsWarLocation(235, 235), Is.True);
+        Assert.That(HybridCoopRules.IsWarLocation(237, 237), Is.False);
+        Assert.That(HybridCoopRules.IsWarLocation(1, 11), Is.True);
+        Assert.That(HybridCoopRules.IsWarLocation(1, 12), Is.False, "Only the named zone of a shared region.");
+        Assert.That(HybridCoopRules.IsWarLocation(100, 112), Is.True);
+        Assert.That(HybridCoopRules.IsWarLocation(100, 115), Is.False);
+        Assert.That(HybridCoopRules.IsWarLocation(3, 3), Is.False, "A reversed range is ignored.");
+        GS.ServerProperties.Properties.COOP_WAR_ZONES = "";
+        Assert.That(HybridCoopRules.IsWarLocation(163, 171), Is.False, "An empty list makes the whole world co-op.");
+    }
+
+    [TestCase(163,171,true)] [TestCase(244,244,true)] [TestCase(233,233,true)] [TestCase(245,245,true)]
+    [TestCase(249,249,false)] [TestCase(238,238,false)] [TestCase(165,165,false)] [TestCase(252,252,false)]
+    [TestCase(1,11,false)] [TestCase(248,248,false)]
+    public void BotFrontierIsTheOpenWarWithoutBattlegroundsOrDF(int region, int zone, bool frontier)
+    {
+        GS.ServerProperties.Properties.COOP_WAR_ZONES = HybridCoopRules.DefaultWarZones;
+        Assert.That(HybridCoopRules.IsFrontierWarZone((ushort)region, (ushort)zone), Is.EqualTo(frontier));
+    }
 
     [Test]
     public void DifferentRealmsCooperateAtHomeAndFightRealmAgainstRealmInFrontier()

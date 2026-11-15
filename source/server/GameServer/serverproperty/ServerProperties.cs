@@ -36,8 +36,11 @@ namespace DOL.GS.ServerProperties
 			AllCurrentProperties = propDict.ToDictionary(k => k.Key, v => v.Value.Item2.GetValue(null));
 		}
 
-        [ServerProperty("server", "hybrid_coop_pvp", "Cross-realm co-op, with normal realm vs realm in DF, battlegrounds and frontier zones. Requires restart.", false)]
+        [ServerProperty("server", "hybrid_coop_pvp", "Cross-realm co-op, with normal realm vs realm in the coop_war_zones (New Frontiers, DF, battlegrounds by default). Requires restart.", false)]
         public static bool HYBRID_COOP_PVP;
+
+        [ServerProperty("server", "coop_war_zones", "With hybrid_coop_pvp on: where realms fight realm against realm. Comma list of regions (163), region ranges (234-242) and single zones (region:zone, e.g. 1:11 for an Old Frontiers zone); everywhere else is co-op. Default: New Frontiers, battlegrounds, Summoner's Hall 233, Passage of Conflict, Labyrinth, Darkness Falls.", DOL.GS.ServerRules.HybridCoopRules.DefaultWarZones)]
+        public static string COOP_WAR_ZONES = DOL.GS.ServerRules.HybridCoopRules.DefaultWarZones;
 
         [ServerProperty("spells", "spell_damage_pushback", "Damage delays player/gamebot casts instead of interrupting or imposing a casting lockout.", true)]
         public static bool SPELL_DAMAGE_PUSHBACK = true;
