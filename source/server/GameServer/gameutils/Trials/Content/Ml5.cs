@@ -21,7 +21,12 @@ namespace DOL.GS.Trials
         public const int FountainReach = 300;
         /// <summary>The imported bound ones in the 5.6-5.8 chambers are the live encounter; the trial brings its own (DR-151).</summary>
         public const int ChamberClearRadius = 1000;
-        public const int HapyCopyFadePercent = 60;
+        /// <summary>
+        /// Live: a copy only needs "damaging a bit". At 60% a full bot group wore down two of six copies in the 25 s
+        /// window, the other four flowed back for 16%, and Hapy climbed back over her split mark every cycle (bot
+        /// playtest 2026-11-14).
+        /// </summary>
+        public const int HapyCopyFadePercent = 85;
         public const int LionStrikeSeconds = 8;
         public const int LionStrikeDamage = 300;
         public const int AddSecondsNearUnjudged = 20;
@@ -509,6 +514,29 @@ namespace DOL.GS.Trials
                 mob.Delete();
         }
 
+        /// <summary>
+        /// Adds come out beside the echo that calls them, not on a ring round the trial anchor: in the Halls the ring
+        /// put a scarab inside a wall where neither player nor bots could reach it, and with one scarab left alive
+        /// Duamutef never split again (bot playtest 2026-11-14). The echo stands where the party can reach.
+        /// </summary>
+        public const int BesideRadius = 120;
+
+        public static void SpawnBeside(TrialRun run, TrialMobSpec spec, GameObject center)
+        {
+            for (int i = 0; i < spec.Count; i++)
+            {
+                double angle = 2 * Math.PI * i / Math.Max(1, spec.Count);
+                TrialPoint at = new(center.X + (int)(BesideRadius * Math.Cos(angle)), center.Y + (int)(BesideRadius * Math.Sin(angle)), center.Z, center.Heading);
+                run.Spawn(new TrialMobSpec
+                {
+                    Name = spec.Name, Model = spec.Model, Level = spec.Level, Size = spec.Size, Health = spec.Health, DamageFactor = spec.DamageFactor,
+                    Count = 1, At = at, Spread = spec.Spread, MeleeDamage = spec.MeleeDamage, AggroRange = spec.AggroRange, Immune = spec.Immune,
+                    Hurts = spec.Hurts, Reflect = spec.Reflect, Required = spec.Required, Objective = spec.Objective, ObjectiveText = spec.ObjectiveText,
+                    Tag = spec.Tag, OnDeath = spec.OnDeath, OnHit = spec.OnHit,
+                });
+            }
+        }
+
         private static TrialMobSpec Jar(string name, string tag, TrialPoint at, string text, Action<TrialRun, TrialMob> use) => new()
         {
             Name = name, Model = ItemModel, Size = 27, Objective = true, Required = false, At = at, Tag = tag, ObjectiveText = text,
@@ -539,7 +567,7 @@ namespace DOL.GS.Trials
                 run.Set("swarmHealth", echo.Health);
                 echo.Size = 30;
                 run.Tell("The Echo of Duamutef shrinks away into a swarm of scarabs! Keep striking him and they cannot feed him.");
-                run.Spawn(Scarab);
+                SpawnBeside(run, Scarab, echo);
                 return;
             }
 
@@ -575,7 +603,7 @@ namespace DOL.GS.Trials
                 hapy.Immune = true;
                 hapy.Flags |= GameNPC.eFlags.GHOST;
                 run.Tell("The Echo of Hapy fades, and hollow copies of her step out of the air!");
-                run.Spawn(HapyCopy);
+                SpawnBeside(run, HapyCopy, hapy);
                 return;
             }
 
@@ -610,7 +638,10 @@ namespace DOL.GS.Trials
             if (Every(run, "lion", 18) && run.Mobs("lion").Count() < 4)
             {
                 run.Tell("A lion pads out of the wall at the Echo of Imsety's call.");
-                run.Spawn(Lion);
+                if (run.Mobs("imsety").FirstOrDefault() is TrialMob imsety)
+                    SpawnBeside(run, Lion, imsety);
+                else
+                    run.Spawn(Lion);
             }
             if (!Every(run, "lionStrike", LionStrikeSeconds))
                 return;

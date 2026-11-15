@@ -41,6 +41,7 @@ namespace DOL.UnitTests
             Assert.That(Ml5.CopyFades(100), Is.False);
             Assert.That(Ml5.CopyFades(Ml5.HapyCopyFadePercent + 1), Is.False);
             Assert.That(Ml5.CopyFades(Ml5.HapyCopyFadePercent), Is.True);
+            Assert.That(Ml5.HapyCopyFadePercent, Is.GreaterThanOrEqualTo(80), "a bit of damage, not most of a copy");
         }
 
         [Test]
