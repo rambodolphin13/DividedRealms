@@ -635,6 +635,9 @@ namespace DOL.GS.Trials
                 Health = health,
                 DamageFactor = 1.0,
                 At = at,
+                // Passive while its eidolons live: an immune statue that fights back left the party nothing to do but die
+                // (bot playtest 2026-11-14). It wakes when the last eidolon falls.
+                AggroRange = 0,
                 Immune = true,
                 Tag = "statue",
             });
@@ -651,6 +654,10 @@ namespace DOL.GS.Trials
                         return;
                     }
                     run.Set("inside", true);
+                    // Temple monsters by the Cracked Gate are often already on the party when it starts and follow it in
+                    // (a stolist and two pulverizers killed the healers in the 2026-11-14 bot playtest): the floor is Kanakht's.
+                    ClearWorldMonsters(run, CrackedGate, 1500);
+                    ClearWorldMonsters(run, Amphitheater, 1500);
                     Ml12Kit.MoveParty(run, Amphitheater);
                 },
                 OnTick = GrowEidolons,
@@ -661,6 +668,8 @@ namespace DOL.GS.Trials
         {
             List<TrialMob> eidolons = run.Mobs("eidolon").ToList();
             run.SetImmune("statue", eidolons.Count > 0);
+            if (eidolons.Count == 0)
+                Ml12Kit.Wake(run, "statue", 1500);
 
             if (eidolons.Count == 0 || !Ml12Kit.Every(run, "grow", 10))
                 return;
