@@ -183,9 +183,11 @@ namespace DOL.GS.Trials
             };
 
             // Prima: stone statues have very high defence, veined marble very high offence, bronze a mixture.
-            static TrialMobSpec StoneStatue(int x, int y, int z) => Foe("Stone Statue", Stone, 60, 100, 8000, 0.8, new TrialPoint(x, y, z), "bisul.statue");
-            static TrialMobSpec VeinedStatue(int x, int y, int z) => Foe("Veined Marble Statue", Marble, 60, 100, 4500, 1.6, new TrialPoint(x, y, z), "bisul.statue");
-            static TrialMobSpec BronzeStatue(int x, int y, int z) => Foe("Bronze Statue", Bronze, 60, 100, 6000, 1.1, new TrialPoint(x, y, z), "bisul.statue");
+            // Bot playtest 2026-11-14: at 8000/4500/6000 a player with seven bots broke about one statue every 90 s while
+            // Bisul mended them, and wiped at the fourth set after 13 minutes. Same roles, less stone.
+            static TrialMobSpec StoneStatue(int x, int y, int z) => Foe("Stone Statue", Stone, 60, 100, 5000, 0.8, new TrialPoint(x, y, z), "bisul.statue");
+            static TrialMobSpec VeinedStatue(int x, int y, int z) => Foe("Veined Marble Statue", Marble, 60, 100, 3000, 1.4, new TrialPoint(x, y, z), "bisul.statue");
+            static TrialMobSpec BronzeStatue(int x, int y, int z) => Foe("Bronze Statue", Bronze, 60, 100, 4000, 1.0, new TrialPoint(x, y, z), "bisul.statue");
 
             // Bisul's own spells: an area burn around him, and he mends his statues while they fight.
             static TrialPhase Powers(TrialPhase phase)
@@ -198,7 +200,7 @@ namespace DOL.GS.Trials
                     if (Count(run, "bisul.mend") % 10 != 0 || Gone(run, "bisul"))
                         return;
                     foreach (TrialMob statue in run.Mobs("bisul.statue").Where(statue => statue.HealthPercent < 100))
-                        Mend(statue, 5);
+                        Mend(statue, 3);
                 };
                 return phase;
             }
@@ -368,8 +370,10 @@ namespace DOL.GS.Trials
                     new TrialPhase
                     {
                         Announce = "Lord Tholos walks, his sword aflame. Stay behind him!",
-                        Mobs = { Foe("Lord Tholos", Soldier, 70, 110, 80000, 2.2, lord, "lord", eDamageType.Slash) },
-                        Pulses = { new TrialPulse { IntervalSeconds = 6, Damage = 150, Radius = 300, SourceTag = "lord", DamageType = eDamageType.Heat } },
+                        // Bot playtest 2026-11-14: 80000 / 2.2 with a 150 burst every 6 s wiped a player with seven bots at 58%
+                        // (bots stand in the burst; a player stays behind him). 50000 / 1.8 / 100.
+                        Mobs = { Foe("Lord Tholos", Soldier, 70, 110, 50000, 1.8, lord, "lord", eDamageType.Slash) },
+                        Pulses = { new TrialPulse { IntervalSeconds = 6, Damage = 100, Radius = 300, SourceTag = "lord", DamageType = eDamageType.Heat } },
                         OnStart = run =>
                         {
                             foreach (TrialMob tholos in run.Mobs("lord"))
