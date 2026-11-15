@@ -777,7 +777,9 @@ namespace DOL.GS.Trials
                             if (sleep > 0)
                             {
                                 run.Set("sleep", sleep - 1);
-                                Mend(statue, 2);
+                                // 2% a second (20% a sleep) out-mended a player with six bots once Dawar was dead: the statue sat
+                                // at 97-99% for five minutes (bot playtest 2026-11-14).
+                                Mend(statue, 1);
                                 if (sleep == 1)
                                 {
                                     statue.Immune = false;
