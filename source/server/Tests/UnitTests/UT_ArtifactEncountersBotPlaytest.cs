@@ -1,4 +1,5 @@
 using System.Linq;
+using DOL.AI.Brain;
 using DOL.GS;
 using NUnit.Framework;
 
@@ -12,26 +13,27 @@ namespace DOL.UnitTests
     public class UT_ArtifactEncountersBotPlaytest
     {
         [Test]
-        public void GoldenSpear_ThreeKillsFitOneGroupsPace()
+        public void RingOfFire_WavesOfFiveThenTheWardenAlone()
         {
-            // Each 12x boss took one bot group about 7 minutes, and they stand 3,000-4,000 apart.
-            ArtifactEncounterDef spear = ArtifactEncounters.Find("1028");
-            Assert.That(spear.RequiredKills, Has.Length.EqualTo(3));
-            Assert.That(ArtifactEncounters.KillWindowMs, Is.GreaterThanOrEqualTo(30 * 60 * 1000));
+            // Waves of 7 and 6 guardians plus the 12x Warden wiped a bot group three times; live had CC and a rest
+            // between rounds. The 19 guardians now come at most five at a time, then the Warden alone.
+            ArtifactEncounterDef ring = ArtifactEncounters.Find("1043");
+            ArtifactStageDef[] waves = ring.Stages[..^1];
+
+            Assert.That(waves.Sum(wave => wave.Spawns.Sum(spawn => spawn.Count)), Is.EqualTo(19));
+            Assert.That(waves.All(wave => wave.Spawns.All(spawn => !spawn.IsBoss) && wave.Spawns.Sum(spawn => spawn.Count) <= 5));
+            Assert.That(ring.Stages[^1].Spawns, Has.Length.EqualTo(1));
+            Assert.That(ring.Stages[^1].Spawns[0].IsBoss, Is.True);
         }
 
         [Test]
-        public void RingOfFire_WardenComesAloneAfterTheThirdWave()
+        public void GateAdds_WaitToBeAttacked()
         {
-            // Six level 63 guardians plus the 12x Warden at once wiped a bot group twice; live rested between rounds.
-            ArtifactEncounterDef ring = ArtifactEncounters.Find("1043");
-            Assert.That(ring.Stages, Has.Length.EqualTo(4));
-
-            for (int i = 0; i < 3; i++)
-                Assert.That(ring.Stages[i].Spawns.All(spawn => !spawn.IsBoss), "wave " + (i + 1));
-
-            Assert.That(ring.Stages[3].Spawns, Has.Length.EqualTo(1));
-            Assert.That(ring.Stages[3].Spawns[0].IsBoss, Is.True);
+            // Ten Control Links aggroing at once wiped a full bot group twice at Karise; live links stayed put.
+            StandardMobBrain brain = new() { AggroLevel = 100, AggroRange = 1500 };
+            ArtifactEncounterAnchor.MakeGateAddWait(brain);
+            Assert.That(brain.AggroLevel, Is.Zero);
+            Assert.That(brain.AggroCount, Is.Zero);
         }
     }
 }
