@@ -474,11 +474,12 @@ namespace DOL.GS.Trials
                     {
                         int now = Count(run, "seconds");
                         // Bot playtest 2026-11-14: 9000 health, Reach 300 every 10 s and up to six alive wiped a player
-                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 3000 health (4500 still took 80 s a kill), at most four alive,
+                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 2000 health and 0.8 damage (4500 took 80 s a kill, 3000 about 50 s, and their melee
+                        // wiped the bots at three and a half minutes), at most three alive,
                         // and the Reach once, on arrival (EnaraReach).
-                        if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 4)
+                        if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 3)
                         {
-                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 3000, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
+                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 2000, 0.8, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
                             Resist(enara, 50, eProperty.Resist_Heat);
                             Resist(enara, -25, eProperty.Resist_Cold);
                             run.Tell("A Shaitan Enara appears, gathering heat!");
