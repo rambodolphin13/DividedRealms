@@ -1,0 +1,5 @@
+[
+ {"table": "Mob", "key": "AlbToa-7479", "set": {"Flags": 16, "AggroLevel": 0, "AggroRange": 0}},
+ {"table": "Mob", "key": "MidToa-7479", "set": {"Flags": 16, "AggroLevel": 0, "AggroRange": 0}},
+ {"table": "NpcTemplate", "where": {"TemplateId": 60162760}, "set": {"AggroLevel": 0}}
+]

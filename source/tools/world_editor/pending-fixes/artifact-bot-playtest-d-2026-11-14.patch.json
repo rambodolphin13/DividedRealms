@@ -1,0 +1,49 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-15T09:22:24.230577+00:00",
+ "clientWorld": "bb01d5e0ea8847ce322f77ff0f61fa511cdd4b62aee99f583e39db36b54983dc",
+ "changes": [
+  {
+   "table": "Mob",
+   "key": "AlbToa-7479",
+   "op": "update",
+   "before": {
+    "Flags": 0,
+    "AggroLevel": -1,
+    "AggroRange": -1
+   },
+   "after": {
+    "Flags": 16,
+    "AggroLevel": 0,
+    "AggroRange": 0
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "MidToa-7479",
+   "op": "update",
+   "before": {
+    "Flags": 0,
+    "AggroLevel": -1,
+    "AggroRange": -1
+   },
+   "after": {
+    "Flags": 16,
+    "AggroLevel": 0,
+    "AggroRange": 0
+   }
+  },
+  {
+   "table": "NpcTemplate",
+   "key": "98392590",
+   "op": "update",
+   "before": {
+    "AggroLevel": 200
+   },
+   "after": {
+    "AggroLevel": 0
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
