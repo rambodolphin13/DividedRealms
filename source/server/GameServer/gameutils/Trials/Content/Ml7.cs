@@ -760,8 +760,10 @@ namespace DOL.GS.Trials
                             Model = 830,
                             Level = 70,
                             Size = 100,
-                            Health = 130000,
-                            DamageFactor = 2.0,
+                            // Bot playtest 2026-11-14: 130000 (65000 for a player and seven bots) went 2-6% a minute and ran
+                            // out the 40 minutes; 2.0 damage killed the bot melee by minute seven.
+                            Health = 70000,
+                            DamageFactor = 1.5,
                             At = TyphonSpots[0],
                             Tag = "typhon",
                             Immune = true,
