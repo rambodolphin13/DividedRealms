@@ -731,7 +731,9 @@ namespace DOL.GS.Trials
                         Announce = "Dawar sends his statue forward and backs away to cast.",
                         Mobs =
                         {
-                            Foe("controlled statue", 989, 64, 72, 25000, 1.5, statueAt, "statue"),
+                            // Bot playtest 2026-11-14: at 1.5 the statue beat the bot healers down while Dawar meleed the rest;
+                            // wipe at four minutes with Dawar at 58%. 1.1, and Dawar 1.0.
+                            Foe("controlled statue", 989, 64, 72, 25000, 1.1, statueAt, "statue"),
                             new TrialMobSpec
                             {
                                 Name = "Dawar",
@@ -739,7 +741,7 @@ namespace DOL.GS.Trials
                                 Level = 68,
                                 Size = 60,
                                 Health = 50000,
-                                DamageFactor = 1.3,
+                                DamageFactor = 1.0,
                                 At = home,
                                 Tag = "dawar",
                                 MeleeDamage = eDamageType.Energy,
@@ -772,7 +774,7 @@ namespace DOL.GS.Trials
                             if (sleep > 0)
                             {
                                 run.Set("sleep", sleep - 1);
-                                Mend(statue, 3);
+                                Mend(statue, 2);
                                 if (sleep == 1)
                                 {
                                     statue.Immune = false;
@@ -902,7 +904,9 @@ namespace DOL.GS.Trials
                 List<TrialMob> gorgons = run.Mobs("sister").Concat(run.Mobs("kynthia")).ToList();
                 foreach (TrialMob engaged in gorgons.Where(gorgon => gorgon.InCombat))
                 {
-                    foreach (TrialMob helper in run.Mobs("sister").Where(sister => sister != engaged && !sister.InCombat && engaged.IsWithinRadius(sister, Neighbours)))
+                    // ToList: spawning cobras below adds to the run's mob list. Enumerating it live threw "Collection was
+                    // modified" on the first call and ended 8.8 with "The trial falters" (bot playtest 2026-11-14).
+                    foreach (TrialMob helper in run.Mobs("sister").Where(sister => sister != engaged && !sister.InCombat && engaged.IsWithinRadius(sister, Neighbours)).ToList())
                     {
                         string key = $"sent.{helper.Name}";
                         int last = run.Get(key, -CallSeconds);
