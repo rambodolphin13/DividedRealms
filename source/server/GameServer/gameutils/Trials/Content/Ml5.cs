@@ -284,9 +284,14 @@ namespace DOL.GS.Trials
                     Mobs =
                     {
                         new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 5000, DamageFactor = 1.0, Count = 4, Spread = 300, Tag = "bound" },
-                        new TrialMobSpec { Name = "bound zauemia ruinetu", Model = MummyModel, Level = 66, Size = 60, Health = 8000, DamageFactor = 1.1, Spread = 100, Immune = true, Tag = "mask" },
+                        new TrialMobSpec { Name = "bound zauemia ruinetu", Model = MummyModel, Level = 66, Size = 60, Health = 8000, DamageFactor = 1.1, Spread = 100, Immune = true, AggroRange = 0, Tag = "mask" },
                     },
-                    OnStart = HushChamber,
+                    OnStart = run =>
+                    {
+                        HushChamber(run);
+                        foreach (TrialMob masked in run.Mobs("mask"))
+                            masked.Flags |= GameNPC.eFlags.PEACE;
+                    },
                     OnTick = MaskTick,
                 },
             },
@@ -695,6 +700,14 @@ namespace DOL.GS.Trials
                 return;
             run.Set("unmasked", true);
             run.SetImmune("mask", false);
+            foreach (TrialMob masked in run.Mobs("mask"))
+            {
+                masked.Flags &= ~GameNPC.eFlags.PEACE;
+                if (masked.Brain is DOL.AI.Brain.StandardMobBrain brain)
+                    brain.AggroRange = 1500;
+                if (RandomHostile(run, masked, 1500) is GameLiving target)
+                    masked.StartAttack(target);
+            }
             run.Tell("The circle is broken. The masked one can be hurt!");
         }
 
