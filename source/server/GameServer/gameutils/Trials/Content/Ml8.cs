@@ -1150,7 +1150,7 @@ namespace DOL.GS.Trials
                         .Concat(spots.Skip(warriors).Take(sages).Select(at => Foe("Statue Sage", 1321, level, 60, 3500, 0.8, at, "caster")))
                         .Concat(spots.Skip(warriors + sages).Select(at => Foe("Statue Mage", 1315, level, 60, 3000, 0.7, at, "caster")))
                         .ToList(),
-                    Pulses = { new TrialPulse { IntervalSeconds = 10, Damage = 140, Radius = 800, SourceTag = "caster", DamageType = eDamageType.Energy } },
+                    Pulses = { new TrialPulse { IntervalSeconds = 10, Damage = 100, Radius = 800, SourceTag = "caster", DamageType = eDamageType.Energy } },
                     OnStart = run =>
                     {
                         if (wave == 1)
@@ -1162,7 +1162,7 @@ namespace DOL.GS.Trials
                                 Level = 68,
                                 Size = 120,
                                 Health = 45000,
-                                DamageFactor = 1.7,
+                                DamageFactor = 1.1,
                                 At = new TrialPoint(Battlefield.X + 300, Battlefield.Y, Battlefield.Z),
                                 Tag = "agne",
                                 Required = false,
@@ -1232,8 +1232,10 @@ namespace DOL.GS.Trials
                         Done = run => Resuming(run) || Count(run, "build") >= 10,
                     },
                     Wave(1, "Agne steps down, and his first rank marches onto the field with him.", 55, 6, 0, 0),
-                    Wave(2, "Agne goes still as his second rank comes on, sages among them.", 58, 4, 3, 0),
-                    Wave(3, "The last rank has more casters than blades. Take them first!", 61, 3, 2, 3),
+                    // Bot playtest 2026-11-14: 4+3 and 3+2+3 with Agne (1.7) swinging at the bot healers wiped a player with
+                    // seven bots early in the third rank. Smaller ranks, the same mix, and a softer Agne.
+                    Wave(2, "Agne goes still as his second rank comes on, sages among them.", 58, 3, 2, 0),
+                    Wave(3, "The last rank has more casters than blades. Take them first!", 61, 2, 2, 2),
                     BeforeTalos(new TrialPhase
                     {
                         Announce = "Agne's army is broken. Now he can fall!",
