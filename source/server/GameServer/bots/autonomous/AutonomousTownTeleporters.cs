@@ -135,7 +135,12 @@ public static class AutonomousTownTeleporters
         WorldMgr.GetTeleportLocations(realm, "Djinn").Where(destination => destination.RegionID == region &&
             AutonomousAtlantisPolicy.IsStoneDestination(destination.TeleportID));
 
+    /// <summary>
+    /// The teleporter's own rows plus the travel catalogue rows the bot's realm may use now (its own lands and own
+    /// side of the realm-war areas; other realms' lands only in the co-op world), as a player would.
+    /// </summary>
     public static IEnumerable<DbTeleport> Destinations(eRealm realm) => WorldMgr.GetTeleportLocations(realm, string.Empty)
+        .Concat(TravelCatalogue.PlannableFor(realm))
         .Where(destination => destination.RegionID > 0 && !NeverPlannedRegions.Contains((ushort)destination.RegionID) &&
                               WorldMgr.GetRegion((ushort)destination.RegionID) is { IsDisabled: false } region &&
                               region.GetZone(destination.X, destination.Y) != null);
