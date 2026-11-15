@@ -393,7 +393,7 @@ namespace DOL.GS
                 }
 
                 SetFlag(MovementState.OnPath);
-                PathTo(new(CurrentPathPoint.X, CurrentPathPoint.Y, CurrentPathPoint.Z), Math.Min(_moveOnPathSpeed, CurrentPathPoint.MaxSpeed));
+                MoveToPathPoint(new(CurrentPathPoint.X, CurrentPathPoint.Y, CurrentPathPoint.Z), Math.Min(_moveOnPathSpeed, CurrentPathPoint.MaxSpeed));
                 return;
             }
             else if (!IsFlagSet(MovementState.OnPath))
@@ -414,7 +414,7 @@ namespace DOL.GS
                 else if (CurrentPathPoint.Prev != null)
                     CurrentPathPoint = CurrentPathPoint.Prev;
 
-                PathTo(new(CurrentPathPoint.X, CurrentPathPoint.Y, CurrentPathPoint.Z), Owner.MaxSpeed);
+                MoveToPathPoint(new(CurrentPathPoint.X, CurrentPathPoint.Y, CurrentPathPoint.Z), Owner.MaxSpeed);
             }
             else if (log.IsErrorEnabled)
                 log.Error($"Called {nameof(MoveOnPath)} but both {nameof(CurrentPathPoint)} and {nameof(MovementState.OnPath)} are already set. (NPC: {Owner})");
@@ -1184,6 +1184,19 @@ namespace DOL.GS
             }
         }
 
+        /// <summary>
+        /// Keep patrol points are placed by hand around keep and tower walls, which are not in the zone navmesh, and
+        /// sit at the keep piece's height rather than on the ground the mesh knows; routing them through the mesh
+        /// left tower patrols standing still. Patrol guards walk straight from point to point, as before navmeshes.
+        /// </summary>
+        private void MoveToPathPoint(Vector3 point, short speed)
+        {
+            if (Owner is DOL.GS.Keeps.GameKeepGuard { PatrolGroup: not null })
+                WalkTo(point, speed);
+            else
+                PathTo(point, speed);
+        }
+
         private void MoveToNextPathPoint()
         {
             PathPoint oldPathPoint = CurrentPathPoint;
@@ -1220,7 +1233,7 @@ namespace DOL.GS
             oldPathPoint.FiredFlag = !oldPathPoint.FiredFlag;
 
             if (CurrentPathPoint != null)
-                PathTo(new(CurrentPathPoint.X, CurrentPathPoint.Y, CurrentPathPoint.Z), Math.Min(_moveOnPathSpeed, CurrentPathPoint.MaxSpeed));
+                MoveToPathPoint(new(CurrentPathPoint.X, CurrentPathPoint.Y, CurrentPathPoint.Z), Math.Min(_moveOnPathSpeed, CurrentPathPoint.MaxSpeed));
             else
                 StopMovingOnPath();
         }
