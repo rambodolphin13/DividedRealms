@@ -84,6 +84,20 @@ namespace DOL.GS.Trials
                 mob.OtherBonus[resist] = amount;
         }
 
+        /// <summary>
+        /// Changes a living mob's level without healing it. GameNPC.Level runs SetStats, and the Constitution setter
+        /// fills health to the maximum, so a plain <c>mob.Level = x</c> mid-fight made the 7.3 Dissos whole every
+        /// 30 seconds: it could never be killed and never split (bot playtest 2026-11-14).
+        /// </summary>
+        public static void SetLevelKeepHealth(GameNPC mob, byte level)
+        {
+            if (mob.Level == level)
+                return;
+            int health = mob.Health;
+            mob.Level = level;
+            mob.Health = Math.Min(health, mob.MaxHealth);
+        }
+
         /// <summary>How many of the falling health marks have been passed at this percent.</summary>
         public static int MarksPassed(int healthPercent, params int[] marks) => marks.Count(mark => healthPercent <= mark);
     }

@@ -183,14 +183,16 @@ namespace DOL.GS.Trials
             };
 
             // Prima: stone statues have very high defence, veined marble very high offence, bronze a mixture.
-            static TrialMobSpec StoneStatue(int x, int y, int z) => Foe("Stone Statue", Stone, 60, 100, 8000, 0.8, new TrialPoint(x, y, z), "bisul.statue");
-            static TrialMobSpec VeinedStatue(int x, int y, int z) => Foe("Veined Marble Statue", Marble, 60, 100, 4500, 1.6, new TrialPoint(x, y, z), "bisul.statue");
-            static TrialMobSpec BronzeStatue(int x, int y, int z) => Foe("Bronze Statue", Bronze, 60, 100, 6000, 1.1, new TrialPoint(x, y, z), "bisul.statue");
+            // Bot playtest 2026-11-14: at 8000/4500/6000 a player with seven bots broke about one statue every 90 s while
+            // Bisul mended them, and wiped at the fourth set after 13 minutes. Same roles, less stone.
+            static TrialMobSpec StoneStatue(int x, int y, int z) => Foe("Stone Statue", Stone, 60, 100, 5000, 0.8, new TrialPoint(x, y, z), "bisul.statue");
+            static TrialMobSpec VeinedStatue(int x, int y, int z) => Foe("Veined Marble Statue", Marble, 60, 100, 3000, 1.4, new TrialPoint(x, y, z), "bisul.statue");
+            static TrialMobSpec BronzeStatue(int x, int y, int z) => Foe("Bronze Statue", Bronze, 60, 100, 4000, 1.0, new TrialPoint(x, y, z), "bisul.statue");
 
             // Bisul's own spells: an area burn around him, and he mends his statues while they fight.
             static TrialPhase Powers(TrialPhase phase)
             {
-                phase.Pulses.Add(new TrialPulse { IntervalSeconds = 10, Damage = 160, Radius = 600, SourceTag = "bisul", DamageType = eDamageType.Heat, Message = "Bisul's flames roll over the statues' foes!" });
+                phase.Pulses.Add(new TrialPulse { IntervalSeconds = 10, Damage = 120, Radius = 600, SourceTag = "bisul", DamageType = eDamageType.Heat, Message = "Bisul's flames roll over the statues' foes!" });
                 Action<TrialRun> tick = phase.OnTick;
                 phase.OnTick = run =>
                 {
@@ -198,7 +200,7 @@ namespace DOL.GS.Trials
                     if (Count(run, "bisul.mend") % 10 != 0 || Gone(run, "bisul"))
                         return;
                     foreach (TrialMob statue in run.Mobs("bisul.statue").Where(statue => statue.HealthPercent < 100))
-                        Mend(statue, 5);
+                        Mend(statue, 3);
                 };
                 return phase;
             }
@@ -243,7 +245,9 @@ namespace DOL.GS.Trials
                                 Level = 66,
                                 Size = 60,
                                 Health = 45000,
-                                DamageFactor = 1.6,
+                                // Prima: a caster (an area spell, a bolt, heals for his statues). At 1.6 his melee, while he
+                                // could not be hurt, killed a player with seven bots at the third set (bot playtest 2026-11-14).
+                                DamageFactor = 0.8,
                                 At = guards[0],
                                 Tag = "bisul",
                                 Immune = true,
@@ -366,8 +370,10 @@ namespace DOL.GS.Trials
                     new TrialPhase
                     {
                         Announce = "Lord Tholos walks, his sword aflame. Stay behind him!",
-                        Mobs = { Foe("Lord Tholos", Soldier, 70, 110, 80000, 2.2, lord, "lord", eDamageType.Slash) },
-                        Pulses = { new TrialPulse { IntervalSeconds = 6, Damage = 150, Radius = 300, SourceTag = "lord", DamageType = eDamageType.Heat } },
+                        // Bot playtest 2026-11-14: 80000 / 2.2 with a 150 burst every 6 s wiped a player with seven bots at 58%
+                        // (bots stand in the burst; a player stays behind him). 50000 / 1.8 / 100.
+                        Mobs = { Foe("Lord Tholos", Soldier, 70, 110, 50000, 1.8, lord, "lord", eDamageType.Slash) },
+                        Pulses = { new TrialPulse { IntervalSeconds = 6, Damage = 100, Radius = 300, SourceTag = "lord", DamageType = eDamageType.Heat } },
                         OnStart = run =>
                         {
                             foreach (TrialMob tholos in run.Mobs("lord"))
@@ -525,7 +531,16 @@ namespace DOL.GS.Trials
                 Anchor = new TrialPoint(366490, 709300, 8083),
                 StarterName = ServantName,
                 StarterModel = Servant,
-                Replaces = new[] { "Chief Arsene", "Chief Oighrig" },
+                // Bot playtest 2026-11-14: the starter stands inside a world centaur camp (aggro 60, range 500, a dozen
+                // within 2,000 in each realm copy, more of the village out to 5,000); they joined the warband and wiped a player with seven bots in 90 s.
+                // The camp is cleared while trials are on, so the fight is the scout, the chief and his band.
+                // A second run (3,500 cleared) was still killed by a world centaur sage: the whole village goes.
+                Replaces = new[]
+                {
+                    "Chief Arsene", "Chief Oighrig", "Chief Chrysostom", "centaur warrior", "centaur mage", "centaur craftsman", "centaur guard", "centaur commoner",
+                    "centaur scout superior", "centaur scout", "centaur forager", "centaur sage", "centaur lookout", "centaur healer", "centaur advisor", "centaur messenger",
+                },
+                ReplaceRadius = 5000,
                 Intro = "One of the centaur lieutenants keeps Agne's left leg in his camp, and the old trial asked every hero to beat a lieutenant anyway. Their scout is already looking for you. When he finds you he blows his horn, and the lieutenant rides out to that spot with his whole warband: spears, bows, a healer and a caster. The lieutenant is the one that matters.",
                 Victory = "Chief Oighrig falls, and Agne's left leg is yours.",
                 TimeLimitSeconds = 1500,
@@ -542,16 +557,17 @@ namespace DOL.GS.Trials
                         Announce = "The scout's horn sounds! Chief Oighrig gallops out of his camp with his warband.",
                         Mobs =
                         {
-                            Foe("Chief Oighrig", Bowman, 65, 65, 18000, 1.4, camp, "band", eDamageType.Thrust),
-                            Foe("centaur impaler", Centaur, 62, 57, 4000, 0.8, ring[0], "band", eDamageType.Thrust, false),
-                            Foe("centaur impaler", Centaur, 62, 57, 4000, 0.8, ring[1], "band", eDamageType.Thrust, false),
-                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.7, ring[2], "band", eDamageType.Thrust, false),
-                            Foe("centaur archer", Bowman, 60, 54, 3000, 0.7, ring[3], "band", eDamageType.Thrust, false),
-                            Foe("centaur healer", Bowman, 60, 60, 2500, 0.6, ring[4], "healer", required: false),
-                            Foe("centaur arcanist", Centaur, 62, 57, 2500, 0.6, ring[5], "nuker", required: false),
-                            Foe("centaur advisor", Bowman, 60, 62, 2500, 0.6, ring[6], "band", required: false),
+                            // Bot playtest 2026-11-14: the whole band at once went straight for the bot healers. Softer troops.
+                            Foe("Chief Oighrig", Bowman, 65, 65, 12000, 1.2, camp, "band", eDamageType.Thrust),
+                            Foe("centaur impaler", Centaur, 62, 57, 2500, 0.7, ring[0], "band", eDamageType.Thrust, false),
+                            Foe("centaur impaler", Centaur, 62, 57, 2500, 0.7, ring[1], "band", eDamageType.Thrust, false),
+                            Foe("centaur archer", Bowman, 60, 54, 2000, 0.6, ring[2], "band", eDamageType.Thrust, false),
+                            Foe("centaur archer", Bowman, 60, 54, 2000, 0.6, ring[3], "band", eDamageType.Thrust, false),
+                            Foe("centaur healer", Bowman, 60, 60, 1800, 0.5, ring[4], "healer", required: false),
+                            Foe("centaur arcanist", Centaur, 62, 57, 1800, 0.5, ring[5], "nuker", required: false),
+                            Foe("centaur advisor", Bowman, 60, 62, 1800, 0.5, ring[6], "band", required: false),
                         },
-                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 150, Radius = 1200, SourceTag = "nuker", DamageType = eDamageType.Heat, Message = "The centaur arcanist hurls fire!" } },
+                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 100, Radius = 1200, SourceTag = "nuker", DamageType = eDamageType.Heat, Message = "The centaur arcanist hurls fire!" } },
                         OnStart = run =>
                         {
                             foreach (TrialMob centaur in run.Mobs().Where(mob => mob.Spec.Tag is "band" or "healer" or "nuker"))
@@ -582,8 +598,10 @@ namespace DOL.GS.Trials
                 ("stone figment", Stone, eDamageType.Crush),
             };
 
-            static TrialMobSpec Son(string name, ushort model, int x, int y, int z) => Foe(name, model, 62, 60, 5000, 1.0, new TrialPoint(x, y, z), "son", eDamageType.Thrust);
-            static TrialMobSpec Warder(int x, int y, int z) => Foe("controlled statue", 986, 60, 50, 3000, 0.9, new TrialPoint(x, y, z), "ghita", required: false);
+            // Bot playtest 2026-11-14: Ghita (18000, 1.4) with all eight statues rallying wiped a player with seven bots at
+            // 4.5 minutes, Ghita at 55%. Every fight in this step comes as a pack, so all of them are softer for a bot group.
+            static TrialMobSpec Son(string name, ushort model, int x, int y, int z) => Foe(name, model, 62, 60, 3500, 0.8, new TrialPoint(x, y, z), "son", eDamageType.Thrust);
+            static TrialMobSpec Warder(int x, int y, int z) => Foe("controlled statue", 986, 60, 50, 2000, 0.7, new TrialPoint(x, y, z), "ghita", required: false);
 
             // Prima: a wrong chest wakes a level 65 figment; beat it and Gaspara deals the chests again, the treasure moved.
             void Deal(TrialRun run)
@@ -595,7 +613,7 @@ namespace DOL.GS.Trials
                     {
                         ClearChests(r);
                         var figment = figments[Util.Random(0, figments.Length - 1)];
-                        TrialMobSpec spec = Foe(figment.Name, figment.Model, 65, 70, 10000, 1.3, new TrialPoint(mob.X, mob.Y, mob.Z), "figment", figment.Damage, false);
+                        TrialMobSpec spec = Foe(figment.Name, figment.Model, 65, 70, 7000, 1.1, new TrialPoint(mob.X, mob.Y, mob.Z), "figment", figment.Damage, false);
                         spec.OnDeath = (again, _) =>
                         {
                             again.Tell("Gaspara laughs, waves her hand, and the chests stand in a row again.");
@@ -637,7 +655,7 @@ namespace DOL.GS.Trials
                         Announce = "Now Ghita. Her ruins lie far to the northwest, and her statues wake when she is attacked.",
                         Mobs =
                         {
-                            Foe("Ghita", 1183, 66, 66, 18000, 1.4, new TrialPoint(428874, 677215, 12144), "ghita", eDamageType.Slash),
+                            Foe("Ghita", 1183, 66, 66, 12000, 1.1, new TrialPoint(428874, 677215, 12144), "ghita", eDamageType.Slash),
                             Warder(428606, 677215, 12144),
                             Warder(429275, 676815, 12144),
                             Warder(429408, 677483, 12144),
@@ -715,21 +733,24 @@ namespace DOL.GS.Trials
                         Announce = "Dawar sends his statue forward and backs away to cast.",
                         Mobs =
                         {
-                            Foe("controlled statue", 989, 64, 72, 25000, 1.5, statueAt, "statue"),
+                            // Bot playtest 2026-11-14: at 1.5 the statue beat the bot healers down while Dawar meleed the rest;
+                            // wipe at four minutes with Dawar at 58%. 1.1, and Dawar 1.0; a third run still wiped at five
+                            // minutes with Dawar at 37%, so both have less health (35000 and 18000) and his bolts come every 12 s.
+                            Foe("controlled statue", 989, 64, 72, 18000, 1.1, statueAt, "statue"),
                             new TrialMobSpec
                             {
                                 Name = "Dawar",
                                 Model = 1194,
                                 Level = 68,
                                 Size = 60,
-                                Health = 50000,
-                                DamageFactor = 1.3,
+                                Health = 35000,
+                                DamageFactor = 1.0,
                                 At = home,
                                 Tag = "dawar",
                                 MeleeDamage = eDamageType.Energy,
                             },
                         },
-                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 200, Radius = 1500, SourceTag = "dawar", DamageType = eDamageType.Energy, Message = "Dawar's bolts of air strike from afar!" } },
+                        Pulses = { new TrialPulse { IntervalSeconds = 12, Damage = 150, Radius = 1500, SourceTag = "dawar", DamageType = eDamageType.Energy, Message = "Dawar's bolts of air strike from afar!" } },
                         OnTick = run =>
                         {
                             int clock = Count(run, "dawar.clock");
@@ -756,7 +777,9 @@ namespace DOL.GS.Trials
                             if (sleep > 0)
                             {
                                 run.Set("sleep", sleep - 1);
-                                Mend(statue, 3);
+                                // 2% a second (20% a sleep) out-mended a player with six bots once Dawar was dead: the statue sat
+                                // at 97-99% for five minutes (bot playtest 2026-11-14).
+                                Mend(statue, 1);
                                 if (sleep == 1)
                                 {
                                     statue.Immune = false;
@@ -773,7 +796,9 @@ namespace DOL.GS.Trials
                                 return;
                             }
                             // Prima: melee on the statue can chip off a chunk that fights under Dawar's control.
-                            if (WasHit(run, statue) && Util.Chance(8) && run.Mobs("chip").Count() < 4)
+                            // 8% a second up to four chips: they went for the bot healers while the party was on Dawar and
+                            // wiped a player with seven bots with Dawar at 14% (bot playtest 2026-11-14). 3%, up to two.
+                            if (WasHit(run, statue) && Util.Chance(3) && run.Mobs("chip").Count() < 2)
                             {
                                 run.Tell("A chunk breaks from the statue and gets up!");
                                 run.Spawn(Foe("animated statue", 986, 60, 35, 2500, 0.8, Circle(new TrialPoint(statue.X, statue.Y, statue.Z), 150, 1).First(), "chip", required: false));
@@ -783,8 +808,10 @@ namespace DOL.GS.Trials
                             {
                                 run.Tell("The statue calls, and Dawar comes in a whirlwind of burning air!");
                                 Relocate(run, dawar, new TrialPoint(statue.X + 120, statue.Y, statue.Z));
+                                // Bot playtest 2026-11-14: 300 (212 for a player and seven bots) on top of the fight killed four
+                                // bots in one burst at five minutes. 180.
                                 foreach (GameLiving victim in run.Hostiles(statue, 900))
-                                    victim.TakeDamage(dawar, eDamageType.Energy, (int)(300 * run.DamageScale), 0);
+                                    victim.TakeDamage(dawar, eDamageType.Energy, (int)(180 * run.DamageScale), 0);
                                 run.Set("called", clock + 4);
                             }
                         },
@@ -834,6 +861,11 @@ namespace DOL.GS.Trials
                 Anchor = camp,
                 StarterName = ServantName,
                 StarterModel = Servant,
+                // Bot playtest 2026-11-14: the camp's own world statues (aggro 60, range 500; 34 within 2,000 of the anchor in
+                // each realm copy) kept joining the trial's statues and wiped a player with seven bots at five minutes.
+                // Live had only the camp; here the trial's cracked statues stand in for it, so the inner camp is cleared.
+                Replaces = new[] { "self-maintaining statue" },
+                ReplaceRadius = 2000,
                 Intro = "These statues mend themselves and each other from whatever bronze comes to hand, and one of them has used Agne's torso for the work. There is no telling which. Break them until it shows, and hit hard: one that is only scratched will close its wounds.",
                 Victory = "Agne's torso comes away from the wreck in one piece.",
                 TimeLimitSeconds = 1500,
@@ -879,7 +911,9 @@ namespace DOL.GS.Trials
                 List<TrialMob> gorgons = run.Mobs("sister").Concat(run.Mobs("kynthia")).ToList();
                 foreach (TrialMob engaged in gorgons.Where(gorgon => gorgon.InCombat))
                 {
-                    foreach (TrialMob helper in run.Mobs("sister").Where(sister => sister != engaged && !sister.InCombat && engaged.IsWithinRadius(sister, Neighbours)))
+                    // ToList: spawning cobras below adds to the run's mob list. Enumerating it live threw "Collection was
+                    // modified" on the first call and ended 8.8 with "The trial falters" (bot playtest 2026-11-14).
+                    foreach (TrialMob helper in run.Mobs("sister").Where(sister => sister != engaged && !sister.InCombat && engaged.IsWithinRadius(sister, Neighbours)).ToList())
                     {
                         string key = $"sent.{helper.Name}";
                         int last = run.Get(key, -CallSeconds);
@@ -976,9 +1010,16 @@ namespace DOL.GS.Trials
             TrialPoint exit = new(439050, 661800, 12101);
             TrialPoint hall = new(439050, 665600, 12110);
 
-            static TrialMobSpec Chrysiron(int x, int y, int z, bool required = true) => Foe("chrysiron statue", Marble, 67, 100, 6000, 1.0, new TrialPoint(x, y, z), "hall", required: required);
-            static TrialMobSpec Helicaon(int x, int y, int z, bool required = true) => Foe("helicaon statue", Marble, 69, 120, 8000, 1.2, new TrialPoint(x, y, z), "hall", required: required);
-            static TrialPulse IceBlast() => new() { IntervalSeconds = 8, Damage = 120, Radius = 350, SourceTag = "hall", DamageType = eDamageType.Cold };
+            // Bot playtest 2026-11-14: the whole near side (eight level 67-69 statues) woke together and wiped a player with
+            // seven bots in 40 s. A gauntlet is walked one statue at a time: short aggro, less stone, a softer blast.
+            static TrialMobSpec Chrysiron(int x, int y, int z, bool required = true) => Gauntlet(Foe("chrysiron statue", Marble, 67, 100, 4000, 0.9, new TrialPoint(x, y, z), "hall", required: required));
+            static TrialMobSpec Helicaon(int x, int y, int z, bool required = true) => Gauntlet(Foe("helicaon statue", Marble, 69, 120, 5500, 1.1, new TrialPoint(x, y, z), "hall", required: required));
+            static TrialMobSpec Gauntlet(TrialMobSpec statue)
+            {
+                statue.AggroRange = 250;
+                return statue;
+            }
+            static TrialPulse IceBlast() => new() { IntervalSeconds = 8, Damage = 80, Radius = 350, SourceTag = "hall", DamageType = eDamageType.Cold };
 
             TrialMobSpec Case() => Clickable("Agne's reliquary", Reliquary, 40, hall, "You lift Agne's right arm out of the reliquary, and every statue in the hall turns to look at you.", "case",
                 (run, mob) =>
@@ -1109,7 +1150,7 @@ namespace DOL.GS.Trials
                         .Concat(spots.Skip(warriors).Take(sages).Select(at => Foe("Statue Sage", 1321, level, 60, 3500, 0.8, at, "caster")))
                         .Concat(spots.Skip(warriors + sages).Select(at => Foe("Statue Mage", 1315, level, 60, 3000, 0.7, at, "caster")))
                         .ToList(),
-                    Pulses = { new TrialPulse { IntervalSeconds = 10, Damage = 140, Radius = 800, SourceTag = "caster", DamageType = eDamageType.Energy } },
+                    Pulses = { new TrialPulse { IntervalSeconds = 10, Damage = 100, Radius = 800, SourceTag = "caster", DamageType = eDamageType.Energy } },
                     OnStart = run =>
                     {
                         if (wave == 1)
@@ -1121,7 +1162,7 @@ namespace DOL.GS.Trials
                                 Level = 68,
                                 Size = 120,
                                 Health = 45000,
-                                DamageFactor = 1.7,
+                                DamageFactor = 1.1,
                                 At = new TrialPoint(Battlefield.X + 300, Battlefield.Y, Battlefield.Z),
                                 Tag = "agne",
                                 Required = false,
@@ -1191,8 +1232,10 @@ namespace DOL.GS.Trials
                         Done = run => Resuming(run) || Count(run, "build") >= 10,
                     },
                     Wave(1, "Agne steps down, and his first rank marches onto the field with him.", 55, 6, 0, 0),
-                    Wave(2, "Agne goes still as his second rank comes on, sages among them.", 58, 4, 3, 0),
-                    Wave(3, "The last rank has more casters than blades. Take them first!", 61, 3, 2, 3),
+                    // Bot playtest 2026-11-14: 4+3 and 3+2+3 with Agne (1.7) swinging at the bot healers wiped a player with
+                    // seven bots early in the third rank. Smaller ranks, the same mix, and a softer Agne.
+                    Wave(2, "Agne goes still as his second rank comes on, sages among them.", 58, 3, 2, 0),
+                    Wave(3, "The last rank has more casters than blades. Take them first!", 61, 2, 2, 2),
                     BeforeTalos(new TrialPhase
                     {
                         Announce = "Agne's army is broken. Now he can fall!",
@@ -1229,8 +1272,9 @@ namespace DOL.GS.Trials
                                 Model = 1181,
                                 Level = 70,
                                 Size = 125,
-                                Health = 140000,
-                                DamageFactor = 2.2,
+                                // Bot playtest 2026-11-14: 140000 / 2.2 with the 260 stomp wiped a player with seven bots at 66%.
+                                Health = 80000,
+                                DamageFactor = 1.6,
                                 At = talosHome,
                                 Tag = "talos",
                                 Required = false,
@@ -1238,7 +1282,7 @@ namespace DOL.GS.Trials
                             new TrialMobSpec { Name = "altheus Talos", Model = 998, Level = 66, Size = 125, Health = 8000, DamageFactor = 0.05, AggroRange = 0, At = altheus[0], Tag = "altheus", Immune = true, Required = false },
                             new TrialMobSpec { Name = "altheus Talos", Model = 989, Level = 66, Size = 125, Health = 8000, DamageFactor = 0.05, AggroRange = 0, At = altheus[1], Tag = "altheus", Immune = true, Required = false },
                         },
-                        Pulses = { new TrialPulse { IntervalSeconds = 12, Damage = 260, Radius = 450, SourceTag = "talos", DamageType = eDamageType.Crush, Message = "Talos stomps, and the ground heaves!" } },
+                        Pulses = { new TrialPulse { IntervalSeconds = 12, Damage = 180, Radius = 450, SourceTag = "talos", DamageType = eDamageType.Crush, Message = "Talos stomps, and the ground heaves!" } },
                         OnTick = run =>
                         {
                             Expire(run);

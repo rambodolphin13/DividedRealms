@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using DOL.AI.Brain;
 using static DOL.GS.Trials.Ml7Kit;
 
 namespace DOL.GS.Trials
@@ -19,11 +20,17 @@ namespace DOL.GS.Trials
         private const int LavaWindowSeconds = 40;
         /// <summary>Live: every Mediator challenge lasts exactly ten minutes.</summary>
         public const int ChallengeSeconds = 600;
-        private const int MaxApophians = 8;
+        // Live had no limit. 8 alive wiped a player with seven bots at six minutes once the 30 s level-ups stopped
+        // healing the Dissos (bot playtest 2026-11-14): bots cannot hold back from killing him.
+        private const int MaxApophians = 4;
         /// <summary>Feuding kills per race in 7.2 (live: about 30 minutes of faction farming each).</summary>
         public const int FeudKills = 5;
         /// <summary>Live: a new Rage of the Volurgons every 20 seconds, at most nine.</summary>
         public const int RageEverySeconds = 20, MaxRages = 9;
+        /// <summary>Each Rage's burn every four seconds within 300 (design size; scaled with the party).</summary>
+        public const int RageBurn = 120;
+        /// <summary>Shaitan's Reach (design size), cast once, two seconds after an Enara appears.</summary>
+        public const int EnaraReach = 250;
         /// <summary>Live: a new Shaitan Enara every 20 seconds, whatever you do; she casts Shaitan's Reach two seconds after she appears.</summary>
         public const int EnaraEverySeconds = 20, ReachDelaySeconds = 2;
         /// <summary>Live: each blow on Typhon's Essence leaves Typhon open for two or three seconds.</summary>
@@ -356,8 +363,8 @@ namespace DOL.GS.Trials
                         int age = Age(run, mob, now);
                         if (age % 30 != 0)
                             continue;
-                        mob.Level = ApophianLevel(age);
-                        mob.DamageFactor = run.DamageScale * (0.8 + age / 900.0);
+                        SetLevelKeepHealth(mob, ApophianLevel(age));
+                        mob.DamageFactor = run.DamageScale * (0.8 + age / 1800.0);
                     }
                     Bolts(run, "apophian", now, 12, 150, 1500, eDamageType.Energy);
                 },
@@ -377,8 +384,9 @@ namespace DOL.GS.Trials
                     Level = 60,
                     Size = 70,
                     // A Rage comes every 20 s and only Mandra's death takes one away, so she must die inside 20 s to keep
-                    // level. 7000 left a lone level 50 Warrior far behind on the sandbox (2026-11-14).
-                    Health = 4000,
+                    // level. 7000 left a lone level 50 Warrior far behind on the sandbox (2026-11-14); at 4000 a player with
+                    // seven bots took 27-51 s a kill and the Rages piled up (bot playtest 2026-11-14).
+                    Health = 3000,
                     DamageFactor = 0.9,
                     At = spots[seconds % spots.Length],
                     Tag = "mandra",
@@ -402,15 +410,29 @@ namespace DOL.GS.Trials
                     Level = 70,
                     Size = 60,
                     Health = 5000,
-                    DamageFactor = 0.1,
+                    DamageFactor = 0.01,
                     At = spots[(seconds + 2) % spots.Length],
                     Tag = "rage",
                     Immune = true,
                     Required = false,
-                    AggroRange = 3000,
+                    // Live: the Rage is a burning area that cannot be killed, not a fighter. It no longer aggroes and
+                    // swings, because bots answered its blows and spent the fight on an immune target; it drifts
+                    // toward the nearest of the party instead (RageDrift) and burns with its pulse.
+                    AggroRange = 0,
                     MeleeDamage = eDamageType.Heat,
                 }));
                 rage.MaxSpeedBase = 80;
+            }
+
+            // The Rages creep after the nearest living member of the party, slow enough to walk away from.
+            void RageDrift(TrialRun run)
+            {
+                foreach (TrialMob rage in run.Mobs("rage").ToList())
+                {
+                    GameLiving nearest = run.Hostiles(rage, 4000).OrderBy(living => rage.GetDistanceTo(living)).FirstOrDefault();
+                    if (nearest != null && rage.GetDistanceTo(nearest) > 100)
+                        rage.WalkTo(new Vector3(nearest.X, nearest.Y, nearest.Z), 80);
+                }
             }
 
             return Challenge(4, "Volurgon's Challenge", "Mediator of the Volurgons", Volurgon, "volurgons", MediatorVolurgon, ArenaVolurgon,
@@ -418,10 +440,14 @@ namespace DOL.GS.Trials
                 new TrialPhase
                 {
                     Announce = "Kill Mandra, again and again, before her rages fill the room.",
-                    Pulses = { new TrialPulse { IntervalSeconds = 4, Damage = 250, Radius = 300, SourceTag = "rage" } },
+                    // Live: about three Rage hits kill. 250 every 4 s killed all seven bots in one tick (they stand in it,
+                    // a player steps out); 150 lasted nine of ten minutes; 120 keeps the Rages the thing to fear without wiping a bot group that can't dodge.
+                    Pulses = { new TrialPulse { IntervalSeconds = 4, Damage = RageBurn, Radius = 300, SourceTag = "rage" } },
                     OnTick = run =>
                     {
                         int seconds = Count(run, "seconds");
+                        if (seconds % 3 == 0)
+                            RageDrift(run);
                         if (Gone(run, "mandra") && seconds >= run.Get("next", 1))
                         {
                             run.Set("next", int.MaxValue);
@@ -448,14 +474,20 @@ namespace DOL.GS.Trials
                     OnTick = run =>
                     {
                         int now = Count(run, "seconds");
-                        if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 6)
+                        // Bot playtest 2026-11-14: 9000 health, Reach 300 every 10 s and up to six alive wiped a player
+                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 2000 health and 0.8 damage (4500 took 80 s a kill, 3000 about 50 s, and their melee
+                        // wiped the bots at three and a half minutes), at most three alive,
+                        // and the Reach once, on arrival (EnaraReach).
+                        if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 3)
                         {
-                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 9000, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
+                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 2000, 0.8, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
                             Resist(enara, 50, eProperty.Resist_Heat);
                             Resist(enara, -25, eProperty.Resist_Cold);
                             run.Tell("A Shaitan Enara appears, gathering heat!");
                         }
-                        AreaCasts(run, "enara", now, ReachDelaySeconds, 10, 300, 450, eDamageType.Heat, "The Enara casts Shaitan's Reach!");
+                        // Prima: she casts Shaitan's Reach two seconds after she appears; after that she fights. A repeat every 20 s
+                        // fired every living Enara on the same tick (all spawn on the 20 s clock): four Reaches at once wiped the bots.
+                        AreaCasts(run, "enara", now, ReachDelaySeconds, int.MaxValue, EnaraReach, 450, eDamageType.Heat, "The Enara casts Shaitan's Reach!");
                     },
                 });
         }
@@ -472,9 +504,11 @@ namespace DOL.GS.Trials
                     OnTick = run =>
                     {
                         int seconds = Count(run, "seconds");
-                        if (seconds % 20 != 2 || run.Mobs("hephaestian").Count() >= 6)
+                        // Bot playtest 2026-11-14: a player with seven bots killed a 5000-health Katarch in about a minute
+                        // while one came every 20 s, and wiped at three and a half minutes. 3000 health, at most four.
+                        if (seconds % 20 != 2 || run.Mobs("hephaestian").Count() >= 4)
                             return;
-                        TrialMobSpec spec = Foe("Hephaestian Katarch", Hephaestian, 67, 60, 5000, 0.7, spots[seconds / 20 % spots.Length], "hephaestian", eDamageType.Heat, false);
+                        TrialMobSpec spec = Foe("Hephaestian Katarch", Hephaestian, 67, 60, 3000, 0.7, spots[seconds / 20 % spots.Length], "hephaestian", eDamageType.Heat, false);
                         spec.Reflect = 0.1;
                         Resist(run.Spawn(spec), -25, eProperty.Resist_Cold);
                     },
@@ -506,7 +540,11 @@ namespace DOL.GS.Trials
             Anchor = new TrialPoint(32000, 19400, 15678),
             StarterName = "Watcher of the Chamber",
             StarterModel = Idol,
-            Replaces = new[] { "Flame of Volcanus" },
+            // Live: the controlled faction mobs only come out while the Flame is gone. The world keeps about forty of them
+            // (aggro 90, range 400) on and around the island; they joined the bot playtest fight (2026-11-14) and a
+            // controlled volurgon killed the leader at one minute. Removed in a 2700 box that covers island and corridor.
+            Replaces = new[] { "Flame of Volcanus", "controlled apophian", "controlled hephaestian", "controlled shaitan", "controlled volurgon", "mastered hephaestian" },
+            ReplaceRadius = 2700,
             Intro = "North of here the rock itself burns. The Flame of Volcanus guards the way to Typhon's gate, ringed by flame spheres that are never all gone while it lives. The spheres circle and cast fire at whoever they please, and chasing them is wasted effort. Put out the Flame and nothing else.",
             Victory = "The Flame of Volcanus gutters out, and the chamber lies open.",
             TimeLimitSeconds = 1800,
@@ -722,8 +760,10 @@ namespace DOL.GS.Trials
                             Model = 830,
                             Level = 70,
                             Size = 100,
-                            Health = 130000,
-                            DamageFactor = 2.0,
+                            // Bot playtest 2026-11-14: 130000 (65000 for a player and seven bots) went 2-6% a minute and ran
+                            // out the 40 minutes; 2.0 damage killed the bot melee by minute seven.
+                            Health = 70000,
+                            DamageFactor = 1.5,
                             At = TyphonSpots[0],
                             Tag = "typhon",
                             Immune = true,
@@ -748,6 +788,14 @@ namespace DOL.GS.Trials
             },
         };
 
+        /// <summary>Sets a monster on the nearest living member of the party within range.</summary>
+        private static void Engage(TrialRun run, TrialMob mob, int range)
+        {
+            GameLiving prey = run.Hostiles(mob, range).OrderBy(living => mob.GetDistanceTo(living)).FirstOrDefault();
+            if (prey != null && mob.Brain is StandardMobBrain brain)
+                brain.AddToAggroList(prey, 1);
+        }
+
         /// <summary>Typhon can be hurt while his Essence was struck within the last <see cref="TyphonOpenMs"/>.</summary>
         public static bool TyphonOpen(long lastEssenceHit, long now) => lastEssenceHit > 0 && now - lastEssenceHit <= TyphonOpenMs;
 
@@ -768,6 +816,14 @@ namespace DOL.GS.Trials
             }
 
             Bolts(run, "typhon", now, 10, 200, 2000, eDamageType.Heat);
+
+            // Bot playtest 2026-11-14: Typhon waited at his pool spot 3,350 from the shore, out of reach of melee and of
+            // his own bolts, and never came: 7.10 could not be fought at all. He now comes for the nearest of the party.
+            if (now % 3 == 0)
+            {
+                foreach (TrialMob typhon in run.Mobs("typhon").Where(typhon => !typhon.InCombat))
+                    Engage(run, typhon, 8000);
+            }
 
             if (Gone(run, "essence") && Count(run, "essence.back") >= 20)
             {
