@@ -1171,7 +1171,7 @@ public static partial class BotLedGroups
         {
             if (item == null || item.IsStackable || !AutonomousBotEconomy.TryGetEquipmentUpgrade(bot, item, out eInventorySlot slot))
                 return null;
-            return AutonomousBotEconomy.EquipmentValue(item) - AutonomousBotEconomy.EquipmentValue(bot.Inventory.GetItem(slot));
+            return AutonomousBotEconomy.EquipmentGain(bot, item, bot.Inventory.GetItem(slot));
         }
         catch (Exception)
         {
