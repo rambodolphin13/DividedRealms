@@ -598,8 +598,10 @@ namespace DOL.GS.Trials
                 ("stone figment", Stone, eDamageType.Crush),
             };
 
-            static TrialMobSpec Son(string name, ushort model, int x, int y, int z) => Foe(name, model, 62, 60, 5000, 1.0, new TrialPoint(x, y, z), "son", eDamageType.Thrust);
-            static TrialMobSpec Warder(int x, int y, int z) => Foe("controlled statue", 986, 60, 50, 3000, 0.9, new TrialPoint(x, y, z), "ghita", required: false);
+            // Bot playtest 2026-11-14: Ghita (18000, 1.4) with all eight statues rallying wiped a player with seven bots at
+            // 4.5 minutes, Ghita at 55%. Every fight in this step comes as a pack, so all of them are softer for a bot group.
+            static TrialMobSpec Son(string name, ushort model, int x, int y, int z) => Foe(name, model, 62, 60, 3500, 0.8, new TrialPoint(x, y, z), "son", eDamageType.Thrust);
+            static TrialMobSpec Warder(int x, int y, int z) => Foe("controlled statue", 986, 60, 50, 2000, 0.7, new TrialPoint(x, y, z), "ghita", required: false);
 
             // Prima: a wrong chest wakes a level 65 figment; beat it and Gaspara deals the chests again, the treasure moved.
             void Deal(TrialRun run)
@@ -611,7 +613,7 @@ namespace DOL.GS.Trials
                     {
                         ClearChests(r);
                         var figment = figments[Util.Random(0, figments.Length - 1)];
-                        TrialMobSpec spec = Foe(figment.Name, figment.Model, 65, 70, 10000, 1.3, new TrialPoint(mob.X, mob.Y, mob.Z), "figment", figment.Damage, false);
+                        TrialMobSpec spec = Foe(figment.Name, figment.Model, 65, 70, 7000, 1.1, new TrialPoint(mob.X, mob.Y, mob.Z), "figment", figment.Damage, false);
                         spec.OnDeath = (again, _) =>
                         {
                             again.Tell("Gaspara laughs, waves her hand, and the chests stand in a row again.");
@@ -653,7 +655,7 @@ namespace DOL.GS.Trials
                         Announce = "Now Ghita. Her ruins lie far to the northwest, and her statues wake when she is attacked.",
                         Mobs =
                         {
-                            Foe("Ghita", 1183, 66, 66, 18000, 1.4, new TrialPoint(428874, 677215, 12144), "ghita", eDamageType.Slash),
+                            Foe("Ghita", 1183, 66, 66, 12000, 1.1, new TrialPoint(428874, 677215, 12144), "ghita", eDamageType.Slash),
                             Warder(428606, 677215, 12144),
                             Warder(429275, 676815, 12144),
                             Warder(429408, 677483, 12144),
