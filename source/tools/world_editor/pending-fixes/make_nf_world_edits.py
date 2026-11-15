@@ -44,6 +44,17 @@ RETURN_MOVES = {(421257, 485590): (421281, 483193), (333634, 419960): (332041, 4
 # EoD's Labyrinth exits up to the centre island are Agramon-era: on the 1.130 Ellan Vannin island they land ~1,000 units
 # under the ground. Snapped to the nearest floor of the 1.130 zone 163 navmesh (2026-11-15).
 EXIT_FIX = {735: (525847, 439490, 10300), 736: (547123, 480127, 10130), 737: (505344, 478284, 10290)}
+# EoD filed Uamhas' wing of the Cave of Cruachan (our region 341) under 245 as well, from the time 245 was another
+# dungeon: 137 rows at z 15,000-17,800 where the 1.130 Labyrinth has no floor. Each is a same-name copy, within 50
+# units, of a row our region 341 already has (2026-11-15), so they are left out.
+CRUACHAN = 341
+# Five Labyrinth spawns stand 45-90 units into the wall margin of the 1.130 zone 245 navmesh (BuildNav --seal-cracks
+# --step-links, 2026-11-15); moved onto the nearest floor so they can path.
+LAB_SNAP = {'d438f218-a920-48e1-a630-49e7f3e70804': (51041, 43206, 27443),
+            'd71bb3a8-16ea-4dc6-9916-616311cdb86e': (51614, 43206, 27443),
+            'e16f89bf-e565-4149-9bc0-63d1656f4f7e': (49762, 47021, 27443),
+            'e28b28c3-9eb8-47ee-9e3a-a087980341e7': (56789, 49102, 25907),
+            'fb91d694-cab3-4523-8589-88ac1aa0b464': (54076, 42471, 27443)}
 report = []
 
 
@@ -97,6 +108,10 @@ def main():
     ours_here = defaultdict(list)
     for r in db.execute(f"SELECT Name, Region, X, Y FROM Mob WHERE Region IN ({','.join(map(str, regions))})"):
         ours_here[(int(r['Region']), (r['Name'] or '').lower())].append((int(r['X']), int(r['Y'])))
+    cruachan = defaultdict(list)
+    if labyrinth:
+        for r in db.execute('SELECT Name, X, Y, Z FROM Mob WHERE Region = ?', (CRUACHAN,)):
+            cruachan[(r['Name'] or '').lower()].append((int(r['X']), int(r['Y']), int(r['Z'])))
     known_classes = {r[0] for r in db.execute('SELECT DISTINCT ClassType FROM Mob')}
     templates = {int(r[0]) for r in db.execute('SELECT TemplateId FROM NpcTemplate')}
     template_keys = {r[0] for r in db.execute('SELECT NpcTemplate_ID FROM NpcTemplate')}
@@ -122,6 +137,9 @@ def main():
                'keep guard (the keep spawns its own)' if cls.startswith(SKIP_CLASS_PREFIX) else
                'realm teleporter (Gate Wardens replace it)' if cls in SKIP_CLASSES else
                'Mob_ID already used' if m['Mob_ID'] in have_ids else
+               'Cave of Cruachan copy (region 341 has it)' if any(
+                   (px - x) ** 2 + (py - y) ** 2 + (pz - int(m['Z'])) ** 2 <= 50 ** 2
+                   for px, py, pz in cruachan.get(name, ())) else
                'already in our world' if any((px - x) ** 2 + (py - y) ** 2 <= 300 ** 2
                                              for px, py in ours_here.get((reg, name), ())) else None)
         if why:
@@ -129,6 +147,8 @@ def main():
                              'X': x, 'Y': y, 'Z': m['Z'], 'Level': m.get('Level'), 'ClassType': cls})
             continue
         row = strip(m, cols['Mob'])
+        if labyrinth and row['Mob_ID'] in LAB_SNAP:
+            row['X'], row['Y'], row['Z'] = LAB_SNAP[row['Mob_ID']]
         row['ClassType'] = CLASS_MAP.get(row['ClassType'], row['ClassType'])
         if row['ClassType'] == 'DOL.GS.Trainer.RogueTrainer':
             row['ClassType'] = ROGUE_TRAINER.get(int(row.get('Realm') or 0), row['ClassType'])
