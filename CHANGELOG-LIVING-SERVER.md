@@ -29,7 +29,604 @@ gamebots only. They pass automated tests; nobody has played them in game yet.
   tactics place the raiders). Hand port from shadowofze's OfflineDAoC-True165 (`BotBrain.Flank.cs`, d2187a498), GPL-3.0,
   without its 1.65-mode switch and its companion "Positioning" option.
 
+**Boss fixes and raid play from True 1.65.** Ported from shadowofze's OfflineDAoC-True165 (v0.7, `f68cc75`; GPL-3.0),
+each commit credited to him. They pass automated tests; nobody has played them in game yet.
+
+- Boss scripts: Suttung's berserker stance can't be lost for good; Legion's blast lock-out can't stick; Govannon summons a
+  Shade of Aelfgar every time his adds reach the centre, his reset restores his strength, size and model, and the
+  database Shade beside him no longer spawns; Vifil's tunnel guardians and Lossren's infected ghoul come back after a
+  reset; a dragon lands with an empty aggro list, resets after 8 s out of combat, and Cuuldurach's take-off has the
+  other dragons' route guard; boss kill news counts the gamebots; High Lord Baln and Moran the Mighty call only their
+  own kind; Olcasgean and the Giant Sporite Cluster pay out once, from one body.
+- Raids: Caer Sidi no longer locks after a failed horseman fight (the raid schedule skipped it until a restart), and
+  Tuscaran opens only with King Tuscar and Queen Kula both up.
+- Raid play: healers purge a long stun or mez (10 s or more left) in any fight; raid healers heal a realm player fighting beside the raid without
+  joining a party; casters and archers stand inside Legion's 1,400 damage range; pets leave Summoner Lossren (5 damage
+  from pets) for an add, or come back; outside raids, damage dealers step behind a monster that parries or evades 40% or
+  more.
+- Camps: a chosen camp counts at once; a solo bot leaves a crowded, emptied camp after 15 s; a party counts as all its
+  members; camps of the same monster within 5,000 share their bots and monsters; the camp draw favours empty and near
+  camps; a party's puller takes the monster standing apart first (Prima); a party moves on after five kills in a row
+  with under a quarter of the camp bonus left; spots that keep coming up empty draw less and then rest (capnbry source-empty camps stay on: True 1.65 replaces them
+  with a live-camp pass 1.2 doesn't have yet); overlapping camps
+  of one monster merge, and a monster with many camps no longer takes most draws; a camp among aggressive monsters 10+
+  levels above it is skipped by bots they would outlevel; a solo bot with no ranged attack skips flyer camps; a solo bot
+  that left a crowded camp skips its copies for 10 minutes, and one held to easier camps after a death may take an
+  uncrowded camp one con harder when all of its own are crowded (never the con that killed it).
+- Camp knowledge (Prima): the camp builder works out each camp's pack density, casters, creature type and weaknesses.
+  Parties without crowd control draw dense camps less, pure melee classes draw caster camps less, Hunters,
+  Spiritmasters and Nightshades draw their favourite prey more, and a solo bot draws camps weak to its damage more.
+- Parties stand by role once they have a camp: tanks in front toward it, melee on the flanks, healers and casters
+  behind.
+- Knowing when to leave (switch `bot_veteran_retreat`, on): a gamebot party calls RUN while everyone is still alive,
+  when more monsters are loose than its tanks can hold with no mez ready and the fight already going wrong, or its
+  healers are out of power, or dead. It runs to a friendly bindstone within 4,000, else the camp's safe spot (worked out
+  ahead on the side with the fewest monsters), else back the way it came, and its next camp is easier. A solo gamebot
+  losing badly with no heal or crowd control ready bails out the same way, once per fight; a solo caster steps back
+  from a monster it rooted or snared; a healer in a player's group (a hired one, or a gamebot with a resurrection spell) whose player died in a lost
+  fight runs and comes back to raise. A party hosting a real player never calls RUN.
+  The party reads one shared picture of its fight (the fight board), rebuilt at most once a second.
+- Darkness Falls: every keep capture recounts all three realms. The realm with the most keeps holds the door; on a tie
+  for most, a holder among the tied keeps it, otherwise nobody does (a capture with no holder used to hand it to the
+  taker).
+
+- Prima content (prepared, not in a world yet): the scripts of True 1.65's 16 Prima scripted encounters (Cuinn,
+  Talvor's Spirit, Brungar, Zargin, the Unseelie Envoy's convoy, Thergus's ogre war and more) are in the server; they
+  start only on world rows that name them, which only a base-game world update can add. `source/tools/
+  true165_prima_content.py` adds those rows, and the Prima monsters, items, quests and drops a world lacks, to a
+  release's reference world; see docs/TRUE165-CONTENT.md. True 1.65's keep-guard restore is not needed in 1.2's world.
+
+Not taken, because 1.2 already does it its own way: the route-proof cap, Sanguis's last 5%, Govannon's raid calls and
+area spells, the dragon lair circle, the Spectral Provisioner (raid bots already wake it) and the Cunovinda and Shade
+teleports (already behind 1.2's displacement switch). Not taken: the party-pull camp turn (it fixes a
+stall 1.2's pull code doesn't have), level-1 blue-only targeting, the full-backpack fallback (built for True 1.65's
+brokers at inns), True 1.65's escape actives (1.2's gamebots don't use them) and its keep-guard restore (not needed in
+1.2's world).
+
 ## 1.2 (in development)
+
+- **The battlegrounds' lore** (tests only; owner 2026-11-15, "We need full lore for the battlegrounds written"): one
+  backstory for the four fields, why only the young may fight there, why the fallen wake at their own portal keep and who
+  keeps the gates, told three ways by the three loremasters (a new neutral place, `proving-fields.json`, with no region
+  of its own). Abermenai, Thidranki, Murdaigean and Caledonia are rewritten: each realm's claim on the field, a book in
+  one voice, and a storyteller's legend per field (Abermenai in every realm, the others in the realm whose tradition
+  names the keep), with the rumours that follow it and a few lines said in the field (`data/chat/battleground_lore.lines`).
+  A player standing in a field is told its legend first. The old battleground stories that no longer fit (the Ferryman's
+  Peace, the Spider Summer, the Headhunters' Autumn) are gone. Caledon's lore file is now named Caledonia, as the game
+  names the zone. `UT_BattlegroundLore`.
+- **Bots no longer talk about Cathal Valley** (owner 2026-11-15, "Yeah leave it out"). The 45-49 battleground came
+  after this era, so its seven chat lines are gone and the voice guides no longer list it. The world database still has
+  the zone; no bot goal sends anyone there (`BattlegroundBrackets` stops at Caledonia).
+- **Rumours of a sunken land, and of what lies under the capitals** (tests only; owner 2026-11-15, "Yes agreed on lore"):
+  Trials of Atlantis and Catacombs exist only as hearsay. Now and then the realm hears of it: an old family legend,
+  a /faction argument, a rare remark at the harbours and in the capitals, an answer when a player asks ("what is
+  atlantis?", "is there anything under camelot?"), and each capital's loremaster and book in that realm's voice. Nobody
+  has been, nobody can go, and no master level, artifact or Catacombs class is mentioned. The corpus builder allows the
+  words "atlantis" and "catacombs" only in lines tagged `rumour_atlantis` or `rumour_below`, and refuses any that claims a
+  trip there (`tools/bot-voices/tests/test_era_rumours.py`, `UT_EraRumours`). A loremaster now reads a question asked in
+  words for its keyword. The prose (the legend, the loremasters' topics, the book pages) was rewritten after the owner's read.
+
+**Era cuts and polish for the playful features** (tests only; owner's decisions 2026-11-15 07:10 after the Easter egg
+inventory: cut the jokes from after 2003, keep Leeroy; Trials of Atlantis and Catacombs "as rumors only from a lore
+perspective"; Caledonia's quests follow its bracket).
+
+- **Jokes from after October 2003 are gone.** Leeroy still charges and yells, but "at least he has chicken" is now "who
+  brought him. seriously, who brought him" and "he can buy the ale tonight"; the joker's "achievement unlocked: died to a
+  rabbit again" is "died to a rabbit again. third one this week"; the gold spammer's "over 9000000 happy customer" is
+  "100000"; "cool story {target}" is "nice speech {target}"; "i see what you did there" is "heh, clever"; the laugh
+  reply "ikr" is "hehe yeah"; a boss's after-kill "aoe ftw" is "aoe emptied the classroom". The corpus builder now bans
+  these phrases (`tools/bot-voices/build_corpus.py`).
+- **Trials of Atlantis and Catacombs are rumours only.** The chat lines already named neither (the builder bans them).
+  The realm histories' Atlantis entry, which the loremasters and the Herald read, said each realm "found the island
+  remnants of Atlantis" and that its ships sail there; it is now harbour talk of a dream that "nobody has sailed there
+  and come back to prove", and the three place notes say the same. "what does ml mean" is answered "master level, from
+  the atlantis rumours. nobody here has one".
+- **Caledonia's six dailies ask for levels 30-35**, Caledonia's bracket (`BattlegroundBrackets`), instead of 34-39, so every
+  level that can enter Caledonia can take them, and a 36-39, who can't enter it, is no longer offered them. The Midgard keep quest sent the player back
+  to "Thidranki Portal Keep"; it now says Caledonia. A test holds every Caledonia and Thidranki daily to its bracket.
+- **Beggars read what is asked for.** "i need to repair my armor", "i need to change my spec", "can i get some help with
+  this quest item", "we need something to do tonight", "i need a new weapon, where do i buy one" and "i need 1 more for
+  the group, anything works" no longer mark the player as a beggar for an hour: the thing of value has to follow the
+  asking words, before a "to", "with", "for" or a clause break, and a shopping question is not begging. "i need money",
+  "i need to borrow some gold" and the old requests still count.
+- **A raid named after its boss is not named twice.** Every dragon and open-world raid carries its boss's name, so bots
+  said "the raid killed Golestandt in Golestandt" and "Coliath raid got Coliath". A line that names both is now skipped
+  when the raid is named for its boss (`AutonomousBotVoiceCorpus.NamesTheBossTwice`), and a tell that names only the
+  boss was added. An open-world raid's wipe call no longer sends the raid to "the staging ring" for "the dragon".
+- **Holidays.** "happy new years" (and "new years eve", "newyear") is a New Year wish. `/lstest holiday` tells the GM a
+  wish the bots answer ("happy new year", "merry christmas"; none for April Fools, which has jokes only). When April
+  Fools falls on Easter weekend (Easter Monday 2024, Easter Sunday 2029), Easter is the holiday and April Fools' lines
+  are still said.
+- **Roleplayers read their words by place.** "see ya" is "see thee", "ur welcome" "thou art welcome", "can u" "canst
+  thou", "no one" "none", "you go first" "thou go first", "your armor" "thine armor"; "no" is "nay" only as an answer
+  ("i have no gold" stays).
+- **`/lstest leeroy now` lapses after 10 minutes** if no Leeroy raid is gathering, instead of waiting for good and firing
+  on a Leeroy raid hours later. It is still used once.
+- **`/lstest list` names every part**, now with tales, tale raids, beggars, bonds, atmosphere lines and cosmetics.
+- **"tonight" at any hour.** The rumour after a tale that a raid is forming says "soon" or "in a bit" (it opens 6-12
+  minutes later), and the "{keep} fell" tell says "good rp out there right now".
+- **The joker no longer owns a horse.** "my horse has better gear than me" is "the stablemaster's horse has better gear
+  than me", which agrees with the dunce scene: horses are rented stable routes.
+**Battleground waves with a small population** (tests only; owner's PC, build `3d67b6f`, Thidranki 2026-11-15, 07:28-07:54:
+11-21 bots of each realm inside; Midgard and Hibernia "Gathering for the assault" for 16-22 minutes; 329 bot deaths in
+Thidranki, 104 of them Midgard and Hibernian bots killed one at a time by the keep's level-33 guards; the only wave,
+Hibernia's at 07:49:41 with 8 of 21, lost 19 bots in three minutes, 10 of them to guards, and was spent without reaching
+the gate; lord 100%, guards 19/19, both gates standing).
+
+- **A bot that has just fought keeps gathering.** For ten seconds after any hit, and while it recovered, a gatherer skipped
+  the gathering and went for the nearest keep guard up to 5,000 away on its own. Now the wave decides first, in a fight or
+  not.
+- **A gatherer fights only what comes at it.** It used to take any enemy it saw within 5,000, so it was pulled into the
+  holder's defenders and under the guards. Now it fights an enemy that walks into the gathered realm (700), or one firing
+  on the realm near the staging point (1,500) or near itself (1,000). It drops a target that broke off and left the
+  staging point instead of chasing it.
+- **The staging point is 3,500 out from the keep (was 2,500).** The guards killed 45 Midgard bots 1,512-3,109 from the keep
+  (median 2,230), 20 of them within 900 of Midgard's own staging point.
+- **After four minutes a wave goes with half of the realm inside** (at least 4), instead of a fixed 8. That is 7 of 13,
+  or 11 of 21. A realm also goes with half when another realm's wave is going in on the same keep. Most of the realm
+  (60%, at least 8) still goes at once.
+- **A going wave marches on the gate together.** While the gates stand, a bot fights a keep guard that is within 1,200 or
+  firing on the realm, and otherwise walks on with the wave. Each bot used to run at its own nearest guard.
+- **`BG_WAVE_STATUS`** once a minute for each attacking realm: inside, gathered (and how many are in a fight), needed,
+  patienceNeeded, waitedSeconds, staging x,y,z, nearKeep, holderNearKeep, going, and the fights its gatherers turned
+  down or broke off. `BG_WAVE_ASSAULT` now also logs patienceNeeded and withOtherRealm.
+- Unchanged: the keep, its guards, lord and gates; the holder's defence (a third hold the walls; at 07:49:54 Albion had 15
+  bots within 2,500 of its keep); siege crews; the rally inside the breach; and releases (a gamebot releases to its bind,
+  as a player does with `bg_release_to_portal_keep` off).
+
+**Battleground storms go in by the keep's own door order, and a wave fights the guard that hits one of its own** (tests
+only; owner's PC, build `ea882e6`, Thidranki 2026-11-15 08:39-09:02: the waves now gather and go (Hibernia 15 at 08:57:20,
+Midgard 9 five seconds later), walk round the walls toward the broken outer gate in 20-55 s, and are "spent" at 09:00:23/27
+because they died on the way: in those three minutes 16 Hibernian and 4 Midgard bots fell to the keep's level-33 guards
+800-2,400 from the keep's centre, most of them with one attacker on them; guards 19/19, lord 100%).
+
+- **The door a storm marches on is the way in, not the nearest door.** While a main door stands shut, the wave goes for the
+  outer gate first and then the keep door behind it (the order the siege crews already used). On build `3d67b6f`, with
+  both doors of Thidranki Faste shut, 18 of 19 storm samples marched on the keep door, which lies behind the outer wall,
+  from outside it and stood at the south wall with no path.
+- **Through a broken outer gate, on to the shut keep door.** With the outer gate broken and the keep door shut, a bot that
+  got through the gate walked at the lord, whose path the shut door refuses, and held just inside the gate, 1,700 from the
+  door it had to hit. Now it walks to the keep door's courtyard side and batters it.
+- **A storm's walk ends in front of the door** (230 out, on the attackers' side), not on the door's own floor.
+- **A going wave fights together.** While a door stands, a bot of a going wave fights a keep guard that is hitting one of
+  its realm within 1,500 of it, and keeps that guard until it is down. Each bot used to keep its own pick among the guards
+  near it, so the guard hitting its neighbour was ignored. A melee bot helps only against a guard beside its victim, not
+  an archer or caster on the wall.
+- **Logs.** `BG_STORM_TRACE` writes a sample every 20 s for each realm (was one server-wide; `ea882e6` wrote four, all
+  Hibernian), with the realm, how long its wave has been going, and `pending=` (the order was given that turn, so moving,
+  path and dest are still the previous order's: the "dest next to the bot" of `ea882e6` was the staging hold, not a short
+  path). `BG_WAVE_SPENT` and `BG_WAVE_STATUS` count the wave's deaths to the keep's guards and to anything else.
+- Unchanged: the navmesh (the bots' route round the walls was real: they reached 570 from the broken gate), door flags (a
+  broken door is open and passable), the keep, guards, lord and gates, the 3-minute spent check, and siege crews.
+
+**Battleground keeps stay at level 1, as they shipped** (tests only; owner's PC, build `3b808b4`, Thidranki 2026-11-15
+09:39-10:10: four two-realm waves of 9-12 bots each were spent, 8-15 of each killed by Thidranki Faste's guards, none
+closer than 1,425 to the door; guards 17-19/19, lord 100%; the guards were level 33 against levels 20-24).
+
+- **Why the guards were 33.** Every release world gives the battleground keeps level 1 (`release-world-defaults.json`), but
+  a capture reset any keep to `starting_keep_level` (4): DOL's 2009 value for frontier keeps ("only levels 4 and 5 are
+  supported correctly"; it was 0, then 1). Battleground keeps can't be claimed (`allow_bg_claim` off, and the bot guilds
+  check the same rule), so nothing else raised them: on the owner's world Thidranki Faste and Dun Murdaigean, the two that
+  had changed hands, were at level 4 with no claim, the other six battleground keeps at 1. At level 4 Thidranki's guards
+  are 26 + 1 + 4 x 1.6 = 33 (seen in the deaths) and its lord 38; its doors have four times their level-1 health.
+- **The original.** A keep rose above level 1 only through the claiming guild's upgrades (Herald, New Frontiers keep guide:
+  "Keeps and Towers start out at level 1"), and the battleground keeps were never claimed: the Herald's realm war page of
+  April 2003 lists a claiming guild for every frontier keep and only an owning realm for Abermenai, Thidranki, Murdaigean
+  and Caledonia. So a battleground keep now falls back to level 1 on a capture or a release, and a played world's
+  battleground keep that a capture raised is put back to 1 when the server loads (`BG_KEEP_LEVEL_RESTORED` in the log).
+  Thidranki's guards are 28 and its lord 33 again; frontier keeps, the guard formula and `keep_guard_level_multiplier`
+  (1.6, hard-coded in DOL before it became a property in 2009) are unchanged.
+- **`BG_KEEP_STATUS`** now logs the keep's level and its guards' and lord's levels (`keepLevel=`, `guardLevel=`,
+  `lordLevel=`).
+- Unchanged: guard respawn (15 minutes, ±10, the upstream default), claiming rules, the waves and their siege crews (the
+  2002-2004 Thidranki threads describe the same thing: rams, two or three groups, a keep that changed hands "twice a week").
+
+**Battleground lord rallies gather outside the breach and storm together** (tests only; owner's PC, build `3b808b4`,
+Thidranki 2026-11-15 10:12-10:58: all six doors of Thidranki Faste down, 30-46 bots of each attacking realm inside, and in
+all eleven `BG_KEEP_STATUS` samples both rallies read "rallying 0/31-34": no rally ever went up, the lord stayed at 100% with
+no attacker on his floor, and 276 Midgard and Hibernian bots died to the keep's guards).
+
+- **Why nobody rallied.** The rally point stood just inside the keep door (32475,38224,3728): under the lord's floor, 1,860
+  past the outer gate, with the courtyard's guards (Armsmen and Wizards, aggro 1,000) in between. Every bot crossed the
+  courtyard alone and was fought there or on the way, so none ever counted as rallied. Only bots within 4,000 of the lord
+  took the rally at all (17-33 others "marched" on the keep's centre), and with the waves bypassed once the doors are down
+  nothing held anyone out of fights: 33-57 bots were "Fighting" at every sample, 173 deaths were "Fighting Armsman" or
+  "Fighting Armswoman", guards picked up to 5,000 away. The `step=rally` samples with `dest` at the bot were orders given
+  that very turn (`pending=True`, 88 of 119 samples); the 31 others all walked a found path toward the outer gate.
+- **The rally stands outside the breach.** The breach is the outermost broken main gate (the outer gate before the keep
+  door, never a postern, the one on the realm's side when there are two); the rally stands 900-1,800 out from it, on the
+  navmesh with a complete walk to the gate, and as far as it can be from every guard's post (1,300: a guard's aggro of
+  1,000 and a few steps). Every assaulting bot of the realm goes there, wherever it is in the battleground.
+- **Holders fight only what comes at them,** as a wave's gatherers do (an enemy at the rally, or one firing on the realm
+  near it or near the bot); never the lord, and never a guard on the walls that isn't attacking them.
+- **Enough is at most a wave of the realm.** The strength model asked 31-34 of 30-46 bots dying about every four minutes.
+  A rally now waits for the model's number or 60% of the realm inside, whichever is smaller (at least 8); half of that
+  after three minutes, whoever is there (at least 8) after six, as before.
+- **The two attacking realms cue each other.** While the other realm storms the same lord, a rally goes with half of
+  what it needs, as #247's waves do.
+- **The storm keeps the wave's discipline.** From the rally the stormers go through the gate and up to the lord together.
+  On the way they fight the guard that is hitting one of their own nearby (a going wave's rule), a guard in their way or
+  firing on them, and an enemy that is upon them or firing on the realm near them; everything else is left alone.
+- **`BG_RALLY_STATUS`** once a minute for each attacking realm: state, rallying, needed (and the model's number), inside,
+  the rally point and its gate, its distance to the nearest guard post, onLordFloor, atLord, the deaths to guards and to
+  others, and the fights its holders and stormers turned down or broke off. `BG_RALLY_STORM` also logs inside, the model's
+  number, withOtherRealm and the gate. A wave still "going" when the doors fall now stands down (Hibernia's of `3b808b4`
+  went on counting deaths to guards as its own, 11 to 203 between 10:10 and 10:58).
+- Not verified here: the walk from the courtyard up to the lord's floor (the Thidranki navmesh isn't in the build
+  container). On `3b808b4` Albion's own defenders were killed on the tower stairs (z 4,012 and 4,209) and on the lord's floor
+  (z 4,592), so a way up exists for them; the 2026-10-17 navmesh probe found the lord reachable from the gates. Unchanged:
+  the keep, its guards, lord, doors and respawns, the strength model, attempt endings, reinforcement batches and leases.
+
+**Each attacking realm rallies on its own spot** (tests only; owner's PC, build `d64d005`, Thidranki 2026-11-15
+12:55-13:02: all six doors of Thidranki Faste down, Albion holding it, 33-43 bots of each attacking realm inside; every
+`BG_RALLY_STATUS` of Midgard and of Hibernia read `point=36133,38275,3368 gate=252000301`. Midgard went up with 15 at
+12:59:49 and regrouped a minute later, "half the stormers fell", lord 100%, nobody on his floor: seven of its ten deaths in
+that minute were to Hibernian bots at and around the shared point, one to a guard at the gate, two to Albion bots).
+
+- **Why they shared it.** The rally point depended only on the keep and its breach, and both realms take the same breach
+  (the outer gate), so the two realms that should each gather and storm met at one spot and fought each other there.
+- **The rallies now stand at least 2,250 apart** (twice the 1,000 rally radius, so no bot is at both, plus the 250 a holder
+  stands within: each realm's holders are 2,000 or more from the other realm's point, beyond the 1,500 at which holders
+  fight back at an enemy firing on them). A rally may stand straight out from the breach or 30° or 60° to either side, at
+  900-1,800 out as before; a realm prefers the spots toward its own arrival, still needs a complete walk to the gate and
+  still keeps 1,300 from every guard's post. The realm that placed its rally first keeps it; the later one moves off.
+  With no spot apart, clear and walkable the rally stands where it did before.
+- **No truce.** Realms that meet still fight; only their rallies no longer share a spot.
+- **Logs.** `BG_RALLY_STATUS` adds the rally's `bearing=` (degrees off straight out) and `apart=` (distance to the other
+  attacking realm's rally, `none` without one); a new `BG_RALLY_PLACED` line logs each placement with the other realms'
+  rallies it kept away from.
+- Unchanged: the breach each realm takes, the guards, the lord, keep levels, the storm thresholds, attempt endings and
+  the holders' and stormers' fight rules. Not verified here: whether the rotated spots at Thidranki Faste are on the
+  navmesh and clear of its guards (the Thidranki navmesh and guard posts aren't in the build container; the unit test
+  models one guard post that reproduces `d64d005`'s `guardClear=1459`).
+
+**Battleground and RvR kill quests count enemy gamebots** (tests only; owner's question 2026-11-15: "are there quests in the
+BG? Are those functioning correctly?").
+
+- **Killing an enemy realm's gamebot counts as an enemy player kill.** Pazz's battleground dailies ("Fen's New Friends" in
+  Thidranki and Caledonia) and the Atlas realm quests (the realm's daily and weekly player kills, Every Little Bit Helps,
+  For the Realm, the Darkness Falls weekly, the old-frontiers monthly and the hardcore "kill a player") counted only a real
+  player victim, and in an offline world the enemy players are gamebots, so none of them could be finished. One rule
+  (`RvrQuestTargets.IsEnemyPlayer`) now counts a real player as before and a dying gamebot of another realm; every other
+  condition (realm, con, region, steps) is unchanged, and a kill is credited as before (your own, your pet's or
+  companion's, an invited gamebot's, or a groupmate's in range). A bot's pet doesn't count, as a player's pet never did,
+  and a gamebot that leaves the world mid-fight (a stable ride, a port, a despawn) is not a kill.
+- **Caledonia's Midgard kill quest can be taken.** It asked for levels 20-24 (copied from Thidranki upstream) and looked
+  for a giver named "Rey", so a second Pazz stood in Midgard's portal keep; it now asks for Caledonia's 30-35 like its
+  Albion and Hibernia twins (see the polish entry above) and shares the one Pazz.
+
+**Bots no longer follow the player into another realm** (tests only; owner's decision 2026-11-15: "No, bots should not
+follow a teleport into another realm."; owner's PC, build `1dc66b6`, 2026-11-15 ~01:46: a GM `/jump` to a Midgard raider in
+Tuscaran Glacier carried all six Albion gamebots of a bot-led party into Midgard's Kvasir fight).
+
+- **A player's teleport, portal, jump or MoveTo into another realm's territory leaves every bot where it is.** That is
+  another realm's classic home zones, dungeons, capital, housing, Shrouded Isles and epic dungeons (`RealmTerritory`);
+  frontier zones, battlegrounds, Darkness Falls, the Old Frontiers dungeons and neutral zones are unchanged. It covers
+  gamebots in the player's group and in a bot-led party hosting the player, and /spawn companions (also the end of a
+  stable ride, the stuck watchdog's move to the player and a released gamebot's return to the player). A bot-led party
+  logs `BOT_LED_NO_FOLLOW reason=enemy_realm` once (`BOT_NO_FOLLOW` for other bots), is not disbanded, and its
+  "player far away / where u at" pacing takes over.
+**A "+ Lv.20" button for the battlegrounds** (tests only; owner's PC, build `1dc66b6`, 2026-11-15: every gamebot on the
+test world was level 50, because the realm cards made only level 1 or 50, so every battleground was empty,
+`BG_KEEP_STATUS near=0/0/0`; owner, same day: "a Lvl 20 button for bot adds makes sense").
+
+- **Each realm card has "+ Lv.1", "+ Lv.20" and "+ Lv.50".** "+ Lv.20" makes bots for the Thidranki battleground: each
+  gets a random level from 20 to 24 (the server's bracket; a Battleground table row overrides it, as on the server), that
+  level's experience from the server's own table and a purse of its level squared in silver (4 to 5.76 gold), and starts
+  in its capital beside the realm teleporters (its starter gear: see "They arrive with starter gear" below). Shift-click makes 10, Ctrl-click 100, in
+  one protected batch, and the Sluaghbinder edition switch applies as on the other buttons. Where no merchant weapon
+  fits, the server gives it its usual level-matched starter weapon; a bow or instrument where the class has one, as
+  every gamebot gets.
+- **They arrive trained, like "+ Lv.50" bots.** A never-saved bot above level 1 is trained in its lifetime build at its
+  first login (`GameBot.ArrivesTrained`). Before, it would have fought with every line at 1 until a break between PvE
+  tasks took it to a trainer. A bot that levelled by playing still visits its trainer.
+- **They go to Thidranki only for the Battlegrounds % share** the Bot Goals Setting tab gives Levels 20–49 (0% by
+  default). The rest do solo/group PvE or RvR as usual.
+
+**They arrive with starter gear** (tests only; owner 2026-11-15, "Arrive with starter gear"; owner's PC, build `0026378`,
+Thidranki 13:45-14:00: 183 of 410 bot deaths there were bots wearing no armour, and storms of about 20 "+ Lv.20" bots all
+died before they reached the keep gate).
+
+- **A bot that arrives already trained gets plain merchant gear for its level, as if it had levelled normally.** At its
+  first login, each armour slot its class can wear, its weapon (and its shield, for a sword-and-board build, or its
+  offhand weapon, for a dual wielder) gets the best plain item its own realm's merchants sell at its level: real merchant
+  items, nothing magical, dropped or crafted, and only what its class may use. It is free: the bot keeps its purse. The
+  server log shows one `AUTONOMOUS_STARTER_GEAR` line per bot with every piece.
+- **Once, and never over gear it already has.** A bot that wears any armour is left as it is, nothing it carries is moved
+  or replaced, and a bot that had its starter gear never gets it again (it is saved with the bot). If no merchant item
+  fits, it tries again at its next login.
+- **"+ Lv.20" bots added before this version** that still wear no armour get it at their next login too (the launcher
+  binds such a bot in its capital; a "+ Lv.1" bot is bound in a starting area).
+- **Unchanged:** "+ Lv.1" bots still start without armour and earn it, "+ Lv.50" bots keep their level-50 set, and /spawn
+  companions and players are not affected. A Savage keeps its usual starter weapon (its armour comes from the merchants).
+
+**A bot-led party stuck in Caer Diogel** (tests only; owner's PC, build `1dc66b6`, 2026-11-15: party albion-f86e88-1370,
+on its way to griffins in Gwyddneau with the player hosted, stood in Caer Diogel from 00:55 to past 01:19 in phase
+"Traveling" with no travel line in the log, while two of its members were in Camelot at 01:05).
+
+- **A PvE party's member far away no longer holds it for good.** The 45-second stall rule only let go of a member in the
+  leader's region that stood still; one in another region, or one walking without getting closer, held the leader in
+  "Waiting for group members" with no limit. After 10 minutes without coming 200 units closer (or back into the leader's
+  region) such a member no longer holds the party (`AUTONOMOUS_GROUP_MEMBER_LONG_HOLD` names it, where it is and what it
+  does): the leader goes on to the camp and the member keeps travelling there. Warbands and raid parties are unchanged.
+- **The fight is called in /group in a party that hosts the player.** A gamebot that leads never joins the player's group,
+  so its combat calls (and B4's leader pull call) never ran: from 01:36 to 01:43 the party fought orcs and a griffin with
+  the player and said nothing in /group. They run now, as in the player's group; a raid party's guest seat is unchanged.
+- **No pull calls in /say from a party on the road, in town or with the player.** "pulling" and "need pow" came in /say
+  from the party standing in Caer Diogel, and "griffin inc" beside its /group calls. A grouped bot says those only at its
+  camp or in a fight, and never in /say when the player is in its group. The /group "join" hellos ("hi all, healer here,
+  try not to die") are no longer posted in /lfg.
+- **The welcome fits where the player is.** "hey, we are out at Aldland, come find us" went to a player 1,186 units from
+  the leader in Caer Diogel. A player within 1,500 units gets "stick with me, we head to griffin" now, and the place named
+  is the town the leader stands in (Caer Diogel), not only its zone.
+
+**Raids after the sweep of 2026-11-14** (owner's PC, build `e3b8238`: Caer Sidi, Tuscaran Glacier and Galladoria all
+lost, and Albion's Summoner's Hall never reached). They pass automated tests; nobody has played them in game yet.
+
+- **A pull counts the whole living raid.** The early-pull rule counted only the raiders already inside, so a handful
+  after a wipe passed for half the raid (16 of 18 in a raid of 118). Raiders walking back count now; a boss that chases
+  is fought by everyone inside only when they are 70% of the raid, otherwise those it caught fight and the rest gather.
+- **After a wipe the raid regroups outside, not in town.** Raiders release at their party's staging post outside the
+  dungeon (`realm_raid_release_at_staging`), and a corpse with no living raider within 3,000 releases after 20 seconds.
+  The dungeon a raid walks through counts as inside. A "waiting for formed parties" hold moves its front to the main
+  body after 6 minutes.
+- **A living boss on the way in is a raid objective.** The three Summoner's Hall routes and Crystal Cave walk through
+  another dungeon. A boss whose aggro covers that walk (Aidon, who killed 182 raiders on the Albion route) is mustered
+  for and fought with its own tactic, attempts and wipes counted, before the raid goes on (`realm_raid_route_gates`).
+- **A raid dungeon's epics wait while its raid is inside** (`realm_raid_hold_epic_respawn`): an epic with a respawn of
+  10 minutes or more comes back after the raid ends, so a cleared room stays cleared (Easmarach came back mid-raid and
+  closed Galladoria's last room).
+- **No muster in a boss's aggro.** A muster point is kept 300 outside every other living boss's aggro (one was placed
+  76 from Icelord Agmundr). Raid-wide deaths outside an attempt now count as a wipe.
+- **Boss plans.** Icelord Agmundr: his hrimthursa first, casters and healers 750 from his target, everyone out of the 500
+  around it during his cold blast. The Crypt Lord: his court cleared first while his patrol is far, melee on him. The
+  Host: his linked monsters first, an ambush on his patrol, every raider on the real one. Lich Lord Ilron: his dark
+  lights and eyes first. Spindler Broodmother: party posts 700 apart against her mesmerize, add parties sized to her
+  spawns without the druids and wardens, a burn below 25%. A perched griffon is left until it lands. A tactic's hold on
+  a pull lapses after 20 minutes.
+- **A raid fights the monster attacking it.** A route rule could turn a monster attacking the raid into a "switch" to the
+  raid's own idle target every 10 seconds (Easmarach 208 times); in-combat monsters are now left alone.
+- **A boss no longer yells its aggro line as it dies** (tests only). The killing blow's attack came after the boss's
+  death had closed its fight, so it opened a new one: Spindler Broodmother and Aidon yelled their aggro line right after
+  their death line (sweep of 2026-11-15, build `1dc66b6`). A dead boss starts no fight now.
+- **Nothing behind Easmarach's falls while he lives** (owner's PC, 2026-11-15, build `1dc66b6`). After Spindler
+  Broodmother the Galladoria raid mustered for a deep shrouder behind his push; it bounced off the falls 165 times in
+  eight minutes (78% fall damage each) and never fought him. The route's gate looked only at the last room's bosses; now
+  no target, muster or staging lies behind the falls while he lives, and the raid fights him first. A bot the push moves
+  waits where it lands while its way back goes into the falls (at most 3 minutes). The push and its fall damage are
+  unchanged. Tests only.
+- **Summoner Lossren's exploding ghoul** came only at exactly 20 killed souls at a 5-8 s check, so a quick raid never saw
+  it again that fight; now at 20 or more.
+- **The sweep's guest** follows a living raider at the raid's front, never a dead or released one, and lands on that
+  raider's floor (the GM fell into the void five times).
+- **A sweep that never ended no longer leaves its guest a plain player.** The server was stopped while a sweep ran with
+  a guest, and the GM account came back at player level ("No such command" for every GM command until Make Me a GM was
+  turned off and on). The sweep now saves the guest's GM level and realm before it changes them; the next server start
+  or login puts them back (`EPIC_SWEEP_GUEST_RESTORED` in the server log), and a normal stop ends the sweep first. Only a
+  level the account had before the sweep is restored, so no account gets GM it did not have. A progress transfer does
+  not carry the record (a transfer turns GM off), but it puts the guest's realm back. Tests only so far.
+- **A raid's defeat names the boss that beat it** (tests only). Albion's Summoner's Hall raid lost at Aidon in Hall of the
+  Corrupt (sweep of 2026-11-14, build `1dc66b6`) and every player read "driven out of Summoner's Hall by
+  GrandSummonerGovannon!". The defeat of a boss on the way in is read now, and with no defeat the final boss's display
+  name is used, never its class name. The raid news and chat say the same boss.
+- **The raid's wipe line says who was in the attempt** (tests only). `REALM_RAID_WIPE` adds `engaged=` and `fallen=`: its
+  `living=` counts the raiders who released and stand at the staging post outside, so Aidon's second wipe (65 of 65 in the
+  attempt fell) read as a wipe scored while the raid stood. The scoring itself was right.
+- **Nothing a bot raid does heals Icelord Kvasir with cold** (tests only). On the owner's PC (2026-11-15, build
+  `1dc66b6`) the Midgard raid fought him 18 minutes and never took him below 81%: he jumped 90→99, 81→99 and 90→97 in
+  combat, and in the second attempt the chat read "thank you spirit champion for healing me !" five times in 30 seconds
+  while the raid did 24,000 a minute to him. The rule (cold heals him a fifth) stays on and his script is unchanged; the
+  bot filter had stopped only bots' own cold spells. Now no bot's pet that deals cold goes at him (the Spiritmaster's
+  spirit swordsman, warrior and champion buff themselves with a 70 cold DD proc; the Sluaghbinder's zombie magician casts
+  cold), and no bot casts a spell whose sub spell is cold, an area spell that would reach him from an add, or a style whose
+  proc is cold (the berserker's Aurora Borealis). A bot whose melee weapon deals cold switches to its clean weapon set or
+  does not swing; an autonomous one fights his icetouch adds instead, like one whose armor's reactive proc is cold (95
+  cold DD on Tuscaran loot), and a healer with such armor heals from 1,000 away. Every heal is logged as
+  `EPIC_KVASIR_HEALED` (who, pet and owner, class, spell, style, weapon). His attempt also ended with no wipe and no line
+  at all after 85 raiders had died 104 times in it: the fallen were counted only when he reset, after the return waves
+  had brought them back. Raiders who fall during an attempt now count as fallen in it, and an attempt that was no wipe
+  says so (`REALM_EXPEDITION_ATTEMPT_ENDED`).
+- **Whoever a fight-at-home boss chases out of its home leads it back** (tests only). Only a raider whose own target was
+  the boss did; Aidon (home 1,100, tether 1,500) went after the healers at the muster 1,400 out, past his tether, and
+  healed from 58% to 100% in combat. Now the raider he chases, a healer too, walks to his spawn. The boss is unchanged.
+- **Warlord Dorinakka and his knights are one fight** (tests only). On the owner's PC (2026-11-15, build `1dc66b6`) the
+  Albion sweep raid (~123 raiders) cleared his crypt knights more than 700 from him one by one. It mustered for each one
+  1,400 from the knight, which is 2,250 from him and past his 2,000 tether. The first knight died alone. 16 s after the
+  second was called, he joined with the ten knights left (02:46:53). The fight then ran at two places at once, the
+  knights' muster and the hall's mouth. He spent much of it out of his tether, where he takes no damage, and was reset
+  nine times. The raid did him 3,334 damage and the knights about 206,000. It took 218,888 from the knights and 59,443
+  from him, and wiped at 02:50:41 (91 engaged, 91 fallen, him at 96% at the lowest; 88 of the 108 deaths were to
+  knights, 23 of them healers). Every knight joins him once he fights, and a knight's fight reaches the next knight in
+  its column (190 apart, aggro 200). So no knight is pulled on its own while he lives. A knight the route picks counts
+  as his fight, and the whole raid musters for him 1,400 from his spawn, inside his tether. In the fight, the party he
+  fights holds him (its melee from behind). Everyone else but the healers, melee included, kills the knights one at a
+  time: the most hurt first, a mesmerized one last. He and the knights are unchanged.
+- **The Crypt Lord's muster stays off his patrol, and his court is cleared again before he is pulled** (tests only).
+  The same raid (owner's PC, 2026-11-15, build `1dc66b6`) was lost at him with him at 99%:
+  - A forerunner's muster was moved off where he stood to a spot 700 from his patrol and 355 from a court fate's
+    bearer. That fate's bearer, 430 from his patrol, then fought the raid where it stood. He walked past and joined, and
+    his court ran to the raid. In the minute to 02:57:27 the raid took 204,613 damage and lost 99 raiders in two
+    minutes.
+  - The route then mustered for him at 27,960,40,280, 115 from his patrol and 194 from a court reckoned soul, with most
+    of his court alive. Deaths there counted as wipes at 03:00:10 and 03:04:54, and the raid ended (31 of the 296 deaths
+    from 02:55 to 03:05 were his; the rest were his court's).
+  - Now no muster, his own included, lies within 1,100 of his patrol loop while he walks it, or within 500 of a court
+    monster. When the raid musters for him again after a skirmish or a wipe, the route clears his living court first, as
+    in Darkness Falls. He and his court are unchanged.
+- **The first-hour sweep does not chase respawns off its way back** (tests only). In Krondon (owner's PC, 2026-11-15,
+  build `1dc66b6`) the raid spent about 13 minutes after Drihten Elreden died (03:35:35) killing thrawn ogre bocere
+  again (180 s respawn) in rooms it had already cleared, 101 kills by 03:48; Orylle was still won at 04:03. Now the
+  sweep skips a monster that has come back since the route began, unless it stands on, or within its aggro of, the walk
+  from where raiders come in from their staging post to the current target, since raiders coming back after a wipe walk
+  that way. A boss's clear-first monsters, encounter adds, epics and the final are always targets. The skipped ones are
+  logged once a minute (`REALM_EXPEDITION_RESPAWNS_LEFT`). By the owner's decision the ten-minute "trash stays down"
+  respawn hold stays for the neutral raids only (Darkness Falls, Summoner's Hall). The code had listed Caer Sidi,
+  Galladoria and the realm raid dungeons too, but the hold never applied in them, so that list now names only the two
+  neutral dungeons. No respawn timer changes.
+- **The raid leaves one of Summoner Lossren's tortured souls alive** (tests only). Her script calls her next wave of
+  18-25 souls only when none of hers lives, and every 20 that die bring an infected ghoul. On the owner's PC (2026-11-15,
+  build `1dc66b6`) Hibernia's Summoner's Hall raid lost twice at her (64 bots, then 88 with the Epic Special Forces). It
+  cleared every wave, so she called 14 waves in five minutes and 18 in ten:
+  - Her souls killed 98 of the 170 raiders who fell (45 of 73, then 53 of 97), up to 21 of them on one raider; she
+    killed 65 and her ghouls 7. In one minute the ghouls' bursts hit 80 raiders and pets for 66,748.
+  - The melee fell first and the healers later. The healers trying to resurrect had 2-6% power from the third minute.
+  - Both attempts ended with nobody left on her ("left combat", lowest 63% and then 20%). No raider was pulled or
+    moved (no displacement in her room). At the first pull she chased a druid 2,290-3,825 from her spawn for two
+    minutes, out of her tether, until she was leashed home. The lead-home change above (after `1dc66b6`) covers that.
+
+  Now one soul of hers is left alive, the healthiest of her wave with no damage over time on it
+  (`EPIC_LOSSREN_KEPT_SOUL` when it is chosen). No bot, bot's pet or area spell hits it, the casters' add and clump lists
+  skip it, and a raider on it goes back to her (a caster to a living ghoul). After her first wave no new one comes, and at
+  most one ghoul. The owner approved this on 2026-11-15 with one change, now in: the kept soul is held mesmerized, the
+  period way. One crowd-control bot of the raid (`EPIC_LOSSREN_SOUL_HOLDER`) keeps it mesmerized with a single-target
+  mesmerize and casts it again before it wakes; failing a mesmerizer a stun, then a root damage doesn't break. It never
+  damages the soul. With no such bot in the raid the soul is only left alone. Lossren, her souls and her ghoul are
+  unchanged. Sources: in 2003 her adds were trivial; the 2006 walkthrough says casters clear the souls and all melee go
+  on Lossren; a later guide (Eden) says mesmerize the adds and use no area damage.
+- **A raid released in the frontier stands together** (tests only). On the owner's PC (sweep of 2026-11-14/15, build
+  `1dc66b6`) Albion's Summoner's Hall raid walks through Hall of the Corrupt, whose way in is in Pennine Mountains. All 59
+  Pennine deaths came after the first Aidon fight: raiders released at their party's staging post there were picked off
+  by enemy-realm bots, some two or three times in a row (Edor at 22:57:53 in Hall of the Corrupt, then 22:59:41 and
+  23:00:05 in Pennine; Armois 22:59:43 and 23:00:21). The owner's decision (2026-11-15):
+  - A raider released at a staging post in an RvR/frontier zone goes to one raid-wide post (the staging post nearest the
+    middle of them all), and the return wave there gathers at it too, so the released raiders stand and fight as a raid
+    (`realm_raid_frontier_raid_post`, on).
+  - When enemy players, bots, pets or guards are within 2,300 of that post (the threat scan radius), the raider releases
+    at the raid's hub instead. Those released there wait at the hub and go back together (all of them there after
+    90 seconds, eight after 4 minutes, or anyone after 8), then join the return wave, never one by one. RvR is unchanged:
+    nobody is immune.
+  - Staging posts outside the frontier keep the party's own post. `REALM_RAID_RELEASE_POST post=raid|party|hub reason=...`
+    logs each frontier release, and `REALM_RAID_HUB_GROUP` each group leaving the hub.
+
+**The play test's sweep (GM only).** `/epictest sweep start [all|event,event] [guest]` runs every raid once, one after
+another, on the server alone: the 21 raid targets in the game's order, Darkness Falls last. Each raid runs at its period
+size and ends on its own clocks, and the sweep stops one after 4 hours. A raid that can't start (its boss respawning, no
+bots free) is tried again after the rest, up to three times. With `guest`, the GM takes a seat in every raid. Their realm
+is set to the raid's realm until the sweep ends, and the server keeps them with their party: away for 20 seconds, they
+are moved back; dead for 30 seconds, they are raised there. Every step is logged as `EPIC_SWEEP_*`. `status`, `skip` and
+`stop` follow it. Nothing runs unless a GM starts it.
+
+**Lean server memory (a test option, off by default).** A new Options-tab switch starts the server with .NET's
+memory-saving garbage collection (4 heaps and "conserve memory", from the owner's friend Ryan's Linux setup). On a
+16-thread PC the server reached 7 GB after three hours of build 8, of which 1.9 GB was in use. The option changes
+nothing in play and takes effect at START SERVER. The server log's `SERVER_MEMORY_DIAGNOSTICS` line names the settings in
+force, so a session with it on can be compared with one without. Tests only so far.
+
+**Audit fixes (2026-11-13).** A review of everything the fork added since its last upstream sync, on the 1.2 candidate.
+- **A passport carries only character tables.** Its checksum proves the file is whole, not who wrote it, and arrival
+  inserted every table the file named; a hand-made passport could have planted an account (a GM one) or server settings
+  through the Passport Desk. Anything but the travelling tables now refuses the whole passport, with nothing changed.
+- **The Passport Desk's port (login port + 10) is opened** with the game's ports while hosting, and on the router with
+  internet hosting. It was left closed, so a passport could not reach it through Windows Firewall.
+- **Wrong passwords from another PC lock that address out** (five in ten minutes), for game logins to existing accounts
+  and for the Passport Desk, as for the host password. Upstream had no limit. A new friend's own password is 6 or more.
+- **Logs:** server.log and warn.log keep 3 days, routine bot travel and goal lines go to detail.log (2 days), and every
+  log has a limit; an install's older log settings are replaced at start (kept as `logconfig.xml.before-2`). A full
+  server wrote about 300 MB a day and kept 7 days.
+- A raid forced from the launcher ends after three hours without progress; the patcher refuses paths outside the game
+  folder; MySqlConnector 2.6.2 and OpenTelemetry 1.20.1 (no advisories left); a small leak of player groups fixed.
+
+**Bots dress up, at the game's own prices** (owner, 2026-11-12/13). A gamebot spends part of the coin above its reserve
+(5 gold a level) on the world's own dye items at a merchant: cloth dye, leather dye or enamel for its armor, and a weapon
+luster for the ones that like to show off (about 196 gold, as the game prices it). Each bot has a fixed style: about a
+fifth never bother, others wear one tidy everyday colour, a few are peacocks in the dearest shades; colours lean on the
+realm, and a guild often wears one. Bots never buy glows: glowing weapons come from epic and dragon drops and the
+Darkness Falls merchants, and the Effect Master stays a player's choice. Settings: `bot_cosmetics`,
+`bot_cosmetics_price_percent`. Log: `BOT_COSMETIC`. Seen on the owner's PC: build 6 loaded 207 dyes and bought them at
+their real prices; tidy bots paid up to 19 gold a piece there, so they now keep to shades of a gold or less.
+
+**A raid has no time limit; it ends when it is beaten, blocked or stalled** (owner, 2026-11-13: "if that's what it takes
+to get through the dungeon, we shouldn't have time outs"). Caer Sidi was cut off by the four-hour window with 12 named
+down and still moving. A raid in battle now ends when it wins, runs out of attempts, or goes an hour with no named or
+boss down, no wipe and no new low on its target (`REALM_RAID_STALLED`; three hours for a raid forced from the launcher).
+
+**The boss's tale, then the call with a horn; a realm's raids every four hours** (owner, 2026-11-12). The realm's
+storyteller tells the raid boss's tale in /faction first; about fifteen seconds after its last line the realm is called
+with a line across the screen and a horn, and only then are bots recruited. A raid is never lost to its tale. Each realm
+opens its own raid every four hours (240 minutes; a world on the old 150 default moves once). Seen on the owner's PC,
+builds 3 and 4.
+
+**Smaller raid fixes from the play tests.** A raid invite box whose raid already left says so instead of "no spot left"
+(seen expiring on build 5). A player in a disbanded group is told, so the old raid party leaves the group window. A
+storyteller says nothing else mid-tale, and a player's tale request is always answered. Return waves hold only raiders
+who have been inside. A bot-led group's let-go logs its real reason.
+
+**A bot the launcher makes at level 50 arrives trained in its build** (owner's PC, 2026-11-11: of 2,700 new level-50
+bots, 792 had trained after 80 minutes). A level-50 gamebot that never trained spends its build's points when it loads.
+
+**Character passport: take your character to a friend's world and back** (built by rambodolphin13 for DividedRealms,
+`da78651` and `da92848`, cherry-picked with his authorship; thank you, rambodolphin13). In the launcher, **CHARACTER
+PASSPORT…** takes one of your characters to a friend's hosted world with its gear, quests and the coin you choose, and
+**COME HOME** brings it back with everything it earned. While it is away it is locked at home: it can't enter the world,
+be deleted or be moved. See [docs/CHARACTER-PASSPORT.md](docs/CHARACTER-PASSPORT.md).
+- A character is playable in one world at a time. A travel file works once (its trip id): home takes back only the trip
+  it is away on, and the host takes an outbound passport only once. Coin moves as a purse and is never copied.
+- Every step backs the world up first (`runtime\passport-backups`, the newest 6) and is all or nothing: a step that
+  fails leaves the world exactly as it was.
+- Living Server's own changes: every saved-progress table has a passport decision, and a test fails when a new one has
+  none; Living Server's social tables (gamebot memories, deeds, lore memory, companions) stay in their world; the passport
+  carries no account name or password; a name taken in the friend's world is refused and you pick a visiting name; a
+  Sluaghbinder visits only a world with the class on; the host's desk never creates accounts; and the host can turn new
+  visitors off (`passport` / `passport_visitors`) while visitors already there can still go home. Recall brings a
+  character back as it left if the friend's world is gone.
+- Automated tests only so far; nobody has made the trip between two real PCs yet.
+
+**Play with friends (experimental).** About one to four friends can play in your bot world: HOST FOR FRIENDS and JOIN
+FRIEND in the launcher, an invite code, and a password. Home network and Tailscale by default; internet hosting is a box
+you tick. See [docs/PLAY-WITH-FRIENDS.md](docs/PLAY-WITH-FRIENDS.md). Hand port from rambodolphin13's DividedRealms
+(3c6cc9d, 6f22a7a, ec0e456, af1fcf8, b0744a2; Join Friend first came from stefanrows/OfflineDAoC), GPL-3.0. Thank you,
+rambodolphin13. The Character passport (da78651f) is not part of it. It passes automated tests; nobody has played it
+between two real PCs yet.
+- **The host password is the gate** (owner's decision, 2026-11-08). While you host, a new account from another PC needs
+  your password, and without one set no other PC can make an account. Your own PC never needs it, so single-player
+  automatic account creation is unchanged. Five wrong host passwords from one address lock it out for 10 minutes. No
+  friend list.
+- **Every friend has their own password** (owner, 2026-11-08). Join Friend asks for the host password (first time only)
+  and your own password. The account keeps only your own password, so one friend can't log in as another, and later
+  logins never need the host password. The host password itself is never sent: the first login sends a short join token
+  made from it (see the developer notes in the guide).
+- **One region address per client.** Each client is told the address it connected on (this PC, the home network or
+  Tailscale), or the router's internet address for a friend from the internet. Before, a friend on Tailscale or on a
+  172.16 network was told an address it could not use.
+- **Firewall rules for this game only:** `CoreServer.exe`, TCP 10300 and UDP 10400, from the home network and Tailscale
+  (any address only with internet hosting). Made with Windows' permission. STOP HOSTING removes exactly those rules, by
+  name, and says so in red if it can't.
+- **Internet hosting (opt-in):** the router opens the two ports over UPnP while the server runs and closes them when it
+  stops. The router mapping now points at this PC's address on the router's network, each port is asked for on its own,
+  and the router's internet address is kept as `PublicIP`.
+- **Friends on the home network or Tailscale get this PC's idle time-out exemptions** (ping, position, idle kick), so
+  they aren't dropped while standing in `/grind`. A public address keeps the normal time-outs.
+- **Two friends behind one router** can each make an account at once: the 15-minute same-address rule is skipped for
+  this PC, the home network, Tailscale and the host password. The total per address still applies.
+- **Join Friend refuses `offline`** (the host's own account) and suggests a name.
+- **Friends never get GM.** Make Me GM changes only your own account; a test with two friends' accounts checks it.
+- **Release builds** check that no host password or `PublicIP` ships, and leave out Host for Friends' own files. The
+  network defaults (this PC only, UPnP off, mappings removed at stop) came in 1.1.2 and are unchanged.
+- Not yet: the new (Godot) client can't use Join Friend, and a friend from a public address in `/grind` can still be
+  dropped by the ping time-out.
+
+**Play with friends: bots, pulls, credit and caps with more than one player** (owner's call, 2026-11-08; the co-op
+audit of 2026-11-03). With one player online nothing changes. With friends online:
+- **A companion follows its owner, always.** Another player's `/pull`, attack, `/bot pilot`, invite or `/makeleader` no
+  longer takes your `/spawn` or `/raid` companions, and when you leave a group a friend stays in, your companions leave
+  with you.
+- **Invited gamebots follow the group's leader.** `/makeleader` hands them to the new leader, and when the leader leaves
+  they follow the new leader instead of whichever player came first in the group.
+- **`/pull` orders only your bots:** your companions, plus the gamebots when you lead. The leader's tank-gated pull holds
+  only the leader's bots, and a friend's attack sends the friend's companions in without breaking it.
+- **`/travel` and `/bot pilot` are host only.** They press keys in, and read files from, the PC that runs the server; a
+  friend on another PC is told so and nothing starts.
+- **A server-wide companion budget:** while more than one player is online, new companions need room in the server's
+  total (`companion_budget_total`, 160) and the player's own share (`companion_budget_per_player`, 79 = one full
+  `/raid 80`). 0 turns either off.
+- **Bots answer each of you.** The reply cooldowns in `/faction` and `/say` are per player, so one player's line no longer
+  silences the replies to another.
+- **Quest credit for everyone:** a gamebot's kill credits every player of the group in range once; when the leader is
+  dead or away, another player of the group in range is credited instead of nobody.
+- **One invite at a time:** a gamebot leader whose invite box waits for one player's answer invites nobody else meanwhile.
+
+Covered by automated two-player tests (`UT_PlayWithFriends`); nobody has played it with two people yet. Joining a
+friend's server (networking, accounts, the launcher) is a separate change. Details: [docs/LIVING-SERVER.md](docs/LIVING-SERVER.md).
 
 **Tales: the realm's storyteller, and stories by the fire** (the owner's idea, 2026-11-10: "a bot in faction asks another
 famous bot to tell the story about X..."; how it works: [docs/TALES.md](docs/TALES.md)). Built and covered by automated
@@ -194,7 +791,8 @@ covered by automated tests; none of it has been seen in game yet.
 
 **More of the epic fights play in full, and the bots play them** (the epic encounters, wave 3). Tested by automated
 tests only; not played in game yet. Some of these fights get harder: try them first.
-- **Funus: the archers join in.** With his weapon puzzle on, mercenaries, armsmen and infiltrators who own their short
+- **Funus: the archers join in.** His weapon puzzle is off by default; do not turn it on yet, the tactic is not
+  finished (in a test world it was beaten once, only with fixes not yet merged). With his weapon puzzle on, mercenaries, armsmen and infiltrators who own their short
   bow or crossbow now draw it and fight him with it, like the scouts with their longbows; none of them ever swings a melee
   weapon at him, not even when he is on top of them. Bots of those classes start with a plain training bow or crossbow of
   their own kind when they learn it, and earn better ones as before. No bot's pet attacks him or defends its owner
@@ -223,8 +821,9 @@ property (`/serverproperty`, section `npc`), and the game reads it as it plays, 
 `epic_soul_reckoner_small_room`, `epic_aroon_damage_order`, `epic_galladoria_bridge_spot`, `epic_full_fire_patches`,
 `epic_earthmender_class_puzzle`, `epic_earthmenders_passive`, `epic_earthmender_quick_reset`,
 `epic_earthmender_mutual_heal`, `epic_beatha_heals_xaga`, `epic_fairy_flight`, `epic_govannon_full_health`,
-`epic_kvasir_cold_heal`, `epic_tuscar_twin_heal` and `epic_dragon_messengers`. All are on except the full fire patches
-and Govannon's full health, which stay off until they have been played. `epic_encounter_switches` changes any one boss's
+`epic_kvasir_cold_heal`, `epic_tuscar_twin_heal`, `epic_dragon_messengers`, `epic_govannon_full_heal` and
+`epic_easmarach_endless_falls_heal`. All are on except Funus's weapon puzzle, the full fire patches, Govannon's full
+health, Govannon's full heal at his change and Easmarach's endless heal on the falls, which stay off (15 of the 20 are on). `epic_encounter_switches` changes any one boss's
 switch, for example `AllowBotDisplacement@Orylle=False; AllowPositionPuzzle@Olcasgean=False`.
 
 **The dragons, Xanxicar and Galladoria play their full mechanics, and the bots play them back** (the epic encounters,
@@ -287,7 +886,7 @@ game yet.
 **Caer Sidi, Krondon, Avalon City and the Darkness Falls princes play their original mechanics, and bots play them
 too** (the epic encounters, wave 2, Albion). Tested by automated tests only; not played in game yet. These fights are
 harder than before; tell us where a raid can no longer win.
-- **Funus heals from the wrong hits again.** Only clerics and scouts (with their longbow) hurt him; a hit from anyone
+- **Funus heals from the wrong hits again** (off by default since; do not turn it on yet). Only clerics and scouts (with their longbow) hurt him; a hit from anyone
   else, or a pet, heals him to full, as in the original. The raid's clerics and scouts fight him, everyone else stands
   well back, calls their pets off and keeps area spells off him. If you play another class, stay off him too.
 - **The horsemen heal when dragged too far again.** The raid keeps each horseman near his room and leads him back
@@ -328,8 +927,9 @@ automated tests only; not played in game yet.
 - **One switch per boss.** A boss that may throw bots picks them for its throw, and one that may not (every other boss
   for now, Legion included) picks only real players for it, as before. The boss's other targets (glares, debuffs, adds)
   pick the whole raid everywhere.
-- **A thrown bot comes back.** It falls and takes the same fall damage you would. Then it walks back to its party:
-  your companions to you, a raid bot to its party leader. If something attacks it on the way, it fights back first.
+- **A thrown bot comes back.** It falls and takes the same fall damage you would. Then it walks back to its party when
+  it can: your companions to you, a raid bot to its party leader. If something attacks it on the way, it fights back
+  first. Most thrown bots are recalled instead: in a long run on a real install, 4 in 5 were.
   - **Never stuck:** if there is no way back on foot, it hasn't got closer in 10 seconds, or the walk takes too long, it
     says so and is back with its raid after a 5-second recall.
   - **Jails:** a jailed bot waits and fights whatever attacks it until the jail ends. Jailer Vifil's jail ends when his
@@ -367,8 +967,8 @@ target bots too").
     players.
   - Messages still go to you only; a bot gets the spell, not the text.
 - **Throws, teleports and jails pick bots only where the boss may throw them** (the three dragons and Xanxicar, see
-  above). Everywhere else (Scurceol's orbs, Cunovinda's ledge, Govannon's gallery, the Jailer, the Glacier Giant, Legion
-  and others) they still pick real players only, until each boss's tactic is in place.
+  above). Everywhere else they still picked real players only at this step. Later steps (above) let more bosses pick
+  bots, Scurceol's orbs and Legion's throw among them.
 - **No floods of adds.** With bots counted, a few bosses would make far more adds or heals than any 2003 raid saw: a
   bot raid can be twice its period size. They now count at most the period raid (docs/RAID-SIZES.md), so up to that
   size nothing changes, and a bigger bot raid faces what a full raid of players did:
@@ -382,8 +982,10 @@ target bots too").
   seconds. Now they eat summoned pets only: yours and the bots' pets.
 - **Raids are harder:** mechanics that used to skip the bots now hit them. Not yet played in game.
 
-**Battleground keeps change hands** (playtest 2026-11-04: in Thidranki 210 level-22 bots fought for 45 minutes, the
-gates fell, and the Renegade Lord never dropped below 100%).
+**Battleground rallies: realms go up to the keep lord together** (playtest 2026-11-04: in Thidranki 210 level-22 bots
+fought for 45 minutes, the gates fell, and the Renegade Lord never dropped below 100%). **This did not work on a real
+install:** in an overnight run (development build 76600af7), 168 of 169 storms failed, no keep changed hands in 8
+hours, and the same bots died over and over.
 - **Before:** once the gates were down, every gamebot walked up to the lord on its own, from wherever its last fight or
   its release had left it. They reached him one at a time and died to him one at a time.
 - **Now:** each realm rallies just inside the broken gate, under the lord's room. Its gamebots fight whatever comes at
@@ -614,8 +1216,8 @@ audit 2026-11-03).
   or spam wave in the listen, and neither run flagged. The playtester now listens until 10 lines are expected, so these
   listens were 14.5 minutes, shorter than the half hour of the earlier runs.
 - **No quieter on a full server.** The world was re-balanced, not cut: /faction's openers keep 4 a minute at a full server
-  and its answers come on top of them; /lfg and /trade aim at what 1.1.2 actually delivered (1.8 and 1.6 a minute, were
-  1.6 and 1.3); a guild's chat and /say near you have higher floors, so a few bots keep them going. In the evening model
+  and its answers come on top of them; /lfg and /trade aim at what the 1.1.2 chat model predicted (1.8 and 1.6 a minute,
+  were 1.6 and 1.3; on a real install 1.1.3 delivered about 3.2 and 2.3); a guild's chat and /say near you have higher floors, so a few bots keep them going. In the evening model
   (`UT_ChatBudgetSimulation`) at the default "How much they talk" (2), all the channels you hear together go from 7.9 to
   8.4 lines a minute with 300 bots a realm, and from 16.4 to 18.0 with 1,000. A 10-bot realm is quieter than in 1.1.2,
   because it was running far over its budget.
@@ -896,6 +1498,19 @@ Nobody else's fork has bot strafing (fork survey, 2026-11-08), so this is our ow
   facing its target either as a side step or as a slide, and only playing it shows which. A walk longer than a step still
   turns the bot to face where it goes in one update, and the client's own smoothing of a stop is the client's.
 
+## Beta 1.1.4 — 2026-11-12
+
+Setup only. The server and the launcher are the same as in 1.1.3.
+
+- **Setup downloads the game from Living Server's own copy.** shadowofze's Offline DAoC repository is no longer online,
+  so the 1.1.3 Setup could not download the game for a new player. Setup and the downloader now read the same release
+  files from `chris4aker/OfflineDAoC-base-files`, checked against his SHA-256 lists. The downloader is his 0.37 script
+  with only that address changed.
+- **New installs are Offline DAoC 0.37**: the original client and the Classic + Shrouded Isles classes. Setup no longer
+  offers the 0.37b edition (his Sluaghbinder class) or the 0.37c new client. Games that already have either keep working
+  with Living Server and keep getting updates.
+- README: dead links to his repository removed.
+
 ## Beta 1.1.3 — 2026-11-08
 
 Started as a hotfix (/faction chat that holds together, out of Xanxicar's stomp, Scurceol Hyrde's orbs shot down from the
@@ -985,11 +1600,11 @@ chat code) and passed both.
   bots says nothing. /say lines carry their ceiling (`cap=`), and `chat_audit.py` prints the /say lines a minute and fails a
   log with a minute of /say above its ceiling around the player. On the owner's PC with RC2 (6a83c038), at a busy
   bind: 1.3-2.6 /say lines a minute.
-- **One greeting per bot per meeting (after RC1).** Cabowyn said "hey Manawatch! good to see you again" and a second later
-  "hey hey Manawatch, City of Camelot treat you well after i left?": a GM test had cleared the greeting cooldowns while the
+- **One greeting per bot per meeting (after RC1).** Cabowyn said "hey {player}! good to see you again" and a second later
+  "hey hey {player}, City of Camelot treat you well after i left?": a GM test had cleared the greeting cooldowns while the
   first greeting was on its way. A bot that greeted a player, or is about to, doesn't greet them again for ten minutes,
   whatever cleared the cooldowns; `/lstest greet` says so. Tests only.
-- **A deed names a place it could happen (after RC1).** A forced deed read "saw Manawatch's group take a named monster in
+- **A deed names a place it could happen (after RC1).** A forced deed read "saw {player}'s group take a named monster in
   City of Camelot". A real deed names the zone where it happened (the monster's or the player's body); `/lstest deed` names
   where the GM stands only if it could happen there (no capital; a streak or a gank only in the frontier), else a hunting
   zone of the realm or a frontier zone. Tests only.
@@ -1029,7 +1644,7 @@ chat code) and passed both.
   died to a guard...), more answers to "where?", "by who?" and "how many?", and the teller's lines are kept for the
   evening however short. "same happened to me in ..." names a frontier zone, an enemy realm's only as "their frontier":
   RC5's "ganked in jamtland mtns" drew "same happened to me in dales of devwy", a hunting zone. Tests only.
-- **A deed names the monster and where (after RC5).** RC5's `/lstest deed solo` read "not lying, i just saw Manawatch kill
+- **A deed names the monster and where (after RC5).** RC5's `/lstest deed solo` read "not lying, i just saw {player} kill
   a named monster, no help at all". A witness now names where it happened in most of its lines, with the zone as chat
   wrote it ("black mtns"), and names the real monster; the forced test takes the targeted or nearest named monster and
   says so when there is none. Tests only.
@@ -1169,7 +1784,7 @@ player online in Albion, 5 bot lines named the player, no topic ever came back, 
   read from the logs (they end before it). Tests only.
 - **A friend answers your small talk (RC5 on the owner's PC).** "hey what are you up to tonight?" to Ilaan, who had
   grouped with the player twice at Avalon City, drew "might wander somewhere new". A friend now answers "hey", "wyd" or
-  "what are you up to" with your name and what it is really doing ("hey Manawatch! killing thrawn ogres in Gwyddneau, want
+  "what are you up to" with your name and what it is really doing ("hey {player}! killing thrawn ogres in Gwyddneau, want
   in?"), asks you along only when it is free to group and near your level ("sure" is answered with how to group), and
   otherwise names where you grouped ("Avalon City again sometime?"). Tests only.
 - **An evening that remembers itself.** Each realm keeps a short memory of what its /faction really carried tonight: who
@@ -1218,7 +1833,7 @@ as an Albion 50 and a new Hibernian with the Bot schedule on Real clock). The ch
 reading the lines showed what it couldn't see; it now checks for each of these, and fails RC6's log.
 - **A friend's answer to small talk is kept.** "hey! what u up to?" by tell to a friend drew "not sure, try /advice": the
   friend's real answer had no score in the reply budget, which swapped it for a stock line. On RC7 the same tell drew "hey
-  Manawatch! rvr in Odin's Gate, its busy, wanna duo?", true of the bot.
+  {player}! rvr in Odin's Gate, its busy, wanna duo?", true of the bot.
 - **Group banter only about a hunt you shared.** A wizard grouped with the player fought alone, died, ran back and said
   "clean pull, ty", "loot is yours", "xp is flying, good call on this camp", "oom, give me a minute" (at full power) and
   "pull?", every 20-40 seconds, while the player had not fought. Hunting talk now needs a fight the player took part in
@@ -1268,8 +1883,8 @@ as one fight; reading the lines showed the rest.
   now goes before it.
 - **No goal names as monsters or places.** "careful group rendezvouses link" in /say, and "which stable for master
   visur?" from a bot taking the porter: a goal name is no monster, and a porter or trainer is no place.
-- **Gossip about you while you're on asks you.** "anyone know if Manawatch is on today? want to group again" was said
-  while the player was online; it is now "Manawatch, u around? want to group again", heard on RC11.
+- **Gossip about you while you're on asks you.** "anyone know if {player} is on today? want to group again" was said
+  while the player was online; it is now "{player}, u around? want to group again", heard on RC11.
 - **A scene tells the frontier only through a bot that's there.** A 40 grinding in Avalon played the newcomer's "made
   it to Castle Excalibur", "first realm points", "dead now but worth it". That role now goes only to a bot out for rvr,
   and "first night in the frontier" reads "first time" by day.

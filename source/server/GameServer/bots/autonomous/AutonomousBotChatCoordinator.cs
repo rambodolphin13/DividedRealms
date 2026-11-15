@@ -44,14 +44,38 @@ public static class AutonomousBotChatCoordinator
     // of a fixed 3 min and 90 s, so chat comes in uneven bursts and lulls like people's (0.36-se.4).
     private static readonly Dictionary<eRealm, long> FactionGap = new();
     private static readonly Dictionary<ushort, long> LocalGap = new();
-    private static readonly Dictionary<eRealm, long> LastFactionPlayerResponse = new();
+    /// <summary>
+    /// Play with friends (1.2): the reply cooldowns are per (scope, player), so one human's line never silences the replies
+    /// to another (co-op audit rule 3). The keys are the realm or region and the character (ReplyKey).
+    /// </summary>
+    private static readonly Dictionary<(eRealm, string), long> LastFactionPlayerResponse = new();
     /// <summary>When a player of the realm last spoke in /faction. Unprompted lines wait <see cref="PlayerQuietMs"/> after it, so
     /// they aren't read as answers (live test 2026-10-18: "lf group, minstrel 50" right after "mind if i hunt near cotswold?").</summary>
     private static readonly Dictionary<eRealm, long> LastPlayerFactionLine = new();
     public const int PlayerQuietMs = 15_000;
 
     public static bool QuietAfterPlayer(long lastPlayerLine, long now) => lastPlayerLine > 0 && now - lastPlayerLine < PlayerQuietMs;
-    private static readonly Dictionary<ushort, long> LastLocalPlayerResponse = new();
+    private static readonly Dictionary<(ushort, string), long> LastLocalPlayerResponse = new();
+
+    /// <summary>The faction and /say reply cooldowns (milliseconds): one batch of replies per player per gap, unless the line needs an answer.</summary>
+    public const int FactionReplyGapMs = 12_000, LocalReplyGapMs = 10_000;
+
+    /// <summary>A player's key in the reply cooldowns: the character's id, or the name when it has none (tests).</summary>
+    public static string ReplyKey(GamePlayer player) =>
+        string.IsNullOrEmpty(player?.InternalID) ? player?.Name ?? string.Empty : player.InternalID;
+
+    /// <summary>
+    /// The reply cooldown's rule: a reply to this player in this scope may be scheduled now unless one was within
+    /// <paramref name="gapMs"/> and the line needs no answer; taking it starts the gap for this player only.
+    /// </summary>
+    public static bool TryTakeReplyTurn<TScope>(Dictionary<(TScope, string), long> last, TScope scope, string player, long now, int gapMs,
+        bool needsAnswer)
+    {
+        if (last.TryGetValue((scope, player), out long at) && now - at < gapMs && !needsAnswer)
+            return false;
+        last[(scope, player)] = now;
+        return true;
+    }
     private static readonly Dictionary<string, long> LastTellResponse = new(StringComparer.OrdinalIgnoreCase);
 
     private static readonly string[] FactionOpeners =
@@ -223,8 +247,11 @@ public static class AutonomousBotChatCoordinator
                 // Beta 1.1.2, round 3: mostly a field line from the bot's real level, class, camp and bags.
                 if (TryField(starter, kind, choice, reason))
                     return true;
-                // A written lfg or trade line is never a crafted one (round 3).
-                if (!AutonomousBotVoices.TryLine(starter, kind, out VC.Picked picked, filter: KeepsStory(starter, kind, AmbientLineFits(false))) ||
+                // A written lfg or trade line is never a crafted one (round 3). The "join" greetings are the /group hello of a bot
+                // that joins the player's group (AutonomousBotGroupChatter), never an /lfg post (owner's PC 2026-11-15, build
+                // 1dc66b6: "hi all, healer here, try not to die" in /lfg from a paladin already in the player's full party).
+                Func<VC.Line, bool> story = KeepsStory(starter, kind, AmbientLineFits(false));
+                if (!AutonomousBotVoices.TryLine(starter, kind, out VC.Picked picked, filter: line => IsAmbientChannelLine(line) && story(line)) ||
                     !Fresh(choice, picked.Text))
                     return false;
                 SendRealmChannel(starter, kind, picked.Text);
@@ -278,6 +305,9 @@ public static class AutonomousBotChatCoordinator
             }
         }
     }
+
+    /// <summary>An unprompted /lfg or /trade line may be any of the kind's lines but the /group join greetings. Pure.</summary>
+    public static bool IsAmbientChannelLine(VC.Line line) => !string.Equals(line?.Topic, "join", StringComparison.Ordinal);
 
     /// <summary>
     /// A written line keeps the bot's story and state as a field line does (1.1.3, after RC5): no "lfg" from a bot in a group
@@ -337,6 +367,9 @@ public static class AutonomousBotChatCoordinator
     {
         var random = Random.Shared;
         if (!AutonomousBotVoices.Enabled || random.NextDouble() >= AutonomousChatFieldTalk.Share(channel))
+            return false;
+        // A bot telling a tale says nothing else until it ends.
+        if (AutonomousTales.IsTelling(starter.DatabaseID))
             return false;
         AutonomousChatFieldTalk.Said said = AutonomousChatFieldTalk.Line(channel, AutonomousChatFieldTalk.Of(starter, random),
             AutonomousChatFieldTalk.MemoryOf(starter.Realm), random, GameLoop.GameLoopTime, AutonomousChatStance.Shared);
@@ -1344,9 +1377,9 @@ public static class AutonomousBotChatCoordinator
             return;
         lock (Sync)
         {
-            if (LastFactionPlayerResponse.TryGetValue(player.Realm, out long last) && GameLoop.GameLoopTime - last < 12_000 && !NeedsAnswer(message))
+            if (!TryTakeReplyTurn(LastFactionPlayerResponse, player.Realm, ReplyKey(player), GameLoop.GameLoopTime, FactionReplyGapMs,
+                    NeedsAnswer(message)))
                 return;
-            LastFactionPlayerResponse[player.Realm] = GameLoop.GameLoopTime;
         }
         SchedulePlayerReplies(player, message, true);
     }
@@ -1373,9 +1406,9 @@ public static class AutonomousBotChatCoordinator
             return;
         lock (Sync)
         {
-            if (LastLocalPlayerResponse.TryGetValue(player.CurrentRegionID, out long last) && GameLoop.GameLoopTime - last < 10_000 && !NeedsAnswer(message))
+            if (!TryTakeReplyTurn(LastLocalPlayerResponse, player.CurrentRegionID, ReplyKey(player), GameLoop.GameLoopTime, LocalReplyGapMs,
+                    NeedsAnswer(message)))
                 return;
-            LastLocalPlayerResponse[player.CurrentRegionID] = GameLoop.GameLoopTime;
         }
         SchedulePlayerReplies(player, message, false);
     }

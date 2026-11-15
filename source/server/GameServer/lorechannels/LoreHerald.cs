@@ -42,6 +42,23 @@ public static class LoreChronicle
         ["dungeon-midgard-dodens"] = ["SpiritmasterAros"],
         ["dungeon-hibernia-tursuil"] = ["Balor"],
         ["dungeon-hibernia-marfach"] = ["BlackLady", "ChieftainCaimheul", "Avartack"],
+        // The open-world big bosses (Living Server 1.2, RealmRaidOpenWorld).
+        ["openworld-albion-greenknight"] = ["OFGreenKnight"],
+        ["openworld-albion-coliath"] = ["Colialt"],
+        ["openworld-albion-emthoro"] = ["SpiritOfLordEmthoro"],
+        ["openworld-midgard-glaciergiant"] = ["GlacierGiant"],
+        ["openworld-midgard-wreth-jotun"] = ["WrethOfWinterJotun"],
+        ["openworld-midgard-wreth-arachite"] = ["WrethOfWinterArachite"],
+        ["openworld-midgard-wreth-spider"] = ["WrethOfWinterSpider"],
+        ["openworld-midgard-wreth-crab"] = ["WrethOfWinterCrab"],
+        ["openworld-midgard-wreth-scorpion"] = ["WrethOfWinterScorp"],
+        ["openworld-midgard-revenant"] = ["RaumarikRevenant"],
+        ["openworld-midgard-mortufoghus"] = ["Mortufoghus"],
+        ["openworld-hibernia-evern"] = ["Evern"],
+        ["openworld-hibernia-juggernaut"] = ["EpicJuggernaut"],
+        ["openworld-hibernia-curengkur"] = ["Curengkur"],
+        ["openworld-hibernia-marfoirwort"] = ["Marfoirwort"],
+        ["openworld-hibernia-mollunero"] = ["Mollunero"],
     };
 
     /// <summary>The end of a raid's details: the raid leader's name (Living Server 1.2). Rows without it name none.</summary>
@@ -62,7 +79,7 @@ public static class LoreChronicle
     /// <summary>"win", "loss" or null: a win is "Boss defeated"; a loss is a defeat, or a time-out after a wipe.</summary>
     public static string Kind(string outcome, string details)
     {
-        string record = RealmEventRecordStore.RecordOutcome(outcome, details);
+        string record = RealmEventRecordStore.FoughtOutcome(outcome, details);
         return record == "Boss defeated" ? "win" : record is "Defeated" or "Timed out" ? "loss" : null;
     }
 

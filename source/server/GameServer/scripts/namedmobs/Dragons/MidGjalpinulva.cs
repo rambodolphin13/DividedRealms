@@ -95,9 +95,9 @@ namespace DOL.GS
 		/// <param name="killer">The living that got the killing blow.</param>
 		protected void ReportNews(GameObject killer)
 		{
-			int numPlayers = GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).Count;
+			int numPlayers = EpicEncounterMechanics.ForceSize(this);
 			String message = String.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
-			NewsMgr.CreateNews(message, killer.Realm, eNewsType.PvE, true);
+			NewsMgr.CreateNews(message, killer?.Realm ?? eRealm.None, eNewsType.PvE, true);
 
 			if (Properties.GUILD_MERIT_ON_DRAGON_KILL > 0)
 			{
@@ -124,7 +124,7 @@ namespace DOL.GS
 			}
 			return count;
 		}
-		public override void Die(GameObject killer)
+		public override void ProcessDeath(GameObject killer)
 		{
             if (Brain is MidGjalpinulvaBrain encounterBrain) encounterBrain.EncounterAdds.Reset();
 				// debug
@@ -152,7 +152,7 @@ namespace DOL.GS
 				}
 
 				AwardDragonKillPoint();
-				base.Die(killer);
+				base.ProcessDeath(killer);
 				foreach (String message in m_deathAnnounce)
 				{
 					BroadcastMessage(String.Format(message, Name));
@@ -212,7 +212,7 @@ namespace DOL.GS
 				base.StartAttack(target);
         }
 		private static Point3D spawnPoint => DragonLairPlacement.Home(eRealm.Midgard);
-        public override ushort SpawnHeading { get => base.SpawnHeading; set => base.SpawnHeading = 2531; }
+        public override ushort SpawnHeading { get => 2531; set { } }
         public override Point3D SpawnPoint { get => spawnPoint; set => base.SpawnPoint = spawnPoint; }
 		public override bool AddToWorld()
 		{
@@ -335,7 +335,11 @@ namespace DOL.AI.Brain
             bool encounterAggro = CheckProximityAggro();
             EncounterAdds.Tick(Body, AggroList.Select(static entry => entry.Key), encounterAggro, IsRestless);
             if (encounterAggro) DragonDiagnostics.Fighting(Body, AggroList.Count);
-			if (!encounterAggro)
+			// The reset waits until the dragon has been out of combat for EpicEncounterMechanics.ResetQuietMilliseconds, as
+			// every other scripted boss's does: in a 200-bot fight the list can be empty for a moment (a tether leash
+			// clears it, and the proximity check is skipped during the 6 s breath cast) and the dragon healed to full on
+			// that think (dragon-fight T2). A wiped or departed raid still resets it.
+			if (!encounterAggro && EpicEncounterMechanics.FightIsOver(Body))
 			{
 				DragonDiagnostics.BeforeReset(Body);
 				Body.Health = Body.MaxHealth;
@@ -455,6 +459,10 @@ namespace DOL.AI.Brain
 				_lastRoamIndex = 0;
 				ResetChecks = true;//do it only once
 				_flightWatch.End();
+				// The flight glare puts real players on the aggro list and only clears it while still flying; one glared in
+				// the last seconds before touchdown stayed there, so the dragon never healed on a reset and never flew again
+				// (dragon-fight M2). It lands with no foes: anyone within its aggro range is picked up again as usual.
+				ClearAggroList();
 			}
 			if (Body.CurrentRegion.IsNightTime == true && !LockEndRoute)//reset bools to dragon can roam again
 			{			

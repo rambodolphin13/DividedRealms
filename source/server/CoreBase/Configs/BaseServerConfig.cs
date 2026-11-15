@@ -56,6 +56,7 @@ namespace DOL.Config
 		/// </summary>
 		private ushort _udpPort;
 
+
 		/// <summary>
 		/// Constructs a server configuration with default values.
 		/// Living Server 1.1.2 (audit 2026-11-03): the defaults reach this PC only. The upstream defaults listened on every
@@ -179,8 +180,9 @@ namespace DOL.Config
 			_enableUPnP = root["Server"]["EnableUPnP"].GetBoolean(_enableUPnP);
 			_detectRegionIP = root["Server"]["DetectRegionIP"].GetBoolean(_detectRegionIP);
 
-			ip = root["Server"]["PublicIP"].GetString("auto");
-			_publicIP = ip is "auto" or "" ? null : IPAddress.Parse(ip);
+			// Living Server 1.2: "auto" (or nothing) leaves it for UPnP to find; an unreadable value counts as "auto".
+			ip = root["Server"]["PublicIP"].GetString("auto")?.Trim();
+			_publicIP = ip is null or "" or "auto" || !IPAddress.TryParse(ip, out IPAddress publicIP) ? null : publicIP;
 
 
 		}

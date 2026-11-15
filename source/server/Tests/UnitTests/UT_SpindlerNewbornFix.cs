@@ -1,4 +1,6 @@
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Linq;
 using DOL.GS;
 using NUnit.Framework;
 
@@ -26,8 +28,13 @@ namespace DOL.UnitTests
             Assert.That(spindler?.AddParties, Is.EqualTo(3));
             Assert.That(spindler?.AreaOnClump, Is.True);
             Assert.That(EpicEncounterTactics.For("GrandSummonerGovannon")?.FocusRangedAdds, Is.False, "others keep one add a party");
-            Assert.That(EpicEncounterTactics.Catalog, Has.Exactly(1).Matches<EpicEncounterTactics.Tactic>(t => t.AddParties > 0 || t.AreaOnClump),
-                "gated to Spindler: area choice is shared caster AI");
+            Assert.That(EpicEncounterTactics.Catalog, Has.Exactly(1).Matches<EpicEncounterTactics.Tactic>(t => t.AddParties > 0),
+                "add parties: Spindler only");
+            // Living Server 1.2: the Giant Sporite Cluster (one health pool; the period PBAoEd the clump), Lossren's tortured souls,
+            // and the open-world bosses whose adds clump on them: the Green Knight's trees, Coliath's zombies, Mollunero's octonoids.
+            Assert.That(EpicEncounterTactics.Catalog.Where(t => t.AreaOnClump).Select(t => t.Boss),
+                Is.EquivalentTo(new[] { "SpindlerBroodmother", "GiantSporiteCluster", "SummonerLossren", "OFGreenKnight", "Colialt", "Mollunero" }),
+                "area choice is shared caster AI: gated");
         }
 
         [Test]

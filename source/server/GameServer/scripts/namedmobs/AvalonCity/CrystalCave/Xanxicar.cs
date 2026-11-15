@@ -68,7 +68,7 @@ namespace DOL.GS
 			return true;
 		}
         #region Die/Boradcast/ReportNews/AwardDragonKillPoints
-        public override void Die(GameObject killer)
+        public override void ProcessDeath(GameObject killer)
 		{
 			// debug
 			if (killer == null)
@@ -93,8 +93,6 @@ namespace DOL.GS
 
 			AwardDragonKillPoint();
 
-			base.Die(killer);
-
 			foreach (String message in m_deathAnnounce)
 			{
 				BroadcastMessage(String.Format(message, Name));
@@ -104,6 +102,8 @@ namespace DOL.GS
 			{
 				ReportNews(killer);
 			}
+
+			base.ProcessDeath(killer);
 		}
 		public void BroadcastMessage(String message)
 		{
@@ -120,9 +120,9 @@ namespace DOL.GS
 		/// <param name="killer">The living that got the killing blow.</param>
 		protected void ReportNews(GameObject killer)
 		{
-			int numPlayers = GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).Count;
+			int numPlayers = EpicEncounterMechanics.ForceSize(this);
 			String message = String.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
-			NewsMgr.CreateNews(message, killer.Realm, eNewsType.PvE, true);
+			NewsMgr.CreateNews(message, killer?.Realm ?? eRealm.None, eNewsType.PvE, true);
 
 			if (Properties.GUILD_MERIT_ON_DRAGON_KILL > 0)
 			{
@@ -505,10 +505,10 @@ namespace DOL.GS
 		}
 
 		public static int XanxicarianChampionCount = 0;
-		public override void Die(GameObject killer)
+		public override void ProcessDeath(GameObject killer)
 		{
 			--XanxicarianChampionCount;
-			base.Die(killer);
+			base.ProcessDeath(killer);
 		}
 		public override bool AddToWorld()
 		{

@@ -30,6 +30,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 SCRIPTS = Path("source/server/GameServer/scripts/namedmobs")
 RAID_FILE = Path("source/server/GameServer/bots/autonomous/AutonomousRealmRaid.cs")
+# The open-world big bosses' realm raids (Living Server 1.2): each linked to its own boss only.
+OPEN_WORLD_RAID_FILE = Path("source/server/GameServer/bots/autonomous/RealmRaidOpenWorld.cs")
 NEUTRAL_FILE = Path("source/server/GameServer/bots/autonomous/RealmRaidNeutralEvents.cs")
 ROUTE_FILE = Path("source/server/GameServer/bots/autonomous/RealmRaidDungeonRoute.cs")
 SWITCH_FILE = SCRIPTS / "EpicEncounterMechanics.cs"
@@ -531,6 +533,9 @@ def picks_from_player_list(member: Member) -> bool:
 _SHIPPED_BOT_DISPLACEMENT: set[str] | None = None
 
 
+_BRAIN_BODIES: dict[str, list[str]] = {}
+
+
 def shipped_bot_displacement() -> set[str]:
     """The encounters whose AllowBotDisplacement ships on (EpicEncounterMechanics.ShippedPerEncounter)."""
     global _SHIPPED_BOT_DISPLACEMENT
@@ -561,7 +566,9 @@ def player_only(member: Member, receiver: str | None, pos: int | None = None) ->
     if receiver and re.search(r"EncounterTargets\.(ForDisplacement|DisplacesBots)\b", cls_masked):
         name = member.cls.name
         encounter = name[:-len("Brain")] if name.endswith("Brain") else name
-        return not ({name, encounter} & shipped_bot_displacement())
+        # The switch is asked with the body (DisplacesBots(Body)): the brain's bodies by class name too (MoranBrain is
+        # MoranTheMighty's, LyftMihtBrain4 is LyftMihtFour's).
+        return not ({name, encounter, *_BRAIN_BODIES.get(name, [])} & shipped_bot_displacement())
     if receiver:
         r = re.escape(receiver.split(".")[-1])
         if re.search(r"\bGamePlayer\s+" + r + r"\b", body) or re.search(r"\bGamePlayer\s+" + r + r"\b", cls_masked) or \
@@ -1257,8 +1264,10 @@ DETECTORS = (detect_offline_changes, detect_take_damage, detect_adds, detect_pha
 
 def read_raids() -> tuple[list[dict], dict]:
     text = read_text(REPO / RAID_FILE)
+    if (REPO / OPEN_WORLD_RAID_FILE).exists():
+        text += "\n" + read_text(REPO / OPEN_WORLD_RAID_FILE)
     raids = []
-    for mm in re.finditer(r'new\("((?:dungeon|dragon|epic|summoners|darkness)-[\w-]+)",\s*"([^"]+)",\s*eRealm\.(\w+),\s*(\d+),\s*"(\w+)",\s*(\d+)'
+    for mm in re.finditer(r'new\("((?:dungeon|dragon|epic|summoners|darkness|openworld)-[\w-]+)",\s*"([^"]+)",\s*eRealm\.(\w+),\s*(\d+),\s*"(\w+)",\s*(\d+)'
                           r'(?:,\s*new\(([-\d, ]+)\),\s*\[([^\]]*)\])?', text):
         finals = [f.strip().strip('"') for f in (mm.group(8) or "").split(",") if f.strip()]
         raids.append({"id": mm.group(1), "name": mm.group(2), "realm": mm.group(3), "region": int(mm.group(4)),
@@ -1404,6 +1413,8 @@ def build(world: World):
                 brain_bodies[b].append(name)
 
     ctx["bodies_of"] = brain_bodies
+    _BRAIN_BODIES.clear()
+    _BRAIN_BODIES.update(brain_bodies)
 
     def owners(name):
         return brain_bodies.get(name, []) if world.is_brain(name) else [name]
@@ -1688,6 +1699,9 @@ def relink_raids(encounters, raids, objectives):
         for raid in raids:
             if raid["region"] != region:
                 continue
+            # An open-world boss's raid is that boss's alone, not every encounter's in its region.
+            if raid["id"].startswith("openworld-") and name != raid["bossType"]:
+                continue
             role = "final" if name in raid["finals"] or name == raid["bossType"] else "named"
             if region in objectives:
                 role = "final" if display == objectives[region][-1] else (
@@ -1697,10 +1711,10 @@ def relink_raids(encounters, raids, objectives):
             links.append({"id": raid["id"], "role": role})
         e["raids"] = links
         ai = "no raid"
-        if links:
+        if any(r["id"].startswith("openworld-") for r in links):
+            ai = "open-world raid (dragon-fight engine)"
+        elif links:
             ai = "dragon fight" if any(r["id"].startswith("dragon") for r in links) else "generic dungeon route"
-        if region == 249:
-            ai = "no raid AI"
         e["raidAi"] = ai
 
 
@@ -1759,17 +1773,52 @@ def switches_on() -> set[str]:
     return _SWITCHES_ON
 
 
+_SHIPPED_ON = None
+
+
+def shipped_on() -> dict[str, set[str]]:
+    """Switch -> the encounters it ships on for (EpicEncounterMechanics.ShippedPerEncounter, value true)."""
+    global _SHIPPED_ON
+    if _SHIPPED_ON is None:
+        _SHIPPED_ON = defaultdict(set)
+        for mm in re.finditer(r'Ship\(nameof\((\w+)\),\s*"(\w+)",\s*true\)', Source(SWITCH_FILE).text):
+            _SHIPPED_ON[mm.group(1)].add(mm.group(2))
+    return _SHIPPED_ON
+
+
+def encounter_names(enc: dict, rule: dict) -> set[str]:
+    """The names a rule's script asks its switches with (AllowXFor(Body): the class name of the body whose script it is):
+    the rule's class, its body when the class is a brain, and the encounter's own class for its own rules."""
+    sc = rule.get("sourceClass") or ""
+    names = {sc, sc[:-len("Brain")] if sc.endswith("Brain") else sc, *_BRAIN_BODIES.get(sc, [])}
+    if sc in (enc["class"], enc.get("brain")):
+        names.add(enc["class"])
+    return names - {""}
+
+
+def switch_on_here(enc: dict, rule: dict, name: str) -> bool:
+    """The switch is on for this rule's encounter: on everywhere, or shipped on for it."""
+    return name in switches_on() or bool(encounter_names(enc, rule) & shipped_on().get(name, set()))
+
+
 def default_tactic(enc: dict, rule: dict) -> tuple[str, str]:
     kind, sub = rule["kind"], rule.get("subtype")
     sw = rule.get("switch") or []
-    if kind == "offline_change" and sw and all(s in switches_on() for s in sw if s.startswith("Allow")) and \
-            any(s.startswith("Allow") for s in sw):
-        return ("On: the original is back (" + ", ".join(s for s in sw if s.startswith("Allow")) + " is true) and the raid "
-                "AI plays it (see Encounters with raid tactics).", "easy for the current raid AI")
-    allow = [s for s in sw if s.startswith("Allow") and s not in switches_on()]
+    allows = [s for s in sw if s.startswith("Allow")]
+    # 1.2: a switch that is off everywhere but ships on for this encounter (ShippedPerEncounter) is on here.
+    here = [s for s in allows if s not in switches_on() and switch_on_here(enc, rule, s)]
+    note = ("On here since 1.2 (" + ", ".join(here) + (" ship" if len(here) > 1 else " ships") + " on for this "
+            "encounter: EpicEncounterMechanics.ShippedPerEncounter). ") if here else ""
+    if kind == "offline_change" and allows and all(switch_on_here(enc, rule, s) for s in allows):
+        return (note + "On: the original is back (" + ", ".join(allows) + (" is true" if not here else "") +
+                ") and the raid AI plays it (see Encounters with raid tactics).", "easy for the current raid AI")
+    allow = [s for s in allows if not switch_on_here(enc, rule, s)]
     if allow and kind != "immune_while" or allow and sub in ("attacker_position", "add_shield"):
         return ("Off today (" + ", ".join(allow) + " is false). To play it: " + switched_tactic(kind, sub),
                 "off today")
+    if note:
+        t, d = default_tactic(enc, {**rule, "switch": [s for s in sw if s not in here]})
+        return note + t, d
     if rule.get("affects"):
         return ("Off for bots today: it " + ("picks real players only" if rule["affects"].startswith("real") else
                 "only follows a real player's death") + " (GameBot is no GamePlayer). To play it with bots: " +
@@ -1811,6 +1860,10 @@ def default_tactic(enc: dict, rule: dict) -> tuple[str, str]:
     if kind == "teleport":
         if sub == "self":
             return "Follow it when it moves; ranged keep hitting.", "easy for the current raid AI"
+        if switch_on_here(enc, rule, "AllowBotDisplacement"):
+            return ("Bots are moved too (AllowBotDisplacement is on for this encounter): a moved bot walks back to its party, "
+                    "or is recalled when it can't (EncounterDisplacementRecovery); healers heal displaced raiders first.",
+                    "easy for the current raid AI")
         return "Recover the moved raider: walk back to the fight, or free them.", "unsafe for bots today"
     if kind == "position_puzzle":
         return switched_tactic(kind, sub), "needs new raid AI"
@@ -1921,6 +1974,8 @@ def apply_hand_notes(encounters: list[dict], notes: dict, world: World) -> list[
     for enc in encounters:
         if enc.get("aiTactics") and enc.get("raidAi") == "generic dungeon route":
             enc["raidAi"] = "generic dungeon route + tactics (EpicEncounterTactics)"
+        if enc.get("aiTactics") and enc.get("raidAi") == "open-world raid (dragon-fight engine)":
+            enc["raidAi"] = "open-world raid (dragon-fight engine) + tactics (EpicEncounterTactics)"
         enc.setdefault("verified", False)
         for r in enc["rules"]:
             r.setdefault("verified", False)
@@ -1960,8 +2015,9 @@ def catalog(world: World) -> tuple[dict, list[str]]:
         "schema": SCHEMA,
         "about": "Generated by source/tools/epic_encounter_catalog.py from the scripts and docs/encounters/hand-notes.json. "
                  "Do not edit by hand; edit hand-notes.json and regenerate.",
-        "honesty": "A catalog only: no tactic here is implemented. Darkness Falls raid AI, Legion and the hardest level 70+ "
-                   "encounters have no raid AI; they are listed for completeness.",
+        "honesty": "A catalog of what each boss script does and which raid AI the bots bring to it. Tactics in the raid AI's "
+                   "tactic table (aiTactics, EpicEncounterTactics.Catalog.cs) are implemented; every other tactic is a "
+                   "proposal. No rule or tactic here was checked in game.",
         "scriptsRoot": SCRIPTS.as_posix(),
         "scriptHashes": {f: world.sources[Path(f)].hash for f in files},
         "switches": read_switches(),
@@ -2017,6 +2073,8 @@ def render_tactics_cs(data: dict) -> str:
             init.append(f"SpreadRadius = {int(t['spreadRadius'])}")
             if t.get("spreadWhileModel"):
                 init.append(f"SpreadWhileModel = {int(t['spreadWhileModel'])}")
+            if t.get("stepOutOfCast"):
+                init.append('StepOutOfCast = "' + t["stepOutOfCast"].replace('\\', '\\\\').replace('"', '\\"') + '"')
             if t.get("meleeBehind"):
                 init.append("MeleeBehind = true")
             if t.get("meleeRing"):
@@ -2035,6 +2093,9 @@ def render_tactics_cs(data: dict) -> str:
             init.append(f"ClassRules = [{rules}]")
             if t.get("classRuleSwitch"):
                 init.append(f'ClassRuleSwitch = "{t["classRuleSwitch"]}"')
+        if t.get("clearFirst"):
+            init.append(f"ClearFirst = {names('clearFirst')}")
+            init.append(f"ClearFirstRadius = {int(t['clearFirstRadius'])}")
         if t.get("deathAdds"):
             init.append(f"DeathAdds = {names('deathAdds')}")
         if t.get("addsInOrder"):
@@ -2045,6 +2106,8 @@ def render_tactics_cs(data: dict) -> str:
             init.append(f"AddParties = {int(t['addParties'])}")
         if t.get("areaOnClump"):
             init.append("AreaOnClump = true")
+        if t.get("curerPostSpacing"):
+            init.append(f"CurerPostSpacing = {int(t['curerPostSpacing'])}")
         body = (" { " + ", ".join(init) + " }") if init else ""
         rows.append(f'            new("{e["class"]}", "{e["id"]}", [{adds}], {int(t.get("fightAtHomeRadius", 0))}, {dies}{extra}){body},')
     leashes = []
@@ -2104,10 +2167,10 @@ def render_md(data: dict) -> str:
         "Don't edit this file: edit the hand notes and run the generator (`--check` tells CI whether it is up to date). "
         "The machine-readable version is [epic-encounters.json](epic-encounters.json).",
         "",
-        "**This is a catalog, step 1 of \"bots play epic encounters properly\". Nothing in it is implemented.** "
-        "Every tactic is a proposal. Darkness Falls raid AI, Legion and the hardest level 70+ encounters have no raid AI; "
-        "they are listed, marked *no raid AI*. No rule here was checked in game: \"verified\" means a person read the "
-        "rule against its script.",
+        "**This is a catalog of what each boss script does and which raid AI the bots bring to it.** "
+        "The tactics in the raid AI's tactic table below are implemented; every other tactic is a proposal. "
+        "No rule here was checked in game: \"verified\" means a person read the rule against its script, and a raid "
+        "plan counts as working only once it has been seen on the owner's PC.",
         "",
         f"- Scripts read: {c['scripts']}. Encounters: {c['encounters']} ({c['encountersWithRules']} with rules, "
         f"{c['handEntries']} written by hand).",
@@ -2156,6 +2219,10 @@ def render_md(data: dict) -> str:
                 if not x:
                     continue
                 state = "on" if x.get("value") == "true" else "off"
+                # A per-encounter switch: the encounters it ships on for (EpicEncounterMechanics.ShippedPerEncounter).
+                ships = [s.split("=")[0] for s in x.get("shippedFor", []) if s.endswith("=true")]
+                if ships and state == "off":
+                    state += " (on for " + ", ".join(ships) + ")"
                 out.append(f"{state} (`{x['serverProperty']}`)" if x.get("serverProperty") else state)
             return ", ".join(out)
 
@@ -2175,8 +2242,8 @@ def render_md(data: dict) -> str:
         lines += ["", "## Player-only mechanics (candidates to target bots later)", "",
                   "These still pick real players only, so bots are never chosen. Since 1.2 the scripts pick through "
                   "`EncounterTargets` (real players and bots); what is left here are the moves (throws, teleports, jails), "
-                  "whose picks include bots only once `EncounterTargets.BotsCanBeDisplaced` is on, and anything still on "
-                  "`GetPlayersInRadius` / `is GamePlayer`.", ""]
+                  "whose picks include bots only where that encounter's `AllowBotDisplacement` is on "
+                  "(`EncounterTargets.DisplacesBots`), and anything still on `GetPlayersInRadius` / `is GamePlayer`.", ""]
         for e, r in po:
             lines.append(f"- {e['boss']} ({e['dungeon']}): {r['kind']} `{Path(r['file']).name}:{r['line']}`: {md_escape(r['summary'][:160])}")
     lines += ["", "## Priority: encounters that block raids today", ""]

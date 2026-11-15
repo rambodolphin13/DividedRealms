@@ -284,7 +284,7 @@ Assert-Equal '1.41;1.42;1.43' (Get-PatchMentions 'patch 1.41 patch 1.42 patch 1.
 # --- Starter jobs: the re-planned set (lore, vocab, builds, specs; no character or roster harvesting) -----------
 $jobsDir = Join-Path (Split-Path -Parent $here) 'jobs'
 $names = @(Get-ChildItem -LiteralPath $jobsDir -Filter '*.json' | Sort-Object Name | ForEach-Object { $_.BaseName }) -join ','
-Assert-Equal '1-site-map,2-patch-notes,3-builds-specs,4-vocab,5-lore,6-mechanics,7-realms-classes,8-spells,9-herald-articles,a-raid-sizes' $names 'jobs: run order map, patch notes, builds, vocab, lore, mechanics, realms probe, spells, articles'
+Assert-Equal '1-site-map,2-patch-notes,3-builds-specs,4-vocab,5-lore,6-mechanics,7-realms-classes,8-spells,9-herald-articles,a-raid-sizes,b-raid-gaps' $names 'jobs: run order map, patch notes, builds, vocab, lore, mechanics, realms probe, spells, articles, raid gaps'
 $allTargets = @()
 foreach ($jf in Get-ChildItem -LiteralPath $jobsDir -Filter '*.json') { $allTargets += @((Read-Job $jf.FullName).Targets) }
 Assert-Equal 0 @($allTargets | Where-Object { $_.url -match 'chardisplay|/chars/' -and -not (@(Get-Prop $_ 'cdxFilters' @()) -match '^!') }).Count 'jobs: no character pages fetched'
@@ -391,6 +391,8 @@ $spRows = @((Row 'http://www.camelotherald.com/spells/spell.php?s=1462&amp' '200
 $spSel = Select-Captures $spRows $s8.Def $sp
 Assert-Equal '20040901000000,20040801000000' (@($spSel | ForEach-Object { $_.timestamp }) -join ',') 'spells: one page per spell id (the latest), &amp; variants merged'
 Assert-True ([int]$s8.Def.maxCaptures -ge 2950) 'spells: room for every spell and line page'
+$rg = Read-Job (Join-Path $jobsDir 'b-raid-gaps.json')
+Assert-Equal 0 @($rg.Targets | Where-Object { $_.url -like '*camelotherald.com/more/*' }).Count 'raid gaps: Herald articles are left to 9-herald-articles'
 $a9 = Read-Job (Join-Path $jobsDir '9-herald-articles.json')
 Assert-True ([bool]$a9.Targets[0].guess) 'articles: content marked a guess'
 
@@ -488,12 +490,26 @@ New-Item -ItemType Directory -Path $idxDir -Force | Out-Null
 [IO.File]::WriteAllText((Join-Path $idxDir ('target3-' + (Get-TargetKey $gen.Def $t1003) + '.state.json')), '{"done":true,"pages":1,"resumeKey":"","rows":0}')
 $t1005 = $gen.Targets | Where-Object { $_.url -like '*t=1005' }
 [IO.File]::WriteAllText((Join-Path $idxDir ('target4-' + (Get-TargetKey $gen.Def $t1005) + '.state.json')), '{"done":true,"pages":1,"resumeKey":"","rows":1}')
+# The Allakhazam thread 2001 found nothing either: it gets its own narrow prefix lookup (forum.html?forum=13&mid=2001),
+# never an id filter over the whole of forum.html (the archive answers that with HTTP 503/504).
+$t2001 = $gen.Targets | Where-Object { $_.url -like '*mid=2001' }
+[IO.File]::WriteAllText((Join-Path $idxDir ('target1-' + (Get-TargetKey $gen.Def $t2001) + '.state.json')), '{"done":true,"pages":1,"resumeKey":"","rows":0}')
 $mk2 = & $exe -NoProfile -ExecutionPolicy Bypass -File $maker -Folder $tmp 2>&1 | Out-String
 Assert-Equal 0 $LASTEXITCODE "make-thread-job: second run exit code`n$mk2"
 $gen2 = Read-Job $genPath
-$filt = @($gen2.Targets | Where-Object { $_.matchType -eq 'prefix' })
+$byNumber = @($gen2.Targets | Where-Object { $_.matchType -eq 'prefix' -and $_.url -like '*allakhazam*' })
+Assert-Equal 1 $byNumber.Count 'make-thread-job: one prefix target for the Allakhazam thread'
+Assert-Equal 'camelot.allakhazam.com/forum.html?forum=13&mid=2001' $byNumber[0].url 'make-thread-job: the prefix is the thread''s own address up to its number'
+Assert-Equal 1 $byNumber[0].maxCaptures 'make-thread-job: one capture of the thread'
+Assert-Equal 'id-prefix' ($gen2.Def.threads | Where-Object { $_.id -eq '2001' }).lookup 'make-thread-job: thread list says the Allakhazam thread is looked up by number'
+Assert-Equal 0 @($gen2.Targets | Where-Object { $_.url -eq 'camelot.allakhazam.com/forum.html' }).Count 'make-thread-job: no lookup over the whole of forum.html'
+$ar = 'http://camelot.allakhazam.com/forum.html?'
+Assert-True (Test-InScope (Row ($ar + 'forum=13&mid=2001&num=7') '2004' 'com,allakhazam,camelot)/forum.html?forum=13&mid=2001&num=7') $gen2.Def $byNumber[0]) 'make-thread-job: prefix finds the thread under another reply count'
+Assert-True (-not (Test-InScope (Row ($ar + 'forum=13&mid=20010&num=7') '2004' 'com,allakhazam,camelot)/forum.html?forum=13&mid=20010&num=7') $gen2.Def $byNumber[0])) 'make-thread-job: prefix matches the whole number'
+Assert-True (-not (Test-InScope (Row ($ar + 'forum=13&mid=2001&num=7&page=2') '2004' 'com,allakhazam,camelot)/forum.html?forum=13&mid=2001&num=7&page=2') $gen2.Def $byNumber[0])) 'make-thread-job: prefix skips page 2'
+$filt = @($gen2.Targets | Where-Object { $_.matchType -eq 'prefix' -and $_.url -notlike '*allakhazam*' })
 Assert-Equal 1 $filt.Count 'make-thread-job: one id-filter target'
-Assert-Equal 3 @($gen2.Targets | Where-Object { $_.matchType -eq 'exact' }).Count 'make-thread-job: found threads stay exact'
+Assert-Equal 2 @($gen2.Targets | Where-Object { $_.matchType -eq 'exact' }).Count 'make-thread-job: found threads stay exact'
 Assert-Equal 'forums.freddyshouse.com/showthread.php' $filt[0].url 'make-thread-job: filter target on the forum''s showthread.php'
 Assert-Equal 'id-filter' ($gen2.Def.threads | Where-Object { $_.id -eq '1003' }).lookup 'make-thread-job: thread list says how it is looked up'
 $fr = 'http://forums.freddyshouse.com/showthread.php?'

@@ -180,6 +180,9 @@ public static partial class AutonomousBotGroupCoordinator
         // Bot-led groups (AutonomousBotGroupCoordinator.BotLed.cs): the real player this party hosts, never its leader.
         public GamePlayer HostedPlayer { get; set; }
         public BotPveGroupRole PlayerRole { get; set; }
+        // Why the party is letting the hosted player go (an AFK or linkdead let-go), read by the removal handler; null for a
+        // player who left on their own.
+        public string LetGoReason { get; set; }
         public BotLedGroups.FollowState Follow { get; set; }
         public Vector3 PlayerLastPosition { get; set; }
         // When the hosted player was first seen out of the world (a zone or region change, a /jump), or 0.
@@ -356,6 +359,8 @@ public static partial class AutonomousBotGroupCoordinator
             if (!UpdateSession(session, members))
                 return null;
             members = BotMembers(session.Group);
+            // True 1.65 (veteran review M11): the role-aware layout follows camp, member and role changes
+            RefreshRoleFormation(session, members);
             if (bot.Group != session.Group || members.Length == 0)
                 return null;
             return BuildDirective(session, members);
@@ -793,10 +798,14 @@ public static partial class AutonomousBotGroupCoordinator
         if (BotLedGroups.ViewOf(directive.Leader.Group)?.HoldsPace == true)
             return false;
         long now = GameLoop.GameLoopTime;
+        // A PvE party's member in another region, or one not getting closer, holds it at most 10 minutes
+        // (AutonomousGroupMemberStall.LongHoldMilliseconds; owner's PC 2026-11-15, build 1dc66b6).
+        bool boundedHold = directive.ObjectiveKind == eAutonomousObjectiveKind.GroupPve;
         return BotMembers(directive.Leader.Group).Where(member => member.IsAlive)
-            .All(member => member.CurrentRegionID == directive.Leader.CurrentRegionID &&
-                (member.GetDistanceTo(directive.Leader) is var distance && distance <= CohesionRadius ||
-                 AutonomousGroupMemberStall.Release(member, directive.Leader, distance, CohesionRadius, now)));
+            .All(member => member.CurrentRegionID == directive.Leader.CurrentRegionID
+                ? member.GetDistanceTo(directive.Leader) is var distance && distance <= CohesionRadius ||
+                  AutonomousGroupMemberStall.Release(member, directive.Leader, distance, CohesionRadius, now, boundedHold)
+                : boundedHold && AutonomousGroupMemberStall.ReleaseFromOtherRegion(member, directive.Leader, now));
     }
 
     /// <summary>How far the farthest living member trails the leader; MaxValue when one is in another region.</summary>
@@ -808,13 +817,20 @@ public static partial class AutonomousBotGroupCoordinator
         if (BotLedGroups.ViewOf(leader.Group)?.HoldsPace == true) return float.MaxValue;
         float farthest = 0;
         long now = GameLoop.GameLoopTime;
+        bool boundedHold = directive.ObjectiveKind == eAutonomousObjectiveKind.GroupPve && AutonomousRealmRaid.GetView(leader.Group) == null;
         foreach (GameBot member in BotMembers(leader.Group))
         {
             if (!member.IsAlive || member == leader) continue;
-            if (member.CurrentRegionID != leader.CurrentRegionID) return float.MaxValue;
+            if (member.CurrentRegionID != leader.CurrentRegionID)
+            {
+                // A PvE member away in another region for 10 minutes no longer stops the leader (it keeps travelling).
+                if (boundedHold && AutonomousGroupMemberStall.ReleaseFromOtherRegion(member, leader, now)) continue;
+                return float.MaxValue;
+            }
             float distance = member.GetDistanceTo(leader);
-            // A member stuck for 45 seconds no longer holds the group (see AutonomousGroupMemberStall).
-            if (AutonomousGroupMemberStall.Release(member, leader, distance, CohesionRadius, now)) continue;
+            // A member stuck for 45 seconds, or not getting closer for 10 minutes in a PvE party, no longer holds the
+            // group (see AutonomousGroupMemberStall).
+            if (AutonomousGroupMemberStall.Release(member, leader, distance, CohesionRadius, now, boundedHold)) continue;
             farthest = Math.Max(farthest, distance);
         }
         return farthest;
@@ -1147,7 +1163,7 @@ public static partial class AutonomousBotGroupCoordinator
                 return false;
 
             GameBot[] members = BotMembers(session.Group);
-            puller = ChoosePuller(session, members);
+            puller = AutonomousRealmRaid.GetView(session.Group) != null ? RaidPullerFor(session, members, reporter) : ChoosePuller(session, members);
             if (puller == null || puller.Brain is not BotBrain ||
                 !AutonomousDungeonPolicy.CanHandoffRouteBlocker(
                     session.ObjectiveKind == eAutonomousObjectiveKind.GroupPve,
@@ -1276,7 +1292,7 @@ public static partial class AutonomousBotGroupCoordinator
                 // Only locally present living members take part in puller
                 // selection. A casualty or reinforcement across the world is
                 // not a veto on every surviving party's combat.
-                var expeditionPuller = ChoosePuller(session, BotMembers(group));
+                var expeditionPuller = RaidPullerFor(session, BotMembers(group), bot);
                 return bot == expeditionPuller && bot.HealthPercent >= 70;
             }
             GameBot[] members = BotMembers(group);
@@ -1441,6 +1457,9 @@ public static partial class AutonomousBotGroupCoordinator
 
     private static Vector3 DesiredFormationPoint(GameBot bot, Vector3 center, bool tight)
     {
+        // True 1.65 (veteran review M11): tanks in front toward the camp, healers and casters behind (RoleFormation)
+        if (TryRoleFormationPoint(bot, center, tight, out Vector3 rolePoint))
+            return rolePoint;
         GameBot[] members = BotMembers(bot?.Group)
             .OrderBy(member => member.DatabaseID > 0 ? member.DatabaseID : member.ObjectID)
             .ToArray();
@@ -2161,6 +2180,11 @@ public static partial class AutonomousBotGroupCoordinator
         // Bot-led groups: the hosted player is observed once per pass (meetup, pace, pull gate, AFK, linkdead).
         if (session.HostedPlayer != null && raidView == null && leader != null)
             StepHostedPlayer(session, members, leader);
+        // True 1.65 (veteran review M6): a fighting party calls RUN before a wipe (AutonomousBotGroupCoordinator.GroupRun)
+        // Not while the party hosts a real player: the bots would run and leave the player with the pack.
+        if (raidView == null && leader != null && session.ObjectiveKind == eAutonomousObjectiveKind.GroupPve &&
+            session.HostedPlayer == null)
+            CheckGroupRun(session, members, leader);
         // B4: the natural break ("last pull then town") and the search for a replacement.
         if (raidView == null && leader != null && StepNaturalBreak(session, members, leader))
             return false;
@@ -2834,6 +2858,7 @@ public static partial class AutonomousBotGroupCoordinator
         if (TryOfferLeadToLastBot(session, reason))
             return;
         session.Ending = true;
+        BotGroupRetreat.Clear(session.Group);
         GameBot[] members = AllBotMembers(session.Group);
         if (session.ObjectiveKind == eAutonomousObjectiveKind.RvR)
             AutonomousRvrEventLayer.RemoveForce(session.Id);
@@ -3058,6 +3083,9 @@ public static partial class AutonomousBotGroupCoordinator
 
     private static bool IsTownArea(GameObject obj) => obj?.CurrentRegion?.IsCapitalCity == true ||
         NamedTownArea(obj) != null;
+
+    /// <summary>The object stands in a capital or a named town area (the meetup towns' rule), for chat.</summary>
+    internal static bool IsInTownArea(GameObject obj) => IsTownArea(obj);
 
     private static string TownName(GameObject obj) => obj?.CurrentRegion?.IsCapitalCity == true
         ? obj.CurrentRegion.Description
@@ -3531,6 +3559,23 @@ public static partial class AutonomousBotGroupCoordinator
         if (session != null)
             session.Leader = replacement;
         return replacement;
+    }
+
+    /// <summary>
+    /// A raid party's puller for <paramref name="asking"/>: the party's own (ChoosePuller, among the members in the camp's
+    /// region) when it stands in the asker's region; otherwise one of the members here, ranged pullers first. Owner's PC,
+    /// 2026-11-14: the Midgard members walking back through Dodens Gruva after the Roesia wipe could never pull, because
+    /// their puller was chosen among those already in Summoner's Hall (AutonomousDungeonPolicy.PullerAway).
+    /// </summary>
+    private static GameBot RaidPullerFor(Session session, GameBot[] members, GameBot asking)
+    {
+        GameBot own = ChoosePuller(session, members);
+        if (asking == null || !AutonomousDungeonPolicy.PullerAway(own != null, own?.IsAlive == true,
+                own?.CurrentRegionID ?? 0, asking.CurrentRegionID))
+            return own;
+        return members.Where(b => b.IsAlive && !b.IsOnStableMasterRoute && b.CurrentRegionID == asking.CurrentRegionID &&
+                                  b.GetDistanceTo(asking) <= 1100)
+            .OrderBy(b => AutonomousDefensivePull.HasRangedPull(b) ? 0 : 1).ThenBy(MemberKey).FirstOrDefault();
     }
 
     private static GameBot ChoosePuller(Session session, GameBot[] members)

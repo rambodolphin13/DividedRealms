@@ -38,6 +38,22 @@ something small, and a little later a bot passes on a rumour about the same boss
 "heard there is a raid forming for him tonight", and six to twelve minutes later that raid really opens: the realm's own
 automatic raid, with its usual size, muster and notices. Its leader invites the player like any other raid.
 
+**The tale, then the call (the owner's idea, 2026-11-12). Tests only: not yet seen on the owner's PC.** Every raid of
+the realm now begins with its story. When the realm's own raid comes due (every four hours since this change; it was 2.5),
+or the player forces one from the launcher, the storyteller first tells the tale of that raid's boss in /faction, to its
+end. About fifteen seconds after the last line the realm is called: the large line across the screen ("The horn sounds:
+Hibernia marches on Galladoria! Gather at ...") and a horn. Only then are bots recruited and the muster clock started.
+The call takes the place of the tale's rumour.
+
+- It needs a player of that realm in the game; with nobody to hear the tale the raid forms at once, as before.
+- A raid is never lost to its tale. If no tale can start within six minutes (another /faction scene is running, no
+  storyteller is on) the call goes out without it; a tale still running twelve minutes after it began does not hold the
+  raid; a tale cut short (the teller was pulled into a fight) calls the raid five seconds later.
+- A raid with several bosses that have a tale (Marfach has three) gets the one the realm heard longest ago.
+- A tale told on its own, on an ordinary evening, still works as above, and a raid that opens after it is called with the
+  same line and horn.
+- A play test's raid (`/epictest`) has no tale and keeps its plain line.
+
 **The storytellers are people.** Each realm has up to two, chosen once and kept across restarts. Other bots name them, and
 only they tell. If you ask for a tale while neither is online, a bot says so.
 
@@ -60,9 +76,27 @@ Hall) with a gamebot in your group, and a groupmate tells the short version in /
   of a play session. It starts only while a player of that realm is online.
 - The tale the realm heard longest ago comes first; one about the place a player is standing in is preferred six times in
   ten.
-- 1.2 ships fifteen tales: Golestandt, Apocalypse and Xanxicar (Albion); Gjalpinulva, King Tuscar and Nosdoden
-  (Midgard); Cuuldurach, Olcasgean and the Black Lady (Hibernia); and Legion and Govannon as each realm tells them. Each
-  has its fireside version.
+- 1.2 ships twenty-five tales. The first fifteen: Golestandt, Apocalypse and Xanxicar (Albion); Gjalpinulva, King Tuscar
+  and Nosdoden (Midgard); Cuuldurach, Olcasgean and the Black Lady (Hibernia); and Legion and Govannon as each realm tells
+  them. Ten more (2026-11-11), so that every raid's final boss has one: Aidon the Archwizard, Lord Gildas, Orylle and
+  Dura'ek the Empowered (Albion); Aros the Spiritmaster, Iarnvidiur and Queen Kula (Midgard); Avartack the Champion,
+  Chieftain Caimheul and Balor (Hibernia). The ten have passed the corpus check and the unit tests only; none has been
+  heard in game yet. Each has its fireside version.
+- **One legend** (2026-11-15, the era rumours): the glass that spoke, a grandmother's tale of an orb a fisherman's net
+  brought up, which spoke to a council of a land past the sea (Trials of Atlantis as a rumour only, owner 2026-11-15). Every
+  realm's storyteller tells it in the rotation like any tale, and a player can ask for it ("tell the one about atlantis",
+  "the glass ball story"). A legend is about no boss (`AutonomousTales.Legends`): it has no lore file, no raid and no
+  fireside version, and the rumour after it is one of the corpus's rumour lines on it (`LoreLegends.RumoursAfter`, topic
+  `rumour_atlantis`), never a raid. It lives in `data/chat/era_rumours.lines`. Its teller writes whole sentences with
+  capitals and stops, which the chat pass keeps (it drops a line's last stop and sends a long line as two chat lines at a
+  sentence or comma); the listeners type as players do. Tests only: not heard in game yet.
+- **Four battleground legends** (2026-11-15, the owner's "full lore for the battlegrounds"), one per field, in
+  `data/chat/battleground_lore.lines`: the woman who waited at the teleporter (Abermenai, every realm), Thidrand and the
+  winter nights (Thidranki, Midgard), the run and the knots (Murdaigean, Hibernia) and the battle of the trees (Caledonia,
+  Albion). Each realm hears two. A legend's id is its field's lore file (`abermenai`, `thidranki`, `murdaigean`,
+  `caledon`), so a player of the realm standing in the field is told its legend first, six times in ten, as a boss's
+  place prefers its boss (`AutonomousTales.LocalTale`). The rumour after each is a corpus line tagged `rumour_<id>`.
+  Tests only (`UT_BattlegroundLore`): not heard in game yet.
 
 ## Settings
 
@@ -72,6 +106,9 @@ Server properties, category `bots`, read live:
 |---|---|---|
 | `bot_living_tales` | True | Tales in /faction and fireside tales. Needs bot voices and debates (`bot_voices_debates`). |
 | `bot_living_tale_raids` | True | The rumour after a tale may be a raid that really forms. False: always a lore rumour. |
+| `realm_raid_tale_first` (category `autonomous`) | True | A raid's tale is told before the raid forms, and the realm is called when it ends. False: raids form at once. |
+| `realm_raid_call_horn_sound` (category `autonomous`) | 219 | The client sound played with a raid's call (the horn of a keep's defence). 0: no sound. |
+| `realm_raid_schedule_minutes` (category `autonomous`) | 240 | How often each realm opens its own raid. It was 150 before 1.2; a world still on the old default moves to 240 once, a value the player chose is kept. |
 
 GM checks: `/lstest tale [boss]` asks the realm's storyteller for a tale now (`/lstest tale legion`). With `raid` at the
 end (`/lstest tale golestandt raid`) the rumour after it is the raid, without the roll, when that raid can form; the reply
@@ -85,6 +122,7 @@ says why it could not form right now. `/lstest fireside` forgets today's firesid
 | Scheduling, storytellers, requests, the rumour and raid, fireside | `AutonomousTales.cs` |
 | Playing the scene | `AutonomousBotDebates.cs`: `StartTale` (the storyteller is cast as B and never recast; a busy one is waited for like a storyline's protagonist), `TellerAside` (its answer to a player). Ordinary debates never pick a `tale_` or `fireside_` scene. |
 | The raid | `AutonomousRealmRaid.CouldStartForTale` and `StartForTale`: the scheduled raid's own checks and start. |
+| The tale, then the call | `AutonomousRealmRaid.Call.cs` (the raid that waits, the call, the fail-safes), `AutonomousTales.TryStartForRaid`, `RealmRaidRecruitmentPolicy.CallStep` and `CallLine`, `RealmEventNotices.QueueScreen` (the line and the horn). |
 | Memory | `offline_lore_memory`, keys `tale:teller:<realm>:<slot>`, `tale:told:<realm>:<scene>`, `tale:last:<realm>`, `tale:fire:<character>:<scene>`. No new table. |
 
 Log lines: `TALE_TELLER`, `TALE_START`, `TALE_NOT_STARTED`, `TALE_END` (finished, lines, reason), `TALE_ASIDE`,
@@ -93,6 +131,10 @@ reason), `TALE_RAID` (opened, reason), `TALE_FIRESIDE`. The scene's lines are
 `CHAT_LINE src=tale`; the lines after it (the rumour, a grumble when a tale is cut short) are `src=tale_after`: they are not
 the scene's, so they fit under /faction's ceiling, and they keep their turn for three minutes (`LIVING_FEATURE_DUE` /
 `LIVING_FEATURE_DROPPED feature=tale_after`).
+
+The tale, then the call: `REALM_RAID_TALE_FIRST` (the raid waits for its tale), `REALM_RAID_TALE` (started, or why not),
+`REALM_RAID_CALLED` (after="the tale was told" / "the tale was cut short" / "no tale could start" / "the tale ran long";
+opened, reason), `REALM_RAID_CALL_CANCELLED`.
 
 ## Writing a tale
 

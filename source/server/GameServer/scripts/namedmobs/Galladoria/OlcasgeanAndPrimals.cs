@@ -390,9 +390,10 @@ namespace DOL.GS
         }
         protected void ReportNews(GameObject killer)
         {
-            int numPlayers = AwardEpicEncounterKillPoint();
+            AwardEpicEncounterKillPoint();
+            int numPlayers = EpicEncounterMechanics.ForceSize(this);
             String message = String.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
-            NewsMgr.CreateNews(message, killer.Realm, eNewsType.PvE, true);
+            NewsMgr.CreateNews(message, killer?.Realm ?? eRealm.None, eNewsType.PvE, true);
 
             if (Properties.GUILD_MERIT_ON_DRAGON_KILL > 0)
             {
@@ -415,7 +416,7 @@ namespace DOL.GS
             }
             return count;
         }
-        public override void Die(GameObject killer)
+        public override void ProcessDeath(GameObject killer)
         {
             foreach (GameNPC npc in GetNPCsInRadius(10000))
             {
@@ -426,7 +427,11 @@ namespace DOL.GS
                         if (npc is Olcasgean2 boss)
                         {
                             if (boss != null && boss.IsAlive && boss.Brain is OlcasgeanBrain2)
+                            {
+                                // One encounter, one payout: this body takes the second body's attackers (epic-bosses M5).
+                                EpicEncounterMechanics.TransferDamageCredit(boss, this);
                                 boss.RemoveFromWorld();
+                            }
                         }
 
                         if (npc.Brain is VortexBrain)
@@ -453,10 +458,10 @@ namespace DOL.GS
             }
             if (canReportNews)
             {
-                if (killer is not Olcasgean or Olcasgean2)
+                if (killer != null && killer is not (Olcasgean or Olcasgean2))
                     ReportNews(killer);
             }
-            base.Die(killer);
+            base.ProcessDeath(killer);
         }
         #endregion
         public override bool AddToWorld()
@@ -931,9 +936,10 @@ namespace DOL.GS
         }
         protected void ReportNews(GameObject killer)
         {
-            int numPlayers = AwardEpicEncounterKillPoint();
+            AwardEpicEncounterKillPoint();
+            int numPlayers = EpicEncounterMechanics.ForceSize(this);
             String message = String.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
-            NewsMgr.CreateNews(message, killer.Realm, eNewsType.PvE, true);
+            NewsMgr.CreateNews(message, killer?.Realm ?? eRealm.None, eNewsType.PvE, true);
 
             if (Properties.GUILD_MERIT_ON_DRAGON_KILL > 0)
             {
@@ -956,8 +962,9 @@ namespace DOL.GS
             }
             return count;
         }
-        public override void Die(GameObject killer)
+        public override void ProcessDeath(GameObject killer)
         {
+            bool mainBodyDied = false;
             foreach (GameNPC npc in GetNPCsInRadius(10000))
             {
                 if (npc != null)
@@ -966,8 +973,15 @@ namespace DOL.GS
                     {
                         if (npc is Olcasgean boss)
                         {
+                            // The main body dies with the real killer and pays for both bodies; this one pays nothing.
+                            // It used to die by its own hand, and both bodies dropped loot when both had been hit
+                            // (epic-bosses M5).
                             if (boss != null && boss.IsAlive && boss.Brain is OlcasgeanBrain)
-                                boss.Die(boss);
+                            {
+                                EpicEncounterMechanics.TransferDamageCredit(this, boss);
+                                boss.Die(killer);
+                                mainBodyDied = true;
+                            }
                         }
 
                         if (npc.Brain is VortexBrain)
@@ -979,9 +993,9 @@ namespace DOL.GS
                 }
             }
 
-            bool canReportNews = true;
+            bool canReportNews = !mainBodyDied; // the main body has already told the players and the news
             // due to issues with attackers the following code will send a notify to all in area in order to force quest credit
-            foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+            foreach (GamePlayer player in mainBodyDied ? new List<GamePlayer>() : GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
             {
                 player.Notify(GameLivingEvent.EnemyKilled, killer, new EnemyKilledEventArgs(this));
 
@@ -993,10 +1007,10 @@ namespace DOL.GS
             }
             if (canReportNews)
             {
-                if(killer is not Olcasgean or Olcasgean2)
+                if (killer != null && killer is not (Olcasgean or Olcasgean2))
                     ReportNews(killer);
             }
-            base.Die(killer);
+            base.ProcessDeath(killer);
         }
         #endregion
         public override bool AddToWorld()
@@ -1181,10 +1195,10 @@ namespace DOL.GS
         public override void StopFollowing()
         {
         }      
-        public override void Die(GameObject killer)
+        public override void ProcessDeath(GameObject killer)
         {
             ++OIBrain.DeadPrimalsCount;
-            base.Die(killer);
+            base.ProcessDeath(killer);
         }
         public override bool AddToWorld()
         {
@@ -1529,10 +1543,10 @@ namespace DOL.GS
                 default: return 70;// dmg reduction for rest resists
             }
         }
-        public override void Die(GameObject killer)
+        public override void ProcessDeath(GameObject killer)
         {
             ++OIBrain.DeadPrimalsCount;
-            base.Die(killer);
+            base.ProcessDeath(killer);
         }
 
         public override bool HasAbility(string keyName)
@@ -1845,10 +1859,10 @@ namespace DOL.GS
         {
             return;
         }
-        public override void Die(GameObject killer)
+        public override void ProcessDeath(GameObject killer)
         {
             ++OIBrain.DeadPrimalsCount;
-            base.Die(killer);
+            base.ProcessDeath(killer);
         }
 
         public override bool HasAbility(string keyName)
@@ -2217,7 +2231,7 @@ namespace DOL.GS
                 default: return 70;// dmg reduction for rest resists
             }
         }
-        public override void Die(GameObject killer)
+        public override void ProcessDeath(GameObject killer)
         {
             ++OIBrain.DeadPrimalsCount;
             foreach (GameNPC npc in GetNPCsInRadius(8000))
@@ -2231,7 +2245,7 @@ namespace DOL.GS
                     }
                 }
             }
-            base.Die(killer);
+            base.ProcessDeath(killer);
         }
 
         public override bool HasAbility(string keyName)

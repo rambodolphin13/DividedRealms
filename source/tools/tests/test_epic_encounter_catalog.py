@@ -73,11 +73,15 @@ class CatalogFileTests(unittest.TestCase):
             for eid in [p["id"]] + p.get("also", []):
                 self.assertIn(eid, ids)
 
-    def test_darkness_falls_is_marked_no_raid_ai(self):
-        df = [e for e in self.data["encounters"] if e.get("region") == 249]
+    def test_darkness_falls_has_raid_ai(self):
+        # Since 1.2 the Darkness Falls raid AI is in (EpicEncounterTactics.DarknessFalls / .Legion), so its bosses
+        # are on a dungeon route like any other raid dungeon's, and Legion has tactics of his own.
+        df = {e["id"]: e for e in self.data["encounters"] if e.get("region") == 249}
         self.assertTrue(df)
-        for e in df:
-            self.assertEqual(e["raidAi"], "no raid AI", e["id"])
+        for e in df.values():
+            self.assertTrue(e["raidAi"].startswith("generic dungeon route"), e["id"])
+        self.assertIn("tactics", df["darkness-falls/legion"]["raidAi"])
+        self.assertNotIn("no raid AI", {e["raidAi"] for e in self.data["encounters"]})
 
     def test_script_hashes_match_the_scripts(self):
         for rel, digest in self.data["scriptHashes"].items():
@@ -106,6 +110,13 @@ class CatalogFileTests(unittest.TestCase):
         self.assertNotIn("real players only", throw[0].get("affects") or "", "Xanxicar's throw picks bots as shipped")
         jail = [r for r in by_id["tuscaran-glacier/jailer"]["rules"] if r["kind"] == "teleport"]
         self.assertNotIn("real players only", jail[0].get("affects") or "", "Vifil's jail picks bots as shipped (wave 2)")
+        # The switch is asked with the body, whose class name need not be the brain's minus "Brain".
+        for eid, why in (("open-world/moranthemighty", "Moran's gust (MoranBrain, body MoranTheMighty)"),
+                         ("krondon/scurceolhyrde", "the orbs' throw (LyftMihtBrain1-4, bodies LyftMihtOne-Four)")):
+            moves = [r for r in by_id[eid]["rules"] if r["kind"] == "teleport"]
+            self.assertTrue(moves, eid)
+            for r in moves:
+                self.assertNotIn("real players only", r.get("affects") or "", why + " picks bots as shipped")
         olc = [r for r in by_id["galladoria/olcasgean"]["rules"] if r["kind"] == "teleport"]
         if "Olcasgean" not in shipped and olc:
             self.assertIn("real players only", olc[0].get("affects") or "", "elsewhere move picks stay player-only")
@@ -152,7 +163,7 @@ class TacticsAndRestores(unittest.TestCase):
 
     def test_every_offline_change_but_the_old_puzzle_switch_names_its_restore_switch(self):
         restore = {s["name"] for s in self.data["switches"] if s.get("restores")}
-        self.assertEqual(len(restore), 18)  # 1.2 play test: + AllowEasmarachEndlessFallsHeal
+        self.assertEqual(len(restore), 19)  # 1.2 play tests: + AllowEasmarachEndlessFallsHeal, + AllowGovannonFullHeal (owner 2026-11-11)
         changes = [(e["id"], r) for e in self.data["encounters"] for r in e["rules"] if r["kind"] == "offline_change"]
         self.assertGreaterEqual(len(changes), 23)
         for eid, r in changes:

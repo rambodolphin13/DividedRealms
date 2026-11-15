@@ -13,7 +13,8 @@ namespace DOL.GS
     /// kills Kula first (the catalog's "after") and only the King's own target fights him; nobody stands in Kula's frost
     /// circle by her throne (AllowPositionPuzzle), and casters and healers on Kula keep clear of the King's hammers (500
     /// around his target).</item>
-    /// <item>Icelord Kvasir: cold heals him (AllowKvasirColdHeal), so no bot casts cold at him; when his primal scream is due,
+    /// <item>Icelord Kvasir: cold heals him (AllowKvasirColdHeal), so no bot casts cold at him (nor an area spell that reaches
+    /// him, nor a style with a cold proc), a bot whose weapon or armor proc deals cold fights his adds; when his primal scream is due,
     /// everyone but his target's party steps 1,050 away from his target (his mesmerize hits 800 around it).</item>
     /// <item>Jailer Vifil: the jail (AllowDisplacement) opens when his two tunnel guardians are dead, so once the fight is on
     /// one or two parties go down the tunnel, kill them and come back; every raider jailed after that walks free.</item>
@@ -51,9 +52,10 @@ namespace DOL.GS
             {
                 Summary = "Twin heal: Kula first, only the King's target fights him; out of Kula's frost circle; casters clear of his hammers.",
             },
-            new("Kvasir", ["Kvasir"], KvasirScream)
+            new("Kvasir", ["Kvasir"], c => KvasirScream(c) ?? KvasirColdCarrier(c))
             {
-                Summary = "No cold at him (it heals him); out of 800 around his target when his scream is due.",
+                Summary = "No cold at him (it heals him): no cold spell, area spell, style proc or cold weapon; a bot whose " +
+                          "armor procs cold stays off him; out of 800 around his target when his scream is due.",
                 Forbids = [eDamageType.Cold],
                 ForbidsWhile = _ => EpicEncounterMechanics.AllowKvasirColdHeal,
                 Act = (bot, boss, _) =>
@@ -75,7 +77,242 @@ namespace DOL.GS
             {
                 Summary = "Casters on Nokkvi (90% melee resist), everyone else on Vagn (90% magic resist).",
             },
+            new(nameof(Agmundr), [nameof(Agmundr)], AgmundrSpread)
+            {
+                Summary = "His linked hrimthursa (AgmundrBaf) die first, and nothing standing in his aggro is pulled while he " +
+                          "lives; in his fight everyone but his target's party keeps 500 off his target (his cold blast), melee " +
+                          "from behind him, and steps out while he casts it.",
+                ClearFirstOf = AgmundrBafClearsFirst,
+                PullWait = AgmundrNeighbourWaits,
+            },
+            // ---- Living Server 1.2: every big boss in (owner 2026-11-14) ----------------------------------------------
+            new(nameof(Hakr), [nameof(Hakr)], null)
+            {
+                Summary = "His two Royal Iceweavers in the far room die before the pull; in his fight the two at his side die " +
+                          "first (his toss only comes while an iceweaver lives), then he does.",
+                ClearFirstOf = HakrFarIceweaversFirst,
+            },
+            new("BossRings", ["Hurika", "Torst", "Suttung"], c => RingAdvice(c, GlacierRings))
+            {
+                Summary = "Casters, archers and healers outside the boss's target's party keep out of its reach: Hurika 1,100 " +
+                          "(her gust throws a raider within 1,000), Torst 650 (his eddies), Suttung 540 (his Ice Blast, 440).",
+            },
+            new(nameof(Hjalmar), [nameof(Hjalmar)], null)
+            {
+                Summary = "The raider he fights faces him (his back style hits a turned back with Strength 740, not 600).",
+                Act = (bot, boss, _) =>
+                {
+                    if (boss.TargetObject == bot && !bot.IsCasting && TurnedAway(bot.GetAngle(boss)))
+                    {
+                        bot.TurnTo(boss);
+                        MechanicCall(bot, "epic_face_him", boss, bot);
+                    }
+                },
+            },
+            new(nameof(Issorden), [nameof(Issorden)], null)
+            {
+                Summary = "His seven icebound skeletons (IssordenBaf) join him from anywhere in the glacier: they die first.",
+                ClearFirstOf = IssordenBafClearsFirst,
+            },
+            new("Hord", ["Hord"], null)
+            {
+                Summary = "His aggro is 1,500 and Council Ozur stands 750 from him: nothing within 1,900 of him is pulled while " +
+                          "he rests, so the council falls Hord, Ozur, Otrygg (the period's route).",
+                PullWait = HordNeighbourWaits,
+            },
+            new(nameof(Otrygg), [nameof(Otrygg), "OtryggAdd"], OtryggPets)
+            {
+                Summary = "His eight pets come back as fast as they die while he fights (SpawnPetsMore) and die with him: " +
+                          "everyone fights Otrygg, the route never sends the raid to a pet.",
+                Route = OtryggPetRoute,
+                RoutesInCombat = true,
+            },
         ];
+
+        // ---- rings: the raid's ranged keep out of a boss's own reach ---------------------------------------------------
+
+        /// <summary>A boss whose own hit (or throw) reaches <paramref name="Radius"/> around it: casters, archers and healers
+        /// outside its target's party stand further out (<see cref="SpreadStepOut"/> past it, still in spell range).</summary>
+        public sealed record BossRing(string Boss, int Radius, string Why);
+
+        /// <summary>Tuscaran Glacier's rings (TorstAndHurika.cs, ElderIcelordHjalmarAndSuttung.cs).</summary>
+        public static readonly BossRing[] GlacierRings =
+        [
+            // HurikaBrain.Think: a raider within 1,000 of her is thrown 500-700 up every 15-20 s.
+            new("Hurika", 1_100, "her gust throws a raider within 1,000 of her"),
+            // TorstEddiesBrain: five eddies wander within 200 of him and cast Cold Snap (110, radius 300) every 5-12 s.
+            new("Torst", 650, "his eddies freeze 300 around them, within 200 of him"),
+            // SuttungBrain.Think: Hjalmar's Ice Blast, 450 cold to everyone within 440 of him, every 15 s.
+            new("Suttung", 540, "his Ice Blast hits everyone within 440 of him"),
+        ];
+
+        /// <summary>The ring rule for one raider (pure): melee and the boss's target's party fight as usual; a caster, archer
+        /// or healer inside the ring steps out to <see cref="SpreadStepOut"/> past it, away from the boss.</summary>
+        public static Advice? RingAdvice(Vector3 at, Vector3 bossAt, GameNPC boss, BossRing ring, bool atRange, bool holds)
+        {
+            if (ring == null || !atRange || holds) return null;
+            return AwayFrom(at, bossAt, ring.Radius) is Vector3 outside
+                ? new(BotAction.Reposition, boss, outside, $"ring: casters and healers out of {ring.Radius} around \"{boss.Name}\" ({ring.Why})")
+                : null;
+        }
+
+        private static Advice? RingAdvice(RuleContext c, BossRing[] rings)
+        {
+            // While the catalog's required adds shield it (Nosdoden's essence waves) the raid is on them, not here.
+            if (!c.Target.InCombat || ShieldingAdds(c.Target, c.Live ?? []).Length > 0) return null;
+            BossRing ring = null;
+            for (Type t = c.Target.GetType(); ring == null && t != null && t != typeof(GameNPC); t = t.BaseType)
+                ring = Array.Find(rings, r => r.Boss == t.Name);
+            return RingAdvice(c.At, PosOf(c.Target), c.Target, ring, c.AtRange, c.Holds);
+        }
+
+        /// <summary>The living NPC of class <paramref name="type"/> (or a subclass) nearest <paramref name="near"/> within
+        /// <see cref="AddSearchRadius"/>, or null.</summary>
+        private static GameNPC NearestOfType(GameNPC near, IReadOnlyList<GameNPC> live, string type) =>
+            near == null ? null : LiveOfType(live, type).Where(n => n.CurrentRegionID == near.CurrentRegionID && near.IsWithinRadius(n, AddSearchRadius))
+                .OrderBy(n => near.GetDistanceTo(n)).FirstOrDefault();
+
+        // ---- Icelord Hakr ---------------------------------------------------------------------------------------------
+
+        /// <summary>His linked iceweavers (Hakr.SpawnSnakes: the two at his side carry this package and join his fight).</summary>
+        public const string HakrLinkedPackage = "HakrBaf";
+
+        /// <summary>
+        /// Hakr.SpawnSnakes puts four Royal Iceweavers (20,000 health each) in the glacier: two at his side (HakrBaf, brought
+        /// into his fight) and two in the room at 30,008,56,329, 4,700 from him, that nothing links. His toss
+        /// (HakrBrain.TeleportPlayer) and its timer run only while one of the four lives, and "Magic barrier fades away from
+        /// Icelord Hakr!" is said when the last dies. The far pair die before the pull; the near pair are his required adds.
+        /// </summary>
+        private static GameNPC HakrFarIceweaversFirst(GameNPC npc, IReadOnlyList<GameNPC> live)
+        {
+            if (npc == null || !IsOfType(npc, "HakrAdd") || npc.PackageID == HakrLinkedPackage) return null;
+            return LiveOfType(live, nameof(Hakr)).FirstOrDefault(b => b.CurrentRegionID == npc.CurrentRegionID && !b.InCombat);
+        }
+
+        // ---- Issorden -------------------------------------------------------------------------------------------------
+
+        /// <summary>His linked monsters (IssordenBrain.Think: every NPC of this package in the region joins once he fights).</summary>
+        public const string IssordenLinkedPackage = "IssordenBaf";
+
+        private static GameNPC IssordenBafClearsFirst(GameNPC npc, IReadOnlyList<GameNPC> live)
+        {
+            if (npc == null || npc is Issorden || npc.PackageID != IssordenLinkedPackage) return null;
+            return LiveOfType(live, nameof(Issorden)).FirstOrDefault(b => b.CurrentRegionID == npc.CurrentRegionID);
+        }
+
+        // ---- Council Hord ---------------------------------------------------------------------------------------------
+
+        /// <summary>His aggro range (HordBrain: 1,500, "so players cant just pass him"); a monster within it plus the margin
+        /// waits for him.</summary>
+        public const int HordAggro = 1_500, HordNeighbourMargin = 400;
+
+        private static string HordNeighbourWaits(GameNPC target, IReadOnlyList<GameNPC> live, long now)
+        {
+            if (IsOfType(target, "Hord") || target.CurrentRegionID != 160) return null;
+            GameNPC hord = LiveOfType(live, "Hord").FirstOrDefault(b => b.CurrentRegionID == target.CurrentRegionID);
+            if (hord == null || hord.InCombat || !hord.IsWithinRadius(target, HordAggro + HordNeighbourMargin)) return null;
+            return $"it stands {(int)hord.GetDistanceTo(target)} from Council Hord (aggro {HordAggro}): after him";
+        }
+
+        // ---- Council Otrygg -------------------------------------------------------------------------------------------
+
+        /// <summary>A raider aimed at one of his pets fights him instead (OtryggBrain.Think: SpawnPetsMore while fewer than
+        /// eight live, every 2 s; Otrygg.Die kills them all).</summary>
+        private static Advice? OtryggPets(RuleContext c)
+        {
+            if (!IsOfType(c.Target, "OtryggAdd") || NearestOfType(c.Target, c.Live, nameof(Otrygg)) is not { } otrygg) return null;
+            return new(BotAction.Retarget, otrygg, null, "otrygg: his pets come back as fast as they die; they die with him");
+        }
+
+        private static GameNPC OtryggPetRoute(GameNPC chosen, IReadOnlyList<GameNPC> live, out string reason)
+        {
+            reason = null;
+            if (chosen == null || !IsOfType(chosen, "OtryggAdd")) return null;
+            GameNPC otrygg = live?.OfType<Otrygg>().FirstOrDefault(o => Present(o) && o.CurrentRegionID == chosen.CurrentRegionID &&
+                                                                      o.IsWithinRadius(chosen, AddSearchRadius));
+            if (otrygg != null) reason = "his pets come back as fast as they die: fight Otrygg";
+            return otrygg;
+        }
+
+        // ---- Icelord Agmundr -----------------------------------------------------------------------------------------
+
+        /// <summary>His linked monsters (AgmundrBrain.Think: every one in the region joins once he fights, tether 0, speed 300).</summary>
+        public const string AgmundrLinkedPackage = "AgmundrBaf";
+        /// <summary>His cold blast (AgmundrBrain.AgmundrDD: spell 11744, 650 cold to everyone within 500 of his target, a
+        /// 3 s cast he walks with and nobody interrupts; 15% of his attack turns, every 10-15 s at most).</summary>
+        public const int AgmundrBlastSpellId = 11744, AgmundrBlastRadius = 500;
+        /// <summary>His aggro range (AgmundrBrain: 600); a monster within this plus <see cref="AgmundrNeighbourMargin"/> of
+        /// him is not pulled while he lives.</summary>
+        public const int AgmundrAggro = 600, AgmundrNeighbourMargin = 400;
+        /// <summary>Melee stand behind him so the line from his target puts them this far past his blast's radius.</summary>
+        public const int AgmundrBehindMargin = 50;
+        /// <summary>A melee raider this close to its spot behind him is there.</summary>
+        public const int AgmundrBehindTolerance = 90;
+
+        /// <summary>He is casting his cold blast. Settable for tests.</summary>
+        public static Func<GameNPC, bool> AgmundrCasting = boss =>
+            boss?.castingComponent?.SpellHandler?.Spell is { } s && (s.ID == AgmundrBlastSpellId || s.Radius == AgmundrBlastRadius && s.Damage == 650);
+
+        /// <summary>
+        /// PC log e3b8238 (08:03-08:06): 81 of 81 raiders died in 2.7 minutes and he never went under 58%; the raid took
+        /// 119,000 damage from him in its first minute, nearly all of it his cold blast landing on a raid stacked around his
+        /// target. His six linked hrimthursa (AgmundrBaf, 1,395-2,275 from his spawn; nothing in his script brings him when
+        /// one of them is pulled, and a gamebot raid triggers no Bring-a-Friend) die before him.
+        /// </summary>
+        private static GameNPC AgmundrBafClearsFirst(GameNPC npc, IReadOnlyList<GameNPC> live)
+        {
+            if (npc == null || npc is Agmundr || npc.PackageID != AgmundrLinkedPackage) return null;
+            return LiveOfType(live, nameof(Agmundr)).FirstOrDefault(b => b.CurrentRegionID == npc.CurrentRegionID);
+        }
+
+        /// <summary>A monster standing within his aggro (plus a margin) is not pulled while he lives and rests (PC log
+        /// e3b8238, 08:34: the hrimthursa harrower's muster went 76 from his spawn; 80 raiders died to him, none of it
+        /// counted as an attempt).</summary>
+        private static string AgmundrNeighbourWaits(GameNPC target, IReadOnlyList<GameNPC> live, long now)
+        {
+            if (target is Agmundr || target.CurrentRegionID != 160) return null;
+            GameNPC agmundr = LiveOfType(live, nameof(Agmundr)).FirstOrDefault(b => b.CurrentRegionID == target.CurrentRegionID);
+            if (agmundr == null || agmundr.InCombat || !agmundr.IsWithinRadius(target, AgmundrAggro + AgmundrNeighbourMargin)) return null;
+            return $"it stands {(int)agmundr.GetDistanceTo(target)} from Icelord Agmundr (aggro {AgmundrAggro}): after him";
+        }
+
+        /// <summary>
+        /// His fight. His target's party fights as usual (and takes the blast, healed). Everyone else: while he casts the
+        /// blast, out of 500 around his target and held out until it lands (it is a 3 s cast); otherwise casters, archers and
+        /// healers keep 750 off his target, and melee fight him from behind, on the line from his target, as far as their
+        /// reach allows (he hits from 350, so his target often stands far enough for them to clear it).
+        /// </summary>
+        private static Advice? AgmundrSpread(RuleContext c)
+        {
+            GameNPC boss = c.Target;
+            if (!boss.InCombat || boss.TargetObject is not GameLiving anchor || SameParty(c.Raider, anchor)) return null;
+            return AgmundrAdvice(c.At, PosOf(boss), PosOf(anchor), boss, anchor.Name, c.AtRange, AgmundrCasting(boss), c.Raider.ObjectID);
+        }
+
+        /// <summary>The Agmundr rule for a raider outside his target's party (pure but for the advice's target).</summary>
+        public static Advice? AgmundrAdvice(Vector3 at, Vector3 bossAt, Vector3 anchorAt, GameNPC boss, string anchorName, bool atRange,
+            bool casting, long fan)
+        {
+            if (casting)
+            {
+                if (StepOutOfArea(at, anchorAt, AgmundrBlastRadius, fan) is Vector3 outOfIt)
+                    return new(BotAction.Reposition, boss, outOfIt, $"agmundr: out of his cold blast ({AgmundrBlastRadius} around \"{anchorName}\")");
+                // Melee just outside would walk straight back in to swing: they hold until it has landed.
+                if (!atRange && Flat(at, anchorAt) <= AgmundrBlastRadius + BehindReach)
+                    return new(BotAction.Reposition, boss, at, "agmundr: hold out of his cold blast until it lands");
+                return null;
+            }
+            if (atRange)
+                return SpreadSpot(at, bossAt, anchorAt, AgmundrBlastRadius, true) is Vector3 clear
+                    ? new(BotAction.Reposition, boss, clear, $"agmundr: casters and healers clear of {AgmundrBlastRadius} around \"{anchorName}\"")
+                    : null;
+            if (Flat(at, anchorAt) > AgmundrBlastRadius + AgmundrBehindMargin / 2) return null;
+            float anchorToBoss = Flat(anchorAt, bossAt);
+            float behind = Math.Clamp(AgmundrBlastRadius + AgmundrBehindMargin - anchorToBoss, BehindDistance, BehindReach);
+            Vector3 spot = EncounterMeleeStations.BehindSpot(bossAt, anchorAt, behind, at.Z);
+            return Flat(at, spot) <= AgmundrBehindTolerance ? null
+                : new(BotAction.Reposition, boss, spot, $"agmundr: melee behind him, away from \"{anchorName}\"");
+        }
 
         // ---- King Tuscar and Queen Kula ---------------------------------------------------------------------------------
 
@@ -116,6 +353,42 @@ namespace DOL.GS
             return spot is Vector3 at
                 ? new(BotAction.Reposition, c.Target, at, $"scream: out of {KvasirMezRadius} around \"{anchor.Name}\"", "epic_kvasir_scream")
                 : default;
+        }
+
+        /// <summary>A healer whose armor procs cold stands this far from Kvasir (out of his reach) and heals from there.</summary>
+        public const int KvasirColdStandOff = 1_000;
+
+        /// <summary>
+        /// A bot that would heal Kvasir without casting at him (1.2, PC log 1dc66b6, 2026-11-15: the Midgard raid held him at
+        /// 81-99% for 18 minutes; the cast filter stopped only bots' cold spells): a melee bot whose weapon deals cold
+        /// (<see cref="MeleeForbidden"/>: it found no clean weapon to switch to), or any bot whose armor's reactive proc casts
+        /// cold at whoever hits it (<see cref="ArmorProcForbidden"/>). As a disciplined raid would: it fights his hrimthursa
+        /// icetouch adds instead; with none left it stands off him, and a healer stands out of his reach and heals on.
+        /// </summary>
+        private static Advice? KvasirColdCarrier(RuleContext c)
+        {
+            if (!EpicEncounterMechanics.AllowKvasirColdHeal || c.Raider is not GameBot bot) return default;
+            bool weapon = !c.AtRange && MeleeForbidden(bot, c.Target);
+            bool armor = !weapon && ArmorProcForbidden(bot, c.Target);
+            if (!weapon && !armor) return default;
+            GameNPC add = c.All("HrimthursaIcetouch").FirstOrDefault(n => n.PackageID == "KvasirBaf" && n.InCombat);
+            return KvasirColdAdvice(c.At, c.Target, weapon, armor, BotPartyRoles.IsHealingClass((eCharacterClass)c.ClassId), add);
+        }
+
+        /// <summary>The cold carrier's advice (pure): a healer whose armor procs cold heals from
+        /// <see cref="KvasirColdStandOff"/> away; anyone else fights his add <paramref name="add"/>, or with none stands off him.</summary>
+        public static Advice? KvasirColdAdvice(Vector3 at, GameNPC kvasir, bool weaponHeals, bool armorHeals, bool healer, GameNPC add)
+        {
+            if (!weaponHeals && !armorHeals) return default;
+            string why = weaponHeals ? "kvasir-cold: its weapon deals cold" : "kvasir-cold: its armor procs cold";
+            Vector3 boss = PosOf(kvasir);
+            if (!weaponHeals && healer)
+                return AwayFrom(at, boss, KvasirColdStandOff) is Vector3 away
+                    ? new(BotAction.Reposition, kvasir, away, $"{why}; heals from out of his reach")
+                    : default;
+            if (add != null) return new(BotAction.Retarget, add, null, $"{why}; on his \"{add.Name}\" instead");
+            return new(BotAction.StandOff, kvasir, Flat(at, boss) < KvasirColdStandOff - 100 ? PointAway(at, boss, KvasirColdStandOff) : null,
+                $"{why}; stands off him");
         }
 
         // ---- Jailer Vifil ----------------------------------------------------------------------------------------------

@@ -87,16 +87,37 @@ says "today").
   `botcheck` replies may joke around the question in character ("lol no", "i wish, id level while asleep").
 - Later internet phrases: change my mind, fight me, vibes, love language, no thoughts, lifestyle, salty,
   the meta, i felt that, pog, based, no cap, sus, gg ez, main character, "o/" (do not add new ones).
+- Jokes and memes from after October 2003 (owner, 2026-11-15): "achievement unlocked", "over 9000", "cool story",
+  "i see what you did there", "ikr", "ftw", "the cake is a lie", the chicken punchline of the 2005 raid video. The builder
+  bans them.
 - Out-of-era content: Trials of Atlantis (Atlantis, artifacts, master levels, ML), New Frontiers (towers,
   Molvik, Leirvik, Proving Grounds, Lion's Den, Hills of Claret, Killaloe, Braemar, Wilton), Catacombs
   (champion levels, CL, catacombs classes), Mythic, real websites, EverQuest by name (the builder bans it),
-  World of Warcraft.
+  World of Warcraft. The one exception is the era rule below.
+
+## The era: Trials of Atlantis and Catacombs as rumours only (owner, 2026-11-15)
+
+Trials of Atlantis and Catacombs may appear **only as rumours, from a lore perspective**: something a bot has heard
+about a sunken land or what lies under the cities, the way a 2003 player heard of a coming expansion. **Never as played
+content.** No bot has been there, levels there, fights there, owns or wants an artifact, has master levels or champion
+levels, or plays a Catacombs class, and no line suggests the player can go. New Frontiers stays out entirely.
+
+The tag is `@topic rumour_atlantis` (the sunken land) or `@topic rumour_below` (what lies under the capitals), on any kind
+or on a debate scene. Only those lines may say `atlantis` or `catacombs` (`build_corpus.py`, `ERA_RUMOUR_TOPICS`); every
+other banned word stays banned in them (`artifact`, master levels, `ml`, the classes and races), and the builder refuses a
+rumour line that claims a trip there ("been to atlantis", "lets go"). They live in `data/chat/era_rumours.lines`, with the
+storyteller's legend (`tale_atlantis`). Keep them rare: a handful of lines, sceptical or curious, never a theme. Atlantis is
+sailors' and grandmothers' talk (coral-crusted stone in the nets, lights under the water, a dream the three realms shared);
+the desert, the volcano and the city in the sky appear only as dream images inside the legend, never as places. Under the
+capitals there is a shut door: Camelot's bricked-up crypts and the Inconnu who never asked the way down, the kobold miners
+who hear picks below Jordheim, the Dream Trees' roots that go too deep. Ambient rumour lines are musings (rare /faction
+openers, never /say) and need `@needs at:<place>`. Tests: `tools/bot-voices/tests/test_era_rumours.py`, `UT_EraRumours`.
 - Promises the server can't keep: a bot must not say it is inviting, trading or coming unless the line is
   written for a kind whose code does that (say "pst me", "inv me", "i might be free later" instead).
 
 ## World facts you can use
-- Battlegrounds in this world: Abermenai 15-19, Thidranki 20-24, Murdaigean 25-29, Caledonia 30-35,
-  Cathal Valley 45-49.
+- Battlegrounds in this world: Abermenai 15-19, Thidranki 20-24, Murdaigean 25-29, Caledonia 30-35.
+  Cathal Valley is in the world database but came after this era: don't write lines about it.
 - Capitals: Camelot (Albion), Jordheim (Midgard), Tir na Nog (Hibernia). Starter towns: Cotswold,
   Prydwen Keep, Humberton (alb); Mularn, Audliten, Huginfell (mid); Mag Mell, Tir na mBeo, Ardee (hib).
 - Dungeons by level (alb) Tomb of Mithra 7-17, Tepok's Mine 16-24, Keltoi Fogou 19-32, Stonehenge Barrows
