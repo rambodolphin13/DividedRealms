@@ -283,7 +283,8 @@ namespace DOL.GS.Trials
         private static void FireballFromAithos(TrialRun run)
         {
             TrialMob aithos = run.Mobs("aithos").FirstOrDefault();
-            if (aithos == null || !Ml12Kit.Every(run, "fireball", 5))
+            // Every 8 s (was 5): a full bot group cannot spread out, and 170 on all eight every 5 s wiped it at 30% (bot playtest 2026-11-14).
+            if (aithos == null || !Ml12Kit.Every(run, "fireball", 8))
                 return;
             GameLiving target = Ml12Kit.RandomHostile(run, aithos, 1500);
             if (target != null)
