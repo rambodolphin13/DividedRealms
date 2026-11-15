@@ -34,6 +34,13 @@ namespace DOL.GS.Trials
         public const int ChamberHushRadius = 1600;
 
         /// <summary>
+        /// The bound zaubak of 5.6-5.8 hit as hard as a named echo (1.0). Four level 65s at once wiped a full bot group in
+        /// 80 s twice in 5.7 and in 5.8 (companions spread their blows over all of them); 0.8 keeps them level 65 and
+        /// dangerous (bot playtest 2026-11-14). The hardened, masked and wrapped ones keep their strength.
+        /// </summary>
+        public const double BoundDamage = 0.8;
+
+        /// <summary>
         /// The fountain room holds sixteen world eternal lost at level 65, and anubites stand at the bier and the snake
         /// stair; the trial brings its own of each. They stand aside while a 5.9 run lasts.
         /// </summary>
@@ -257,7 +264,7 @@ namespace DOL.GS.Trials
                     Announce = "The bound ones stir and turn their wrapped faces to you.",
                     Mobs =
                     {
-                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 5000, DamageFactor = 1.0, Count = 4, Spread = 250, Tag = "bound" },
+                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 5000, DamageFactor = BoundDamage, Count = 4, Spread = 250, Tag = "bound" },
                         new TrialMobSpec { Name = "bound zauemia ruinetu", Model = MummyModel, Level = 65, Health = 6000, DamageFactor = 1.0, Spread = 100, Tag = "bound" },
                     },
                     OnStart = HushChamber,
@@ -283,7 +290,7 @@ namespace DOL.GS.Trials
                     Announce = "The masked one stands untouched while its circle closes on you.",
                     Mobs =
                     {
-                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 5000, DamageFactor = 1.0, Count = 4, Spread = 300, Tag = "bound" },
+                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 5000, DamageFactor = BoundDamage, Count = 4, Spread = 300, Tag = "bound" },
                         new TrialMobSpec { Name = "bound zauemia ruinetu", Model = MummyModel, Level = 66, Size = 60, Health = 8000, DamageFactor = 1.1, Spread = 100, Immune = true, AggroRange = 0, Tag = "mask" },
                     },
                     OnStart = run =>
@@ -315,7 +322,7 @@ namespace DOL.GS.Trials
                     OnStart = HushChamber,
                     Mobs =
                     {
-                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 4500, DamageFactor = 1.0, Count = 3, Spread = 250 },
+                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 4500, DamageFactor = BoundDamage, Count = 3, Spread = 250 },
                     },
                 },
                 new TrialPhase
@@ -323,7 +330,7 @@ namespace DOL.GS.Trials
                     Announce = "More of them drag themselves out of the dark.",
                     Mobs =
                     {
-                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 4500, DamageFactor = 1.0, Count = 3, Spread = 250 },
+                        new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 4500, DamageFactor = BoundDamage, Count = 3, Spread = 250 },
                     },
                 },
                 new TrialPhase
