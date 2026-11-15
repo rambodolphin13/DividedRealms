@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using DOL.AI.Brain;
 using static DOL.GS.Trials.Ml7Kit;
 
 namespace DOL.GS.Trials
@@ -785,6 +786,14 @@ namespace DOL.GS.Trials
             },
         };
 
+        /// <summary>Sets a monster on the nearest living member of the party within range.</summary>
+        private static void Engage(TrialRun run, TrialMob mob, int range)
+        {
+            GameLiving prey = run.Hostiles(mob, range).OrderBy(living => mob.GetDistanceTo(living)).FirstOrDefault();
+            if (prey != null && mob.Brain is StandardMobBrain brain)
+                brain.AddToAggroList(prey, 1);
+        }
+
         /// <summary>Typhon can be hurt while his Essence was struck within the last <see cref="TyphonOpenMs"/>.</summary>
         public static bool TyphonOpen(long lastEssenceHit, long now) => lastEssenceHit > 0 && now - lastEssenceHit <= TyphonOpenMs;
 
@@ -805,6 +814,14 @@ namespace DOL.GS.Trials
             }
 
             Bolts(run, "typhon", now, 10, 200, 2000, eDamageType.Heat);
+
+            // Bot playtest 2026-11-14: Typhon waited at his pool spot 3,350 from the shore, out of reach of melee and of
+            // his own bolts, and never came: 7.10 could not be fought at all. He now comes for the nearest of the party.
+            if (now % 3 == 0)
+            {
+                foreach (TrialMob typhon in run.Mobs("typhon").Where(typhon => !typhon.InCombat))
+                    Engage(run, typhon, 8000);
+            }
 
             if (Gone(run, "essence") && Count(run, "essence.back") >= 20)
             {
