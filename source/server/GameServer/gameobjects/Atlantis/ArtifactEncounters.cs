@@ -34,7 +34,11 @@ namespace DOL.GS
         public const string TriggerDay = "day";
         public const string TriggerNear = "near";
 
-        private const long KillWindowMs = 15 * 60 * 1000;
+        /// <summary>
+        /// How close together the RequiredKills bosses must die. 15 minutes was shorter than one group with bots needs
+        /// for three 12x bosses 3,000-4,000 apart (about 7 minutes each, bot playtest 2026-11-14).
+        /// </summary>
+        public const long KillWindowMs = 30 * 60 * 1000;
 
         private const int SpellIdBase = 826200;
 
