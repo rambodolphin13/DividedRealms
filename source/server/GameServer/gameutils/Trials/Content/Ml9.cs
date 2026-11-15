@@ -1029,8 +1029,8 @@ namespace DOL.GS.Trials
                     Announce = "Katri and her guard turn to face you.",
                     Mobs =
                     {
-                        new TrialMobSpec { Name = "Katri", Model = 1217, Level = 66, Size = 50, Health = 75000, DamageFactor = 1.2, At = new TrialPoint(32313, 14034, 6872, 1040), MeleeDamage = eDamageType.Thrust, Tag = "katri" },
-                        new TrialMobSpec { Name = "Katri's Personal Guard", Model = 1216, Level = 64, Size = 50, Health = 20000, DamageFactor = 1.0, At = new TrialPoint(32611, 13997, 6875, 1039), MeleeDamage = eDamageType.Thrust, AggroRange = 0, Required = false, Tag = "guard" },
+                        new TrialMobSpec { Name = "Katri", Model = 1217, Level = 66, Size = 50, Health = 75000, DamageFactor = 1.0, At = new TrialPoint(32313, 14034, 6872, 1040), MeleeDamage = eDamageType.Thrust, Tag = "katri" },
+                        new TrialMobSpec { Name = "Katri's Personal Guard", Model = 1216, Level = 64, Size = 50, Health = 12000, DamageFactor = 0.8, At = new TrialPoint(32611, 13997, 6875, 1039), MeleeDamage = eDamageType.Thrust, AggroRange = 0, Required = false, Tag = "guard" },
                     },
                     OnTick = KatriTick,
                 },
@@ -1072,8 +1072,10 @@ namespace DOL.GS.Trials
                     run.Set("katriStage", "reinforced");
                     HoldAt(katri, 0);
                     if (run.Get("guardAway", false))
-                        run.Spawn(new TrialMobSpec { Name = "Katri's Personal Guard", Model = 1216, Level = 64, Size = 50, Health = 20000, DamageFactor = 1.0, At = Beside(katri, 300), MeleeDamage = eDamageType.Thrust, Required = false, Tag = "guard" });
-                    run.Spawn(new TrialMobSpec { Name = "avriel guardian", Model = Avriel, Level = 60, Size = 52, Health = 5000, DamageFactor = 1.0, Count = KatriGuardians, Spread = 300, MeleeDamage = eDamageType.Thrust, Required = false, Tag = "avrielGuard" });
+                        run.Spawn(new TrialMobSpec { Name = "Katri's Personal Guard", Model = 1216, Level = 64, Size = 50, Health = 12000, DamageFactor = 0.8, At = Beside(katri, 300), MeleeDamage = eDamageType.Thrust, Required = false, Tag = "guard" });
+                    // Bot playtest 2026-11-14: five 5000/1.0 guardians on top of Katri (1.2) and her guard (20000) went for the
+                    // bot healers and wiped a player with seven bots 30 s after they came. Softer guardians, guard and Katri.
+                    run.Spawn(new TrialMobSpec { Name = "avriel guardian", Model = Avriel, Level = 60, Size = 52, Health = 3000, DamageFactor = 0.7, Count = KatriGuardians, Spread = 300, MeleeDamage = eDamageType.Thrust, Required = false, Tag = "avrielGuard" });
                     Wake(run, "guard");
                     run.Tell("The guard returns with five avriel guardians, and Katri's defence breaks!");
                 }
