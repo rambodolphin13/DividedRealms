@@ -1272,8 +1272,9 @@ namespace DOL.GS.Trials
                                 Model = 1181,
                                 Level = 70,
                                 Size = 125,
-                                Health = 140000,
-                                DamageFactor = 2.2,
+                                // Bot playtest 2026-11-14: 140000 / 2.2 with the 260 stomp wiped a player with seven bots at 66%.
+                                Health = 80000,
+                                DamageFactor = 1.6,
                                 At = talosHome,
                                 Tag = "talos",
                                 Required = false,
@@ -1281,7 +1282,7 @@ namespace DOL.GS.Trials
                             new TrialMobSpec { Name = "altheus Talos", Model = 998, Level = 66, Size = 125, Health = 8000, DamageFactor = 0.05, AggroRange = 0, At = altheus[0], Tag = "altheus", Immune = true, Required = false },
                             new TrialMobSpec { Name = "altheus Talos", Model = 989, Level = 66, Size = 125, Health = 8000, DamageFactor = 0.05, AggroRange = 0, At = altheus[1], Tag = "altheus", Immune = true, Required = false },
                         },
-                        Pulses = { new TrialPulse { IntervalSeconds = 12, Damage = 260, Radius = 450, SourceTag = "talos", DamageType = eDamageType.Crush, Message = "Talos stomps, and the ground heaves!" } },
+                        Pulses = { new TrialPulse { IntervalSeconds = 12, Damage = 180, Radius = 450, SourceTag = "talos", DamageType = eDamageType.Crush, Message = "Talos stomps, and the ground heaves!" } },
                         OnTick = run =>
                         {
                             Expire(run);
