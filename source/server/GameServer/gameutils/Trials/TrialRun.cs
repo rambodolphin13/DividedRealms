@@ -78,7 +78,9 @@ namespace DOL.GS.Trials
         {
             if (Definition.Scope != TrialScope.Solo)
                 return true;
-            GameObject root = source is GameNPC { Brain: IControlledBrain controlled } ? controlled.GetPlayerOwner() : source;
+            // Account companions and other bots carry an IControlledBrain that names the player as owner, but they are
+            // helpers, not pets: in single combat their blows must not land (bot playtest 2026-11-14, 1.5).
+            GameObject root = source is GameNPC { Brain: IControlledBrain controlled } and not GameBot ? controlled.GetPlayerOwner() : source;
             return root == Leader;
         }
 

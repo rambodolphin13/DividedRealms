@@ -199,7 +199,11 @@ namespace DOL.GS.Trials
                 Intro = "So, more of you come for my runic power. The tritons whisper that I am sick and weak. They are wrong. " +
                     "Say the word and I will give you a moment to think better of it. Stay, and we shall see who walks out of my cave.",
                 Victory = "Kepa's bargain is paid in full, though not as she intended. Her runic power is yours.",
-                Replaces = new[] { "Kepa" },
+                // An Atlas "Lord of Battle" Mordred (LordOfBattle, level 75) stands 88 from Kepa in the Temple of Twilight. He pulls
+                // every player within 7,000 back to him ("Cowardice is not appreciated in this arena."), so nobody can
+                // /mltrial goto or port out after Kepa (bot playtest 2026-11-14; region 73's pair went in DR-383).
+                Replaces = new[] { "Kepa", "Mordred" },
+                ReplaceRadius = 7000,
                 TimeLimitSeconds = 1500,
                 Phases =
                 {
@@ -574,7 +578,9 @@ namespace DOL.GS.Trials
 
             TrialMobSpec Glowing(TrialPoint at)
             {
-                TrialMobSpec ray = Mob("glowing sting ray", RayModel, 65, 40, 7000, 1.0, at, "glowing", required: false, melee: eDamageType.Thrust);
+                // Passive until struck (aggro 0), like the swarm: with aggro 1,500 all ten rays pulled at once on arrival and wiped a
+                // full bot group (bot playtest 2026-11-14), leaving no way to thin the dull ones first as the intro says.
+                TrialMobSpec ray = Mob("glowing sting ray", RayModel, 65, 40, 7000, 1.0, at, "glowing", required: false, aggro: 0, melee: eDamageType.Thrust);
                 ray.OnDeath = PowerJumps;
                 return ray;
             }
@@ -625,7 +631,7 @@ namespace DOL.GS.Trials
                         Announce = "The swarm lifts from the sand. One of them glows!",
                         OnStart = run =>
                         {
-                            Wave(run, Mob("sting ray", RayModel, 63, 22, 3000, 0.8, tag: "ray", required: false, melee: eDamageType.Thrust), 9, swarm, 450);
+                            Wave(run, Mob("sting ray", RayModel, 63, 22, 3000, 0.8, tag: "ray", required: false, aggro: 0, melee: eDamageType.Thrust), 9, swarm, 450);
                             Light(run, On(swarm, 200, 0, 1));
                         },
                         OnTick = run =>
@@ -658,7 +664,8 @@ namespace DOL.GS.Trials
                     "Her arms drag whoever she fancies to her beak to drink their life, and she sends her clinging young after anyone she cannot reach.",
                 Victory = "Sinovia goes limp, and the power she swallowed drifts free into your hands.",
                 Replaces = new[] { "Sinovia" },
-                TimeLimitSeconds = 1200,
+                // 30 minutes (was 20): a full bot group won at 17 minutes with half its members dead (bot playtest 2026-11-14).
+                TimeLimitSeconds = 1800,
                 Phases =
                 {
                     new TrialPhase
@@ -824,7 +831,9 @@ namespace DOL.GS.Trials
                     new TrialPhase
                     {
                         Announce = "Medusa uncoils from her throne. The four squares in the floor are armed. Keep her at the side of the hall!",
-                        Mobs = { Mob("Medusa", MedusaModel, 68, 75, 110000, 1.6, medusa, "medusa", melee: eDamageType.Slash) },
+                        // 70,000 at 1.3 (was 110,000 at 1.6): a full bot group wiped with her at 76% after 7 minutes, the healers first; now in
+                        // line with Cetus (1.10) and the other ML3 bosses (bot playtest 2026-11-14).
+                        Mobs = { Mob("Medusa", MedusaModel, 68, 75, 70000, 1.3, medusa, "medusa", melee: eDamageType.Slash) },
                         OnTick = Fight,
                         Done = Cleared("medusa"),
                     },
