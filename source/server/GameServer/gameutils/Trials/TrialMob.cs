@@ -36,6 +36,14 @@ namespace DOL.GS.Trials
 
         public override bool CanDropLoot => Rewards && base.CanDropLoot;
 
+        /// <summary>
+        /// An immune trial monster does not regenerate: its health only moves through the trial's own hooks (Zopureo's
+        /// purros, the azure shark). Out of combat an idle monster refills an eighth of its health a tick, which undid every
+        /// purros (bot playtest 2026-11-14, 1.1). Regeneration starts again with the next change of health.
+        /// </summary>
+        protected override int HealthRegenerationTimerCallback(ECSGameTimer callingTimer) =>
+            Immune ? 0 : base.HealthRegenerationTimerCallback(callingTimer);
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (Spec.Objective || Immune || !Run.MayHurt(source) || !Spec.Hurts.HasFlag(KindOf(source, damageType)))

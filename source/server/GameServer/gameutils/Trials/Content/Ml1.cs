@@ -225,6 +225,8 @@ namespace DOL.GS.Trials
             if (zopureo.Immune && zopureo.HealthPercent <= ZopureoSpentPercent)
             {
                 zopureo.Immune = false;
+                // He has stood idle all phase (aggro range 0): wake him so he fights back and stops refilling.
+                Ml12Kit.Wake(run, "zopureo", 1500);
                 run.Tell("Zopureo gutters low! Now your blades can reach him.");
             }
 
@@ -502,14 +504,16 @@ namespace DOL.GS.Trials
         {
             List<TrialMobSpec> mobs = new()
             {
-                BarrierSpec(fadrin, 14000),
+                // Bot playtest 2026-11-14: 14,000 / 24,000 / 7,000 every 240 s could not be beaten by a full bot group (only
+                // melee hurts the barrier; Fadrin at 44% when it closed again, healing 1% each 5 s behind it).
+                BarrierSpec(fadrin, 10000),
                 new TrialMobSpec
                 {
                     Name = "Fadrin",
                     Model = 1033,
                     Size = 50,
                     Level = 62,
-                    Health = 24000,
+                    Health = 16000,
                     DamageFactor = 1.0,
                     At = fadrin,
                     AggroRange = 0,
@@ -573,10 +577,10 @@ namespace DOL.GS.Trials
                     Ml12Kit.Strike(run, boss, target, 150, eDamageType.Cold);
             }
 
-            if (Ml12Kit.Every(run, "regrow", 240))
+            if (Ml12Kit.Every(run, "regrow", 300))
             {
                 run.Tell("Fadrin chants, and the barrier closes around him again!");
-                run.Spawn(BarrierSpec(fadrin, 7000));
+                run.Spawn(BarrierSpec(fadrin, 5000));
                 Ml12Kit.Fix(run, "barrier");
             }
         }
