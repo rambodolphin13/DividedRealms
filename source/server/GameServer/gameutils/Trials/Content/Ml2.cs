@@ -676,11 +676,20 @@ namespace DOL.GS.Trials
 
             int stage = run.Get("stage", 0) + 1;
             run.Set("stage", stage);
+            // Each victim takes one pulse a round, from the nearest eidolon, however many stand around them: six stacked
+            // pulses (up to 1,000 a round on a clumped party) wiped a full bot group in 60-75 s, twice (bot playtest 2026-11-14).
+            Dictionary<GameLiving, TrialMob> struck = new();
             foreach (TrialMob eidolon in eidolons)
             {
                 eidolon.Level = (byte)Math.Min(eidolon.Level + 3, 65);
-                Ml12Kit.Burst(run, eidolon, eidolon, 400, EidolonDamage(stage), eDamageType.Energy);
+                foreach (GameLiving target in run.Hostiles(eidolon, 400))
+                {
+                    if (!struck.TryGetValue(target, out TrialMob nearest) || target.GetDistanceTo(eidolon) < target.GetDistanceTo(nearest))
+                        struck[target] = eidolon;
+                }
             }
+            foreach ((GameLiving target, TrialMob eidolon) in struck)
+                Ml12Kit.Strike(run, eidolon, target, EidolonDamage(stage), eDamageType.Energy);
         }
 
         private static TrialDefinition PickYourPoison()
