@@ -157,7 +157,7 @@ namespace DOL.GS
             m_scriptAssemblies = root["Server"]["ScriptAssemblies"].GetString(m_scriptAssemblies);
             m_enableCompilation = root["Server"]["EnableCompilation"].GetBoolean(true);
             m_autoAccountCreation = root["Server"]["AutoAccountCreation"].GetBoolean(m_autoAccountCreation);
-            m_hostPasswordHash = root["Server"]["HostPasswordHash"].GetString(m_hostPasswordHash);
+            m_hostPasswordHash = root["Server"]["HostPasswordHash"].GetString(m_hostPasswordHash) ?? string.Empty;
 
             string serverType = root["Server"]["GameType"].GetString("Normal");
             switch (serverType.ToLower())
@@ -477,7 +477,7 @@ namespace DOL.GS
 		public string HostPasswordHash
 		{
 			get { return m_hostPasswordHash; }
-			set { m_hostPasswordHash = value; }
+			set { m_hostPasswordHash = value ?? string.Empty; }
 		}
 
 		/// <summary>

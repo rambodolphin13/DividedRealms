@@ -91,6 +91,8 @@ namespace DOL.GS
         internal string ActivityBeforeFight = string.Empty;
         internal long ActivityBeforeFightTick;
         private byte _lastAutonomousTrainedLevel = 1;
+        // Living Server 1.2: this gamebot has had its starter gear (AutonomousStarterGear), saved as "|starter-gear|1".
+        private bool _starterGearGiven;
         public bool HasPendingAutonomousTraining => IsAutonomousWorldBot && _lastAutonomousTrainedLevel < Level;
         /// <summary>Levels behind on training at which a bot goes to its trainer whatever its task.</summary>
         public const int OverdueTrainingLevels = 5;
@@ -2927,14 +2929,22 @@ namespace DOL.GS
                 log.Warn($"AUTONOMOUS_BUILD_RESPEC bot=\"{record.Name}\" id={record.BotId} class=\"{ClassName}\" level={Level} " +
                          $"weapon={BotSpec.WeaponOneType} unspentBefore={record.UnspentSpecPoints} reason=\"saved plan trains lines the class no longer has\"");
             }
-            if (!IsEpicSpecialForce && NeedsTrainingOnArrival(record.SerializedAbilities, record.SerializedSpecs, Level))
+            // Created above level 1 (the launcher's "+ Lv.25"/"+ Lv.50" rosters, Living Server 1.2's "+ Lv.20"): spend every
+            // point now, like the Special Forces. Later level-ups still go to a trainer. Ours (NeedsTrainingOnArrival) and
+            // Living Server 1.2's ArrivesTrained (a never-saved bot above level 1) both count.
+            bool arrivedTrained = !IsEpicSpecialForce &&
+                (NeedsTrainingOnArrival(record.SerializedAbilities, record.SerializedSpecs, Level) ||
+                 ArrivesTrained(Level, _lastAutonomousTrainedLevel, string.IsNullOrWhiteSpace(record.LastSavedUtc)));
+            if (arrivedTrained)
             {
-                // Created above level 1 (the launcher's level-50 roster): spend every point now, like the
-                // Special Forces. Later level-ups still go to a trainer.
                 m_leftOverSpecPoints = 0;
                 SpendSpecPoints(Level, 0);
                 _lastAutonomousTrainedLevel = Level;
                 MarkAutonomousStateDirty();
+                if (AutonomousDiagnosticsProperties.Training)
+                    log.Info($"AUTONOMOUS_TRAINING bot=\"{Name}\" id={DatabaseID} class=\"{ClassName}\" level={Level} " +
+                             $"trainer=\"(arrived trained)\" trainedFrom=1 trainedThrough={Level} " +
+                             $"specializations=\"{string.Join(",", GetSpecList().Where(spec => spec.Trainable && spec.Level > 1).Select(spec => $"{spec.KeyName}:1->{spec.Level}"))}\" unspent={m_leftOverSpecPoints}");
             }
             RefreshSpecDependantSkills(false);
             SetBotSpells();
@@ -2950,12 +2960,15 @@ namespace DOL.GS
                     Inventory.LoadFromDatabase(InternalID);
                 else
                     Inventory.LoadInventory(InternalID, preparedInventory);
+                // Before the starter weapon, so a bot that gets starter gear holds a merchant weapon in an empty weapon slot
+                // and the server makes its own starter weapon only where none fitted.
+                bool starterGearGiven = TryGiveStarterGear(record, arrivedTrained);
                 bool starterWeaponAdded = EnsureAutonomousStarterWeapon();
                 starterWeaponAdded |= BotRangedCombat.EnsureStarter(this);
                 starterWeaponAdded |= BotStarterInstruments.Ensure(this);
                 RefreshItemBonuses();
-                if (starterWeaponAdded || !buildLocked)
-                    AutonomousBotStatusPersistence.Queue(this, starterWeaponAdded);
+                if (starterWeaponAdded || !buildLocked || arrivedTrained || starterGearGiven)
+                    AutonomousBotStatusPersistence.Queue(this, starterWeaponAdded || arrivedTrained || starterGearGiven);
             }
             Experience = Math.Max(0, record.Experience);
             AutonomousRealmPoints = Math.Max(0, record.RealmPoints);
@@ -2973,6 +2986,50 @@ namespace DOL.GS
             var brain = new DOL.AI.Brain.BotBrain { IsHealer = IsHealerClass() };
             SetOwnBrain(brain);
             InitControlledBrainArray(1);
+        }
+
+        /// <summary>
+        /// Living Server 1.2 (owner 2026-11-15, "Arrive with starter gear"): a gamebot that arrives already trained above
+        /// level 1, or a "+ Lv.20" bot saved before this rule that still wears no armour, gets the best plain merchant item
+        /// of its realm for its level in each empty armour slot and its build's empty weapon and shield slots, free, once
+        /// (AutonomousStarterGear.Qualifies). Level-1 starters, gamebots that wear armour, Epic Special Forces (never
+        /// saved, the constructor's other branch), /spawn companions and players never get here.
+        /// </summary>
+        private bool TryGiveStarterGear(OfflineWorldBotRecord record, bool arrivedTrained)
+        {
+            _starterGearGiven = AutonomousStarterGear.HasMarker(record.SerializedAbilities);
+            if (IsEpicSpecialForce || IsTemporaryGroupHelper || Inventory == null ||
+                !AutonomousStarterGear.Qualifies(Level, arrivedTrained, _starterGearGiven,
+                    AutonomousStarterGear.ArmorPiecesWorn(Inventory.GetItem), Realm, record.BindRegionId))
+                return false;
+
+            AutonomousStarterGear.Result result;
+            try
+            {
+                bool savage = CharacterClass?.ID == (int)eCharacterClass.Savage;
+                eInventorySlot primarySlot = PrimaryWeaponUsesTwoHands ? eInventorySlot.TwoHandWeapon : eInventorySlot.RightHandWeapon;
+                bool shieldBuild = !RequiresMeleeOffhand && BestShieldLevel > 0;
+                var wants = AutonomousStarterGear.PlanSlots(slot => Inventory.GetItem(slot) != null, primarySlot,
+                    PreferredPrimaryWeaponType, RequiresMeleeOffhand ? PreferredOffhandWeaponType : 0, shieldBuild, savage);
+                result = AutonomousStarterGear.Give(this, wants);
+            }
+            catch (Exception exception)
+            {
+                log.Error($"AUTONOMOUS_STARTER_GEAR bot=\"{Name}\" id={DatabaseID} failed; it keeps what it has and tries again next login", exception);
+                return false;
+            }
+
+            string path = arrivedTrained ? "arrived-trained" : "earlier-launcher-bot";
+            log.Info($"AUTONOMOUS_STARTER_GEAR bot=\"{Name}\" id={DatabaseID} level={Level} class=\"{ClassName}\" " +
+                     $"realm={GlobalConstants.RealmToName(Realm)} path={path} pieces={result.Pieces.Count} " +
+                     $"items=\"{AutonomousStarterGear.Describe(result.Pieces)}\"" +
+                     (result.Given ? " coin=unchanged" : $" reason=\"{result.Reason}\" retry=next-login"));
+            if (!result.Given)
+                return false;
+            _starterGearGiven = true;
+            MarkAutonomousStateDirty();
+            AutonomousBotEconomy.MarkInventoryChanged(this);
+            return true;
         }
 
         private bool IsHealerClass()
@@ -3013,6 +3070,10 @@ namespace DOL.GS
         public bool EnterPlayerLedGroup(GamePlayer leader)
         {
             if (!ServerRules.HybridCoopRules.CanGroup(leader, this))
+                return false;
+            // Play with friends (1.2): a companion follows its owner and nobody else (BotHumanBinding). Another human's
+            // /pull, pilot or leadership change never takes it.
+            if (Owner != null && leader != Owner)
                 return false;
 
             WatchLeaderRegionChanges(leader);
@@ -3137,6 +3198,8 @@ namespace DOL.GS
                 return false;
             if (BuffRecastBlocked(spell, TargetObject as GameLiving)) return false;
             if (BotBrain.IsMaintainableClassBuff(spell) && BotBuffRules.LeavesNoEffect(spell.IsConcentration, spell.IsPulsing, spell.Duration)) return false;
+            // Darkness Falls (1.2): no pet or turret near a fighting prince who eats it (autonomous gamebots only).
+            if (EpicEncounterTactics.SummonFeedsPrince(this, spell)) return false;
             // A cast reveals the caster: a companion hidden with its player casts only heals until a fight starts.
             if (spell?.IsHealing != true && CompanionStealth.SuppressesCasting(this)) return false;
             if (AutonomousGroupFormationFollow.DeferBuff(this, spell)) return false;
@@ -3851,6 +3914,12 @@ namespace DOL.GS
             return string.IsNullOrWhiteSpace(serializedSpecs) ? (byte)1 : currentLevel;
         }
 
+        /// <summary>A bot that leveled up trains on its way. One that never trained arrives trained in its lifetime build
+        /// when the launcher made it above level 1: at level 50 ("+ Lv.50"), or at any level above 1 when it has never been
+        /// saved ("+ Lv.20" makes levels 20-24; a saved bot above 1 got there by playing, and keeps visiting its trainer). Pure.</summary>
+        public static bool ArrivesTrained(int level, int trainedLevel, bool neverSaved = false) =>
+            trainedLevel <= 1 && (level >= 50 || neverSaved && level > 1);
+
         /// <summary>"trained-level|N|realm-points|M": realm ability points already spent at a trainer (0 when absent).</summary>
         public static int ParseTrainedRealmPoints(string serialized)
         {
@@ -3982,7 +4051,8 @@ namespace DOL.GS
             record.IsAlive = IsAlive;
             record.IsOnline = ObjectState == eObjectState.Active;
             record.SerializedSpecs = string.Join(';', GetSpecList().Where(spec => spec.Trainable).Select(spec => $"{spec.KeyName}|{spec.Level}"));
-            record.SerializedAbilities = $"trained-level|{_lastAutonomousTrainedLevel}|realm-points|{AutonomousBotRealmAbilities.TrainedPoints(this)}";
+            record.SerializedAbilities = $"trained-level|{_lastAutonomousTrainedLevel}|realm-points|{AutonomousBotRealmAbilities.TrainedPoints(this)}" +
+                                         AutonomousStarterGear.MarkerSuffix(_starterGearGiven);
             record.UnspentSpecPoints = m_leftOverSpecPoints;
             record.LastSavedUtc = DateTime.UtcNow.ToString("O");
             record.LastUpdateUtc = record.LastSavedUtc;

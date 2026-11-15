@@ -79,10 +79,10 @@ namespace DOL.GS
         /// since 1.2: the raid fights each horseman within 2,700 of his spawn (catalog fight-at-home) and leads him back.</summary>
         public static bool AllowHorsemenTetherHeal { get => ServerProperties.Properties.EPIC_HORSEMEN_TETHER_HEAL; set => ServerProperties.Properties.EPIC_HORSEMEN_TETHER_HEAL = value; }
         /// <summary>Funus takes damage only from clerics and from mercenaries, armsmen, infiltrators and scouts with their
-        /// listed weapon; any other attacker (pets included) heals him to full. On since 1.2: only those raiders fight him,
+        /// listed weapon; any other attacker (pets included) heals him to full. Off by default; when on, only those raiders fight him,
         /// everyone else stands clear and never puts an area spell on him (EpicEncounterTactics.CaerSidi).</summary>
         public static bool AllowFunusWeaponPuzzle { get => ServerProperties.Properties.EPIC_FUNUS_WEAPON_PUZZLE; set => ServerProperties.Properties.EPIC_FUNUS_WEAPON_PUZZLE = value; }
-        /// <summary>Skeletal Sacristan walks his loop at 220 without stopping, with 70% magic resists. On since 1.2: the raid's
+        /// <summary>Skeletal Sacristan walks his loop at 195-250 without stopping, with 70% magic resists. On since 1.2: the raid's
         /// parties wait at stations along his loop and hit him as he passes (EpicEncounterTactics.CaerSidi).</summary>
         public static bool AllowSacristanPatrol { get => ServerProperties.Properties.EPIC_SACRISTAN_PATROL; set => ServerProperties.Properties.EPIC_SACRISTAN_PATROL = value; }
         /// <summary>Soul Reckoner takes no damage at all while a reckoned soul lives (not a quarter). On since 1.2: the souls
@@ -117,6 +117,17 @@ namespace DOL.GS
         /// played check: the raid's tactics for him (sacrifice and demon at range, spread in demon form) play either way; a
         /// 60-bot raid took 300,000 about 1% a minute (run 18).</summary>
         public static bool AllowGovannonFullHealth { get => ServerProperties.Properties.EPIC_GOVANNON_FULL_HEALTH; set => ServerProperties.Properties.EPIC_GOVANNON_FULL_HEALTH = value; }
+        /// <summary>Grand Summoner Govannon heals to full when he turns into his demon at 50% (the original). Off by default
+        /// (epic_govannon_full_heal; owner 2026-11-11): he heals to <see cref="GovannonDemonHealPercent"/>%. Play tests duo30b
+        /// to duo35 (80 Midgard bots, 200,000 health): with the raid stepping out of his Shroud of Agony it took the demon
+        /// from full to 48%, 53%, 29% (stopped) and 42% before it wiped, 104,000 to 142,000 damage; at 75% he has 150,000.</summary>
+        public static bool AllowGovannonFullHeal { get => ServerProperties.Properties.EPIC_GOVANNON_FULL_HEAL; set => ServerProperties.Properties.EPIC_GOVANNON_FULL_HEAL = value; }
+        /// <summary>What Govannon heals to at his change while <see cref="AllowGovannonFullHeal"/> is off.</summary>
+        public const int GovannonDemonHealPercent = 75;
+        /// <summary>Govannon's health as he turns into his demon (pure): full with the original on, else 75% of it; never
+        /// less than he has (the change is at 50%).</summary>
+        public static int GovannonDemonHealth(int maxHealth, int health, bool fullHeal) =>
+            fullHeal ? maxHealth : Math.Max(health, (int)((long)maxHealth * GovannonDemonHealPercent / 100));
         /// <summary>Easmarach heals an eighth on the waterfall top every time he falls to 30%, and stays up there (the original).
         /// Off by default (1.2 play test, 2026-11-07: epic_easmarach_endless_falls_heal): he heals there once a fight, rests,
         /// and comes back down to fight on. A bot raid can only shoot him on the top (spells take 70% resists): 42% to 34% in
@@ -155,7 +166,7 @@ namespace DOL.GS
             nameof(AllowGalladoriaBridgeSpot), nameof(AllowFullFirePatches), nameof(AllowEarthmenderClassPuzzle),
             nameof(AllowEarthmendersPassive), nameof(AllowEarthmenderQuickReset), nameof(AllowEarthmenderMutualHeal),
             nameof(AllowBeathaHealsXaga), nameof(AllowFairyFlight), nameof(AllowGovannonFullHealth), nameof(AllowKvasirColdHeal),
-            nameof(AllowTuscarTwinHeal), nameof(AllowEasmarachEndlessFallsHeal),
+            nameof(AllowTuscarTwinHeal), nameof(AllowEasmarachEndlessFallsHeal), nameof(AllowGovannonFullHeal),
         ];
 
         // ---- Per-encounter values ---------------------------------------------------------------------------------------
@@ -385,6 +396,60 @@ namespace DOL.GS
                 if (IsDevourablePet(candidate) && (pet == null || prince.GetDistanceTo(candidate) < prince.GetDistanceTo(pet)))
                     pet = candidate;
             return pet;
+        }
+
+        /// <summary>
+        /// The size of the force a boss kill notice reports: the real players and the gamebots around the body. The notices
+        /// counted real players only, so a bot raid's kill read "slain by a force of 0 warriors" (dragon-fight M4).
+        /// </summary>
+        public static int ForceSize(GameNPC boss)
+        {
+            if (boss == null)
+                return 0;
+            int count = boss.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).Count;
+            foreach (GameNPC npc in boss.GetNPCsInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                if (npc is GameBot)
+                    count++;
+            return count;
+        }
+
+        /// <summary>
+        /// Who a boss's call for help reaches: its own kind, a living monster of its realm that is nobody's pet. High Lord
+        /// Baln's first hit ordered every idle NPC within 3,000 to attack, so a raid's own gamebots and pets were told to
+        /// turn on the raider who struck him (Darkness Falls audit M1, 2026-11-11).
+        /// </summary>
+        public static bool IsOwnKind(GameNPC boss, GameNPC mob) =>
+            boss != null && mob != null && mob != boss &&
+            IsOwnKind(mob.Realm == boss.Realm, mob is GameBot, mob.Brain is DOL.AI.Brain.IControlledBrain, mob.IsAlive,
+                (mob.Flags & GameNPC.eFlags.PEACE) != 0);
+
+        public static bool IsOwnKind(bool sameRealm, bool isGameBot, bool hasControlledBrain, bool isAlive, bool isPeaceful) =>
+            sameRealm && isAlive && !isGameBot && !hasControlledBrain && !isPeaceful;
+
+        /// <summary>
+        /// Encounters of several bodies that share one health pool (Olcasgean and his second body, the Giant Sporite
+        /// Cluster and its copies) die together, but each body paid out its own loot and experience to whoever had hit
+        /// that body, so a raid that hit two bodies was paid twice (epic-bosses M5). The body that pays takes over the
+        /// others' attackers with this before it dies; the others are left with none and pay nothing.
+        /// </summary>
+        public static void TransferDamageCredit(GameLiving from, GameLiving into)
+        {
+            if (from == null || into == null || from == into)
+                return;
+            System.Collections.Generic.Dictionary<GameLiving, double> taken = new();
+            lock (from.XpGainersLock)
+            {
+                MergeDamageCredit(from.XPGainers, taken);
+                from.XPGainers.Clear();
+            }
+            lock (into.XpGainersLock)
+                MergeDamageCredit(taken, into.XPGainers);
+        }
+
+        public static void MergeDamageCredit<T>(System.Collections.Generic.IDictionary<T, double> from, System.Collections.Generic.IDictionary<T, double> into)
+        {
+            foreach (var pair in from)
+                into[pair.Key] = into.TryGetValue(pair.Key, out double already) ? already + pair.Value : pair.Value;
         }
 
         public static bool FightIsOver(GameNPC boss) => boss == null || !boss.IsAlive || !boss.InCombatInLast(ResetQuietMilliseconds);

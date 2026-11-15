@@ -59,6 +59,12 @@ namespace DOL.GS
             public int SpreadRadius { get; init; }
             /// <summary>Only while the boss has this model (Govannon's demon form, 636; 0: always).</summary>
             public int SpreadWhileModel { get; init; }
+            /// <summary>The name of the boss's spell that lands on everyone within <see cref="SpreadRadius"/> of its target
+            /// (Govannon's Shroud of Agony: a four-second cast, then about 1,440 damage over 24 seconds; play test duo28's
+            /// ledger, 122,123 damage to the raid in the minute after his change, 53 raiders in it). While the boss casts it,
+            /// every raider it would catch but that target steps out of the radius, and comes back once it has landed: melee
+            /// cannot fight him from outside it, so standing clear all fight is not an answer for them.</summary>
+            public string StepOutOfCast { get; init; }
             /// <summary>While the spread is on, melee fight the boss from behind him, clear of the area hit around his target
             /// (<see cref="EncounterMeleeStations"/>): his target keeps <see cref="AnchorHoldDistance"/> from him and the
             /// other melee stand <see cref="BehindDistance"/> behind him on the line from his target (owner 2026-11-07,
@@ -84,6 +90,12 @@ namespace DOL.GS
             /// hurts; one whose class hurts none fights the boss. Applies while <see cref="ClassRuleSwitch"/> is on (none: always).</summary>
             public AddClasses[] ClassRules { get; init; } = [];
             public string ClassRuleSwitch { get; init; }
+            /// <summary>Monsters, by name, that stand around the boss and come into its fight (Spindler Broodmother's adult
+            /// spindlers, level 75: play test duo28's ledger, about 100,000 of the 340,000 damage the raid took, and one of them
+            /// killed in the whole fight). The route kills those within <see cref="ClearFirstRadius"/> of the boss's spawn
+            /// before it goes for the boss, each as a target of the whole raid.</summary>
+            public string[] ClearFirst { get; init; } = [];
+            public int ClearFirstRadius { get; init; }
             /// <summary>Adds that burst from the boss's body when it dies (Spindler Broodmother's underdeveloped spindlers): the
             /// route clears them at the body before it moves on.</summary>
             public string[] DeathAdds { get; init; } = [];
@@ -96,12 +108,19 @@ namespace DOL.GS
             public bool FocusRangedAdds { get; init; }
             /// <summary>Up to this many whole parties of the raid, with their healers, work only the ranged adds, taking the
             /// ones on the raid's healers and casters first; everyone else stays on the boss (owner 2026-11-08, Spindler
-            /// Broodmother: "2-3 newborn-only parties"). 0: off. Replaces <see cref="FocusRangedAdds"/> where set.</summary>
+            /// Broodmother: "2-3 newborn-only parties"). 0: off. Replaces <see cref="FocusRangedAdds"/> where set. Spindler's
+            /// own count follows her spawn rate (EpicEncounterTactics.Galladoria.cs, 1.2 epic tactics).</summary>
             public int AddParties { get; init; }
             /// <summary>Area casters aim their area spells at the boss or a ranged add where the most of the boss and its ranged
             /// adds stand within the spell's radius (owner 2026-11-08, Spindler Broodmother: "AoE on her spot"; her newborns
             /// appear within 50-80 of her). Gated to this tactic: the shared caster AI then picks the area spell itself.</summary>
             public bool AreaOnClump { get; init; }
+            /// <summary>The boss's area hit lands around a raider picked at random and the raid fights in one place (Spindler
+            /// Broodmother's mesmerize: 300 around one of the raiders within 1,500 of her, for 60 s, about every 30 s): every
+            /// second curer of the raid stands at a post beside the fight, this far clear of the spots around it and further
+            /// than that from the melee, so a hit on the raid leaves those curers awake and a hit on them leaves the raid's
+            /// (owner 2026-11-11: "Tactics only for now"; EpicEncounterTactics.PartyPosts.cs). 0: off.</summary>
+            public int CurerPostSpacing { get; init; }
 
             public bool HasHazards => Hazards is { Length: > 0 } && HazardRadius > 0;
         }
@@ -330,6 +349,25 @@ namespace DOL.GS
                 Array.IndexOf(t.RequiredAdds, npc.GetType().Name) >= 0 && b.CurrentRegionID == npc.CurrentRegionID &&
                 b.IsWithinRadius(npc, AddSearchRadius));
 
+        /// <summary>Whether a monster of this name, this far from the boss's spawn, is one the route kills before the boss. Pure.</summary>
+        public static bool IsClearFirst(Tactic tactic, string name, double distanceFromBossSpawn) =>
+            tactic is { ClearFirstRadius: > 0 } && name != null && distanceFromBossSpawn <= tactic.ClearFirstRadius &&
+            Array.IndexOf(tactic.ClearFirst ?? [], name) >= 0;
+
+        private static HashSet<string> _clearFirstNames;
+
+        /// <summary>The living boss whose fight <paramref name="npc"/> would join (it is killed before that boss), or null.</summary>
+        public static GameNPC ClearFirstOwner(GameNPC npc, IReadOnlyList<GameNPC> live)
+        {
+            if (!Present(npc)) return null;
+            // A dungeon rule's linked monsters (the Crypt Lord's court, the Host's, Agmundr's; Ilron's lights and eyes).
+            if (RuleClearFirstOwner(npc, live) is { } ruleBoss) return ruleBoss;
+            var names = _clearFirstNames ??= ByType.Values.SelectMany(t => t.ClearFirst ?? []).ToHashSet(StringComparer.Ordinal);
+            if (names.Count == 0 || !names.Contains(npc.Name)) return null;
+            return live.FirstOrDefault(b => Present(b) && b != npc && b.CurrentRegionID == npc.CurrentRegionID &&
+                IsClearFirst(For(b), npc.Name, npc.GetDistanceTo(b.SpawnPoint)));
+        }
+
         /// <summary>The fight with <paramref name="boss"/> is on: it or one of its adds is in combat.</summary>
         public static bool FightOn(GameNPC boss, IReadOnlyList<GameNPC> live) =>
             Present(boss) && (boss.InCombat || LiveRequiredAdds(boss, live).Any(a => a.InCombat));
@@ -369,13 +407,15 @@ namespace DOL.GS
                                    Array.IndexOf(t.Hazards, n.GetType().Name) >= 0 && boss.IsWithinRadius(n, AddSearchRadius)).ToArray();
         }
 
-        /// <summary>The living ranged adds of <paramref name="boss"/>'s tactic near it, in the catalog's order.</summary>
+        /// <summary>The living ranged adds of <paramref name="boss"/>'s tactic near it, in the catalog's order (an add a dungeon
+        /// rule leaves alive is not one: Lossren's kept soul).</summary>
         public static GameNPC[] LiveRangedAdds(GameNPC boss, IEnumerable<GameNPC> live)
         {
             Tactic t = For(boss);
             if (t?.RangedAdds is not { Length: > 0 } || !Present(boss)) return [];
             return live.Where(n => Present(n) && n != boss && n.CurrentRegionID == boss.CurrentRegionID &&
-                                   Array.IndexOf(t.RangedAdds, n.GetType().Name) >= 0 && boss.IsWithinRadius(n, AddSearchRadius))
+                                   Array.IndexOf(t.RangedAdds, n.GetType().Name) >= 0 && boss.IsWithinRadius(n, AddSearchRadius) &&
+                                   !LeftAlive(n))
                 .OrderBy(n => Array.IndexOf(t.RangedAdds, n.GetType().Name)).ThenBy(n => n.ObjectID).ToArray();
         }
 
@@ -419,6 +459,43 @@ namespace DOL.GS
             Vector2 at = new Vector2(hazard.X, hazard.Y) + dir * (radius + HazardStepOut);
             return new Vector3(at.X, at.Y, raider.Z);
         }
+
+        /// <summary>A raider within this far past the radius of an area spell being cast steps out, to this far past it.</summary>
+        public const int CastMargin = 50, CastStepOut = 120;
+
+        /// <summary>Where a raider at <paramref name="raider"/> steps to while a spell that will land within
+        /// <paramref name="radius"/> of <paramref name="center"/> is being cast, or null when it already stands clear. Pure.</summary>
+        /// <remarks><paramref name="fan"/> (the raider's id) turns the way out by up to <see cref="CastFanDegrees"/> either
+        /// side, and gives a raider standing on the centre a way of its own: raiders who stood on one spot (a party on its
+        /// melee station) otherwise all step to one spot again, and the next cast on one of them catches them all (play test
+        /// duo33: a party 4 apart around his target, 31 and 36 caught).</remarks>
+        public static Vector3? StepOutOfArea(Vector3 raider, Vector3 center, int radius, long fan = 0)
+        {
+            float d = Vector2.Distance(new(raider.X, raider.Y), new(center.X, center.Y));
+            if (d > radius + CastMargin) return null;
+            int step = (int)(Math.Abs(fan) % CastFanSteps);
+            double turn = d < 1 ? step * (2 * Math.PI / CastFanSteps)
+                : (step - CastFanSteps / 2) * (CastFanDegrees * Math.PI / 180 / (CastFanSteps / 2));
+            Vector2 dir = d < 1 ? new Vector2(1, 0) : Vector2.Normalize(new Vector2(raider.X - center.X, raider.Y - center.Y));
+            if (fan != 0)
+                dir = new Vector2((float)(dir.X * Math.Cos(turn) - dir.Y * Math.Sin(turn)), (float)(dir.X * Math.Sin(turn) + dir.Y * Math.Cos(turn)));
+            Vector2 at = new Vector2(center.X, center.Y) + dir * (radius + CastStepOut);
+            return new Vector3(at.X, at.Y, raider.Z);
+        }
+        /// <summary>The ways out fan over this many steps, up to this many degrees either side of straight out.</summary>
+        public const int CastFanSteps = 9, CastFanDegrees = 32;
+
+        /// <summary>What a raider does while a boss casts its area spell (pure): inside the area it moves out; outside it,
+        /// one that was sent out during this cast holds where it is until the spell has landed; anyone else carries on.
+        /// Play test duo33: a raider past the radius was told nothing, so a melee raider went straight back to its station
+        /// 294 from his target while he was still casting, and three Shrouds caught 25, 31 and 36.</summary>
+        public enum CastStep { CarryOn, MoveOut, HoldOut }
+        public static CastStep StepDuringCast(bool insideArea, bool sentOutThisCast) =>
+            insideArea ? CastStep.MoveOut : sentOutThisCast ? CastStep.HoldOut : CastStep.CarryOn;
+
+        /// <summary>Whether <paramref name="boss"/> is casting the spell of that name right now.</summary>
+        public static bool IsCasting(GameNPC boss, string spellName) =>
+            spellName != null && boss?.castingComponent?.SpellHandler?.Spell?.Name == spellName;
 
         /// <summary>A caster or healer this far inside the spread radius of the boss's target moves this far past it.</summary>
         public const int SpreadMargin = 60, SpreadStepOut = 250;
@@ -668,6 +745,8 @@ namespace DOL.GS
             if (raider == null || !Present(target)) return default;
             if (classId < 0) classId = EpicEncounterRestores.ClassId(raider);
             Vector3 at = new(raider.X, raider.Y, raider.Z);
+            // The curers' post (Spindler Broodmother): while somebody fights her, every second curer keeps it (ThinkPartyPost).
+            WatchPartyPosts(target, now);
             // A raid breaking off from the fight (the boss, or the boss of this add or of this hazard) goes to the muster first.
             GameNPC fightOwner = (IsHazard(target) ? HazardOwner(target, live) : RequiredAddOwner(target, live)) ?? target;
             if (BrokenOff(fightOwner, now) is Vector3 rally)
@@ -708,6 +787,18 @@ namespace DOL.GS
             {
                 // Who he fights and where his area hit lands (EpicEncounterTactics.SummonersHall.cs): log lines only.
                 TraceSpreadTarget(target, anchor, st.SpreadRadius, now);
+                // His area spell is being cast: everyone it would catch but his target steps out, and comes back when it has
+                // landed (the advice below sends them back to their spots).
+                // (Seen here by whoever fights him; ThinkAreaCast then moves the ones who do not: healers, and the pets.)
+                if (IsCasting(target, st.StepOutOfCast))
+                    CastWatch[target] = st.StepOutOfCast;
+                if (raider != anchor && IsCasting(target, st.StepOutOfCast) &&
+                    StepOutOfArea(at, new(anchor.X, anchor.Y, anchor.Z), st.SpreadRadius, raider.ObjectID) is Vector3 outOfCast)
+                {
+                    if (raider is GameBot sent) SentOutOfCast[sent] = target;
+                    return new(BotAction.Reposition, target, outOfCast,
+                        $"cast: out of \"{st.StepOutOfCast}\" ({st.SpreadRadius} around \"{anchor.Name}\")");
+                }
                 bool healer = classId > 0 && BotPartyRoles.IsHealingClass((eCharacterClass)classId);
                 bool atRange = canShootFlyers || healer;
                 // The melee: fight him from behind, clear of the area hit around his target.
@@ -742,7 +833,7 @@ namespace DOL.GS
                 {
                     // Newborn-only parties take the adds (healers keep their party up); the rest stay on the boss.
                     if (!(classId > 0 && BotPartyRoles.IsHealingClass((eCharacterClass)classId)) &&
-                        IsAddParty(raider, rt.AddParties, now) && AddPartyTarget(rangedAdds) is { } newborn)
+                        IsAddParty(raider, rt.AddParties, now, target) && AddPartyTarget(rangedAdds) is { } newborn)
                         return new(BotAction.Retarget, newborn, null,
                             $"add party: ranged-add {Array.IndexOf(rangedAdds, newborn) + 1}/{rangedAdds.Length} of \"{target.Name}\"" +
                             (newborn.TargetObject is GameLiving on ? $" (on {on.Name})" : ""));
@@ -853,16 +944,47 @@ namespace DOL.GS
             }
         }
 
-        public enum EarlyPull { Commit, Disengage }
+        /// <summary>How the raid answers a boss that started fighting it before its muster: everyone inside goes in
+        /// (<see cref="Commit"/>), everyone pulls back to the muster and the boss is left to reset (<see cref="Disengage"/>), or
+        /// the raiders it caught fight it while the rest hold at the muster and gather, and it is no attempt of the raid's
+        /// (<see cref="Hold"/>).</summary>
+        public enum EarlyPull { Commit, Disengage, Hold }
 
         /// <summary>
         /// A boss that starts fighting the raid before its muster (Aidon the Archwizard, 2026-11-05: 31 raiders fought him,
         /// all fell, the other 56 were elsewhere). With half the raid already near, everyone commits at once; otherwise, a
         /// boss that walks home and resets when left can be left (the raid pulls back to its muster); one that doesn't
         /// would chase the raid down, so everyone commits.
+        /// The rule as it was until 1.2 build 3, with <paramref name="living"/> standing for both the raiders inside and the
+        /// raid (the overload below with both).
         /// </summary>
         public static EarlyPull ChooseEarlyPull(int near, int living, bool resetsWhenLeft) =>
-            near * 2 >= living || !resetsWhenLeft ? EarlyPull.Commit : EarlyPull.Disengage;
+            ChooseEarlyPull(near, living, living, resetsWhenLeft, false, 0);
+
+        /// <summary>
+        /// The early-pull answer measured against the whole living raid (raiders walking back after a wipe included), not
+        /// against the raiders who happen to be inside the dungeon. Owner's PC, 2026-11-14 (build e3b8238): the half-rule was
+        /// taken of the raiders inside, so after a wipe a handful inside was "half the raid" and everyone inside committed:
+        /// an ater skeleton with 16 of 18 inside (raid 118), Council Nokkvi 26 of 35 (raid 82), the Host 24 of 32 (raid 103);
+        /// five such fights were lost and about 150 raiders died.
+        /// <list type="bullet">
+        /// <item>Half the living raid (<paramref name="livingRaid"/>) is already near: it is the raid's fight, everyone commits.</item>
+        /// <item>Otherwise a boss that a pull-back shakes off (<paramref name="shakesOff"/>) is left and the raid musters
+        /// again, unless it was pulled back from a moment ago and is still on the raid (<paramref name="pulledBackRecently"/>).</item>
+        /// <item>One that chases commits the raiders inside only when they are a muster's worth (<paramref name="musterNeeded"/>:
+        /// the 70% the raid would wait for at the muster, RealmRaidDungeonRoute.FinalMusterNeeded).</item>
+        /// <item>Otherwise the raid holds: the raiders it caught fight it, nobody else is sent in piecemeal, and the rest
+        /// gather at the muster until they are enough to commit.</item>
+        /// </list>
+        /// </summary>
+        public static EarlyPull ChooseEarlyPull(int near, int inside, int livingRaid, bool shakesOff, bool pulledBackRecently,
+            int musterNeeded)
+        {
+            int raid = Math.Max(livingRaid, inside);
+            if (near * 2 >= raid) return EarlyPull.Commit;
+            if (shakesOff && !pulledBackRecently) return EarlyPull.Disengage;
+            return inside >= musterNeeded ? EarlyPull.Commit : EarlyPull.Hold;
+        }
 
         /// <summary>An early pull of the same encounter is logged again only after this long.</summary>
         public const long EarlyPullLogRepeatMilliseconds = 10 * 60_000;
@@ -1193,6 +1315,64 @@ namespace DOL.GS
             }
         }
 
+        /// <summary>The bosses seen casting their area spell (<see cref="Tactic.StepOutOfCast"/>), with the spell's name.</summary>
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<GameNPC, string> CastWatch = new();
+
+        /// <summary>
+        /// A boss near the bot is casting its area spell (Govannon's Shroud of Agony): the bot's pet comes off him, and the bot
+        /// itself, whatever it is doing, breaks its own cast and steps out of the spell's radius around his target. Play test
+        /// duo30b: with only the raiders that fight him stepping out, each Shroud still caught 4 to 10 healers, mid-heal when he
+        /// cast, and 8 or 9 pets. True: turn used.
+        /// </summary>
+        /// <summary>The raiders sent out of a boss's area spell during its current cast (they hold out there until it lands).</summary>
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<GameBot, GameNPC> SentOutOfCast = new();
+        /// <summary>How many of <paramref name="raiders"/> had been sent out of <paramref name="boss"/>'s cast (diagnostics).</summary>
+        internal static int SentOutCount(GameNPC boss, IEnumerable<GameLiving> raiders) =>
+            raiders.Count(r => r is GameBot bot && SentOutOfCast.TryGetValue(bot, out GameNPC of) && of == boss);
+
+        private static bool ThinkAreaCast(GameBot bot)
+        {
+            foreach (var (boss, spell) in CastWatch)
+            {
+                if (!Present(boss) || !IsCasting(boss, spell))
+                {
+                    CastWatch.TryRemove(boss, out _);
+                    foreach (var sent in SentOutOfCast.Where(p => p.Value == boss).Select(p => p.Key).ToArray())
+                        SentOutOfCast.TryRemove(sent, out _);
+                    continue;
+                }
+                if (boss.CurrentRegionID != bot.CurrentRegionID || boss.TargetObject is not GameLiving anchor ||
+                    For(boss) is not { SpreadRadius: > 0 } tactic)
+                    continue;
+                Vector3 center = new(anchor.X, anchor.Y, anchor.Z);
+                if (bot.ControlledBrain?.Body is { IsAlive: true } pet && pet != anchor && pet.TargetObject == boss &&
+                    StepOutOfArea(new(pet.X, pet.Y, pet.Z), center, tactic.SpreadRadius) != null)
+                    bot.ControlledBrain.Disengage();
+                if (bot == anchor) continue;
+                Vector3? way = StepOutOfArea(new(bot.X, bot.Y, bot.Z), center, tactic.SpreadRadius, bot.ObjectID);
+                CastStep step = StepDuringCast(way.HasValue, SentOutOfCast.TryGetValue(bot, out GameNPC sentBy) && sentBy == boss);
+                if (step == CastStep.CarryOn) continue;
+                if (step == CastStep.HoldOut)
+                {
+                    // Out of it: stay out until it has landed (its station, or the boss it fights, is inside).
+                    bot.StopAttack();
+                    if (bot.FollowTarget == boss) bot.StopFollowing();
+                    if (bot.IsMoving) { bot.StopMovingOnPath(); bot.StopMoving(); }
+                    return true;
+                }
+                Vector3 exit = way.Value;
+                SentOutOfCast[bot] = boss;
+                if (bot.IsCasting) bot.StopCurrentSpellcast();
+                bot.StopAttack();
+                if (bot.FollowTarget == boss) bot.StopFollowing();
+                bot.PathTo(new Point3D((int)exit.X, (int)exit.Y, (int)exit.Z), bot.MaxSpeed);
+                LogDecision(bot, boss, new(BotAction.Reposition, boss, exit,
+                    $"cast: out of \"{spell}\" ({tactic.SpreadRadius} around \"{anchor.Name}\"), whatever it was doing"));
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// BotBrain's first look each turn (beside <see cref="ThinkErrand"/>): an autonomous raider near a boss about to blast,
         /// or still holding out of one, stops fighting and walks out (or waits there), whatever it is doing: a healer with no
@@ -1202,6 +1382,11 @@ namespace DOL.GS
         {
             if (bot?.IsAutonomousWorldBot != true || bot.IsPlayerLedGroup || !bot.IsAlive) return false;
             long now = GameLoop.GameLoopTime;
+            if (!CastWatch.IsEmpty && ThinkAreaCast(bot)) return true;
+            // A boss with a curers' post is fought (Spindler Broodmother): every second curer walks to it.
+            if (!PostWatch.IsEmpty && ThinkPartyPost(bot, now)) return true;
+            // A boss fought at home chasing this raider out of it: the raider leads it back, whatever it was doing.
+            if (!HomeWatch.IsEmpty && ThinkLeadHome(bot, now)) return true;
             if (System.Threading.Volatile.Read(ref _blastBosses) == 0 && System.Threading.Volatile.Read(ref _standOffHoldCount) == 0 &&
                 System.Threading.Volatile.Read(ref _liveHazardCount) == 0)
                 return false;
@@ -1250,6 +1435,73 @@ namespace DOL.GS
             return true;
         }
 
+        // ---- fight at home: the raider it chases leads it back ---------------------------------------------------------
+
+        /// <summary>Bosses with a fight-at-home radius in a fight with a raid, and when a raider last fought them.</summary>
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<GameNPC, long> HomeWatch = new();
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<GameBot, long> LeadHomeRepath = new();
+        /// <summary>A boss nobody has fought for this long leaves the watch.</summary>
+        public const long HomeWatchMilliseconds = 60_000;
+        /// <summary>A raider leading a boss home asks for a new path at most this often.</summary>
+        public const long LeadHomeRepathMilliseconds = 2_000;
+
+        /// <summary>
+        /// Whether a raider leads <paramref name="fightAtHomeRadius"/>'s boss home now (pure): the boss is after this raider, in
+        /// its region, not already walking home, and further than its fight-at-home radius from its spawn (inside its tether or
+        /// past it: out there it is immune and heals, and only a walk home ends that).
+        /// <para>
+        /// Owner's PC, 2026-11-14 (build 1dc66b6), Aidon the Archwizard (fight at home 1,100, tether 1,500): the raid took him to
+        /// 58%, then he went after the friars and clerics healing from the muster 1,400 from his spawn. "Lead home" was told only
+        /// to a raider whose own target was Aidon, and a healer's target is the raider it heals, so each healer he reached stood
+        /// and died (at 1,370, 1,880, 2,100 and up the ramp at 2,470 from his spawn). Past 1,500 he healed to 100% in combat
+        /// (REALM_EXPEDITION_TARGET_HEALED from=58 to=100 fromSpawn=1829) and that attempt was scored as the raid's first wipe.
+        /// Now whoever he chases out of his home leads him back, whatever it was doing; the boss and his tether are unchanged.
+        /// </para>
+        /// </summary>
+        public static bool LeadsHome(int fightAtHomeRadius, double bossFromSpawn, bool bossTargetsRaider, bool sameRegion, bool bossReturning) =>
+            sameRegion && bossTargetsRaider && !bossReturning && OutsideHome(fightAtHomeRadius, bossFromSpawn);
+
+        /// <summary>A raider fought <paramref name="target"/> (or one of its required adds): a boss with a fight-at-home
+        /// radius is watched for the raiders it chases out of its home (<see cref="ThinkLeadHome"/>).</summary>
+        private static void WatchHome(GameNPC target, IReadOnlyList<GameNPC> live, long now)
+        {
+            GameNPC boss = RequiredAddOwner(target, live) ?? target;
+            if (For(boss) is not { FightAtHomeRadius: > 0 } || !Present(boss) || !boss.InCombat) return;
+            if (HomeWatch.Count > 64) HomeWatch.Clear();
+            HomeWatch[boss] = now;
+        }
+
+        private static bool ThinkLeadHome(GameBot bot, long now)
+        {
+            foreach (var (boss, seen) in HomeWatch)
+            {
+                if (!Present(boss) || !boss.InCombat || now - seen > HomeWatchMilliseconds)
+                {
+                    HomeWatch.TryRemove(boss, out _);
+                    continue;
+                }
+                if (For(boss) is not { FightAtHomeRadius: > 0 } tactic ||
+                    !LeadsHome(tactic.FightAtHomeRadius, boss.GetDistanceTo(boss.SpawnPoint), boss.TargetObject == bot,
+                        boss.CurrentRegionID == bot.CurrentRegionID, boss.IsReturningToSpawnPoint))
+                    continue;
+                if (bot.IsCasting) bot.StopCurrentSpellcast();
+                bot.StopAttack();
+                if (bot.FollowTarget != null) bot.StopFollowing();
+                if (bot.TargetObject == boss) bot.TargetObject = null;
+                if (bot.ControlledBrain?.Body?.TargetObject == boss) bot.ControlledBrain.Disengage();
+                if (!bot.IsMovingOnPath || now >= LeadHomeRepath.GetValueOrDefault(bot))
+                {
+                    if (LeadHomeRepath.Count > 512) LeadHomeRepath.Clear();
+                    LeadHomeRepath[bot] = now + LeadHomeRepathMilliseconds;
+                    bot.PathTo(new Point3D(boss.SpawnPoint.X, boss.SpawnPoint.Y, boss.SpawnPoint.Z), bot.MaxSpeed);
+                }
+                LogDecision(bot, boss, new(BotAction.LeadHome, boss, null,
+                    $"fight-at-home {(int)boss.GetDistanceTo(boss.SpawnPoint)}>{tactic.FightAtHomeRadius}: chased, whatever it was doing"));
+                return true;
+            }
+            return false;
+        }
+
         public static void ResetBlastForTests()
         {
             lock (BlastRates) { BlastRates.Clear(); System.Threading.Volatile.Write(ref _blastBosses, 0); }
@@ -1258,7 +1510,10 @@ namespace DOL.GS
             lock (BlastSpotCache) BlastSpotCache.Clear();
             ResetBlastCalls();
             lock (StandOffHolds) { StandOffHolds.Clear(); System.Threading.Volatile.Write(ref _standOffHoldCount, 0); }
+            HomeWatch.Clear();
+            LeadHomeRepath.Clear();
             lock (SeenHazards) { SeenHazards.Clear(); System.Threading.Volatile.Write(ref _liveHazardCount, 0); }
+            ResetPartyPostsForTests();
         }
 
         public static bool CanShootFlyers(GameBot bot)
@@ -1307,7 +1562,10 @@ namespace DOL.GS
                 For(target) == null && !IsTacticPart(target) && !HasWaveTwoRule(bot, target, GameLoop.GameLoopTime) && !HasDungeonRule(target))
                 return false;
             IReadOnlyList<GameNPC> live = Nearby(target);
+            WatchHome(target, live, GameLoop.GameLoopTime);
             DungeonActs(bot, target, live);
+            // A rule's crowd control takes the whole turn (the raid's mesmerizer on Lossren's kept soul).
+            if (DungeonControls(bot, target, live)) return true;
             // Tanks taunt him back when his target is not a tank (Govannon's demon); the bot fights on as decided below.
             if (TauntDue(bot, target, live, GameLoop.GameLoopTime) && bot.Brain is BotBrain tankBrain)
                 LogTaunt(bot, target, tankBrain.TauntForEncounter(target));
@@ -1319,8 +1577,9 @@ namespace DOL.GS
             switch (advice.Action)
             {
                 case BotAction.Retarget:
-                    // A ground hazard is left for good, not only this turn (it would come back as the bot's highest aggro).
-                    if (HazardOf(target) != null) (bot.Brain as BotBrain)?.RemoveFromAggroList(target);
+                    // A ground hazard is left for good, not only this turn (it would come back as the bot's highest aggro), and
+                    // so is a monster the raid leaves alive (Lossren's kept soul).
+                    if (HazardOf(target) != null || LeftAlive(target)) (bot.Brain as BotBrain)?.RemoveFromAggroList(target);
                     bot.TargetObject = advice.Target;
                     (bot.Brain as BotBrain)?.AddToAggroList(advice.Target, 1_000);
                     LogDecision(bot, target, advice);

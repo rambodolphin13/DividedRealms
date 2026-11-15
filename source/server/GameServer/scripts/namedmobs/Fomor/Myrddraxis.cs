@@ -32,9 +32,9 @@ namespace DOL.GS
 		/// <param name="killer">The living that got the killing blow.</param>
 		protected void ReportNews(GameObject killer)
 		{
-			int numPlayers = GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).Count;
+			int numPlayers = EpicEncounterMechanics.ForceSize(this);
 			String message = String.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
-			NewsMgr.CreateNews(message, killer.Realm, eNewsType.PvE, true);
+			NewsMgr.CreateNews(message, killer?.Realm ?? eRealm.None, eNewsType.PvE, true);
 
 			if (Properties.GUILD_MERIT_ON_DRAGON_KILL > 0)
 			{
@@ -61,7 +61,7 @@ namespace DOL.GS
 			}
 			return count;
 		}
-		public override void Die(GameObject killer)
+		public override void ProcessDeath(GameObject killer)
 		{
 			foreach (GameNPC heads in WorldMgr.GetNPCsFromRegion(CurrentRegionID))
 			{
@@ -90,7 +90,7 @@ namespace DOL.GS
 
 			AwardDragonKillPoint();
 
-			base.Die(killer);
+			base.ProcessDeath(killer);
 			foreach (String message in m_deathAnnounce)
 			{
 				BroadcastMessage(String.Format(message, Name));
@@ -853,10 +853,10 @@ namespace DOL.GS
 			get { return 40000; }
 		}
 		public static int SecondHeadCount = 0;
-		public override void Die(GameObject killer)
+		public override void ProcessDeath(GameObject killer)
 		{
 			--SecondHeadCount;
-			base.Die(killer);
+			base.ProcessDeath(killer);
 		}
         public override void DealDamage(AttackData ad)
         {
@@ -1056,10 +1056,10 @@ namespace DOL.GS
 			get { return 40000; }
 		}
 		public static int ThirdHeadCount = 0;
-		public override void Die(GameObject killer)
+		public override void ProcessDeath(GameObject killer)
 		{
 			--ThirdHeadCount;
-			base.Die(killer);
+			base.ProcessDeath(killer);
 		}
 		public override void DealDamage(AttackData ad)
 		{
@@ -1260,10 +1260,10 @@ namespace DOL.GS
 			get { return 40000; }
 		}
 		public static int FourthHeadCount = 0;
-		public override void Die(GameObject killer)
+		public override void ProcessDeath(GameObject killer)
 		{
 			--FourthHeadCount;
-			base.Die(killer);
+			base.ProcessDeath(killer);
 		}
 		public override void DealDamage(AttackData ad)
 		{
@@ -1464,10 +1464,10 @@ namespace DOL.GS
 			get { return 40000; }
 		}
 		public static int FifthHeadCount = 0;
-		public override void Die(GameObject killer)
+		public override void ProcessDeath(GameObject killer)
 		{
 			--FifthHeadCount;
-			base.Die(killer);
+			base.ProcessDeath(killer);
 		}
 		public override void DealDamage(AttackData ad)
 		{

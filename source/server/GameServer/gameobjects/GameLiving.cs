@@ -1399,6 +1399,17 @@ namespace DOL.GS
 		public virtual void ModifyAttack(AttackData attackData) { }
 
 		/// <summary>
+		/// This living takes the damage of an attack (a melee hit, a spell, a proc, a damage shield).
+		/// </summary>
+		public override void TakeDamage(AttackData ad)
+		{
+			// 1.2 diagnostics: a hit Icelord Kvasir's cold rule turns into a heal is logged with what dealt it (EPIC_KVASIR_HEALED).
+			if (this is GameNPC && ad != null && ad.DamageType == eDamageType.Cold)
+				EpicEncounterRestores.NoteKvasirHeal(this, ad);
+			base.TakeDamage(ad);
+		}
+
+		/// <summary>
 		/// This method is called whenever this living
 		/// should take damage from some source
 		/// </summary>
@@ -1408,6 +1419,8 @@ namespace DOL.GS
 		/// <param name="criticalAmount">the amount of critical damage</param>
 		public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
 		{
+			// 1.2 diagnostics: where a raid's damage goes (EpicFightLedger; a no-op unless a raid route watches the region).
+			EpicFightLedger.Note(this, source, damageAmount + criticalAmount);
 			base.TakeDamage(source, damageType, damageAmount, criticalAmount);
 
 			double damageDealt = damageAmount + criticalAmount;

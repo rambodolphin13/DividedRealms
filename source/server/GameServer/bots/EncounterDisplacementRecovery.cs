@@ -24,6 +24,11 @@ namespace DOL.GS
     /// <item>The fair fallback: no navmesh path back, no progress for <see cref="ProgressWindowMilliseconds"/>, past its
     /// walk budget, or a jail held past <see cref="JailMaxMilliseconds"/>: a short recall (<see cref="RecallMilliseconds"/>
     /// standing still, then it is moved to the floor at its party). A bot is never left stuck.</item>
+    /// <item>A way out (<see cref="ExitRoute"/>, 1.2 Legion): where the navmesh has no path from the spot back to the raid
+    /// but the encounter has a walked way out (Legion's throw into Behemoth's hall: across the hall to the zone point on
+    /// its far side, as players do), the bot walks it leg by leg, steps through the portal and walks to its party from
+    /// there. Bounded like the walk back: no path, no progress, too long, or a monster it must avoid about to notice it,
+    /// and it gets the recall instead.</item>
     /// </list>
     /// Healers prefer a displaced raider (<see cref="PreferPatient"/>); the party calls it in /group in the bot voice.
     /// </summary>
@@ -43,7 +48,7 @@ namespace DOL.GS
         /// <summary>A heal target counts as displaced this long after it was moved.</summary>
         public const int HealPriorityMilliseconds = 20_000;
 
-        public enum Stage { Airborne, Landed, Walking, Jailed, Recalling, Done }
+        public enum Stage { Airborne, Landed, Walking, Jailed, Recalling, Done, Exiting, Barred }
 
         public enum OrderKind
         {
@@ -59,6 +64,9 @@ namespace DOL.GS
             Recall,
             /// <summary>Recovery is over; the normal brain takes over.</summary>
             Done,
+            /// <summary>Move the bot to <see cref="Order.Point"/> as the way out's portal moves a player; recovery goes on
+            /// from there (the walk to its party).</summary>
+            Portal,
         }
 
         public readonly record struct Order(OrderKind Kind, Vector3 Point = default, int FallPercent = 0, string Reason = null);
@@ -67,8 +75,11 @@ namespace DOL.GS
         /// <paramref name="HazardEscape"/>: the bot stands in a hazard (Orshom's Fire, where Orylle throws) and this is the way
         /// out; it never counts as back with the raid while it stands in one (wave 2, 1.2).</summary>
         /// <param name="Held">Mesmerized, stunned or rooted (Queen Kula's frost circle): it can't walk, which is no stall.</param>
+        /// <param name="Danger">On a way out: a monster of its <see cref="ExitRoute.Avoid"/> is about to notice the bot (within
+        /// its aggro range and a margin) or fights it (Behemoth in Legion's hall: his hit kills).</param>
         public readonly record struct Observation(long Now, bool Alive, Vector3 Position, Vector3 ReturnPoint, bool UnderAttack,
-            bool Released, bool AtFight, Func<Vector3, Vector3, bool> Corridor, bool Held = false, Vector3? HazardEscape = null);
+            bool Released, bool AtFight, Func<Vector3, Vector3, bool> Corridor, bool Held = false, Vector3? HazardEscape = null,
+            bool Danger = false);
 
         /// <summary>A walk back held by crowd control ends in the fallback this long after it started at the latest.</summary>
         public const int MaximumHeldWalkMilliseconds = 300_000;
@@ -91,6 +102,13 @@ namespace DOL.GS
             public long RecallAt;
             public string Reason;
             public bool Spoke;
+            /// <summary>The encounter's walked way out (null: none), the leg it walks now, and whether it was used.</summary>
+            public ExitRoute Exit;
+            public int Leg;
+            public bool ExitUsed;
+            /// <summary>A barrier's way back (null: none known): true when a walk from the first point to the second goes into
+            /// it (<see cref="BarredWayFor"/>).</summary>
+            public Func<Vector3, Vector3, bool> BarredWay;
 
             /// <summary>The plan for a bot moved at <paramref name="now"/>; it lands at once unless it is in the air.</summary>
             public static Plan For(DisplacementKind kind, long now, Vector3 landing, int fallHeight, int safeFallLevel, bool onMesh) => new()
@@ -103,6 +121,32 @@ namespace DOL.GS
                 OnMesh = onMesh,
             };
         }
+
+        /// <summary>A bot a barrier moved waits at most this long where it landed while its way back goes into the barrier.</summary>
+        public const int BarrierHoldMilliseconds = 180_000;
+
+        /// <summary>The barrier still stands (<see cref="Observation.Released"/> false) and the walk from where the bot stands
+        /// to its party or raid goes into it (pure).</summary>
+        public static bool BarrierBlocksWayBack(Plan p, Observation o) =>
+            p.BarredWay != null && !o.Released && p.BarredWay(o.Position, o.ReturnPoint);
+
+        /// <summary>The walk back into each barrier, by encounter: Easmarach's push behind the falls
+        /// (EpicEncounterTactics.WalksIntoTheFalls). The horsemen's room has none: its raid stays inside the room.</summary>
+        private static readonly ConcurrentDictionary<string, Func<Vector3, Vector3, bool>> BarredWays = new(StringComparer.Ordinal)
+        {
+            ["Easmarach"] = EpicEncounterTactics.WalksIntoTheFalls,
+        };
+
+        /// <summary>Sets an encounter's barred way (tests, later encounters); null removes it.</summary>
+        public static void RegisterBarredWay(string encounter, Func<Vector3, Vector3, bool> way)
+        {
+            if (string.IsNullOrEmpty(encounter)) return;
+            if (way == null) BarredWays.TryRemove(encounter, out _);
+            else BarredWays[encounter] = way;
+        }
+
+        public static Func<Vector3, Vector3, bool> BarredWayFor(string encounter) =>
+            encounter != null && BarredWays.TryGetValue(encounter, out var way) ? way : null;
 
         /// <summary>The walk budget for <paramref name="distance"/> units: twice the walk at <see cref="AssumedSpeed"/>, at
         /// least <see cref="MinimumWalkMilliseconds"/>, at most <see cref="MaximumWalkMilliseconds"/>.</summary>
@@ -129,14 +173,34 @@ namespace DOL.GS
                     // back to where it stood, which is the barrier itself. The raid's orders keep it inside from here
                     // (EpicEncounterTactics.KeepInsideFor); a bot sent to the barrier again and again is logged.
                     if (p.Kind == DisplacementKind.Barrier)
+                    {
+                        // Its party or raid is still past the barrier (Easmarach's falls, owner's PC 2026-11-15: pushed bots
+                        // walked straight back in, 78% fall damage each time): it waits where it landed, fighting what attacks
+                        // it, until its way back is clear or the barrier is down (BarrierHoldMilliseconds at most).
+                        if (BarrierBlocksWayBack(p, o))
+                        {
+                            p.Stage = Stage.Barred;
+                            p.Deadline = o.Now + BarrierHoldMilliseconds;
+                            return new(OrderKind.Hold, Reason: "barred: its way back lies through the barrier");
+                        }
                         return Finish(p, "kept inside");
+                    }
                     if (p.Kind == DisplacementKind.Jail)
                     {
                         p.Stage = Stage.Jailed;
                         p.Deadline = o.Now + JailMaxMilliseconds;
                         return new(OrderKind.Hold, Reason: "jailed");
                     }
+                    if (p.Exit != null && !p.ExitUsed) return StartExit(p, o);
                     return StartBack(p, o);
+
+                case Stage.Exiting:
+                    return StepExit(p, o);
+
+                case Stage.Barred:
+                    if (!BarrierBlocksWayBack(p, o)) return Finish(p, o.Released ? "kept inside; the barrier is down" : "kept inside");
+                    if (o.Now >= p.Deadline) return Finish(p, "kept inside; held at the barrier too long");
+                    return o.UnderAttack ? new(OrderKind.Fight) : new(OrderKind.Hold, Reason: "barred: its way back lies through the barrier");
 
                 case Stage.Jailed:
                     if (o.Released) return StartBack(p, o);
@@ -209,6 +273,83 @@ namespace DOL.GS
             return new(OrderKind.Walk, o.ReturnPoint);
         }
 
+        /// <summary>A leg of a way out is reached within this.</summary>
+        public const int ExitLegRadius = 250;
+
+        /// <summary>
+        /// The start of the way out (pure): straight back when the navmesh has a path to the party after all; otherwise its
+        /// first leg, if there is a path to it; the recall when not. The whole way out is bounded by the route's
+        /// <see cref="ExitRoute.MaxMilliseconds"/> (not stretched by fights or holds).
+        /// </summary>
+        private static Order StartExit(Plan p, Observation o)
+        {
+            float back = Vector3.Distance(o.Position, o.ReturnPoint);
+            if (back <= ArriveRadius || o.AtFight || o.Corridor == null || o.Corridor(o.Position, o.ReturnPoint))
+            {
+                p.ExitUsed = true;
+                return StartBack(p, o);
+            }
+            if (!p.OnMesh) return StartRecall(p, o, "landed off the navmesh");
+            if (p.Exit.Legs is not { Length: > 0 }) return StartRecall(p, o, "no path back");
+            p.Stage = Stage.Exiting;
+            p.Leg = 0;
+            p.Deadline = o.Now + Math.Max(MinimumWalkMilliseconds, p.Exit.MaxMilliseconds);
+            return StartLeg(p, o);
+        }
+
+        private static Order StartLeg(Plan p, Observation o)
+        {
+            Vector3 leg = p.Exit.Legs[p.Leg];
+            if (!o.Corridor(o.Position, leg))
+                return StartRecall(p, o, p.Leg == 0 ? "no path to the way out" : "no path along the way out");
+            p.NextProgressCheck = o.Now + ProgressWindowMilliseconds;
+            p.DistanceAtCheck = Vector3.Distance(o.Position, leg);
+            return new(OrderKind.Walk, leg, Reason: p.Exit.How);
+        }
+
+        /// <summary>One turn on the way out (pure).</summary>
+        private static Order StepExit(Plan p, Observation o)
+        {
+            // A monster to avoid is about to notice it (Behemoth's hit kills): recalled at once, not after the usual 5 s.
+            if (o.Danger) return RecallNow(p, o, "too near a monster to avoid on the way out");
+            if (o.Now >= p.Deadline) return StartRecall(p, o, "the way out took too long");
+            Vector3 leg = p.Exit.Legs[p.Leg];
+            float d = Vector3.Distance(o.Position, leg);
+            if (d <= ExitLegRadius)
+            {
+                if (p.Leg >= p.Exit.Legs.Length - 1)
+                {
+                    // Through the portal: put where it puts a player, then the usual walk to its party.
+                    p.ExitUsed = true;
+                    p.Stage = Stage.Landed;
+                    return new(OrderKind.Portal, p.Exit.PortalTarget, Reason: "through the portal");
+                }
+                p.Leg++;
+                return StartLeg(p, o);
+            }
+            if (o.Held)
+            {
+                p.NextProgressCheck = o.Now + ProgressWindowMilliseconds;
+                p.DistanceAtCheck = d;
+                return new(OrderKind.Hold, Reason: "held");
+            }
+            if (o.Now >= p.NextProgressCheck)
+            {
+                if (p.DistanceAtCheck - d < MinimumProgress) return StartRecall(p, o, "no progress on the way out");
+                p.DistanceAtCheck = d;
+                p.NextProgressCheck = o.Now + ProgressWindowMilliseconds;
+            }
+            // Attacked on the way (the hall's clinging souls), it runs on, as the period guides told players to.
+            return new(OrderKind.Walk, leg, Reason: p.Exit.How);
+        }
+
+        private static Order RecallNow(Plan p, Observation o, string reason)
+        {
+            p.Stage = Stage.Done;
+            p.Reason = reason;
+            return new(OrderKind.Recall, o.ReturnPoint, Reason: reason);
+        }
+
         private static Order StartRecall(Plan p, Observation o, string reason)
         {
             p.Stage = Stage.Recalling;
@@ -261,6 +402,42 @@ namespace DOL.GS
             return rule?.Released?.Invoke(bot, source) == true;
         }
 
+        // ---- Ways out ---------------------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// An encounter's walked way out of where it puts a raider (1.2): <paramref name="Legs"/> walked in order (each a
+        /// navmesh path; the last one is the portal's spot), then the bot is put at <paramref name="PortalTarget"/>, where the
+        /// portal puts a player, and walks to its party. <paramref name="MaxMilliseconds"/> bounds the whole way;
+        /// <paramref name="Avoid"/>: class names of monsters it must never be noticed by (it is recalled first).
+        /// </summary>
+        public sealed record ExitRoute(string How, Vector3[] Legs, Vector3 PortalTarget, long MaxMilliseconds, string[] Avoid);
+
+        /// <summary>Within a monster's aggro range plus this, a bot on a way out counts as about to be noticed.</summary>
+        public const int ExitAvoidMargin = 20;
+
+        private static readonly ConcurrentDictionary<string, ExitRoute> ExitRoutes = new(StringComparer.Ordinal)
+        {
+            // Legion's throw into Behemoth's hall (EpicEncounterTactics.Legion.cs): across the hall, past Behemoth, to the
+            // zone point that puts players back by his lair.
+            ["Legion"] = EpicEncounterTactics.LegionWayDown,
+        };
+
+        /// <summary>Sets an encounter's way out (tests, later encounters); null removes it.</summary>
+        public static void RegisterExitRoute(string encounter, ExitRoute route)
+        {
+            if (string.IsNullOrEmpty(encounter)) return;
+            if (route == null) ExitRoutes.TryRemove(encounter, out _);
+            else ExitRoutes[encounter] = route;
+        }
+
+        public static ExitRoute ExitRouteFor(string encounter) =>
+            encounter != null && ExitRoutes.TryGetValue(encounter, out ExitRoute route) ? route : null;
+
+        /// <summary>A bot at <paramref name="bot"/> is about to be noticed by a monster at <paramref name="monster"/> with
+        /// <paramref name="aggroRange"/> (pure): within that range plus <see cref="ExitAvoidMargin"/>, or it already fights it.</summary>
+        public static bool AboutToBeNoticed(Vector3 bot, Vector3 monster, int aggroRange, bool targetsBot) =>
+            targetsBot || Vector3.Distance(bot, monster) <= Math.Max(0, aggroRange) + ExitAvoidMargin;
+
         // ---- The live registry -----------------------------------------------------------------------------------------
 
         private sealed class Record
@@ -291,11 +468,10 @@ namespace DOL.GS
                 Active.TryRemove(gone, out _);
             int safeFall = 0;
             try { safeFall = bot.GetAbilityLevel(Abilities.SafeFall); } catch (Exception) { }
-            Active[bot] = new Record
-            {
-                Event = e,
-                Plan = Plan.For(e.Kind, e.At, e.Landing, e.FallHeight, safeFall, e.OnMesh),
-            };
+            Plan plan = Plan.For(e.Kind, e.At, e.Landing, e.FallHeight, safeFall, e.OnMesh);
+            if (e.Kind is DisplacementKind.Teleport or DisplacementKind.Throw) plan.Exit = ExitRouteFor(e.Encounter);
+            if (e.Kind == DisplacementKind.Barrier) plan.BarredWay = BarredWayFor(e.Encounter);
+            Active[bot] = new Record { Event = e, Plan = plan };
         }
 
         /// <summary>EncounterDisplacement's hook: anyone was just moved (heal priority, the party's call).</summary>
@@ -376,9 +552,13 @@ namespace DOL.GS
             GameNPC boss = r.Event.Source as GameNPC;
             bool atFight = r.Plan.Stage == Stage.Walking && boss is { IsAlive: true } && bot.CurrentRegionID == boss.CurrentRegionID &&
                 bot.IsWithinRadius(boss, FightRadius);
-            bool released = r.Plan.Stage == Stage.Jailed && JailReleased(bot, r.Event.Source, r.Event.Encounter);
+            bool released = r.Plan.Stage == Stage.Jailed && JailReleased(bot, r.Event.Source, r.Event.Encounter) ||
+                            // A barrier is down once its boss is dead or gone (Easmarach's push runs only while he lives).
+                            r.Plan.Kind == DisplacementKind.Barrier && !(boss is { IsAlive: true } && boss.CurrentRegionID == bot.CurrentRegionID &&
+                                                                        boss.ObjectState == GameObject.eObjectState.Active);
+            bool danger = r.Plan.Stage == Stage.Exiting && r.Plan.Exit != null && InDanger(bot, r.Plan.Exit.Avoid);
             return new Observation(GameLoop.GameLoopTime, bot.IsAlive, position, ReturnPoint(bot, r.Event), UnderAttack(bot),
-                released, atFight, (from, to) => HasPath(bot, from, to), IsHeld(bot), HazardEscapeFor(bot));
+                released, atFight, (from, to) => HasPath(bot, from, to), IsHeld(bot), HazardEscapeFor(bot), danger);
         }
 
         private static bool Execute(GameBot bot, Record r, Order order)
@@ -395,6 +575,14 @@ namespace DOL.GS
                             Log.Info($"EPIC_DISPLACEMENT_FALLBACK bot=\"{bot.Name}\" encounter={r.Event.Encounter} reason=\"{r.Plan.Reason}\" " +
                                      $"at={bot.X},{bot.Y},{bot.Z} recall_in={RecallMilliseconds}ms");
                     }
+                    if (!r.Plan.Spoke && r.Plan.Stage == Stage.Barred)
+                    {
+                        r.Plan.Spoke = true;
+                        if (Log.IsInfoEnabled)
+                            Log.Info($"EPIC_DISPLACEMENT_BARRED bot=\"{bot.Name}\" encounter={r.Event.Encounter} at={bot.X},{bot.Y},{bot.Z} " +
+                                     $"back={(int)r.Plan.ReturnPoint.X},{(int)r.Plan.ReturnPoint.Y},{(int)r.Plan.ReturnPoint.Z} " +
+                                     $"hold_max={BarrierHoldMilliseconds}ms reason=\"its way back lies through the barrier; it waits where it landed\"");
+                    }
                     return true;
                 case OrderKind.Land:
                     Land(bot, r, order);
@@ -408,7 +596,14 @@ namespace DOL.GS
                     return true;
                 case OrderKind.Fight:
                     return false;
+                case OrderKind.Portal:
+                    Portal(bot, r, order.Point);
+                    return true;
                 case OrderKind.Recall:
+                    if (r.Plan.Reason != null && order.Reason == r.Plan.Reason && r.Plan.Stage == Stage.Done && !r.Plan.Spoke &&
+                        Log.IsInfoEnabled)
+                        Log.Info($"EPIC_DISPLACEMENT_FALLBACK bot=\"{bot.Name}\" encounter={r.Event.Encounter} reason=\"{r.Plan.Reason}\" " +
+                                 $"at={bot.X},{bot.Y},{bot.Z} recall_in=0ms");
                     Recall(bot, r, order.Point);
                     Active.TryRemove(bot, out _);
                     return true;
@@ -438,6 +633,37 @@ namespace DOL.GS
                          $"fall={r.Event.FallHeight} damage={order.FallPercent}% health={bot.HealthPercent}%");
             if (bot.IsAlive && r.Event.Kind != DisplacementKind.Jail && r.Event.Kind is not (DisplacementKind.Pull or DisplacementKind.Barrier))
                 CallOut(bot, "displaced_self", r.Event, self: true);
+        }
+
+        /// <summary>The way out's portal: the bot is put where it puts a player (on the floor there), and walks on.</summary>
+        private static void Portal(GameBot bot, Record r, Vector3 point)
+        {
+            Vector3 to = point;
+            Zone zone = bot.CurrentRegion?.GetZone((int)point.X, (int)point.Y);
+            var nav = PathfindingProvider.Instance;
+            if (zone != null && nav.IsAvailable && nav.HasNavmesh(zone))
+            {
+                Vector3 snapped = point;
+                if (nav.TrySnapToMesh(zone, ref snapped, 300)) to = snapped;
+            }
+            bot.StopMoving();
+            bool moved = bot.MoveInRegion(bot.CurrentRegionID, (int)Math.Round(to.X), (int)Math.Round(to.Y), (int)Math.Round(to.Z), bot.Heading, true);
+            if (Log.IsInfoEnabled)
+                Log.Info($"EPIC_DISPLACEMENT_PORTAL bot=\"{bot.Name}\" encounter={r.Event.Encounter} to={(int)to.X},{(int)to.Y},{(int)to.Z} " +
+                         $"after={GameLoop.GameLoopTime - r.Event.At}ms moved={(moved ? "yes" : "no")}");
+        }
+
+        /// <summary>A monster of <paramref name="avoid"/> is about to notice the bot, or fights it.</summary>
+        private static bool InDanger(GameBot bot, string[] avoid)
+        {
+            if (avoid is not { Length: > 0 }) return false;
+            var at = new Vector3(bot.X, bot.Y, bot.Z);
+            foreach (GameNPC npc in bot.GetNPCsInRadius(1_500))
+                if (npc != null && npc.IsAlive && Array.IndexOf(avoid, npc.GetType().Name) >= 0 &&
+                    AboutToBeNoticed(at, new Vector3(npc.X, npc.Y, npc.Z), (npc.Brain as StandardMobBrain)?.AggroRange ?? 500,
+                        npc.TargetObject == bot))
+                    return true;
+            return false;
         }
 
         private static void Recall(GameBot bot, Record r, Vector3 point)
@@ -596,6 +822,9 @@ namespace DOL.GS
                 if (!found && !AutonomousBotVoices.TryLine(speaker, "combat", out picked, topic: topic, slots: slots, relax: true))
                     return;
                 LastCall[group] = now;
+                // Audit 2026-11-13: forget groups whose gap has passed, so disbanded groups aren't kept for the server's life.
+                foreach (KeyValuePair<Group, long> old in LastCall)
+                    if (now - old.Value >= CallGapMilliseconds) LastCall.TryRemove(old);
                 AutonomousBotGroupChatter.Send(speaker, picked.Text, "none");
             }
             catch (Exception ex)

@@ -985,9 +985,15 @@ namespace DOL.AI.Brain
         {
             if (candidate == null || Body.ControlledBrain is not ControlledMobBrain petBrain)
                 return candidate;
+            // sh-bosses M2 (True 1.65): never at a boss pets cannot hurt; an add instead, or back to its owner (BotBrain.RaidBoss)
+            if (PetsDoNoDamageTo(candidate) && (candidate = PetTargetInsteadOfBoss(candidate, petBrain)) == null)
+                return null;
 
             GameLiving current = petBrain.OrderedAttackTarget;
             if (current == null || current == candidate || candidate == ActiveOrderedPullTarget)
+                return candidate;
+            // ... and a pet already ordered onto such a boss leaves it for the new target
+            if (PetsDoNoDamageTo(current))
                 return candidate;
 
             if (!IsValidPetCombatTarget(petBrain.Body, current))
@@ -1448,8 +1454,9 @@ namespace DOL.AI.Brain
             ObserveLeaderActivity();
             CompanionStealth.Maintain(BotBody);
             WatchPetFocusShield();
-            // The talking update: in the real player's group a gamebot calls the fight in /group (pull, adds, oom, wipe).
-            if (BotBody?.IsAutonomousWorldBot == true && BotBody.IsPlayerLedGroup)
+            // The talking update: in the real player's group a gamebot calls the fight in /group (pull, adds, oom, wipe);
+            // in a gamebot party that hosts the player too (Living Server 1.2 B4: there the leader calls the pull).
+            if (AutonomousBotCombatCalls.ObservesFight(BotBody))
                 AutonomousBotCombatCalls.Observe(BotBody);
             WatchHarmfulAura();
             BotBody?.WakeRecoveryRestIfCombatBlocked();
@@ -1463,6 +1470,11 @@ namespace DOL.AI.Brain
             // put away for its player's horse ride: nothing to do until it is back at the player's side. Checked on every
             // think, not only when the stable master hands over the ride (owner 2026-10-31: companions still ran behind)
             if (TemporaryGroupStableTravel.SyncStowWithLeaderRide(BotBody) || Body.StowedForRide)
+                return;
+
+            // True 1.65 (veteran review M6): a party that called RUN, a solo bot bailing out, a hired healer surviving
+            // to raise its player: run, fight nothing (BotBrain.Retreat)
+            if (BotBody?.IsOnStableMasterRoute == false && TryHoldRetreat())
                 return;
 
             AutonomousBotRealmAbilities.UseActives(BotBody);
@@ -2133,6 +2145,16 @@ namespace DOL.AI.Brain
             {
                 _lastBetweenTaskPurchaseAssignment = bot.PersistentRecord.ObjectiveAssignmentId;
                 SetMerchantStatus(bot, $"Bought {purchased.Name} from {merchant.Name}", $"Spent {spent} saved copper on a legal equipment upgrade");
+                AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Money);
+                AutonomousObjectiveAssignments.TryCompleteBetweenTaskServicesIfSatisfied(bot);
+                _nextMerchantServiceTick = now + 30_000 + Random.Shared.Next(30_001);
+                return true;
+            }
+
+            // Bot cosmetics (owner 2026-11-12): with the selling and the upgrades done, coin above the reserve buys its looks.
+            if (AutonomousBotCosmetics.TryRestyle(bot, merchant, out string restyled, out long styleCopper))
+            {
+                SetMerchantStatus(bot, $"Had gear dyed and styled at {merchant.Name}", $"Spent {styleCopper} saved copper: {restyled}");
                 AutonomousStuckWatchdog.MarkProgress(bot, eAutonomousProgressKind.Money);
                 AutonomousObjectiveAssignments.TryCompleteBetweenTaskServicesIfSatisfied(bot);
                 _nextMerchantServiceTick = now + 30_000 + Random.Shared.Next(30_001);
@@ -3521,6 +3543,10 @@ namespace DOL.AI.Brain
                 return;
             NoteCastForStep();
 
+            // True 1.65 (veteran review M6): a solo caster steps straight back from a rooted or snared monster (once per 20 s)
+            if (TryCasterStepBack())
+                return;
+
             if (AutonomousDefensivePull.Hold(BotBody))
             {
                 if (!Body.IsCasting) CheckHeals();
@@ -3578,7 +3604,8 @@ namespace DOL.AI.Brain
                     Body.ActiveWeaponSlot,
                     currentBowTarget.IsAlive && currentBowTarget.ObjectState == GameObject.eObjectState.Active &&
                     (currentBowTarget is not DOL.GS.Keeps.GuardLord || Body.IsWithinRadius(currentBowTarget, 280)),
-                    Body.attackComponent != null && Body.IsWithinRadius(currentBowTarget, Body.attackComponent.AttackRange),
+                    Body.attackComponent != null &&
+                    Body.IsWithinRadius(currentBowTarget, CapRangeForTarget(currentBowTarget, Body.attackComponent.AttackRange)),
                     directAttacker != null && Body.IsWithinRadius(directAttacker, Body.MeleeAttackRange + 200),
                     protectionTarget != null))
                 return;
@@ -3798,7 +3825,8 @@ namespace DOL.AI.Brain
                             if (Body.ActiveWeaponSlot != eActiveWeaponSlot.Distance)
                                 Body.SwitchWeapon(eActiveWeaponSlot.Distance);
 
-                            int rangedAttackRange = Body.attackComponent.AttackRange;
+                            // df-bosses L2 (True 1.65): an archer stands where a raid boss takes damage (Legion: inside 1,400)
+                            int rangedAttackRange = CapRangeForTarget(livingTarget, Body.attackComponent.AttackRange);
                             if (BotRangedCombat.ShouldCloseToRangedRange(
                                     true, distance, rangedAttackRange))
                             {
@@ -3894,7 +3922,8 @@ namespace DOL.AI.Brain
             // target (1,000), not at nuke range (1,500), so every shroom can be
             // planted beside the Animist instead of out by the enemy.
             int shroomRange = BotAnimistPolicy.ShroomStandoffRange(BotBody);
-            return shroomRange > 0 && range > 0 ? Math.Min(range, shroomRange) : range;
+            // df-bosses L2 (True 1.65): never beyond the range a raid boss can be damaged from (BotBrain.RaidBoss)
+            return CapRangeForTarget(target, shroomRange > 0 && range > 0 ? Math.Min(range, shroomRange) : range);
         }
 
         private int SpellApproachRange()
@@ -4218,6 +4247,16 @@ namespace DOL.AI.Brain
             // An off-hand-only persisted loadout is not combat-ready; weapon
             // reconciliation will move/create a legal primary weapon instead.
             bool oneHandUsable = rightUsable;
+            // 1.2 epic rule (Kvasir: cold heals him): with one melee set that would land a forbidden damage type on the target
+            // and another that would not, the bot fights with the clean one (a raider swaps weapons for the fight).
+            if (Body.TargetObject is GameNPC ruled && oneHandUsable && twoHandUsable)
+            {
+                bool oneHandHeals = EpicEncounterTactics.WeaponForbidden(ruled, rightHand) ||
+                                    leftUsable && leftHand.Object_Type != (int)eObjectType.Shield && EpicEncounterTactics.WeaponForbidden(ruled, leftHand);
+                bool twoHandHeals = EpicEncounterTactics.WeaponForbidden(ruled, twoHand);
+                if (oneHandHeals && !twoHandHeals) oneHandUsable = false;
+                else if (twoHandHeals && !oneHandHeals) twoHandUsable = false;
+            }
             bool preferTwoHand = PreferTwoHandedSlot(twoHandUsable, oneHandUsable,
                 BotBody.BotSpec?.Is2H == true ||
                 BotBody.CharacterClass.ClassType == eClassType.ListCaster && BotBody.CharacterClass.ID != (int)eCharacterClass.Vampiir ||
@@ -4306,6 +4345,13 @@ namespace DOL.AI.Brain
             // The Druid remains a support actor. Only its pet gets an attack
             // order, and an existing matching order is not restarted each tick.
             if (pet is ControlledMobBrain controlled && controlled.OrderedAttackTarget == target) return;
+            // sh-bosses M2 (True 1.65): never at a boss pets cannot hurt (Summoner Lossren); an add instead, or no order
+            if (PetsDoNoDamageTo(target))
+            {
+                if (pet is not ControlledMobBrain mob || (target = PetTargetInsteadOfBoss(target, mob)) == null ||
+                    mob.OrderedAttackTarget == target)
+                    return;
+            }
             pet.Attack(target);
         }
 
@@ -4625,6 +4671,8 @@ namespace DOL.AI.Brain
             }
             else if (!casted && type == eCheckSpellType.Offensive)
             {
+                // df-bosses L2 (True 1.65): from where the target takes no damage, no attack spell: the caller walks in to range
+                if (BeyondTargetDamageRange()) return false;
                 if (TryPvpCrowdControl()) return true;
                 if (TryBardPveAddMez()) return true;
                 if (TryPveAddControl()) return true;
@@ -5922,6 +5970,45 @@ namespace DOL.AI.Brain
         /// A group member a heal or buff may be aimed at: this bot, or a member within
         /// 2,500 units in the same region that is not being skipped after a failed approach.
         /// </summary>
+        private long _nextRaidCureScan;
+        private long _nextRaidCureLog;
+
+        /// <summary>
+        /// A mesmerized member of this bot's raid, of any party, that it can cure from where it stands, or null: autonomous
+        /// raiders with the cure only, scanned twice a second (<see cref="RaidCureMezz"/>).
+        /// </summary>
+        private GameLiving RaidMezzedToCure()
+        {
+            if (!BotBody.IsAutonomousWorldBot || BotBody.CureMezz == null || BotBody.Group == null) return null;
+            long now = GameLoop.GameLoopTime;
+            if (now < _nextRaidCureScan) return null;
+            _nextRaidCureScan = now + 500;
+            if (AutonomousRealmRaid.GetView(BotBody.Group) == null || !CheckHealSpell(BotBody.CureMezz)) return null;
+            int range = BotBody.castingComponent.CalculateSpellRange(BotBody.CureMezz);
+            var living = new List<GameLiving>();
+            var mezzed = new List<RaidCureMezz.Mezzed>();
+            foreach (GameLiving member in AutonomousRealmRaid.SupportMembers(BotBody))
+            {
+                if (member == null || member == Body || !member.IsAlive || !member.IsMezzed ||
+                    member.CurrentRegion != Body.CurrentRegion || !Body.IsWithinRadius(member, range))
+                    continue;
+                GameBot bot = member as GameBot;
+                living.Add(member);
+                mezzed.Add(new(member.ObjectID, bot?.CureMezz != null,
+                    bot?.CharacterClass != null && BotPartyRoles.IsHealingClass((eCharacterClass)bot.CharacterClass.ID),
+                    BotPartyRoles.IsTank(bot)));
+            }
+            int pick = RaidCureMezz.Choose(mezzed, Body.ObjectID);
+            if (pick < 0) return null;
+            if (now >= _nextRaidCureLog && log.IsInfoEnabled)
+            {
+                _nextRaidCureLog = now + 15_000;
+                log.Info($"RAID_CURE_MEZZ bot={Body.Name} class=\"{BotBody.CharacterClass?.Name}\" target=\"{living[pick].Name}\" " +
+                         $"rank={RaidCureMezz.Rank(mezzed[pick])} mezzedInReach={mezzed.Count} spell=\"{BotBody.CureMezz.Name}\"");
+            }
+            return living[pick];
+        }
+
         private bool InSupportReach(GameLiving member) =>
             member == Body || member != null && member.CurrentRegion == Body.CurrentRegion &&
             Body.IsWithinRadius(member, BotSupportReach.SupportRadius) &&
@@ -6152,6 +6239,11 @@ namespace DOL.AI.Brain
                 foreach (GameLiving m in AutonomousRealmRaid.SupportPets(BotBody, 1800))
                     if (m.HealthPercent < 80 && (raidPatient == null || m.HealthPercent < raidPatient.HealthPercent))
                         raidPatient = m;
+                // dragon-fight M1 (True 1.65): a real player of the realm fighting beside the raid, not in its parties, is healed too
+                foreach (GameLiving m in BotGroupSupport.RaidGuests(BotBody))
+                    if (m.IsAlive && m.CurrentRegionID == Body.CurrentRegionID && m.HealthPercent < 80 &&
+                        Body.IsWithinRadius(m, 1800) && (raidPatient == null || m.HealthPercent < raidPatient.HealthPercent))
+                        raidPatient = m;
                 if (raidPatient != null && (spellTarget == null || raidPatient.HealthPercent < spellTarget.HealthPercent))
                 {
                     spellTarget = raidPatient;
@@ -6300,6 +6392,13 @@ namespace DOL.AI.Brain
                     else if (CheckHealSpell(BotBody.HealGroup))
                         spellToCast = BotBody.HealGroup;
                 }
+            }
+
+            // The raid's mesmerized, across its parties, before ordinary healing (RaidCureMezz).
+            if (RaidCureMezz.ComesBeforeHealing(numEmergency) && RaidMezzedToCure() is GameLiving raidMezzed)
+            {
+                spellToCast = BotBody.CureMezz;
+                spellTarget = raidMezzed;
             }
 
             // Cast the selected spell

@@ -157,6 +157,12 @@ namespace DOL.GS
         public int MaxFollowDistance { get; private set; }
         public string PathID { get; set; }
         public PathPoint CurrentPathPoint { get; set; }
+        /// <summary>
+        /// Offline DAoC: the first point of a path built in code (MovementMgr.CreatePath) for a scripted boss's patrol, set by
+        /// <see cref="SetScriptedPath"/>. Upstream OpenDAoC-Core lets such a CurrentPathPoint drive the patrol state on its own
+        /// (its path rework); here a scripted path counts as a path the brain patrols, like a database PathID.
+        /// </summary>
+        public PathPoint ScriptedPath { get; private set; }
         public bool IsReturningToSpawnPoint { get; private set; }
         public int RoamingRange { get; set; }
         public long MovementStartTick { get; set; }
@@ -169,7 +175,15 @@ namespace DOL.GS
         public bool IsDestinationValid { get; private set; }
         public bool IsAtDestination => !IsDestinationValid || (_destination - _ownerPosition).LengthSquared() < 1.0f;
         public bool CanRoam => Properties.ALLOW_ROAM && RoamingRange > 0 && !CanMoveOnPath;
-        public bool CanMoveOnPath => !string.IsNullOrEmpty(PathID);
+        public bool CanMoveOnPath => !string.IsNullOrEmpty(PathID) || ScriptedPath != null;
+
+        /// <summary>Patrols <paramref name="first"/> (a chain from MovementMgr.CreatePath, not shared with another NPC) from its
+        /// first point; null clears it.</summary>
+        public void SetScriptedPath(PathPoint first)
+        {
+            ScriptedPath = first;
+            CurrentPathPoint = first;
+        }
         public double HorizontalVelocityForClient { get; private set; }
         public bool HasActiveResetHeadingAction => _resetHeadingAction != null && _resetHeadingAction.IsAlive;
         public ref Vector3 DestinationForClient => ref _destinationForClient;
@@ -310,6 +324,9 @@ namespace DOL.GS
             $"state={_movementState} speed={CurrentSpeed} dest={_destination.X:0},{_destination.Y:0},{_destination.Z:0} " +
             $"casting={Owner.IsCasting} combat={Owner.InCombat} {_pathfinder.DescribeRoute()}";
 
+        /// <summary>A movement order was given and the mover has not taken it yet (diagnostics).</summary>
+        public bool HasPendingMoveRequest => IsFlagSet(MovementState.Request);
+
         /// <summary>The pathfinder's last result (diagnostics).</summary>
         public PathfindingStatus LastPathfindingStatus => _pathfinder.PathfindingStatus;
 
@@ -368,6 +385,9 @@ namespace DOL.GS
 
             // Move to the first path point if we don't have any.
             // Otherwise and if we're not currently moving on path, move to the previous one (current path point if none).
+            if (CurrentPathPoint == null && ScriptedPath != null)
+                CurrentPathPoint = ScriptedPath; // a scripted patrol starts again from its first point (death clears the current one)
+
             if (CurrentPathPoint == null)
             {
                 if (PathID == null)

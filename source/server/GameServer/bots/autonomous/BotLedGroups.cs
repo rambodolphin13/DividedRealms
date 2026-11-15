@@ -171,6 +171,8 @@ public static partial class BotLedGroups
         public int SessionDeclines { get; set; }
         public long AskedAt { get; set; } = long.MinValue / 2;
         public bool Pending { get; set; }
+        /// <summary>The leader whose box is waiting for this player's answer (while <see cref="Pending"/>).</summary>
+        public long PendingLeaderId { get; set; }
         /// <summary>The player typed /invites off (B2): no unasked invite, from a party or a raid. Asking still works.</summary>
         public bool PlayerInvitesOff { get; set; }
         public Dictionary<long, long> DeclinedByLeader { get; } = new();
@@ -231,13 +233,16 @@ public static partial class BotLedGroups
     /// no to in the last 6 hours. Null when none fits.
     /// </summary>
     public static Candidate? PickInvitingLeader(IEnumerable<Candidate> candidates, eRealm playerRealm, int playerLevel, bool playerIsHealer,
-        InviteMemory memory, long now)
+        InviteMemory memory, long now, IReadOnlySet<long> invitingOthers = null)
     {
         Candidate? best = null;
         double bestScore = double.MinValue;
         foreach (Candidate candidate in candidates)
         {
             if (CandidateBlocks(candidate, playerRealm, playerLevel) != null || memory != null && memory.LeaderDeclined(candidate.LeaderId, now))
+                continue;
+            // Play with friends (1.2): a leader whose box is waiting for another human's answer invites nobody else meanwhile.
+            if (invitingOthers != null && invitingOthers.Contains(candidate.LeaderId))
                 continue;
             double score = CandidateScore(candidate, playerLevel, playerIsHealer);
             if (score > bestScore || score == bestScore && best is { } held && candidate.LeaderId < held.LeaderId)
@@ -702,6 +707,21 @@ public static partial class BotLedGroups
     public const int PulseIntervalMs = 5_000;
     private static long _nextPulse;
 
+    /// <summary>
+    /// Play with friends (1.2): the leaders whose invite box is waiting for a human other than <paramref name="playerName"/>.
+    /// Each human has at most one box waiting (their own memory's Pending), and a party invites one human at a time.
+    /// </summary>
+    public static HashSet<long> LeadersInvitingOthers(IEnumerable<KeyValuePair<string, InviteMemory>> memories, string playerName)
+    {
+        var leaders = new HashSet<long>();
+        foreach ((string name, InviteMemory memory) in memories)
+            if (memory is { Pending: true, PendingLeaderId: not 0 } && !string.Equals(name, playerName, StringComparison.OrdinalIgnoreCase))
+                leaders.Add(memory.PendingLeaderId);
+        return leaders;
+    }
+
+    internal static HashSet<long> LeadersInvitingOthers(GamePlayer player) => LeadersInvitingOthers(Memories, player?.Name);
+
     internal static InviteMemory MemoryOf(GamePlayer player, long now) =>
         Memories.GetOrAdd(player.Name, _ => new InviteMemory(now) { PlayerInvitesOff = StoredInvitesOff(player) });
 
@@ -788,11 +808,14 @@ public static partial class BotLedGroups
         bool asked = memory.IsAsking(now);
         if (!AutonomousBotGroupCoordinator.TryPickHostingLeader(player, memory, now, askedBot, out GameBot leader, out Candidate party))
         {
-            if (asked && askedBot != null)
+            // Owner's PC, 2026-11-12: /lfg in Krondon got no invite and nothing in the log said why. Every asked invite
+            // that finds no party is logged now.
+            if (asked)
                 LogInvite("not_sent", askedBot, player, "no_party_fits", asked);
             return false;
         }
         memory.Pending = true;
+        memory.PendingLeaderId = leader.DatabaseID;
         if (!asked)
         {
             memory.LastUnaskedAt = now;
@@ -895,7 +918,7 @@ public static partial class BotLedGroups
     /// <summary>What the leader says to the group it hosts the player in (topic lead_* in the voice corpus, with a plain fallback).</summary>
     public enum Lead
     {
-        Welcome, WelcomeOnTheWay, MeetupReminder, MeetupGoingOn, WhereAreYou, GoingOn, AfkHold, AfkLetGo, Move, Farewell, PlayerLeft,
+        Welcome, WelcomeOnTheWay, WelcomeHere, MeetupReminder, MeetupGoingOn, WhereAreYou, GoingOn, AfkHold, AfkLetGo, Move, Farewell, PlayerLeft,
         // B2: the handover. Handover: /lead ("all yours"); TakeBack: /lead bot or /makeleader; LastBot: before the box.
         Handover, TakeBack, LastBot,
         // B3: the raid party's leader welcomes the player the raid leader invited.
@@ -908,6 +931,7 @@ public static partial class BotLedGroups
     {
         Lead.Welcome => "lead_welcome",
         Lead.WelcomeOnTheWay => "lead_welcome_out",
+        Lead.WelcomeHere => "lead_welcome_here",
         Lead.MeetupReminder => "lead_wait",
         Lead.MeetupGoingOn => "lead_going_on",
         Lead.WhereAreYou => "lead_where",
@@ -929,6 +953,16 @@ public static partial class BotLedGroups
         _ => "lead",
     };
 
+    /// <summary>
+    /// The welcome when the player joins: "meet up at" while the party assembles, "stick with me" when the player already
+    /// stands near the leader, "come find us" otherwise. Owner's PC 2026-11-15 (build 1dc66b6): "hey, we are out at Aldland,
+    /// come find us heh" to a player 1,186 units from the leader in Caer Diogel. Pure.
+    /// </summary>
+    public static Lead WelcomeFor(bool assembling, bool sameRegion, double distanceToLeader) =>
+        assembling ? Lead.Welcome
+        : sameRegion && distanceToLeader >= 0 && distanceToLeader <= NearLeaderRadius ? Lead.WelcomeHere
+        : Lead.WelcomeOnTheWay;
+
     /// <summary>The flag only these calls carry (data/chat/bot_led_groups.lines), so ambient talk never says them.</summary>
     private static readonly string[] LeadCall = ["lead_call"];
 
@@ -937,6 +971,7 @@ public static partial class BotLedGroups
     {
         Lead.Welcome => "welcome! meet up at {place}",
         Lead.WelcomeOnTheWay => "welcome! we're at {place}, come find us. /follow me if you're close",
+        Lead.WelcomeHere => "welcome! stick with me, we head to {camp}",
         Lead.MeetupReminder => "still at {place}, waiting on you",
         Lead.MeetupGoingOn => "heading on to {camp}, catch up when you can, spot's saved",
         Lead.WhereAreYou => "where u at?",
