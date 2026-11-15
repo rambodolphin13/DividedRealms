@@ -20,6 +20,7 @@ public class UT_PorterMenu
         Assert.That(text, Does.Contain("the [Avalon Marsh]"));
         Assert.That(text, Does.Contain("[Oceanus]"));
         Assert.That(text, Does.Contain("the [Inconnu Crypt]"));
+        Assert.That(text, Does.Contain("the marketplace at [Caerwent]"));
         Assert.That(text, Does.Contain("[towns]").And.Contain("[housing]").And.Contain("[Epic Dungeon]"));
         Assert.That(text, Does.Contain("[Labyrinth]").And.Contain("[anywhere else]"));
         Assert.That(text, Does.Not.Contain("Jordheim").And.Not.Contain("Tir na Nog").And.Not.Contain("Aegirhamn"));
@@ -33,6 +34,7 @@ public class UT_PorterMenu
         Assert.That(text, Does.Contain("[Aegirhamn], [Gothwaite Harbor], or [Grove of Domnann]"));
         Assert.That(text, Does.Contain("[Gotar], [Avalon Marsh], or [Shannon Estuary]"));
         Assert.That(text, Does.Contain("[Kobold Undercity], [Inconnu Crypt], or [Shar Labyrinth]"));
+        Assert.That(text, Does.Contain("marketplaces at [Erikstaad], [Caerwent], or [Meath]"));
     }
 
     [Test]
@@ -59,7 +61,7 @@ public class UT_PorterMenu
     {
         // Words the porter answers itself rather than through teleport rows.
         string[] own = { "Border Keeps", "Battlegrounds", "Frontier Regions", "Shrouded Isles", "towns", "housing", "Epic Dungeon", "anywhere else" };
-        var places = PorterMenu.Realms.SelectMany(r => new[] { r.Capital, r.Harbour, r.Wilds, r.Catacombs }).Concat(new[] { "Oceanus", "Labyrinth" });
+        var places = PorterMenu.Realms.SelectMany(r => new[] { r.Capital, r.Harbour, r.Wilds, r.Catacombs, r.Market }).Concat(new[] { "Oceanus", "Labyrinth" });
         foreach (eRealm realm in new[] { eRealm.Albion, eRealm.Midgard, eRealm.Hibernia })
         {
             string text = PorterMenu.Greeting(realm, true, All);

@@ -1,0 +1,19 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-15T21:55:37.283926+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "Regions",
+   "key": 163,
+   "op": "update",
+   "before": {
+    "IsFrontier": 0
+   },
+   "after": {
+    "IsFrontier": 1
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

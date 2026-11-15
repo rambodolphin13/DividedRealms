@@ -1,0 +1,170 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-15T22:19:19.800278+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "Teleport",
+   "key": "travel-059d6e5f-d34a-5e46-9a6a-722b36b5ef91",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "Travel",
+    "TeleportID": "Caerwent",
+    "Realm": 1,
+    "RegionID": 2,
+    "X": 585071,
+    "Y": 561548,
+    "Z": 3576,
+    "Heading": 1036,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-059d6e5f-d34a-5e46-9a6a-722b36b5ef91"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-8dac921b-7c36-5438-9a5e-b371729f0ca5",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "TravelCoop",
+    "TeleportID": "Erikstaad",
+    "Realm": 1,
+    "RegionID": 102,
+    "X": 526303,
+    "Y": 561704,
+    "Z": 3640,
+    "Heading": 3114,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-8dac921b-7c36-5438-9a5e-b371729f0ca5"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-3875fad3-dc03-570a-8dc1-a7f365c74ee2",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "TravelCoop",
+    "TeleportID": "Meath",
+    "Realm": 1,
+    "RegionID": 202,
+    "X": 555552,
+    "Y": 526123,
+    "Z": 3008,
+    "Heading": 83,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-3875fad3-dc03-570a-8dc1-a7f365c74ee2"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-428bedc6-2967-52f2-ac4a-72de0fbec9de",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "TravelCoop",
+    "TeleportID": "Caerwent",
+    "Realm": 2,
+    "RegionID": 2,
+    "X": 585071,
+    "Y": 561548,
+    "Z": 3576,
+    "Heading": 1036,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-428bedc6-2967-52f2-ac4a-72de0fbec9de"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-7cd920f6-2941-5c4a-b074-cc166765ca4d",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "Travel",
+    "TeleportID": "Erikstaad",
+    "Realm": 2,
+    "RegionID": 102,
+    "X": 526303,
+    "Y": 561704,
+    "Z": 3640,
+    "Heading": 3114,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-7cd920f6-2941-5c4a-b074-cc166765ca4d"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-54a2f630-6c9a-5d8c-8d27-8f67f0063a68",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "TravelCoop",
+    "TeleportID": "Meath",
+    "Realm": 2,
+    "RegionID": 202,
+    "X": 555552,
+    "Y": 526123,
+    "Z": 3008,
+    "Heading": 83,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-54a2f630-6c9a-5d8c-8d27-8f67f0063a68"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-35cf23a0-5c7d-5178-aad8-ebd02e43e217",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "TravelCoop",
+    "TeleportID": "Caerwent",
+    "Realm": 3,
+    "RegionID": 2,
+    "X": 585071,
+    "Y": 561548,
+    "Z": 3576,
+    "Heading": 1036,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-35cf23a0-5c7d-5178-aad8-ebd02e43e217"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-a615116c-8a75-5b7d-bf0b-d3ed4cf2ca44",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "TravelCoop",
+    "TeleportID": "Erikstaad",
+    "Realm": 3,
+    "RegionID": 102,
+    "X": 526303,
+    "Y": 561704,
+    "Z": 3640,
+    "Heading": 3114,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-a615116c-8a75-5b7d-bf0b-d3ed4cf2ca44"
+   }
+  },
+  {
+   "table": "Teleport",
+   "key": "travel-8ed24005-f439-5116-8706-4f8acae21660",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Type": "Travel",
+    "TeleportID": "Meath",
+    "Realm": 3,
+    "RegionID": 202,
+    "X": 555552,
+    "Y": 526123,
+    "Z": 3008,
+    "Heading": 83,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "Teleport_ID": "travel-8ed24005-f439-5116-8706-4f8acae21660"
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

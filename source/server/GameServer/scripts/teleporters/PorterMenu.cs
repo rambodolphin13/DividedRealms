@@ -21,16 +21,16 @@ namespace DOL.GS.Scripts
 
         /// <summary>One realm's places, in the order the greeting names them.</summary>
         public sealed record RealmPlaces(
-            eRealm Realm, string Capital, string Harbour, string Wilds, string Catacombs, string[] BorderKeeps);
+            eRealm Realm, string Capital, string Harbour, string Wilds, string Catacombs, string[] BorderKeeps, string Market);
 
         public static readonly RealmPlaces[] Realms =
         {
             new(eRealm.Albion, "Camelot", "Gothwaite Harbor", "Avalon Marsh", "Inconnu Crypt",
-                new[] { "Castle Sauvage", "Snowdonia Fortress" }),
+                new[] { "Castle Sauvage", "Snowdonia Fortress" }, "Caerwent"),
             new(eRealm.Midgard, "Jordheim", "Aegirhamn", "Gotar", "Kobold Undercity",
-                new[] { "Svasud Faste", "Vindsaul Faste" }),
+                new[] { "Svasud Faste", "Vindsaul Faste" }, "Erikstaad"),
             new(eRealm.Hibernia, "Tir na Nog", "Grove of Domnann", "Shannon Estuary", "Shar Labyrinth",
-                new[] { "Druim Ligen", "Druim Cain" }),
+                new[] { "Druim Ligen", "Druim Cain" }, "Meath"),
         };
 
         public static RealmPlaces For(eRealm realm) => Realms.FirstOrDefault(r => r.Realm == realm);
@@ -91,8 +91,12 @@ namespace DOL.GS.Scripts
                 text.Append($"{both} seek to test your mettle if you are interested in a challenge. ");
             }
 
-            text.Append("You could explore other areas of the realm by asking about other [towns] or [housing] destinations, ");
-            text.Append("or face the [Epic Dungeon] of our realm.");
+            // The housing market towns (owner 2026-11-15); housing is a co-op area, so in co-op every realm's market is offered.
+            var markets = Pick(r => r.Market).ToList();
+            text.Append("You could explore other areas of the realm by asking about other [towns] or [housing] destinations");
+            if (markets.Count > 0)
+                text.Append(markets.Count > 1 ? $", depart for the marketplaces at {Links(markets)}" : $", depart for the marketplace at {Links(markets)}");
+            text.Append(", or face the [Epic Dungeon] of our realm.");
 
             text.Append("\n\nFinally, I can transport you to the center of the great ");
             text.Append(resolves("Labyrinth") ? "[Labyrinth], or " : string.Empty);
