@@ -831,7 +831,9 @@ namespace DOL.GS.Trials
                     new TrialPhase
                     {
                         Announce = "Medusa uncoils from her throne. The four squares in the floor are armed. Keep her at the side of the hall!",
-                        Mobs = { Mob("Medusa", MedusaModel, 68, 75, 110000, 1.6, medusa, "medusa", melee: eDamageType.Slash) },
+                        // 70,000 at 1.3 (was 110,000 at 1.6): a full bot group wiped with her at 76% after 7 minutes, the healers first; now in
+                        // line with Cetus (1.10) and the other ML3 bosses (bot playtest 2026-11-14).
+                        Mobs = { Mob("Medusa", MedusaModel, 68, 75, 70000, 1.3, medusa, "medusa", melee: eDamageType.Slash) },
                         OnTick = Fight,
                         Done = Cleared("medusa"),
                     },
