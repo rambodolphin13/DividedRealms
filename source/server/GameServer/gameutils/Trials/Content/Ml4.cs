@@ -320,14 +320,14 @@ namespace DOL.GS.Trials
         public const int StatueHushRadius = 1500;
 
         /// <summary>Sets the world's own monsters near the points aside for the run; <see cref="Unhush"/> brings them back.</summary>
-        private static void Hush(TrialRun run, IEnumerable<TrialPoint> points, int radius)
+        internal static void Hush(TrialRun run, IEnumerable<TrialPoint> points, int radius)
         {
             List<GameNPC> hushed = new();
             foreach (TrialPoint point in points)
             {
                 foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(run.Starter.CurrentRegionID, point.X, point.Y, point.Z, (ushort)radius))
                 {
-                    if (npc is TrialMob || hushed.Contains(npc) || !TrialManager.ShouldClear(npc) || npc.InCombat)
+                    if (npc is TrialMob || hushed.Contains(npc) || !Hushable(npc))
                         continue;
                     if (npc.RemoveFromWorld())
                         hushed.Add(npc);
@@ -336,7 +336,16 @@ namespace DOL.GS.Trials
             run.Set("hushed", hushed);
         }
 
-        private static void Unhush(TrialRun run)
+        /// <summary>
+        /// A living world monster that is nobody's pet. Wider than <see cref="TrialManager.ShouldClear"/>: the world
+        /// bound one standing on the Keeper of the Mask's spot survived the boot clear and joined every 5.7 and 5.8 run.
+        /// Monsters already in a fight go too; they would only join this one.
+        /// </summary>
+        private static bool Hushable(GameNPC npc) =>
+            npc is { IsAlive: true, Realm: eRealm.None, Brain: not DOL.AI.Brain.IControlledBrain } && (npc.Flags & GameNPC.eFlags.PEACE) == 0 &&
+            TrialManager.IsWorldMonster(npc);
+
+        internal static void Unhush(TrialRun run)
         {
             foreach (GameNPC npc in run.Get<List<GameNPC>>("hushed") ?? new List<GameNPC>())
             {

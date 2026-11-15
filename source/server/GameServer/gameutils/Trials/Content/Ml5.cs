@@ -26,6 +26,22 @@ namespace DOL.GS.Trials
         /// window, the other four flowed back for 16%, and Hapy climbed back over her split mark every cycle (bot
         /// playtest 2026-11-14).
         /// </summary>
+        /// <summary>
+        /// The boot clear (<see cref="ChamberClearRadius"/>) left a world bound one standing beside the Keeper of the Mask, and the
+        /// packs at 1,100-1,250 roam in: a full bot group fought five trial mobs plus a world zauemia and wiped (bot playtest
+        /// 2026-11-14). Every bound one this close leaves the world while a run lasts and comes back after.
+        /// </summary>
+        public const int ChamberHushRadius = 1600;
+
+        /// <summary>
+        /// The fountain room holds sixteen world eternal lost at level 65, and anubites stand at the bier and the snake
+        /// stair; the trial brings its own of each. They stand aside while a 5.9 run lasts.
+        /// </summary>
+        public static TrialPoint[] TokenHushPoints => new[] { Fountain, new TrialPoint(35348, 34189, 15012), new TrialPoint(35520, 37538, 13456) };
+        public const int TokenHushRadius = 1200;
+
+        private static void HushChamber(TrialRun run) => Ml4.Hush(run, new[] { run.Definition.Anchor }, ChamberHushRadius);
+
         public const int HapyCopyFadePercent = 85;
         public const int LionStrikeSeconds = 8;
         public const int LionStrikeDamage = 300;
@@ -230,6 +246,7 @@ namespace DOL.GS.Trials
             Anchor = new TrialPoint(31227, 55077, 8848),
             StarterName = "Keeper of the Resin", StarterModel = MummyModel,
             ClearRadius = ChamberClearRadius,
+            OnEnd = (run, _) => Ml4.Unhush(run),
             Intro = "The bound ones here were sealed with the resin that preserves. It passes from each that falls to the next, and whichever stands last holds all of it and fights with all of its strength. Finish them and the resin is yours.",
             Victory = "The last of the bound ones falls and you take up the Resin of the Ways. Its keeping is recorded, and Mahaf will know it.",
             TimeLimitSeconds = 1200,
@@ -243,6 +260,7 @@ namespace DOL.GS.Trials
                         new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 5000, DamageFactor = 1.0, Count = 4, Spread = 250, Tag = "bound" },
                         new TrialMobSpec { Name = "bound zauemia ruinetu", Model = MummyModel, Level = 65, Health = 6000, DamageFactor = 1.0, Spread = 100, Tag = "bound" },
                     },
+                    OnStart = HushChamber,
                     OnTick = ResinTick,
                 },
             },
@@ -254,6 +272,7 @@ namespace DOL.GS.Trials
             Anchor = new TrialPoint(35213, 58989, 8848),
             StarterName = "Keeper of the Mask", StarterModel = MummyModel,
             ClearRadius = ChamberClearRadius,
+            OnEnd = (run, _) => Ml4.Unhush(run),
             Intro = "The one who wears the mask cannot be touched while the bound ones around it stand. Break the ring around it first. You will need that mask before you can face Ammut.",
             Victory = "The mask lifts away in your hands: the Mask of the Ways. Its keeping is recorded, and Mahaf will know it.",
             TimeLimitSeconds = 1200,
@@ -267,6 +286,7 @@ namespace DOL.GS.Trials
                         new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 5000, DamageFactor = 1.0, Count = 4, Spread = 300, Tag = "bound" },
                         new TrialMobSpec { Name = "bound zauemia ruinetu", Model = MummyModel, Level = 66, Size = 60, Health = 8000, DamageFactor = 1.1, Spread = 100, Immune = true, Tag = "mask" },
                     },
+                    OnStart = HushChamber,
                     OnTick = MaskTick,
                 },
             },
@@ -278,6 +298,7 @@ namespace DOL.GS.Trials
             Anchor = new TrialPoint(39723, 55141, 8848),
             StarterName = "Keeper of the Wrap", StarterModel = MummyModel,
             ClearRadius = ChamberClearRadius,
+            OnEnd = (run, _) => Ml4.Unhush(run),
             Intro = "The wrappings you need are wound around the one at the back of this chamber, and the others will not let you reach it. They come in two waves. Hold together until it steps forward.",
             Victory = "You unwind the Wrap of the Ways from what is left. Its keeping is recorded, and Mahaf will know it.",
             TimeLimitSeconds = 1200,
@@ -286,6 +307,7 @@ namespace DOL.GS.Trials
                 new TrialPhase
                 {
                     Announce = "The first of the bound ones lurch forward.",
+                    OnStart = HushChamber,
                     Mobs =
                     {
                         new TrialMobSpec { Name = "bound zaubak", Model = MummyModel, Level = 65, Health = 4500, DamageFactor = 1.0, Count = 3, Spread = 250 },
@@ -318,6 +340,7 @@ namespace DOL.GS.Trials
             Intro = "I ferry only the dead, or those who pass for them. You carry the resin, the mask and the wrap; your deeds speak for them. Go back past the Fire Guardian and the lost, down the stair of snakes, and lie on the bier. Then come and drink from my river, and carry the poison to the fountain before it finishes you.",
             Victory = "The fountain draws the poison out of you, and the token of the river is yours.",
             RequiresSteps = new[] { 6, 7, 8 },
+            OnEnd = (run, _) => Ml4.Unhush(run),
             Replaces = new[] { "Mahaf" },
             TimeLimitSeconds = 2400,
             LeashRange = 12000,
@@ -326,6 +349,7 @@ namespace DOL.GS.Trials
                 new TrialPhase
                 {
                     Announce = "The Fire Guardian bars the way by the entrance.",
+                    OnStart = run => Ml4.Hush(run, TokenHushPoints, TokenHushRadius),
                     Mobs =
                     {
                         new TrialMobSpec { Name = "Fire Guardian", Model = 1047, Level = 66, Size = 87, Health = 12000, DamageFactor = 1.1, At = new TrialPoint(32686, 30074, 15502), Tag = "guardian", MeleeDamage = eDamageType.Slash },
