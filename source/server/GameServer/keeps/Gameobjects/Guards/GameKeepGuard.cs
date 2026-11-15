@@ -349,7 +349,9 @@ namespace DOL.GS.Keeps
 				if (!foundGuard)
 					CurrentPathPoint = PatrolGroup.PatrolPath;
 
-				MoveOnPath(Patrol.PATROL_SPEED);
+				PathID = PatrolGroup.PatrolPath != null ? PatrolGroup.PatrolID : null;
+				if (CurrentPathPoint != null)
+					MoveOnPath(Patrol.PATROL_SPEED);
 			}
 
 			return true;

@@ -120,6 +120,7 @@ namespace DOL.GS.Keeps
 			guard.TemplateID = PatrolID;
 			guard.Component = Component;
 			guard.PatrolGroup = this;
+			guard.PathID = PatrolPath != null ? PatrolID : null;
 			PositionMgr.LoadGuardPosition(SpawnPosition, guard);
 			guard.RefreshTemplate();
 			PatrolGuards.Add(guard);
@@ -221,6 +222,13 @@ namespace DOL.GS.Keeps
 
 			foreach (GameKeepGuard guard in PatrolGuards)
 			{
+				// The brain only keeps a guard patrolling while it has a path id (CanMoveOnPath); without one the IDLE
+				// state stopped the guard and walked it back to its spawn point, so keep patrols stood still or
+				// stepped back and forth (owner, New Frontiers 2026-11-15). A patrol with no path rows stands guard.
+				guard.PathID = PatrolPath != null ? PatrolID : null;
+				if (PatrolPath == null)
+					continue;
+
 				if (guard.CurrentPathPoint == null)
 					guard.CurrentPathPoint = PatrolPath;
 

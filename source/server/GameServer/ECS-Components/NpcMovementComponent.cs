@@ -378,7 +378,11 @@ namespace DOL.GS
                     return;
                 }
 
-                CurrentPathPoint = MovementMgr.LoadPath(PathID);
+                // Keep patrol paths are stored relative to their keep piece, so the plain loader would place them
+                // at the world origin; a patrol guard restarts from its group's path instead.
+                CurrentPathPoint = Owner is DOL.GS.Keeps.GameKeepGuard { PatrolGroup.PatrolPath: not null } patrolGuard
+                    ? patrolGuard.PatrolGroup.PatrolPath
+                    : MovementMgr.LoadPath(PathID);
 
                 if (CurrentPathPoint == null)
                 {

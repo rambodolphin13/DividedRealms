@@ -92,6 +92,18 @@ namespace DOL.GS.Scripts
             return stops;
         }
 
+        /// <summary>Every word the catalogue answers for <paramref name="realm"/> now: its place names and its headings.</summary>
+        public static HashSet<string> KnownWords(eRealm realm)
+        {
+            var words = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { MenuWord };
+            foreach (Stop stop in StopsFor(realm))
+            {
+                words.Add(stop.Destination.TeleportID);
+                words.Add(stop.Family);
+            }
+            return words;
+        }
+
         /// <summary>The teleport rows a gamebot of <paramref name="realm"/> may plan with (no live keeps).</summary>
         public static IEnumerable<DbTeleport> PlannableFor(eRealm realm) => StopsFor(realm, false).Select(stop => stop.Destination);
 

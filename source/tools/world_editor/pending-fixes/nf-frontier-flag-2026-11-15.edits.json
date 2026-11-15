@@ -1,0 +1,3 @@
+[
+ {"table": "Regions", "where": {"RegionID": 163}, "set": {"IsFrontier": "1"}}
+]
