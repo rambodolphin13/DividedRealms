@@ -27,8 +27,8 @@ namespace DOL.GS.Trials
         /// <summary>Live: a new Rage of the Volurgons every 20 seconds, at most nine.</summary>
         public const int RageEverySeconds = 20, MaxRages = 9;
         /// <summary>Each Rage's burn every four seconds within 300 (design size; scaled with the party).</summary>
-        public const int RageBurn = 150;
-        /// <summary>Shaitan's Reach (design size), cast two seconds after an Enara appears and every 20 seconds after.</summary>
+        public const int RageBurn = 120;
+        /// <summary>Shaitan's Reach (design size), cast once, two seconds after an Enara appears.</summary>
         public const int EnaraReach = 250;
         /// <summary>Live: a new Shaitan Enara every 20 seconds, whatever you do; she casts Shaitan's Reach two seconds after she appears.</summary>
         public const int EnaraEverySeconds = 20, ReachDelaySeconds = 2;
@@ -440,7 +440,7 @@ namespace DOL.GS.Trials
                 {
                     Announce = "Kill Mandra, again and again, before her rages fill the room.",
                     // Live: about three Rage hits kill. 250 every 4 s killed all seven bots in one tick (they stand in it,
-                    // a player steps out); 150 keeps the Rages the thing to fear without wiping a bot group that can't dodge.
+                    // a player steps out); 150 lasted nine of ten minutes; 120 keeps the Rages the thing to fear without wiping a bot group that can't dodge.
                     Pulses = { new TrialPulse { IntervalSeconds = 4, Damage = RageBurn, Radius = 300, SourceTag = "rage" } },
                     OnTick = run =>
                     {
@@ -474,16 +474,18 @@ namespace DOL.GS.Trials
                     {
                         int now = Count(run, "seconds");
                         // Bot playtest 2026-11-14: 9000 health, Reach 300 every 10 s and up to six alive wiped a player
-                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 4500 health, at most four alive,
-                        // and the Reach on arrival then every 20 s (EnaraReach).
+                        // with seven bots in 50 s; bots cannot step out of a Reach. Now 3000 health (4500 still took 80 s a kill), at most four alive,
+                        // and the Reach once, on arrival (EnaraReach).
                         if (now % EnaraEverySeconds == 1 && run.Mobs("enara").Count() < 4)
                         {
-                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 4500, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
+                            TrialMob enara = Born(run, run.Spawn(Foe("Shaitan Enara", Shaitan, 65, 75, 3000, 1.0, spots[Util.Random(spots.Length - 1)], "enara", eDamageType.Heat, false)));
                             Resist(enara, 50, eProperty.Resist_Heat);
                             Resist(enara, -25, eProperty.Resist_Cold);
                             run.Tell("A Shaitan Enara appears, gathering heat!");
                         }
-                        AreaCasts(run, "enara", now, ReachDelaySeconds, EnaraEverySeconds, EnaraReach, 450, eDamageType.Heat, "The Enara casts Shaitan's Reach!");
+                        // Prima: she casts Shaitan's Reach two seconds after she appears; after that she fights. A repeat every 20 s
+                        // fired every living Enara on the same tick (all spawn on the 20 s clock): four Reaches at once wiped the bots.
+                        AreaCasts(run, "enara", now, ReachDelaySeconds, int.MaxValue, EnaraReach, 450, eDamageType.Heat, "The Enara casts Shaitan's Reach!");
                     },
                 });
         }
