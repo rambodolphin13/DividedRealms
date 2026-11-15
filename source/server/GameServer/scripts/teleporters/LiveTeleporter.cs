@@ -162,6 +162,7 @@ namespace DOL.GS.Scripts
             message += "\n\n" +
                        "Perhaps you would like the challenge of the [Epic Dungeon]?";
             message += BattlegroundTeleportOptions.MenuLine;
+            message += TravelCatalogue.MenuLine;
 
             SayTo(player, message);
 
@@ -177,6 +178,11 @@ namespace DOL.GS.Scripts
                 return false;
 
             if (GameRelic.IsPlayerCarryingRelic(player))
+                return false;
+
+            // The same door as Interact: a teleporter in a realm-war area (or any, outside the co-op world) serves
+            // only its own realm. Whispering used to skip that check.
+            if (player.Realm != Realm && player.Client?.Account?.PrivLevel == 1 && !WelcomesVisitors)
                 return false;
 
             return GetTeleportLocation(player, str);
@@ -479,6 +485,14 @@ namespace DOL.GS.Scripts
                     OnDestinationPicked(player, port);
                 }
 
+                return false;
+            }
+
+            // The travel catalogue: places in the player's own realm's rows (and other realms' lands in the co-op
+            // world). Checked after this teleporter's own rows so its classic names keep their old meaning.
+            if (TravelCatalogue.TryHandle(this, player, text, out DbTeleport travel))
+            {
+                if (travel != null) OnDestinationPicked(player, travel);
                 return false;
             }
 
