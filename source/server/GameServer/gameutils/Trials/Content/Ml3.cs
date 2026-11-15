@@ -199,7 +199,11 @@ namespace DOL.GS.Trials
                 Intro = "So, more of you come for my runic power. The tritons whisper that I am sick and weak. They are wrong. " +
                     "Say the word and I will give you a moment to think better of it. Stay, and we shall see who walks out of my cave.",
                 Victory = "Kepa's bargain is paid in full, though not as she intended. Her runic power is yours.",
-                Replaces = new[] { "Kepa" },
+                // An Atlas "Lord of Battle" Mordred (LordOfBattle, level 75) stands 88 from Kepa in the Temple of Twilight. He pulls
+                // every player within 7,000 back to him ("Cowardice is not appreciated in this arena."), so nobody can
+                // /mltrial goto or port out after Kepa (bot playtest 2026-11-14; region 73's pair went in DR-383).
+                Replaces = new[] { "Kepa", "Mordred" },
+                ReplaceRadius = 7000,
                 TimeLimitSeconds = 1500,
                 Phases =
                 {
@@ -574,7 +578,9 @@ namespace DOL.GS.Trials
 
             TrialMobSpec Glowing(TrialPoint at)
             {
-                TrialMobSpec ray = Mob("glowing sting ray", RayModel, 65, 40, 7000, 1.0, at, "glowing", required: false, melee: eDamageType.Thrust);
+                // Passive until struck (aggro 0), like the swarm: with aggro 1,500 all ten rays pulled at once on arrival and wiped a
+                // full bot group (bot playtest 2026-11-14), leaving no way to thin the dull ones first as the intro says.
+                TrialMobSpec ray = Mob("glowing sting ray", RayModel, 65, 40, 7000, 1.0, at, "glowing", required: false, aggro: 0, melee: eDamageType.Thrust);
                 ray.OnDeath = PowerJumps;
                 return ray;
             }
@@ -625,7 +631,7 @@ namespace DOL.GS.Trials
                         Announce = "The swarm lifts from the sand. One of them glows!",
                         OnStart = run =>
                         {
-                            Wave(run, Mob("sting ray", RayModel, 63, 22, 3000, 0.8, tag: "ray", required: false, melee: eDamageType.Thrust), 9, swarm, 450);
+                            Wave(run, Mob("sting ray", RayModel, 63, 22, 3000, 0.8, tag: "ray", required: false, aggro: 0, melee: eDamageType.Thrust), 9, swarm, 450);
                             Light(run, On(swarm, 200, 0, 1));
                         },
                         OnTick = run =>
