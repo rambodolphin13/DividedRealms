@@ -59,10 +59,12 @@ namespace CEM.Client.ZoneExporter
     {
       // Is offset internally (ExtractMeshesFromPlace)
 
+      // The placement mirrors X (scale -1), which flips triangle winding. Dungeons undo that with invertTris;
+      // without it every SkyCity floor faces down and Recast drops it as a ceiling (zones 58/66/96, 67/97/162 ...).
       NiFile[] models = ParseChunk("skycity.chunk", proxyValues);
-      Matrix4[] matrices = ExtractMeshesFromPlace("skycity.place", models, null);
-      // hack: the place file looks identical to the prop file, atleast the first entries that I use 
-      ExtractMeshesFromPlace("skycity.prop", models, matrices);
+      Matrix4[] matrices = ExtractMeshesFromPlace("skycity.place", models, null, true, both: false);
+      // hack: the place file looks identical to the prop file, atleast the first entries that I use
+      ExtractMeshesFromPlace("skycity.prop", models, matrices, true, both: false);
     }
     #endregion
   }
