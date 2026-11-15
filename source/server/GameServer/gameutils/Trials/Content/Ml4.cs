@@ -124,7 +124,7 @@ namespace DOL.GS.Trials
         public const int HomeSeconds = 5;
 
         /// <summary>The nearest walkable point, so waves on uneven sand don't hang in the air or sink into it.</summary>
-        private static TrialPoint Ground(TrialRun run, TrialPoint point)
+        internal static TrialPoint Ground(TrialRun run, TrialPoint point)
         {
             Zone zone = run.Starter.CurrentRegion?.GetZone(point.X, point.Y);
             IPathfindingMgr nav = PathfindingProvider.Instance;
@@ -273,6 +273,12 @@ namespace DOL.GS.Trials
                 OnStart = run => run.SetImmune("seti", false),
                 Done = Cleared("seti"),
             });
+            Action<TrialRun> firstCamps = phases[0].OnStart;
+            phases[0].OnStart = run =>
+            {
+                Hush(run, StormsHushPoints(), StormsHushRadius);
+                firstCamps?.Invoke(run);
+            };
 
             return new TrialDefinition
             {
@@ -291,8 +297,69 @@ namespace DOL.GS.Trials
                 Replaces = new[] { "Seti the Pharaoh" },
                 TimeLimitSeconds = 2400,
                 LeashRange = StormsLeash,
+                OnEnd = (run, _) => Unhush(run),
                 Phases = phases,
             };
+        }
+
+        /// <summary>
+        /// On live the camps, towns, gate garrison and temple of the Fortress of Storms were the world's own setians.
+        /// Here the trial brings its own, so the world's are set aside while a run lasts and come back when it ends.
+        /// With both there a full group of eight met the trial's waves plus 17 world mobs at the gate and 14 at the
+        /// temple, and wiped at the first town (bot playtest 2026-11-14).
+        /// </summary>
+        public static IEnumerable<TrialPoint> StormsHushPoints() =>
+            StormsTowns.Concat(StormsCamps.SelectMany(camps => camps)).Append(StormsGate).Append(SetiThrone);
+
+        public const int StormsHushRadius = 1500;
+
+        /// <summary>The live caravan of 4.4 is 15 world nomads and 7 miw around the wagons, on top of the trial's own.</summary>
+        public const int CaravanHushRadius = 1800;
+
+        /// <summary>Four of the six statues stand in a world camp of ten securas crocodiles and a sobekite: the live guards.</summary>
+        public const int StatueHushRadius = 1500;
+
+        /// <summary>Sets the world's own monsters near the points aside for the run; <see cref="Unhush"/> brings them back.</summary>
+        internal static void Hush(TrialRun run, IEnumerable<TrialPoint> points, int radius)
+        {
+            List<GameNPC> hushed = new();
+            foreach (TrialPoint point in points)
+            {
+                foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(run.Starter.CurrentRegionID, point.X, point.Y, point.Z, (ushort)radius))
+                {
+                    if (npc is TrialMob || hushed.Contains(npc) || !Hushable(npc))
+                        continue;
+                    if (npc.RemoveFromWorld())
+                        hushed.Add(npc);
+                }
+            }
+            run.Set("hushed", hushed);
+        }
+
+        /// <summary>
+        /// A living world monster that is nobody's pet. Wider than <see cref="TrialManager.ShouldClear"/>: the world
+        /// bound one standing on the Keeper of the Mask's spot survived the boot clear and joined every 5.7 and 5.8 run.
+        /// Monsters already in a fight go too; they would only join this one.
+        /// </summary>
+        private static bool Hushable(GameNPC npc) =>
+            npc is { IsAlive: true, Realm: eRealm.None, Brain: not DOL.AI.Brain.IControlledBrain } && (npc.Flags & GameNPC.eFlags.PEACE) == 0 &&
+            TrialManager.IsWorldMonster(npc);
+
+        internal static void Unhush(TrialRun run)
+        {
+            foreach (GameNPC npc in run.Get<List<GameNPC>>("hushed") ?? new List<GameNPC>())
+            {
+                try
+                {
+                    if (npc.ObjectState != GameObject.eObjectState.Active)
+                        npc.AddToWorld();
+                }
+                catch (Exception e)
+                {
+                    TrialManager.Log.Error($"Trial {run.Definition.Key} could not bring back {npc.Name}", e);
+                }
+            }
+            run.Set("hushed", null);
         }
 
         private static TrialDefinition Roar()
@@ -381,13 +448,18 @@ namespace DOL.GS.Trials
                     "Stand here and she will cry out to the whole caravan. Kill her through the nomads, then find the little ones. They are no threat, and one of them will have your stone.",
                 Victory = "The Radiant Sunstone is yours. To the children it was only ever a bright pebble.",
                 TimeLimitSeconds = 1500,
+                OnEnd = (run, _) => Unhush(run),
                 Phases =
                 {
                     new TrialPhase
                     {
                         Announce = "The mausekhmet high priest shrieks for the wagons to be defended!",
                         Mobs = { Mob("mausekhmet high priest", MauPriest, 62, 55, 40000, 1.0, On(caravan, 300, 0, 2), "priest") },
-                        OnStart = run => Wave(run, Nomad(), 8, caravan, 500),
+                        OnStart = run =>
+                        {
+                            Hush(run, new[] { caravan }, CaravanHushRadius);
+                            Wave(run, Nomad(), 8, caravan, 500);
+                        },
                         Done = Cleared("priest"),
                     },
                     new TrialPhase
@@ -478,6 +550,13 @@ namespace DOL.GS.Trials
             };
         }
 
+        /// <summary>
+        /// Every few blows make a copy, counted over the whole party: six from each member. At a flat six a group of
+        /// eight (spells count) raised all ten copies inside a minute with Oukesson still at 90%, and the copies killed
+        /// the group in thirty seconds (bot playtest 2026-11-14). A lone player still splits him every sixth blow.
+        /// </summary>
+        public static int GhillanBlowsPerClone(int partySize) => 6 * Math.Max(1, partySize);
+
         private static TrialDefinition Ghillan()
         {
             TrialPoint circle = new(244291, 416646, 8376);
@@ -525,7 +604,7 @@ namespace DOL.GS.Trials
                         Mobs = { Mob("Oukesson the Ghillan", Djinn, 67, 50, 36000, 1.3, On(circle, 300, 0, 2), "oukesson") },
                         OnStart = run =>
                         {
-                            run.Set("meter", new SplitMeter(6));
+                            run.Set("meter", new SplitMeter(GhillanBlowsPerClone(run.PartySize)));
                             WatchHits(run, First(run, "oukesson"), "blows");
                         },
                         OnTick = Split,
@@ -546,7 +625,12 @@ namespace DOL.GS.Trials
                 {
                     Announce = $"Statue {i + 1} of {Statues.Length}: the {stone} belongs here. Crocodiles guard the socket.",
                     Mobs = { Clickable($"niche for the {stone}", Gem, 15, On(statue, 200, 1, 4), $"The {stone} clicks home, and the crocodile's head grinds round to face the pyramid.") },
-                    OnStart = run => Wave(run, Mob("iter croc", Crocodile, 62, 60, 3000, 0.8, tag: "croc", melee: eDamageType.Crush), 3, statue, 350),
+                    OnStart = run =>
+                    {
+                        if (statue == Statues[0])
+                            Hush(run, Statues, StatueHushRadius);
+                        Wave(run, Mob("iter croc", Crocodile, 62, 60, 3000, 0.8, tag: "croc", melee: eDamageType.Crush), 3, statue, 350);
+                    },
                 });
             }
 
@@ -567,6 +651,7 @@ namespace DOL.GS.Trials
                 RequiresSteps = new[] { 1, 2, 3, 4, 5, 6 },
                 TimeLimitSeconds = 1800,
                 LeashRange = 75000,
+                OnEnd = (run, _) => Unhush(run),
                 Phases = phases,
             };
         }

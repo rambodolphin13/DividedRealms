@@ -41,6 +41,7 @@ namespace DOL.UnitTests
             Assert.That(Ml5.CopyFades(100), Is.False);
             Assert.That(Ml5.CopyFades(Ml5.HapyCopyFadePercent + 1), Is.False);
             Assert.That(Ml5.CopyFades(Ml5.HapyCopyFadePercent), Is.True);
+            Assert.That(Ml5.HapyCopyFadePercent, Is.GreaterThanOrEqualTo(80), "a bit of damage, not most of a copy");
         }
 
         [Test]
@@ -74,6 +75,15 @@ namespace DOL.UnitTests
             Assert.That(TrialManager.Required(Step(10)), Is.EqualTo(Enumerable.Range(1, 9)));
             Assert.That(Enumerable.Range(1, 8).All(step => TrialManager.Required(Step(step)).Any() == false));
             Assert.That(Step(10).Scope, Is.EqualTo(TrialScope.Raid));
+        }
+
+        [Test]
+        public void ChambersAndToken_BringTheWorldBackWhenTheRunEnds()
+        {
+            foreach (int step in new[] { 6, 7, 8, 9 })
+                Assert.That(Step(step).OnEnd, Is.Not.Null, $"5.{step}");
+            Assert.That(Ml5.TokenHushPoints, Has.None.EqualTo(default(TrialPoint)), "the fountain must be set before the points are read");
+            Assert.That(Ml5.ChamberHushRadius, Is.GreaterThan(Ml5.ChamberClearRadius));
         }
     }
 }

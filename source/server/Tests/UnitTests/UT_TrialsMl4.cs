@@ -166,5 +166,23 @@ namespace DOL.UnitTests
             foreach (TrialDefinition trial in Ml4.Trials())
                 Assert.That(TrialManager.Required(trial), Is.All.LessThan(trial.Step), trial.Key);
         }
+
+        [Test]
+        public void Ghillan_SplitsEverySixthBlowOfEachMember()
+        {
+            Assert.That(Ml4.GhillanBlowsPerClone(1), Is.EqualTo(6), "a lone player splits him as before");
+            Assert.That(Ml4.GhillanBlowsPerClone(0), Is.EqualTo(6));
+            Assert.That(Ml4.GhillanBlowsPerClone(8), Is.EqualTo(48), "a full group must not raise all ten copies in the first minute");
+        }
+
+        [Test]
+        public void Storms_SetsAsideTheWorldGarrisonEverywhereItFights()
+        {
+            TrialPoint[] hushed = Ml4.StormsHushPoints().ToArray();
+            Assert.That(hushed, Has.Length.EqualTo(Ml4.StormsTowns.Length + Ml4.StormsCamps.Sum(camps => camps.Length) + 2));
+            Assert.That(hushed, Does.Contain(Ml4.StormsGate));
+            Assert.That(hushed, Does.Contain(Ml4.SetiThrone));
+            Assert.That(Ml4.Trials().First(trial => trial.Step == 2).OnEnd, Is.Not.Null, "the world garrison must come back when a run ends");
+        }
     }
 }
