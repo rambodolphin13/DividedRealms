@@ -928,7 +928,8 @@ public static class AutonomousBotQuests
             DbItemTemplate template = ClassicQuests.RewardFor(bot.CharacterClass?.ID ?? 0, GameServer.Database.FindObjectByKey<DbItemTemplate>(id));
             if (template == null || GameInventoryItem.Create(template) is not DbInventoryItem item)
                 continue;
-            int gain = AutonomousBotEconomy.TryGetEquipmentUpgrade(bot, item, out _) ? AutonomousBotEconomy.EquipmentValue(item) : 0;
+            int gain = AutonomousBotEconomy.TryGetEquipmentUpgrade(bot, item, out eInventorySlot rewardSlot)
+                ? AutonomousBotEconomy.EquipmentGain(bot, item, bot.Inventory.GetItem(rewardSlot)) : 0;
             if (gain > bestGain)
             {
                 bestGain = gain;

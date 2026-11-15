@@ -722,7 +722,7 @@ namespace DOL.GS
         {
             if (!AutonomousBotEconomy.TryGetEquipmentUpgrade(bot, item, out eInventorySlot slot))
                 return int.MinValue;
-            return AutonomousBotEconomy.EquipmentValue(item) - AutonomousBotEconomy.EquipmentValue(bot.Inventory.GetItem(slot));
+            return AutonomousBotEconomy.EquipmentGain(bot, item, bot.Inventory.GetItem(slot));
         }
     }
 }

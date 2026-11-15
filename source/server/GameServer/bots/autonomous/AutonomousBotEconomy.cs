@@ -174,7 +174,7 @@ namespace DOL.GS;
         if (equipSlot != eInventorySlot.Invalid)
         {
             DbInventoryItem equipped = bot.Inventory.GetItem(equipSlot);
-            int improvement = EquipmentValue(item) - EquipmentValue(equipped);
+            int improvement = EquipmentGain(bot, item, equipped);
             if (bot.CharacterClass?.ID == (int)eCharacterClass.Savage &&
                 BotWeaponStats.IsMeleeWeapon((eObjectType)item.Object_Type))
             {
@@ -209,6 +209,26 @@ namespace DOL.GS;
         return Math.Max(1, item.Level) * 10 + Math.Max(1, item.Quality) + Math.Max(0, item.DPS_AF) * 2 + utility * 3;
     }
 
+        /// <summary>
+        /// What the item is worth to this bot in the slot now holding <paramref name="occupant"/> (BotGearValue: bonuses
+        /// weighed by class and build, points past the item caps barely count). The bot-blind
+        /// <see cref="EquipmentValue(DbInventoryItem)"/> stays for market prices and vendor order.
+        /// </summary>
+        public static int EquipmentValue(GameBot bot, DbInventoryItem item, DbInventoryItem occupant) =>
+            bot == null ? EquipmentValue(item) : BotGearValue.Value(BotGearValue.Profile.For(bot), item, occupant);
+
+        /// <summary>The worn piece's own worth in its slot, measured like a candidate for that slot.</summary>
+        public static int EquippedValue(GameBot bot, DbInventoryItem worn) => EquipmentValue(bot, worn, worn);
+
+        /// <summary>How much better the item is for this bot than what it would replace (positive is better).</summary>
+        public static int EquipmentGain(GameBot bot, DbInventoryItem item, DbInventoryItem replaced)
+        {
+            if (bot == null)
+                return EquipmentValue(item) - EquipmentValue(replaced);
+            BotGearValue.Profile profile = BotGearValue.Profile.For(bot);
+            return BotGearValue.Value(profile, item, replaced) - BotGearValue.Value(profile, replaced, replaced);
+        }
+
         public static bool IsPlayerListing(string ownerId) =>
             !string.IsNullOrWhiteSpace(ownerId) && !TryParseOwnerId(ownerId, out _);
 
@@ -234,7 +254,7 @@ namespace DOL.GS;
             if (bot.CharacterClass?.ID == (int)eCharacterClass.Savage &&
                 BotWeaponStats.IsMeleeWeapon((eObjectType)item.Object_Type))
                 return SavageBotWeaponPolicy.IsUpgrade(bot, item, equipSlot);
-            int improvement = EquipmentValue(item) - EquipmentValue(equipped);
+            int improvement = EquipmentGain(bot, item, equipped);
             return equipped == null || improvement > MinimumEquipmentUpgrade;
         }
 
@@ -333,7 +353,7 @@ namespace DOL.GS;
                 Log.Info($"AUTONOMOUS_EQUIPMENT_UPGRADE bot=\"{bot.Name}\" id={bot.DatabaseID} level={bot.Level} " +
                     $"class=\"{bot.ClassName}\" source={source} slot={slot} item=\"{item.Name}\" " +
                     $"itemId=\"{item.ObjectId}\" replaced=\"{replaced?.Name ?? "empty"}\" " +
-                    $"oldValue={EquipmentValue(replaced)} newValue={EquipmentValue(item)}");
+                    $"oldValue={EquipmentValue(bot, replaced, item)} newValue={EquipmentValue(bot, item, item)}");
             }
             catch { }
         }
@@ -484,6 +504,7 @@ namespace DOL.GS;
                 return retained;
 
             Dictionary<(int Kind, int Type, int Shape), DbInventoryItem> bestByRole = new();
+            BotGearValue.Profile spareProfile = null;
             foreach (DbInventoryItem item in bot.Inventory.AllItems)
             {
                 if (item == null || item.OwnerLot != 0 ||
@@ -512,8 +533,10 @@ namespace DOL.GS;
                     continue;
 
                 if (!bestByRole.TryGetValue(role, out DbInventoryItem incumbent) ||
-                    EquipmentValue(item) > EquipmentValue(incumbent) ||
-                    EquipmentValue(item) == EquipmentValue(incumbent) && item.SlotPosition < incumbent.SlotPosition)
+                    BotGearValue.Value(spareProfile ??= BotGearValue.Profile.For(bot), item, null) >
+                    BotGearValue.Value(spareProfile, incumbent, null) ||
+                    BotGearValue.Value(spareProfile, item, null) == BotGearValue.Value(spareProfile, incumbent, null) &&
+                    item.SlotPosition < incumbent.SlotPosition)
                     bestByRole[role] = item;
             }
 
@@ -561,7 +584,7 @@ namespace DOL.GS;
             return first;
         if (secondItem == null)
             return second;
-        return EquipmentValue(firstItem) <= EquipmentValue(secondItem) ? first : second;
+        return EquippedValue(bot, firstItem) <= EquippedValue(bot, secondItem) ? first : second;
     }
 
         public static ListingCandidate FindValuableListingCandidate(GameBot bot)
@@ -810,9 +833,9 @@ namespace DOL.GS;
             DbInventoryItem item = GameInventoryItem.Create(template);
             if (item == null)
                 continue;
-            if (TryGetEquipmentUpgrade(bot, item, out _))
+            if (TryGetEquipmentUpgrade(bot, item, out eInventorySlot sealSlot))
             {
-                int value = EquipmentValue(item);
+                int value = EquipmentGain(bot, item, bot.Inventory.GetItem(sealSlot));
                 if (value > upgradeValue)
                 {
                     upgrade = template;

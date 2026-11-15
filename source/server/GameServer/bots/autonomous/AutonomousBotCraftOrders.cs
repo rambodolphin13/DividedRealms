@@ -214,7 +214,7 @@ public static class AutonomousBotCraftOrders
             if (!AutonomousBotEconomy.TryGetEquipmentUpgrade(buyer, piece, out eInventorySlot slot))
                 return 0;
             DbInventoryItem worn = buyer.Inventory.GetItem(slot);
-            return Math.Max(1, AutonomousBotEconomy.EquipmentValue(piece) - AutonomousBotEconomy.EquipmentValue(worn));
+            return Math.Max(1, AutonomousBotEconomy.EquipmentGain(buyer, piece, worn));
         }
         catch
         {
