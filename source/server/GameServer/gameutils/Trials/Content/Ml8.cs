@@ -839,6 +839,11 @@ namespace DOL.GS.Trials
                 Anchor = camp,
                 StarterName = ServantName,
                 StarterModel = Servant,
+                // Bot playtest 2026-11-14: the camp's own world statues (aggro 60, range 500; 34 within 2,000 of the anchor in
+                // each realm copy) kept joining the trial's statues and wiped a player with seven bots at five minutes.
+                // Live had only the camp; here the trial's cracked statues stand in for it, so the inner camp is cleared.
+                Replaces = new[] { "self-maintaining statue" },
+                ReplaceRadius = 2000,
                 Intro = "These statues mend themselves and each other from whatever bronze comes to hand, and one of them has used Agne's torso for the work. There is no telling which. Break them until it shows, and hit hard: one that is only scratched will close its wounds.",
                 Victory = "Agne's torso comes away from the wreck in one piece.",
                 TimeLimitSeconds = 1500,
