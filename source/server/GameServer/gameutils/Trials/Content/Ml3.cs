@@ -664,7 +664,8 @@ namespace DOL.GS.Trials
                     "Her arms drag whoever she fancies to her beak to drink their life, and she sends her clinging young after anyone she cannot reach.",
                 Victory = "Sinovia goes limp, and the power she swallowed drifts free into your hands.",
                 Replaces = new[] { "Sinovia" },
-                TimeLimitSeconds = 1200,
+                // 30 minutes (was 20): a full bot group won at 17 minutes with half its members dead (bot playtest 2026-11-14).
+                TimeLimitSeconds = 1800,
                 Phases =
                 {
                     new TrialPhase
