@@ -190,7 +190,7 @@ namespace DOL.GS.Trials
             // Bisul's own spells: an area burn around him, and he mends his statues while they fight.
             static TrialPhase Powers(TrialPhase phase)
             {
-                phase.Pulses.Add(new TrialPulse { IntervalSeconds = 10, Damage = 160, Radius = 600, SourceTag = "bisul", DamageType = eDamageType.Heat, Message = "Bisul's flames roll over the statues' foes!" });
+                phase.Pulses.Add(new TrialPulse { IntervalSeconds = 10, Damage = 120, Radius = 600, SourceTag = "bisul", DamageType = eDamageType.Heat, Message = "Bisul's flames roll over the statues' foes!" });
                 Action<TrialRun> tick = phase.OnTick;
                 phase.OnTick = run =>
                 {
@@ -243,7 +243,9 @@ namespace DOL.GS.Trials
                                 Level = 66,
                                 Size = 60,
                                 Health = 45000,
-                                DamageFactor = 1.6,
+                                // Prima: a caster (an area spell, a bolt, heals for his statues). At 1.6 his melee, while he
+                                // could not be hurt, killed a player with seven bots at the third set (bot playtest 2026-11-14).
+                                DamageFactor = 0.8,
                                 At = guards[0],
                                 Tag = "bisul",
                                 Immune = true,
@@ -526,10 +528,15 @@ namespace DOL.GS.Trials
                 StarterName = ServantName,
                 StarterModel = Servant,
                 // Bot playtest 2026-11-14: the starter stands inside a world centaur camp (aggro 60, range 500, a dozen
-                // within 2,000 in each realm copy); they joined the warband and wiped a player with seven bots in 90 s.
+                // within 2,000 in each realm copy, more of the village out to 5,000); they joined the warband and wiped a player with seven bots in 90 s.
                 // The camp is cleared while trials are on, so the fight is the scout, the chief and his band.
-                Replaces = new[] { "Chief Arsene", "Chief Oighrig", "centaur warrior", "centaur mage", "centaur craftsman", "centaur guard", "centaur commoner", "centaur scout superior", "centaur forager" },
-                ReplaceRadius = 3500,
+                // A second run (3,500 cleared) was still killed by a world centaur sage: the whole village goes.
+                Replaces = new[]
+                {
+                    "Chief Arsene", "Chief Oighrig", "Chief Chrysostom", "centaur warrior", "centaur mage", "centaur craftsman", "centaur guard", "centaur commoner",
+                    "centaur scout superior", "centaur scout", "centaur forager", "centaur sage", "centaur lookout", "centaur healer", "centaur advisor", "centaur messenger",
+                },
+                ReplaceRadius = 5000,
                 Intro = "One of the centaur lieutenants keeps Agne's left leg in his camp, and the old trial asked every hero to beat a lieutenant anyway. Their scout is already looking for you. When he finds you he blows his horn, and the lieutenant rides out to that spot with his whole warband: spears, bows, a healer and a caster. The lieutenant is the one that matters.",
                 Victory = "Chief Oighrig falls, and Agne's left leg is yours.",
                 TimeLimitSeconds = 1500,
