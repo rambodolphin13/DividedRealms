@@ -264,9 +264,12 @@ namespace DOL.GS
             return base.AddToWorld();
         }
 
+        /// <summary>True while any of the mobs it is guarded by still stands.</summary>
+        public bool IsGuarded => GuardedBy != null && GuardedBy.Any(guard => guard.IsAlive && guard.ObjectState == eObjectState.Active);
+
         private bool Guarded(GameObject source)
         {
-            if (GuardedBy == null || !GuardedBy.Any(guard => guard.IsAlive && guard.ObjectState == eObjectState.Active))
+            if (!IsGuarded)
                 return false;
 
             if (source is GamePlayer player && GameLoop.GameLoopTime >= _nextGuardMessage)
@@ -502,12 +505,24 @@ namespace DOL.GS
             {
                 List<ArtifactBoss> adds = spawned.Where(mob => !mob.IsStageBoss).ToList();
 
-                // Gates are things to break: columns, chests, links. They hold their ground.
+                // Gates are things to break: columns, chests, links. They hold their ground and wait to be attacked, so
+                // a group can break them one at a time (live: Karise's links did not aggro a careful group). All ten
+                // Control Links coming at once wiped a full group of bots twice (bot playtest 2026-11-14).
                 foreach (ArtifactBoss add in adds)
+                {
                     add.MaxSpeedBase = 0;
+                    MakeGateAddWait(add.Brain as StandardMobBrain);
+                }
 
                 foreach (ArtifactBoss boss in spawned.Where(mob => mob.IsStageBoss))
+                {
                     boss.GuardedBy = adds;
+
+                    // An unhurtable boss that fights pulls the bots onto it (they cannot see the guard), so it waits
+                    // until its gate breaks: Egg columns took 6 minutes each while the bots hit Sililia.
+                    if (adds.Count > 0)
+                        MakeGateAddWait(boss.Brain as StandardMobBrain);
+                }
             }
 
             if (stage.Escort != null)
@@ -606,6 +621,38 @@ namespace DOL.GS
 
         public static bool IsCaster(ArtifactSpawnDef spawn) => spawn.IsBoss;
 
+        /// <summary>A boss whose gate has broken takes up the fight against the nearest living player.</summary>
+        private void WakeUnguardedBosses()
+        {
+            foreach (ArtifactBoss boss in _alive)
+            {
+                if (boss.GuardedBy == null || !boss.IsAlive || boss.ObjectState != eObjectState.Active || boss.IsGuarded)
+                    continue;
+
+                boss.GuardedBy = null;
+
+                if (boss.Brain is not StandardMobBrain brain)
+                    continue;
+
+                brain.AggroLevel = 100;
+                GamePlayer target = boss.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).Cast<GamePlayer>()
+                    .Where(player => player.IsAlive).OrderBy(player => player.GetDistanceTo(boss)).FirstOrDefault();
+
+                if (target != null)
+                    brain.AddToAggroList(target, 1);
+            }
+        }
+
+        /// <summary>A gate add, or a boss behind its gate, forgets the starter and fights only what attacks it.</summary>
+        public static void MakeGateAddWait(StandardMobBrain brain)
+        {
+            if (brain == null)
+                return;
+
+            brain.ClearAggroList();
+            brain.AggroLevel = 0;
+        }
+
         private ArtifactBoss SpawnMob(ArtifactSpawnDef spawn, bool givesCredit)
         {
             double angle = Util.RandomDouble() * Math.PI * 2;
@@ -656,6 +703,8 @@ namespace DOL.GS
                 Finish();
                 return 0;
             }
+
+            WakeUnguardedBosses();
 
             if (TickEscort())
                 return Running ? TickMs : 0;
