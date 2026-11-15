@@ -745,7 +745,7 @@ namespace DOL.GS.Trials
                                 MeleeDamage = eDamageType.Energy,
                             },
                         },
-                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 200, Radius = 1500, SourceTag = "dawar", DamageType = eDamageType.Energy, Message = "Dawar's bolts of air strike from afar!" } },
+                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 150, Radius = 1500, SourceTag = "dawar", DamageType = eDamageType.Energy, Message = "Dawar's bolts of air strike from afar!" } },
                         OnTick = run =>
                         {
                             int clock = Count(run, "dawar.clock");
@@ -799,8 +799,10 @@ namespace DOL.GS.Trials
                             {
                                 run.Tell("The statue calls, and Dawar comes in a whirlwind of burning air!");
                                 Relocate(run, dawar, new TrialPoint(statue.X + 120, statue.Y, statue.Z));
+                                // Bot playtest 2026-11-14: 300 (212 for a player and seven bots) on top of the fight killed four
+                                // bots in one burst at five minutes. 180.
                                 foreach (GameLiving victim in run.Hostiles(statue, 900))
-                                    victim.TakeDamage(dawar, eDamageType.Energy, (int)(300 * run.DamageScale), 0);
+                                    victim.TakeDamage(dawar, eDamageType.Energy, (int)(180 * run.DamageScale), 0);
                                 run.Set("called", clock + 4);
                             }
                         },
@@ -997,9 +999,16 @@ namespace DOL.GS.Trials
             TrialPoint exit = new(439050, 661800, 12101);
             TrialPoint hall = new(439050, 665600, 12110);
 
-            static TrialMobSpec Chrysiron(int x, int y, int z, bool required = true) => Foe("chrysiron statue", Marble, 67, 100, 6000, 1.0, new TrialPoint(x, y, z), "hall", required: required);
-            static TrialMobSpec Helicaon(int x, int y, int z, bool required = true) => Foe("helicaon statue", Marble, 69, 120, 8000, 1.2, new TrialPoint(x, y, z), "hall", required: required);
-            static TrialPulse IceBlast() => new() { IntervalSeconds = 8, Damage = 120, Radius = 350, SourceTag = "hall", DamageType = eDamageType.Cold };
+            // Bot playtest 2026-11-14: the whole near side (eight level 67-69 statues) woke together and wiped a player with
+            // seven bots in 40 s. A gauntlet is walked one statue at a time: short aggro, less stone, a softer blast.
+            static TrialMobSpec Chrysiron(int x, int y, int z, bool required = true) => Gauntlet(Foe("chrysiron statue", Marble, 67, 100, 4000, 0.9, new TrialPoint(x, y, z), "hall", required: required));
+            static TrialMobSpec Helicaon(int x, int y, int z, bool required = true) => Gauntlet(Foe("helicaon statue", Marble, 69, 120, 5500, 1.1, new TrialPoint(x, y, z), "hall", required: required));
+            static TrialMobSpec Gauntlet(TrialMobSpec statue)
+            {
+                statue.AggroRange = 250;
+                return statue;
+            }
+            static TrialPulse IceBlast() => new() { IntervalSeconds = 8, Damage = 80, Radius = 350, SourceTag = "hall", DamageType = eDamageType.Cold };
 
             TrialMobSpec Case() => Clickable("Agne's reliquary", Reliquary, 40, hall, "You lift Agne's right arm out of the reliquary, and every statue in the hall turns to look at you.", "case",
                 (run, mob) =>
