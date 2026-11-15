@@ -734,22 +734,23 @@ namespace DOL.GS.Trials
                         Mobs =
                         {
                             // Bot playtest 2026-11-14: at 1.5 the statue beat the bot healers down while Dawar meleed the rest;
-                            // wipe at four minutes with Dawar at 58%. 1.1, and Dawar 1.0.
-                            Foe("controlled statue", 989, 64, 72, 25000, 1.1, statueAt, "statue"),
+                            // wipe at four minutes with Dawar at 58%. 1.1, and Dawar 1.0; a third run still wiped at five
+                            // minutes with Dawar at 37%, so both have less health (35000 and 18000) and his bolts come every 12 s.
+                            Foe("controlled statue", 989, 64, 72, 18000, 1.1, statueAt, "statue"),
                             new TrialMobSpec
                             {
                                 Name = "Dawar",
                                 Model = 1194,
                                 Level = 68,
                                 Size = 60,
-                                Health = 50000,
+                                Health = 35000,
                                 DamageFactor = 1.0,
                                 At = home,
                                 Tag = "dawar",
                                 MeleeDamage = eDamageType.Energy,
                             },
                         },
-                        Pulses = { new TrialPulse { IntervalSeconds = 9, Damage = 150, Radius = 1500, SourceTag = "dawar", DamageType = eDamageType.Energy, Message = "Dawar's bolts of air strike from afar!" } },
+                        Pulses = { new TrialPulse { IntervalSeconds = 12, Damage = 150, Radius = 1500, SourceTag = "dawar", DamageType = eDamageType.Energy, Message = "Dawar's bolts of air strike from afar!" } },
                         OnTick = run =>
                         {
                             int clock = Count(run, "dawar.clock");
