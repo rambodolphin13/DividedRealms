@@ -228,7 +228,8 @@ namespace DOL.GS.Trials
             new TrialPhase
             {
                 Announce = "The stars are falling! Survive!",
-                Pulses = { new TrialPulse { SourceTag = "portal", IntervalSeconds = 5, Damage = 280, Radius = 2500, DamageType = eDamageType.Heat, Message = "A star strikes the platform!" } },
+                // Bot playtest 2026-11-14: a bot group cannot spread out, so every star and plague tick lands on all of them.
+                Pulses = { new TrialPulse { SourceTag = "portal", IntervalSeconds = 5, Damage = 150, Radius = 2500, DamageType = eDamageType.Heat, Message = "A star strikes the platform!" } },
                 OnStart = Release,
                 SurviveSeconds = 20,
             });
@@ -256,7 +257,7 @@ namespace DOL.GS.Trials
 
                 foreach (GameLiving victim in plague.Keys.ToList())
                 {
-                    Hurt(run, boss, victim, 60, eDamageType.Body);
+                    Hurt(run, boss, victim, 30, eDamageType.Body);
                     foreach (GameLiving neighbour in run.Hostiles(victim, 250).Where(neighbour => !plague.ContainsKey(neighbour)))
                         plague[neighbour] = seconds;
                 }
@@ -265,7 +266,8 @@ namespace DOL.GS.Trials
             HoldInBarrier(run, seconds, boss);
 
             if (boss.HealthPercent < 30 && seconds % 7 == 0)
-                Splash(run, boss, 2500, 300, 280, eDamageType.Heat, "A star falls among you!");
+                // 280 every 7 s on the bots' clump with the plague on all of them wiped a player with seven bots at 25%.
+                Splash(run, boss, 2500, 300, 180, eDamageType.Heat, "A star falls among you!");
         }
 
         /// <summary>
