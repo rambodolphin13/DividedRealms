@@ -401,6 +401,7 @@ namespace DOL.GS.Trials
                 {
                     Announce = "Ankhkare rises to the north-west, and three more guardians with him. Keep your fighters bunched and go to him!",
                     OnStart = AnkhkareRises,
+                    Done = run => run.Get<bool>("risen") && !run.Mobs().Any(mob => mob.Spec.Required),
                     Pulses =
                     {
                         new TrialPulse { IntervalSeconds = 11, Damage = 240, Radius = 900, SourceTag = "ankhkare", DamageType = eDamageType.Heat, Message = "Ankhkare's fire washes over the ground around him." },
@@ -609,6 +610,7 @@ namespace DOL.GS.Trials
 
         private static void AnkhkareRises(TrialRun run)
         {
+            run.Set("risen", true);
             int paid = OfferingSteps.Count(step => Holds(run, step));
             // Both stood at Z 10831, the height of the ledge the world rows use; the floor under them is 10650. Ankhkare
             // walked down, but his three guardians hung 184 above the party, out of reach, and the run could not end
