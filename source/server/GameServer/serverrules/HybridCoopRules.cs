@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using DOL.AI.Brain;
 using DOL.GS.Keeps;
@@ -8,25 +9,84 @@ using DOL.GS.ServerProperties;
 namespace DOL.GS.ServerRules
 {
     /// <summary>
-    /// Opt-in co-op world (owner 2026-10-27): realms cooperate in the home lands, cities and dungeons, and fight
-    /// realm against realm, as normal, in the frontiers, Darkness Falls and the battlegrounds. A group stays one
-    /// team everywhere, so a mixed-realm group that walks into the frontier is not split.
+    /// Opt-in co-op world (owner 2026-10-27, war zones redrawn 2026-11-15): realms cooperate everywhere except the
+    /// war zones in coop_war_zones (New Frontiers, battlegrounds, Darkness Falls and the NF dungeons by default),
+    /// where they fight realm against realm as normal. A group stays one team everywhere, so a mixed-realm group
+    /// that walks into a war zone is not split.
     /// </summary>
     public class HybridCoopRules : AbstractServerRules
     {
         private readonly NormalServerRules _normal = new();
         public static bool Enabled => Properties.HYBRID_COOP_PVP;
 
-        // The old frontier zones share their regions with ordinary home lands.
-        public static bool IsWarLocation(ushort region, ushort zone) => region switch
+        /// <summary>
+        /// Owner 2026-11-15: Old Frontiers, the home and expansion lands, dungeons and the Summoner's Hall raid copy
+        /// (248) are co-op. Realm war is New Frontiers 163, the battlegrounds (165, 234-242, 250-253), stock
+        /// Summoner's Hall 233, Passage of Conflict 244, Labyrinth 245 and Darkness Falls 249.
+        /// The server setting coop_war_zones overrides this; the Old Frontiers zones of 2026-10-27 were
+        /// 1:11,1:12,1:14,1:15,100:111,100:112,100:113,100:115,200:210,200:211,200:212,200:214.
+        /// </summary>
+        public const string DefaultWarZones = "163,165,233-242,244,245,249-253";
+
+        private sealed record WarZoneList(string Spec, HashSet<ushort> Regions, HashSet<(ushort Region, ushort Zone)> Zones);
+        private static WarZoneList _warZones;
+
+        private static WarZoneList WarZones
         {
-            1 => zone is 11 or 12 or 14 or 15,
-            100 => zone is 111 or 112 or 113 or 115,
-            200 => zone is 210 or 211 or 212 or 214,
-            163 or 165 or 233 or 244 or 249 or 250 or 251 or 252 or 253 => true,
-            >= 234 and <= 242 => true,
-            _ => false
-        };
+            get
+            {
+                string spec = Properties.COOP_WAR_ZONES ?? string.Empty;
+                WarZoneList list = _warZones;
+                if (list == null || list.Spec != spec)
+                    _warZones = list = ParseWarZones(spec);
+                return list;
+            }
+        }
+
+        private static WarZoneList ParseWarZones(string spec)
+        {
+            var regions = new HashSet<ushort>();
+            var zones = new HashSet<(ushort, ushort)>();
+            foreach (string raw in spec.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] parts = raw.Split(':');
+                if (parts.Length == 1 && TryRange(parts[0], out ushort from, out ushort to))
+                    for (int id = from; id <= to; id++) regions.Add((ushort)id);
+                else if (parts.Length == 2 && ushort.TryParse(parts[0], out ushort region) &&
+                         TryRange(parts[1], out ushort zoneFrom, out ushort zoneTo))
+                    for (int id = zoneFrom; id <= zoneTo; id++) zones.Add((region, (ushort)id));
+            }
+            return new WarZoneList(spec, regions, zones);
+        }
+
+        private static bool TryRange(string text, out ushort from, out ushort to)
+        {
+            string[] ends = text.Split('-');
+            from = to = 0;
+            if (ends.Length == 1)
+            {
+                bool ok = ushort.TryParse(ends[0], out from);
+                to = from;
+                return ok;
+            }
+            return ends.Length == 2 && ushort.TryParse(ends[0], out from) && ushort.TryParse(ends[1], out to) && from <= to;
+        }
+
+        public static bool IsWarLocation(ushort region, ushort zone)
+        {
+            WarZoneList list = WarZones;
+            return list.Regions.Contains(region) || list.Zones.Contains((region, zone));
+        }
+
+        /// <summary>Battlegrounds: realm war with their own level brackets, not the open frontier.</summary>
+        public static bool IsBattlegroundRegion(ushort region) => region is 165 or >= 234 and <= 242 or >= 250 and <= 253;
+
+        /// <summary>
+        /// The open-frontier war (keeps, relics, roaming RvR) the gamebots travel to: the war zones minus the
+        /// battlegrounds and Darkness Falls, which have their own bot handling.
+        /// </summary>
+        public static bool IsFrontierWarZone(ushort region, ushort zone) =>
+            region != 249 && !IsBattlegroundRegion(region) && IsWarLocation(region, zone);
         public static bool IsWarLocation(GameLiving living) => living?.CurrentRegion != null &&
             IsWarLocation(living.CurrentRegionID, living.CurrentZone?.ID ?? ushort.MaxValue);
         public static bool IsWarKeep(AbstractGameKeep keep) => keep != null && !keep.IsPortalKeep &&
@@ -159,12 +219,12 @@ namespace DOL.GS.ServerRules
             StartImmunityTimer(player, (player.LastDeathPvP ? Properties.TIMER_KILLED_BY_PLAYER : Properties.TIMER_KILLED_BY_MOB) * 1000);
         }
 
-        public override string RulesDescription() => "Co-op world / realm vs realm in DF, battlegrounds and frontiers";
+        public override string RulesDescription() => "Co-op world / realm vs realm in New Frontiers, DF and battlegrounds";
         public override bool IsAllowedCharsInAllRealms(GameClient client) => true;
         public override bool IsAllowedToGroup(GamePlayer a, GamePlayer b, bool quiet)
         {
             if (a == null || b == null || a.Realm == b.Realm || CanGroupAcrossRealms(a, b)) return true;
-            if (!quiet) a.Out.SendMessage("You can't group with another realm in the frontier.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            if (!quiet) a.Out.SendMessage("You can't group with another realm in a realm war area.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
             return false;
         }
         public override bool IsAllowedToJoinGuild(GamePlayer player, Guild guild) => true;

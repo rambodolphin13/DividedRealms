@@ -70,7 +70,7 @@ public static class BotGroupInvite
         {
             if (player != null)
                 ChatUtil.SendSystemMessage(player, ServerRules.HybridCoopRules.Enabled
-                    ? "You can't group with another realm in the frontier."
+                    ? "You can't group with another realm in a realm war area."
                     : "Only a bot of your realm will accept the invitation.");
             return false;
         }
