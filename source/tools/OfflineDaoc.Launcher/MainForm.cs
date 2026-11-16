@@ -2190,6 +2190,12 @@ internal sealed partial class MainForm : Form
                 File.Delete(BotDiagnosticsFlagPath);
             _xpSettingsStatus.ForeColor = DaocTheme.Success;
             _xpSettingsStatus.Text = _botDiagnostics.Checked ? "BOT AI DIAGNOSTICS ON" : "BOT AI DIAGNOSTICS OFF";
+            // Developer PC only: the night sampler follows the box (it starts with the server when ticked before).
+            bool serverUp = _serverProcess is { HasExited: false } || FindExactServerProcess() is not null;
+            if (_botDiagnostics.Checked && serverUp && NightSampler.Run("start", _root, _logsDirectory))
+                _xpSettingsStatus.Text = "BOT AI DIAGNOSTICS ON + RUN RECORDING";
+            else if (!_botDiagnostics.Checked && NightSampler.Run("stop", _root, _logsDirectory))
+                _xpSettingsStatus.Text = "BOT AI DIAGNOSTICS OFF, RUN RECORDING STOPPED";
         }
         catch (Exception ex)
         {
@@ -3464,6 +3470,9 @@ internal sealed partial class MainForm : Form
             // crash the launcher and close CoreServer's redirected stdin.
             TryUpdateRuntimeState("Starting", _serverProcess.Id);
             BeginServerReadinessPolling();
+            // Developer PC only (a DevKit beside the install): the diagnostics box also records the run.
+            if (_botDiagnostics.Checked)
+                NightSampler.Run("start", _root, _logsDirectory);
         }
         catch (Exception exception)
         {
