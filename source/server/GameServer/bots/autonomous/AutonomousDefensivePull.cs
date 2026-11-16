@@ -24,6 +24,39 @@ namespace DOL.GS
             public readonly Dictionary<IControlledBrain, eAggressionState> Pets = new();
             public long Until, RetryAfter, NextMove;
             public bool Shot, Active;
+            public readonly FailureMemory Failures = new();
+        }
+
+        /// <summary>DR-439 (sandbox soak 2026-11-16): a ranged pull whose target never reaches the party timed out,
+        /// waited 10 s and pulled the same monster again, for the whole task: Sirgravy's party at a Snowdonia bwca camp
+        /// started a 10-second fight every 35 s for 20+ minutes with no kill, which is the "Holding group formation"
+        /// party of overnight 2026-11-16 (280 of 1,097 PvE tasks expired idle). After MaxFailures timed-out ranged
+        /// pulls of one target, that target is pulled the ordinary way for SkipMilliseconds.</summary>
+        public sealed class FailureMemory
+        {
+            public const int MaxFailures = 2;
+            public const long SkipMilliseconds = 5 * 60_000;
+            private const int PruneAbove = 32;
+            private readonly Dictionary<object, (int Count, long Until)> _failed = new();
+
+            /// <summary>Counts one timed-out pull; true when this one reaches MaxFailures (the target is now skipped).</summary>
+            public bool Record(object target, long now)
+            {
+                if (_failed.Count > PruneAbove)
+                    foreach (object stale in _failed.Where(entry => entry.Value.Until <= now).Select(entry => entry.Key).ToArray())
+                        _failed.Remove(stale);
+                int count = _failed.TryGetValue(target, out var entry) && entry.Until > now ? entry.Count + 1 : 1;
+                _failed[target] = (count, now + SkipMilliseconds);
+                return count == MaxFailures;
+            }
+
+            public bool Skips(object target, long now) =>
+                target != null && _failed.TryGetValue(target, out var entry) && entry.Until > now && entry.Count >= MaxFailures;
+
+            public int Count(object target, long now) =>
+                target != null && _failed.TryGetValue(target, out var entry) && entry.Until > now ? entry.Count : 0;
+
+            public void Clear(object target) => _failed.Remove(target);
         }
         private static readonly ConditionalWeakTable<Group, State> States = new();
         private static readonly ConditionalWeakTable<GameBot, State> Holding = new();
@@ -147,6 +180,8 @@ namespace DOL.GS
             lock (state)
             {
                 if (state.Active || GameLoop.GameLoopTime < state.RetryAfter) return true;
+                // DR-439: this monster already ignored MaxFailures ranged pulls; the caller pulls it the ordinary way.
+                if (!flyingHandoff && state.Failures.Skips(target, GameLoop.GameLoopTime)) return false;
                 GameBot[] members = shooter.Group.GetMembersInTheGroup().OfType<GameBot>().ToArray();
                 if (members.Length < (flyingHandoff ? 2 : MinimumPullParty) ||
                     target?.IsAlive != true || shooter.CurrentRegion != target.CurrentRegion)
@@ -238,16 +273,20 @@ namespace DOL.GS
             lock (state)
             {
                 if (!state.Active) return false;
-                if (bot.Group == null || !state.Target.IsAlive || state.Target.ObjectState != GameObject.eObjectState.Active ||
+                bool broken = bot.Group == null || !state.Target.IsAlive ||
+                    state.Target.ObjectState != GameObject.eObjectState.Active ||
                     state.Members.Any(member => !member.IsAlive || member.Group != bot.Group ||
                         member.CurrentRegion != state.Shooter.CurrentRegion || member.IsOnStableMasterRoute) ||
-                    state.Target.CurrentRegion != bot.CurrentRegion || GameLoop.GameLoopTime >= state.Until)
+                    state.Target.CurrentRegion != bot.CurrentRegion;
+                if (broken || GameLoop.GameLoopTime >= state.Until)
                 {
-                    Finish(state, false);
+                    // A live target that never reached the party in the whole window is a failed pull (DR-439).
+                    Finish(state, false, failed: !broken);
                     return false;
                 }
                 if (state.Members.Any(member => member.IsWithinRadius(state.Target, ContactRadius)))
                 {
+                    state.Failures.Clear(state.Target);
                     Finish(state, true);
                     return false;
                 }
@@ -308,10 +347,22 @@ namespace DOL.GS
             lock (state) if (state.Active) Finish(state, false);
         }
 
-        private static void Finish(State state, bool engage)
+        private static void Finish(State state, bool engage, bool failed = false)
         {
             state.Active = false;
             state.RetryAfter = GameLoop.GameLoopTime + 10_000;
+            if (failed && state.Target != null)
+            {
+                bool skipped = state.Failures.Record(state.Target, GameLoop.GameLoopTime);
+                Logger log = LoggerManager.Create(typeof(AutonomousDefensivePull));
+                if (BotDiagnostics.Enabled && log.IsInfoEnabled)
+                    log.Info(
+                        $"AUTONOMOUS_DEFENSIVE_PULL_FAILED bot={state.Shooter.Name} target=\"{state.Target.Name}\" " +
+                        $"shot={state.Shot} failures={state.Failures.Count(state.Target, GameLoop.GameLoopTime)} " +
+                        $"distance={(int)state.Shooter.GetDistanceTo(state.Target)} " +
+                        $"action={(skipped ? "ordinary-pull" : "retry")} region={state.Shooter.CurrentRegionID} " +
+                        $"x={state.Shooter.X} y={state.Shooter.Y} z={state.Shooter.Z}");
+            }
             state.Shooter.StopAttack();
             state.Shooter.SwitchWeapon(state.PreviousWeapon);
             foreach (var pet in state.Pets)

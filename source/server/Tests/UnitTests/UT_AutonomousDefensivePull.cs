@@ -215,5 +215,49 @@ namespace DOL.UnitTests
             Assert.That(AutonomousDefensivePull.TryFiringPoint(nav, UT_RealmRaidFormation.Zone(), origin,
                 origin + new Vector3(failure == "too-far" ? 2000 : 1600, 0, 0), 1500, out _), Is.False);
         }
+
+        [Test]
+        public void TargetThatIgnoresTwoRangedPullsIsPulledTheOrdinaryWayForFiveMinutes()
+        {
+            // DR-439: a bwca that never reached the party was ranged-pulled every 35 s for the whole task.
+            var memory = new AutonomousDefensivePull.FailureMemory();
+            object bwca = new(), other = new();
+            long now = 1_000_000, skip = AutonomousDefensivePull.FailureMemory.SkipMilliseconds;
+            Assert.Multiple(() =>
+            {
+                Assert.That(memory.Record(bwca, now), Is.False, "one failure is a retry");
+                Assert.That(memory.Skips(bwca, now), Is.False);
+                Assert.That(memory.Record(bwca, now + 40_000), Is.True, "the second failure switches to an ordinary pull");
+                Assert.That(memory.Skips(bwca, now + 40_000), Is.True);
+                Assert.That(memory.Skips(other, now + 40_000), Is.False, "other monsters still get ranged pulls");
+                Assert.That(memory.Skips(bwca, now + 40_000 + skip), Is.False, "the skip expires");
+                Assert.That(memory.Count(bwca, now + 40_000 + skip), Is.EqualTo(0));
+            });
+        }
+
+        [Test]
+        public void ASuccessfulPullOrALongGapResetsTheFailureCount()
+        {
+            var memory = new AutonomousDefensivePull.FailureMemory();
+            object target = new();
+            long now = 1_000_000, skip = AutonomousDefensivePull.FailureMemory.SkipMilliseconds;
+            memory.Record(target, now);
+            memory.Clear(target);
+            Assert.That(memory.Record(target, now + 1_000), Is.False, "cleared by a pull that reached the party");
+            Assert.That(memory.Record(target, now + 1_000 + skip), Is.False, "an old failure has expired");
+        }
+
+        [Test]
+        public void FailureMemoryPrunesExpiredEntries()
+        {
+            var memory = new AutonomousDefensivePull.FailureMemory();
+            long now = 1_000_000, skip = AutonomousDefensivePull.FailureMemory.SkipMilliseconds;
+            var old = Enumerable.Range(0, 40).Select(_ => new object()).ToArray();
+            foreach (object target in old) memory.Record(target, now);
+            object fresh = new();
+            memory.Record(fresh, now + skip + 1);
+            Assert.That(old.All(target => memory.Count(target, now + skip + 1) == 0), Is.True);
+            Assert.That(memory.Count(fresh, now + skip + 1), Is.EqualTo(1));
+        }
     }
 }
