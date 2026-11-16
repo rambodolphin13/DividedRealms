@@ -213,8 +213,19 @@ namespace DOL.GS
                         state.RetryAfter = 0;
                         return false;
                     }
+                    // DR-439 (A/B soak 2026-11-16): no firing point toward the same monster returned "handled" every
+                    // 35 s for 20+ minutes (Jeeeenny's bwca, Pek's muryan). It counts as a failed pull, so after
+                    // MaxFailures the target is pulled the ordinary way.
+                    bool skip = !flyingHandoff && state.Failures.Record(target, GameLoop.GameLoopTime);
                     LoggerManager.Create(typeof(AutonomousDefensivePull)).Info(
-                        $"AUTONOMOUS_DEFENSIVE_PULL_UNREACHABLE bot={shooter.Name} target={target.Name} region={shooter.CurrentRegionID} x={shooter.X} y={shooter.Y} z={shooter.Z}");
+                        $"AUTONOMOUS_DEFENSIVE_PULL_UNREACHABLE bot={shooter.Name} target={target.Name} " +
+                        $"failures={state.Failures.Count(target, GameLoop.GameLoopTime)} action={(skip ? "ordinary-pull" : "retry")} " +
+                        $"region={shooter.CurrentRegionID} x={shooter.X} y={shooter.Y} z={shooter.Z}");
+                    if (skip)
+                    {
+                        state.RetryAfter = 0;
+                        return false;
+                    }
                     return true;
                 }
                 state.Members = members;
