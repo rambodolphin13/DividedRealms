@@ -227,7 +227,8 @@ namespace DOL.GS {
         {
             double bonus = rules.BadLuckStep > 0 ? BadLuck(participant) : 0;
             bool hit = RollDropChance(Math.Min(100, chance + bonus));
-            if (rules.BadLuckStep > 0 && participant != null)
+            // a simulation (/mob viewloot sim) uses the bonus but never moves it: it is the character's real, saved value
+            if (rules.BadLuckStep > 0 && participant != null && !LootSimulator.IsSimulating)
             {
                 participant.TempProperties.SetProperty(BadLuckProperty,
                     hit ? 0.0 : Math.Min(rules.BadLuckMax, bonus + rules.BadLuckStep));
@@ -271,7 +272,7 @@ namespace DOL.GS {
             if (drops < cap && guaranteed > 0 && empty.Count > 0)
             {
                 GameLiving lucky = empty[Util.Random(empty.Count - 1)];
-                if (rules.BadLuckStep > 0)
+                if (rules.BadLuckStep > 0 && !LootSimulator.IsSimulating)
                     lucky.TempProperties.SetProperty(BadLuckProperty, 0.0);
                 loot.AddFixed(GenerateItemTemplate(lucky, GetLootClass(lucky), lootLevel, killedcon), 1, lucky);
             }

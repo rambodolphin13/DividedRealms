@@ -403,6 +403,23 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void ASimulationNeverMovesBadLuck()
+        {
+            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { BadLuckStep = 1, BadLuckMax = 25 } };
+            Bot bot = NewBot("gm");
+            bot.TempProperties.SetProperty(ROGMobGenerator.BadLuckProperty, 4.0);
+            var generator = new Scripted { Otherwise = false };
+            LootSimulator.Run(() => generator.GenerateLoot(NewMob(), bot).GetDrops().Select(d => d.Item).ToArray(), 50);
+            Assert.That(generator.Chances, Is.All.EqualTo(28.0), "the bonus still counts in the simulated rolls");
+            Assert.That(ROGMobGenerator.BadLuck(bot), Is.EqualTo(4), "50 simulated misses leave it as it was");
+            generator.Otherwise = true;
+            LootSimulator.Run(() => generator.GenerateLoot(NewMob(), bot).GetDrops().Select(d => d.Item).ToArray(), 5);
+            Assert.That(ROGMobGenerator.BadLuck(bot), Is.EqualTo(4), "simulated drops do not clear it either");
+            generator.GenerateLoot(NewMob(), bot);
+            Assert.That(ROGMobGenerator.BadLuck(bot), Is.EqualTo(0), "a real drop still clears it");
+        }
+
+        [Test]
         public void BadLuckIsNotSavedWhenTheRuleIsOff()
         {
             RecordingDb.Rows.Clear();
