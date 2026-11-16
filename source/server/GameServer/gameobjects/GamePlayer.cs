@@ -10847,6 +10847,7 @@ namespace DOL.GS
                 styleComponent.OnPlayerSaveIntoDatabase();
                 GameServer.Database.SaveObject(DBCharacter);
                 Inventory.SaveIntoDatabase(InternalID);
+                LootBadLuckStore.Save(this); // random item bad luck kept across logins (loot-rules SaveBadLuck)
 
                 DbCoreCharacter cachedCharacter = null;
 

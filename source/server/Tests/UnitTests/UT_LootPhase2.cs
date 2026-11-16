@@ -70,8 +70,26 @@ namespace DOL.UnitTests
             Assert.That(items.BadLuckStep, Is.EqualTo(1));
             Assert.That(items.Budget, Is.EqualTo(new RandomItemBudgetRules { Enabled = true, PerLevel = 0.95, LowQualityFactor = 0.90, HighQualityFactor = 1.15 }));
             Assert.That(items.XpRate, Is.EqualTo(new RandomItemXpRateRules { Enabled = true }));
+            // second pass 2026-11-15: no group level penalty, one drop per 2 members up to 4, named quality +2 con,
+            // ToA +3% a quality point, bad luck saved, coin follows the XP rate
+            Assert.That(items.GroupLevelPenalties, Is.Empty);
+            Assert.That(items.GroupMembersPerDrop, Is.EqualTo(2));
+            Assert.That(items.GroupMaxDrops, Is.EqualTo(4));
+            Assert.That(items.NamedQualityConBonus, Is.EqualTo(2));
+            Assert.That(items.ToaChancePerQuality, Is.EqualTo(3));
+            Assert.That(items.SaveBadLuck, Is.True);
+            Assert.That(rules.Coin.XpRate, Is.EqualTo(new RandomItemXpRateRules { Enabled = true }));
             RandomItemLootRules defaults = new();
-            Assert.That((rules with { RandomItems = items with { ChanceMultiplier = 1.0, NamedChanceMultiplier = 1.0, BadLuckStep = 0, Budget = defaults.Budget, XpRate = defaults.XpRate } }).ToJson(),
+            Assert.That((rules with
+                {
+                    RandomItems = items with
+                    {
+                        ChanceMultiplier = 1.0, NamedChanceMultiplier = 1.0, BadLuckStep = 0, Budget = defaults.Budget, XpRate = defaults.XpRate,
+                        GroupLevelPenalties = defaults.GroupLevelPenalties, GroupMembersPerDrop = defaults.GroupMembersPerDrop,
+                        GroupMaxDrops = defaults.GroupMaxDrops, NamedQualityConBonus = 0, ToaChancePerQuality = 0, SaveBadLuck = false,
+                    },
+                    Coin = rules.Coin with { XpRate = new RandomItemXpRateRules() },
+                }).ToJson(),
                 Is.EqualTo(LootRules.Defaults.ToJson()), "apart from the owner's tuning the example holds the defaults");
         }
 

@@ -187,6 +187,107 @@ namespace DOL.UnitTests
 
         #endregion
 
+        #region Level 51 report (owner 2026-11-15)
+
+        /// <summary>
+        /// Run by hand: level 51 drops under docs/loot-rules.example.json with rog_toa_item_chance 15 (the test world),
+        /// against the old rules: strength by con, ToA lines by quality, and which stats each class gets.
+        /// </summary>
+        [Test, Explicit("measurement report, run by hand")]
+        public void Level51Report()
+        {
+            string folder = TestContext.CurrentContext.TestDirectory;
+            var dir = new System.IO.DirectoryInfo(folder);
+            while (dir != null && !System.IO.File.Exists(System.IO.Path.Combine(dir.FullName, "docs", "loot-rules.example.json")))
+                dir = dir.Parent;
+            Assume.That(dir, Is.Not.Null);
+            LootRules tuned = LootRules.Parse(System.IO.File.ReadAllText(System.IO.Path.Combine(dir.FullName, "docs", "loot-rules.example.json")));
+            int toaBefore = Properties.ROG_TOA_ITEM_CHANCE;
+            Properties.ROG_TOA_ITEM_CHANCE = 15;
+            var lines = new List<string>();
+            eCharacterClass[] classes = [eCharacterClass.Armsman, eCharacterClass.Cleric, eCharacterClass.Wizard, eCharacterClass.Scout,
+                eCharacterClass.Infiltrator, eCharacterClass.Friar, eCharacterClass.Druid, eCharacterClass.Hero, eCharacterClass.Healer, eCharacterClass.Berserker];
+            eRealm RealmOf(eCharacterClass c) => c switch
+            {
+                eCharacterClass.Druid or eCharacterClass.Hero => eRealm.Hibernia,
+                eCharacterClass.Healer or eCharacterClass.Berserker => eRealm.Midgard,
+                _ => eRealm.Albion,
+            };
+            int[] toaProperties = typeof(GeneratedUniqueItem).GetField("AdvancedStats", BindingFlags.Static | BindingFlags.NonPublic)
+                .GetValue(null) is eProperty[] adv ? adv.Select(p => (int)p).ToArray() : [];
+            try
+            {
+                foreach ((string label, LootRules rules, bool conFirst) in new[] { ("old", new LootRules(), false), ("new", tuned, true) })
+                {
+                    LootRulesFile.TestOverride = rules;
+                    foreach (int con in new[] { -1, 0, 1, 2, 3, 4 })
+                    {
+                        var items = new List<GeneratedUniqueItem>();
+                        for (int i = 0; i < 1500; i++)
+                        {
+                            eCharacterClass cls = classes[i % classes.Length];
+                            GeneratedUniqueItem item = AtlasROGManager.GenerateMonsterLootROG(RealmOf(cls), cls, 52, false, conFirst ? con : null);
+                            if (!conFirst)
+                                item.GenerateItemQuality(con);
+                            items.Add(item);
+                        }
+                        var magical = items.Where(Magical).ToList();
+                        double toaShare = magical.Average(it => new[] { it.Bonus1Type, it.Bonus2Type, it.Bonus3Type, it.Bonus4Type, it.Bonus5Type }
+                            .Count(t => toaProperties.Contains(t)) / (double)Math.Max(1, new[] { it.Bonus1Type, it.Bonus2Type, it.Bonus3Type, it.Bonus4Type, it.Bonus5Type }.Count(t => t != 0)));
+                        lines.Add($"{label} con {con,2}: quality {items.Average(it => it.Quality):0.0}, magical {100.0 * magical.Count / items.Count:0}%, " +
+                                  $"utility avg {magical.Average(it => it.BountyUtility):0.0} best {magical.Max(it => it.BountyUtility):0.0}, " +
+                                  $"lines {magical.Average(it => new[] { it.Bonus1Type, it.Bonus2Type, it.Bonus3Type, it.Bonus4Type, it.Bonus5Type }.Count(t => t != 0)):0.0}, " +
+                                  $"ToA share of lines {100 * toaShare:0}%, procs {100.0 * items.Count(it => it.ProcSpellID != 0 || it.ProcSpellID1 != 0) / items.Count:0}%");
+                    }
+                }
+
+                LootRulesFile.TestOverride = tuned;
+                lines.Add("");
+                lines.Add("Bonus lines by class (new rules, con 1, 900 items each): top 8 properties, % of lines");
+                foreach (eCharacterClass cls in classes)
+                {
+                    var counts = new Dictionary<eProperty, int>();
+                    int total = 0;
+                    for (int i = 0; i < 900; i++)
+                    {
+                        GeneratedUniqueItem it = AtlasROGManager.GenerateMonsterLootROG(RealmOf(cls), cls, 52, false, 1);
+                        foreach (int t in new[] { it.Bonus1Type, it.Bonus2Type, it.Bonus3Type, it.Bonus4Type, it.Bonus5Type }.Where(t => t != 0))
+                        {
+                            counts[(eProperty)t] = counts.GetValueOrDefault((eProperty)t) + 1;
+                            total++;
+                        }
+                    }
+                    lines.Add($"{cls}: " + string.Join(", ", counts.OrderByDescending(c => c.Value).Take(8).Select(c => $"{c.Key} {100.0 * c.Value / total:0}")));
+                }
+            }
+            finally
+            {
+                Properties.ROG_TOA_ITEM_CHANCE = toaBefore;
+            }
+            TestContext.Out.WriteLine(string.Join(Environment.NewLine, lines));
+            System.IO.File.WriteAllLines(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "rog-level51-report.txt"), lines);
+        }
+
+        #endregion
+
+        [Test]
+        public void FriarStaffsNeverGetAllFocus()
+        {
+            LootRulesFile.TestOverride = BudgetOn;
+            int staffs = 0;
+            for (int i = 0; i < 600; i++)
+            {
+                GeneratedUniqueItem item = new(eRealm.Albion, eCharacterClass.Friar, 51, eObjectType.Staff);
+                staffs++;
+                int[] types = [item.Bonus1Type, item.Bonus2Type, item.Bonus3Type, item.Bonus4Type, item.Bonus5Type];
+                Assert.That(types, Has.No.Member((int)eProperty.AllFocusLevels), item.Name);
+            }
+            Assert.That(staffs, Is.EqualTo(600));
+            GeneratedUniqueItem wizardStaff = Enumerable.Range(0, 50).Select(_ => new GeneratedUniqueItem(eRealm.Albion, eCharacterClass.Wizard, 51, eObjectType.Staff))
+                .First(it => it.Bonus1Type != 0);
+            Assert.That(wizardStaff.Bonus1Type, Is.EqualTo((int)eProperty.AllFocusLevels), "a caster's staff still gets its focus line");
+        }
+
         #region Real items
 
         private static readonly eCharacterClass[] Classes =

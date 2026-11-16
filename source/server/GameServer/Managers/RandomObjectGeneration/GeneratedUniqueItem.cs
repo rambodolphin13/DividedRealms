@@ -54,26 +54,26 @@ namespace DOL.GS
 
         #region Constructor Randomized
 
-        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, int minUtility = 15)
-            : this(realm, charClass, level, GenerateObjectType(realm, charClass, level), minUtility)
+        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, int minUtility = 15, int? con = null)
+            : this(realm, charClass, level, GenerateObjectType(realm, charClass, level), minUtility, con)
         {
 
         }
 
-        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, int minUtility = 15)
-            : this(realm, charClass, level, type, GenerateItemType(type), minUtility)
+        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, int minUtility = 15, int? con = null)
+            : this(realm, charClass, level, type, GenerateItemType(type), minUtility, con)
         {
 
         }
 
-        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot, int minUtility = 15)
-            : this(realm, charClass, level, type, slot, GenerateDamageType(type, charClass), minUtility)
+        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot, int minUtility = 15, int? con = null)
+            : this(realm, charClass, level, type, slot, GenerateDamageType(type, charClass), minUtility, con)
         {
 
         }
 
-        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot, eDamageType dmg, int minUtility = 15)
-            : this(ToaBonusesEnabled, realm, charClass, level, type, slot, dmg, minUtility)
+        public GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot, eDamageType dmg, int minUtility = 15, int? con = null)
+            : this(ToaBonusesEnabled, realm, charClass, level, type, slot, dmg, minUtility, con)
         {
 
         }
@@ -102,7 +102,7 @@ namespace DOL.GS
 
         }
 
-        public GeneratedUniqueItem(bool toa, eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot, eDamageType dmg, int utilityMinimum = 15)
+        public GeneratedUniqueItem(bool toa, eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot, eDamageType dmg, int utilityMinimum = 15, int? con = null)
             : base()
         {
             this.Realm = (int)realm;
@@ -121,7 +121,8 @@ namespace DOL.GS
             this.GenerateItemNameModel();
 
             //set item quality (this can be called again by any script with real mob values)
-            this.GenerateItemQuality(Util.Random(0, 6) - 3);
+            // (2026-11-15: mob drops pass the kill's con, so the bonuses below are rolled for the item's real quality)
+            this.GenerateItemQuality(con ?? Util.Random(0, 6) - 3);
 
             //item magical bonuses
             //if staff and magic..... focus
@@ -968,7 +969,8 @@ namespace DOL.GS
                 return eBonusType.Focus;
             
             // ToA bonuses (stat caps and the ToA percent lines), one roll per bonus line.
-            if (toa && this.Level >= ToaMinimumItemLevel && Util.Chance(Properties.ROG_TOA_ITEM_CHANCE))
+            if (toa && this.Level >= ToaMinimumItemLevel && Util.Chance(ToaLineChance(Properties.ROG_TOA_ITEM_CHANCE, this.Quality, RogStartingQual,
+                    LootRulesFile.Current.RandomItems.ToaChancePerQuality) / 100.0))
             {
                 return eBonusType.AdvancedStat;
             }
@@ -1031,7 +1033,9 @@ namespace DOL.GS
                 if (this.Bonus1Type != 0)
                     return false;
 
-                if (this.Realm == (int)eRealm.Albion && this.Description == "friar")
+                // Friars fight with their staff: no focus line. (2026-11-15: this tested Description == "friar", but the
+                // description is set later and reads "Atlas ROG | Friar", so Friar staffs got All Focus.)
+                if (this.charClass == eCharacterClass.Friar)
                     return false;
 
                 return true;
@@ -11322,6 +11326,14 @@ namespace DOL.GS
 
         /// <summary>Generated loot may roll ToA bonuses when `atlas_rog / rog_toa_item_chance` is above 0.</summary>
         public static bool ToaBonusesEnabled => Properties.ROG_TOA_ITEM_CHANCE > 0;
+
+        /// <summary>Percent chance a bonus line is a ToA line: the server setting plus perQuality per point above the starting quality.</summary>
+        public static double ToaLineChance(int baseChance, int quality, int startingQuality, double perQuality)
+        {
+            if (baseChance <= 0)
+                return 0;
+            return Math.Clamp(baseChance + Math.Max(0, quality - startingQuality) * perQuality, 0, 100);
+        }
 
         private int ToaPercentAmount(int maxAtFifty)
         {

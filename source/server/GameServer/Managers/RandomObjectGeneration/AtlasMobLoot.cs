@@ -64,6 +64,9 @@ namespace DOL.GS {
                 bool named = context.IsNamed;
                 bool frontier = context.IsFrontier;
                 double chance = rules.BaseChance + ((killedcon < 0 ? killedcon + 1 : killedcon) * rules.ChancePerCon);
+                // named and epic mobs roll quality as if they conned higher (loot-rules NamedQualityConBonus); the drop
+                // chance above still uses the real con
+                int qualityCon = killedcon + (named ? rules.NamedQualityConBonus : 0);
 
                 //chance = 100;
 
@@ -82,7 +85,7 @@ namespace DOL.GS {
                     {
                         // each member in sight of the mob rolls for an item of their own class (owner 2026-11-05)
                         var inSight = bg.Members.Keys.OfType<GamePlayer>().Where(member => member.GetDistance(mob) <= WorldMgr.VISIBILITY_DISTANCE);
-                        RollPersonal(inSight, chance, maxDropCap, 0, mob, killedcon, loot, rules);
+                        RollPersonal(inSight, chance, maxDropCap, 0, mob, qualityCon, loot, rules);
                         return loot;
                     }
 
@@ -95,7 +98,7 @@ namespace DOL.GS {
                         if (RollDropChance(legacyBgChance) && numDrops < maxDropCap)
                         {
                             classForLoot = GetRandomClassFromBattlegroup(bg);
-                            var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon);
+                            var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), qualityCon);
                             loot.AddFixed(item, 1);
                             numDrops++;
                         }
@@ -116,7 +119,7 @@ namespace DOL.GS {
                     if (rules.PersonalLoot)
                     {
                         // each member in sight of the mob rolls for an item of their own class (owner 2026-11-05)
-                        RollPersonal(context.Participants, chance, (int)MaxDropCap, guaranteedDrop, mob, killedcon, loot, rules);
+                        RollPersonal(context.Participants, chance, (int)MaxDropCap, guaranteedDrop, mob, qualityCon, loot, rules);
                         return loot;
                     }
 
@@ -130,7 +133,7 @@ namespace DOL.GS {
                         if (RollDropChance(rules.WithXpRate(chance, XpRateOf(groupPlayer))) && numDrops < MaxDropCap)
                         {
                             classForLoot = GetRandomClassFromGroup(owner.Group);
-                            var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon);
+                            var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), qualityCon);
                             loot.AddFixed(item, 1);
                             numDrops++;
                         }
@@ -140,7 +143,7 @@ namespace DOL.GS {
                     if (numDrops < MaxDropCap && guaranteedDrop > 0)
                     {
                         classForLoot = GetRandomClassFromGroup(owner.Group);
-                        var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon);
+                        var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), qualityCon);
                         loot.AddFixed(item, 1);
                     }
 
@@ -161,7 +164,7 @@ namespace DOL.GS {
                     if (RollWithBadLuck(owner, chance, rules))
                     {
                         // quality from the real con, as group drops get (2026-11-15: solo drops kept a random -3..+3 con)
-                        DbItemTemplate item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon);
+                        DbItemTemplate item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), qualityCon);
                         loot.AddFixed(item, 1, owner);
                     }
                     //tmp.GenerateItemQuality(killedcon);
@@ -210,7 +213,14 @@ namespace DOL.GS {
         /// <summary>Percent added to this participant's next roll for the rolls they missed (phase 5 bad-luck protection).</summary>
         public const string BadLuckProperty = "LOOT_RANDOM_ITEM_BAD_LUCK";
 
-        public static double BadLuck(GameLiving participant) => participant?.TempProperties.GetProperty<double>(BadLuckProperty) ?? 0;
+        public static double BadLuck(GameLiving participant)
+        {
+            if (participant == null)
+                return 0;
+            if (participant is GamePlayer player)
+                LootBadLuckStore.EnsureLoaded(player);
+            return participant.TempProperties.GetProperty<double>(BadLuckProperty);
+        }
 
         /// <summary>One roll with the participant's bad-luck bonus: a hit clears it, a miss adds BadLuckStep (up to BadLuckMax).</summary>
         protected bool RollWithBadLuck(GameLiving participant, double chance, RandomItemLootRules rules)
@@ -271,7 +281,9 @@ namespace DOL.GS {
         /// The experience rate this roller's kills use: xp_rate / xp_rate_by_level for players, bot_xp_rate /
         /// bot_xp_rate_by_level for autonomous gamebots, xp_rate for companions; times rvr_zones_xp_rate in RvR zones.
         /// </summary>
-        protected virtual double XpRateOf(GameLiving roller)
+        protected virtual double XpRateOf(GameLiving roller) => KillXpRate(roller);
+
+        public static double KillXpRate(GameLiving roller)
         {
             if (roller == null)
                 return 1.0;
@@ -305,9 +317,10 @@ namespace DOL.GS {
             DbItemTemplate item = null;
                 
                 
-            GeneratedUniqueItem tmp = AtlasROGManager.GenerateMonsterLootROG(owner.Realm, classForLoot, lootLevel, owner.CurrentZone?.IsOF ?? false);
-            if (adjustQuality)
-                tmp.GenerateItemQuality(killedcon);
+            // with adjustQuality the item's quality comes from the kill's con before its bonuses are rolled, so the
+            // ToA chance (loot-rules ToaChancePerQuality) and the bonus budget both see the real quality
+            GeneratedUniqueItem tmp = AtlasROGManager.GenerateMonsterLootROG(owner.Realm, classForLoot, lootLevel, owner.CurrentZone?.IsOF ?? false,
+                adjustQuality ? killedcon : null);
             //tmp.CapUtility(mob.Level + 1);
             item = tmp;
             item.MaxCount = 1;

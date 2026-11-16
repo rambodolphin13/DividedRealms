@@ -46,6 +46,7 @@ namespace DOL.UnitTests
             public readonly Dictionary<GameLiving, double> Rates = new();
             public readonly List<double> Chances = [];
             public readonly List<bool> AdjustedQuality = [];
+            public readonly List<int> Cons = [];
             public bool Otherwise;
 
             protected override bool RollDropChance(double chance)
@@ -61,6 +62,7 @@ namespace DOL.UnitTests
             protected override DbItemTemplate GenerateItemTemplate(GameLiving owner, eCharacterClass characterClass, byte level, int con, bool adjustQuality = true)
             {
                 AdjustedQuality.Add(adjustQuality);
+                Cons.Add(con);
                 return new DbItemTemplate { Id_nb = Guid.NewGuid().ToString(), Name = "made for " + owner.Name, Realm = 0, MaxCount = 1, PackSize = 1 };
             }
         }
@@ -276,5 +278,143 @@ namespace DOL.UnitTests
                 DOL.GS.ServerProperties.Properties.BOT_XP_RATE_BY_LEVEL = botByLevel;
             }
         }
+
+        #region Second pass (owner 2026-11-15): named quality, ToA by quality, coin by XP rate, saved bad luck
+
+        [Test]
+        public void ANamedMobRollsQualityAsIfItConnedHigher()
+        {
+            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { NamedQualityConBonus = 2 } };
+            Bot bot = NewBot("solo");
+            Mob named = NewMob();
+            named.Name = "Grumoz";
+            var generator = new Scripted { Otherwise = true };
+            generator.GenerateLoot(named, bot);
+            generator.GenerateLoot(NewMob(), bot);
+            Assert.That(generator.Cons, Is.EqualTo(new[] { 2, 0 }), "an even-con named mob makes items as if it were 2 steps higher");
+            Assert.That(generator.Chances, Is.EqualTo(new[] { 24.0, 24.0 }), "the drop chance keeps the real con");
+        }
+
+        [Test]
+        public void ToaLineChanceRisesWithQuality()
+        {
+            Assert.That(GeneratedUniqueItem.ToaLineChance(15, 95, 95, 3), Is.EqualTo(15));
+            Assert.That(GeneratedUniqueItem.ToaLineChance(15, 99, 95, 3), Is.EqualTo(27));
+            Assert.That(GeneratedUniqueItem.ToaLineChance(15, 99, 95, 0), Is.EqualTo(15), "0 per point is the old flat chance");
+            Assert.That(GeneratedUniqueItem.ToaLineChance(0, 99, 95, 3), Is.EqualTo(0), "ToA off stays off");
+            Assert.That(GeneratedUniqueItem.ToaLineChance(15, 90, 95, 3), Is.EqualTo(15), "below the starting quality adds nothing");
+            Assert.That(GeneratedUniqueItem.ToaLineChance(90, 99, 95, 25), Is.EqualTo(100));
+        }
+
+        [Test]
+        public void CoinFollowsTheKillersXpRate()
+        {
+            double botRate = DOL.GS.ServerProperties.Properties.BOT_XP_RATE, moneyDrop = DOL.GS.ServerProperties.Properties.MONEY_DROP;
+            string botByLevel = DOL.GS.ServerProperties.Properties.BOT_XP_RATE_BY_LEVEL;
+            try
+            {
+                DOL.GS.ServerProperties.Properties.BOT_XP_RATE = 10;
+                DOL.GS.ServerProperties.Properties.BOT_XP_RATE_BY_LEVEL = "";
+                DOL.GS.ServerProperties.Properties.MONEY_DROP = 1;
+                Bot bot = NewBot("coin", level: 50);
+                Mob mob = NewMob(50);
+                const long minLoot = 2 + ((51 * 51 * 51) >> 3); // the generator's base, plus up to half again
+
+                long Coin() => new LootGeneratorMoney().GenerateLoot(mob, bot).GetDrops().Single().Item.Price;
+
+                LootRulesFile.TestOverride = new LootRules();
+                for (int i = 0; i < 20; i++)
+                    Assert.That(Coin(), Is.InRange(minLoot, minLoot + (minLoot >> 1)), "off: as before");
+
+                LootRulesFile.TestOverride = new LootRules { Coin = new CoinLootRules { XpRate = new RandomItemXpRateRules { Enabled = true } } };
+                double factor = Math.Pow(10, 0.4);
+                for (int i = 0; i < 20; i++)
+                    Assert.That(Coin(), Is.InRange((long)(minLoot * factor) - 1, (long)((minLoot + (minLoot >> 1)) * factor) + 1), "10x XP: about 2.5x coin");
+            }
+            finally
+            {
+                DOL.GS.ServerProperties.Properties.BOT_XP_RATE = botRate;
+                DOL.GS.ServerProperties.Properties.BOT_XP_RATE_BY_LEVEL = botByLevel;
+                DOL.GS.ServerProperties.Properties.MONEY_DROP = moneyDrop;
+            }
+        }
+
+        // A database that keeps the rows added to it, enough for the saved bad-luck row.
+        public class RecordingDb : DispatchProxy
+        {
+            public static readonly List<DataObject> Rows = [];
+
+            protected override object Invoke(MethodInfo method, object[] args)
+            {
+                if (method.Name == nameof(IObjectDatabase.AddObject) && args[0] is DataObject added)
+                {
+                    Rows.Add(added);
+                    return true;
+                }
+                if (method.Name == nameof(IObjectDatabase.SaveObject))
+                    return true;
+                Type result = method.ReturnType;
+                if (method.Name == nameof(IObjectDatabase.SelectObject))
+                    return Rows.FirstOrDefault(result.IsInstanceOfType);
+                if (result.IsGenericType && typeof(IEnumerable).IsAssignableFrom(result))
+                    return Activator.CreateInstance(typeof(List<>).MakeGenericType(result.GetGenericArguments()[0]));
+                return result.IsValueType ? Activator.CreateInstance(result) : null;
+            }
+        }
+
+        private sealed class RecordingServer : GameServer
+        {
+            protected override IServerRules ServerRulesImpl => new NormalServerRules();
+            protected override IObjectDatabase DataBaseImpl => RecordingDatabase;
+        }
+
+        private static readonly IObjectDatabase RecordingDatabase = DispatchProxy.Create<IObjectDatabase, RecordingDb>();
+
+        private sealed class Player : GamePlayer
+        {
+            private Player() : base(null, null) { }
+        }
+
+        private static Player NewPlayer(string characterId)
+        {
+            Player player = Inert<Player>();
+            Field(typeof(GamePlayer), player, "m_dbCharacter", new DbCoreCharacter { ObjectId = characterId });
+            return player;
+        }
+
+        [Test]
+        public void BadLuckIsKeptAcrossLoginsWhenSaved()
+        {
+            RecordingDb.Rows.Clear();
+            GameServer.LoadTestDouble((RecordingServer)RuntimeHelpers.GetUninitializedObject(typeof(RecordingServer)));
+            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { SaveBadLuck = true, BadLuckStep = 1, BadLuckMax = 25 } };
+
+            Player first = NewPlayer("char-1");
+            Assert.That(ROGMobGenerator.BadLuck(first), Is.EqualTo(0), "nothing saved yet");
+            first.TempProperties.SetProperty(ROGMobGenerator.BadLuckProperty, 7.0);
+            LootBadLuckStore.Save(first);
+            Assert.That(RecordingDb.Rows.OfType<DbCoreCharacterXCustomParam>().Single().Value, Is.EqualTo("7"));
+
+            Player again = NewPlayer("char-1"); // a new session of the same character
+            Assert.That(ROGMobGenerator.BadLuck(again), Is.EqualTo(7));
+
+            LootBadLuckStore.Save(again);
+            Assert.That(RecordingDb.Rows, Has.Count.EqualTo(1), "unchanged: nothing written");
+        }
+
+        [Test]
+        public void BadLuckIsNotSavedWhenTheRuleIsOff()
+        {
+            RecordingDb.Rows.Clear();
+            GameServer.LoadTestDouble((RecordingServer)RuntimeHelpers.GetUninitializedObject(typeof(RecordingServer)));
+            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { BadLuckStep = 1 } };
+            Player player = NewPlayer("char-2");
+            ROGMobGenerator.BadLuck(player);
+            player.TempProperties.SetProperty(ROGMobGenerator.BadLuckProperty, 7.0);
+            LootBadLuckStore.Save(player);
+            Assert.That(RecordingDb.Rows, Is.Empty);
+        }
+
+        #endregion
     }
 }

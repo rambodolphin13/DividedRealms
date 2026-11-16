@@ -122,6 +122,21 @@ namespace DOL.GS
         /// </summary>
         public RandomItemXpRateRules XpRate { get; init; } = new();
 
+        /// <summary>
+        /// Named mobs and epic NPCs roll item quality as if they conned this many steps higher (owner 2026-11-15), so
+        /// they give 98-99 items more often. 0 (the default) is the old roll.
+        /// </summary>
+        public int NamedQualityConBonus { get; init; } = 0;
+
+        /// <summary>
+        /// Percent added to the rog_toa_item_chance server setting per quality point above rog_starting_qual (owner
+        /// 2026-11-15): with 15 and 3, quality 95 rolls 15% a line and quality 99 27%. Only when that setting is above 0.
+        /// </summary>
+        public double ToaChancePerQuality { get; init; } = 0;
+
+        /// <summary>Real players' bad-luck bonus is saved with the character, so logging out keeps it (owner 2026-11-15).</summary>
+        public bool SaveBadLuck { get; init; } = false;
+
         /// <summary>A final chance times the XP rate factor for one roller, kept from 0 to 100.</summary>
         public double WithXpRate(double chance, double xpRate) => Math.Clamp(chance * XpRate.Factor(xpRate), 0, 100);
 
@@ -169,7 +184,9 @@ namespace DOL.GS
             Budget.Validate();
             if (XpRate == null)
                 throw new InvalidDataException("RandomItems.XpRate must be present when it is written.");
-            XpRate.Validate();
+            XpRate.Validate("RandomItems.XpRate");
+            LootRules.Range(NamedQualityConBonus, 0, 5, "RandomItems.NamedQualityConBonus");
+            LootRules.Range(ToaChancePerQuality, 0, 25, "RandomItems.ToaChancePerQuality");
         }
     }
 
@@ -196,11 +213,11 @@ namespace DOL.GS
             return Math.Clamp(Math.Pow(xpRate, Exponent), MinMultiplier, MaxMultiplier);
         }
 
-        internal void Validate()
+        internal void Validate(string name)
         {
-            LootRules.Range(Exponent, 0, 2, "RandomItems.XpRate.Exponent");
-            LootRules.Range(MinMultiplier, 0, 1, "RandomItems.XpRate.MinMultiplier");
-            LootRules.Range(MaxMultiplier, 1, 20, "RandomItems.XpRate.MaxMultiplier");
+            LootRules.Range(Exponent, 0, 2, name + ".Exponent");
+            LootRules.Range(MinMultiplier, 0, 1, name + ".MinMultiplier");
+            LootRules.Range(MaxMultiplier, 1, 20, name + ".MaxMultiplier");
         }
     }
 
@@ -278,10 +295,16 @@ namespace DOL.GS
 
         public double NamedMultiplier { get; init; } = 1.0;
 
+        /// <summary>Coin follows the killer's experience rate, the same curve as RandomItems.XpRate (owner 2026-11-15). Off by default.</summary>
+        public RandomItemXpRateRules XpRate { get; init; } = new();
+
         internal void Validate()
         {
             LootRules.Range(Multiplier, 0, 100, "Coin.Multiplier");
             LootRules.Range(NamedMultiplier, 0, 100, "Coin.NamedMultiplier");
+            if (XpRate == null)
+                throw new InvalidDataException("Coin.XpRate must be present when it is written.");
+            XpRate.Validate("Coin.XpRate");
         }
     }
 

@@ -164,14 +164,15 @@ namespace DOL.GS
             }
         }
 
-        public static GeneratedUniqueItem GenerateMonsterLootROG(eRealm realm, eCharacterClass charClass, byte level, bool isFrontierKill)
+        /// <param name="con">The kill's con for the item's quality (rolled before its bonuses); null keeps a random -3..+3.</param>
+        public static GeneratedUniqueItem GenerateMonsterLootROG(eRealm realm, eCharacterClass charClass, byte level, bool isFrontierKill, int? con = null)
         {
             GeneratedUniqueItem item = null;
             
             if(isFrontierKill)
-                item = new GeneratedUniqueItem(realm, charClass, level, level - Util.Random(-5,10));
+                item = new GeneratedUniqueItem(realm, charClass, level, level - Util.Random(-5,10), con);
             else
-                item = new GeneratedUniqueItem(realm, charClass, level, level - Util.Random(15,20));
+                item = new GeneratedUniqueItem(realm, charClass, level, level - Util.Random(15,20), con);
             
             item.AllowAdd = true;
             item.IsTradable = true;
