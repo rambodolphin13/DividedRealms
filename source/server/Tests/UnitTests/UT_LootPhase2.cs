@@ -63,9 +63,16 @@ namespace DOL.UnitTests
             Assume.That(folder, Is.Not.Null, "docs/loot-rules.example.json is not above the test folder");
 
             LootRules rules = LootRules.Parse(File.ReadAllText(Path.Combine(folder.FullName, "docs", "loot-rules.example.json")));
-            Assert.That(rules.RandomItems.ChanceMultiplier, Is.EqualTo(0.5));
-            Assert.That((rules with { RandomItems = rules.RandomItems with { ChanceMultiplier = 1.0 } }).ToJson(),
-                Is.EqualTo(LootRules.Defaults.ToJson()), "apart from the multiplier the example holds the defaults");
+            RandomItemLootRules items = rules.RandomItems;
+            Assert.That(items.ChanceMultiplier, Is.EqualTo(0.5));
+            // owner tuning 2026-11-15: named x2, bad luck 1, stronger budget bonuses, drops follow the XP rate
+            Assert.That(items.NamedChanceMultiplier, Is.EqualTo(2.0));
+            Assert.That(items.BadLuckStep, Is.EqualTo(1));
+            Assert.That(items.Budget, Is.EqualTo(new RandomItemBudgetRules { Enabled = true, PerLevel = 0.95, LowQualityFactor = 0.90, HighQualityFactor = 1.15 }));
+            Assert.That(items.XpRate, Is.EqualTo(new RandomItemXpRateRules { Enabled = true }));
+            RandomItemLootRules defaults = new();
+            Assert.That((rules with { RandomItems = items with { ChanceMultiplier = 1.0, NamedChanceMultiplier = 1.0, BadLuckStep = 0, Budget = defaults.Budget, XpRate = defaults.XpRate } }).ToJson(),
+                Is.EqualTo(LootRules.Defaults.ToJson()), "apart from the owner's tuning the example holds the defaults");
         }
 
         [Test]

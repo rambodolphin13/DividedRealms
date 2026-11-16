@@ -76,6 +76,7 @@ namespace DOL.GS {
                     if (mob is GameEpicNPC)
                         maxDropCap *= rules.EpicBattlegroupDropMultiplier;
                     chance = rules.Scale(rules.BattlegroupChance, named, frontier);
+                    double legacyBgChance = rules.WithXpRate(chance, XpRateOf(owner));
 
                     if (rules.PersonalLoot)
                     {
@@ -91,7 +92,7 @@ namespace DOL.GS {
                         if(bgMember.GetDistance(owner) > WorldMgr.VISIBILITY_DISTANCE)
                             continue;
                         
-                        if (RollDropChance(chance) && numDrops < maxDropCap)
+                        if (RollDropChance(legacyBgChance) && numDrops < maxDropCap)
                         {
                             classForLoot = GetRandomClassFromBattlegroup(bg);
                             var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon);
@@ -125,8 +126,8 @@ namespace DOL.GS {
                     {
                         if(groupPlayer.GetDistance(owner) > WorldMgr.VISIBILITY_DISTANCE)
                             continue;
-                        
-                        if (RollDropChance(chance) && numDrops < MaxDropCap)
+
+                        if (RollDropChance(rules.WithXpRate(chance, XpRateOf(groupPlayer))) && numDrops < MaxDropCap)
                         {
                             classForLoot = GetRandomClassFromGroup(owner.Group);
                             var item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon);
@@ -155,10 +156,12 @@ namespace DOL.GS {
                     }
 
                     chance = rules.Scale(chance + rules.SoloBonus, named, frontier); //solo drop bonus
+                    chance = rules.WithXpRate(chance, XpRateOf(owner));
 
                     if (RollWithBadLuck(owner, chance, rules))
                     {
-                        DbItemTemplate item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon, false);
+                        // quality from the real con, as group drops get (2026-11-15: solo drops kept a random -3..+3 con)
+                        DbItemTemplate item = GenerateItemTemplate(owner, classForLoot, (byte)(mob.Level + 1), killedcon);
                         loot.AddFixed(item, 1, owner);
                     }
                     //tmp.GenerateItemQuality(killedcon);
@@ -237,15 +240,16 @@ namespace DOL.GS {
 
             foreach (GameLiving member in order)
             {
+                double memberChance = rules.WithXpRate(chance, XpRateOf(member));
                 if (drops >= cap)
                 {
                     // past the cap a roll still happens (it always did), but can neither drop nor count as bad luck
-                    RollDropChance(chance);
+                    RollDropChance(memberChance);
                     empty.Add(member);
                     continue;
                 }
 
-                if (RollWithBadLuck(member, chance, rules))
+                if (RollWithBadLuck(member, memberChance, rules))
                 {
                     loot.AddFixed(GenerateItemTemplate(member, GetLootClass(member), lootLevel, killedcon), 1, member);
                     drops++;
@@ -261,6 +265,26 @@ namespace DOL.GS {
                     lucky.TempProperties.SetProperty(BadLuckProperty, 0.0);
                 loot.AddFixed(GenerateItemTemplate(lucky, GetLootClass(lucky), lootLevel, killedcon), 1, lucky);
             }
+        }
+
+        /// <summary>
+        /// The experience rate this roller's kills use: xp_rate / xp_rate_by_level for players, bot_xp_rate /
+        /// bot_xp_rate_by_level for autonomous gamebots, xp_rate for companions; times rvr_zones_xp_rate in RvR zones.
+        /// </summary>
+        protected virtual double XpRateOf(GameLiving roller)
+        {
+            if (roller == null)
+                return 1.0;
+            bool rvr = roller.CurrentRegion?.IsRvR == true || roller.CurrentZone?.IsRvR == true;
+            double rate = roller switch
+            {
+                GamePlayer player => LevelRangeXpRates.PlayerRate(player.Level),
+                GameBot { IsAutonomousWorldBot: true } bot => LevelRangeXpRates.BotRate(bot.Level),
+                _ => ServerProperties.Properties.XP_RATE,
+            };
+            if (rvr)
+                rate *= ServerProperties.Properties.RvR_XP_RATE;
+            return rate;
         }
 
         public static GameLiving ResolveEquipmentLootOwner(GameObject killer) => LootContext.ResolveOwner(killer);

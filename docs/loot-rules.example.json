@@ -6,7 +6,8 @@
   "RandomItems": {
     // Owner 2026-11-05: about 1 in 8 solo random items instead of about 1 in 4. Groups are halved the same way.
     "ChanceMultiplier": 0.5,
-    "NamedChanceMultiplier": 1.0,
+    // Owner OK 2026-11-15: named mobs drop twice as often.
+    "NamedChanceMultiplier": 2.0,
     "FrontierChanceMultiplier": 1.0,
     "BaseChance": 14,
     "ChancePerCon": 3,
@@ -25,23 +26,35 @@
     // Owner 2026-11-05: personal loot. Each group or battlegroup member who rolls an item gets one for their own class.
     "PersonalLoot": true,
     // Bad-luck protection: each missed roll adds this many percent to that member's next roll (up to BadLuckMax) until
-    // they get an item. 0 is off. Try 1 with BadLuckMax 25 to soften long dry spells at the 1 in 8 rate.
-    "BadLuckStep": 0,
+    // they get an item. 0 is off. Owner OK 2026-11-15: on at 1 (a dry spell of 25 misses adds 25%).
+    "BadLuckStep": 1,
     "BadLuckMax": 25,
     // Budget-first bonuses (phase 3). Set Enabled to true to use them: a mid quality item then matches the old average
     // strength, low quality is a little weaker and high quality (orange and red kills) stronger.
+    // Owner 2026-11-15 ("items too weak"): on, PerLevel 0.88 -> 0.95 (about 8% more for the same quality) and a wider
+    // quality spread (0.85-1.05 -> 0.90-1.15), so a level 51 red kill aims at about 49 utility instead of about 39.
     "Budget": {
-      "Enabled": false,
-      "PerLevel": 0.88,
+      "Enabled": true,
+      "PerLevel": 0.95,
       "LevelOffset": 6,
       "Floor": 5,
       "Max": 80,
       "LowQuality": 95,
-      "LowQualityFactor": 0.85,
+      "LowQualityFactor": 0.90,
       "HighQuality": 99,
-      "HighQualityFactor": 1.05,
+      "HighQualityFactor": 1.15,
       "ProcFactor": 0.7,
       "LineCapFactor": 1.5
+    },
+    // Owner 2026-11-15: drops follow the XP multiplier. Each roller's chance is multiplied by
+    // (their XP rate) ^ Exponent, kept from MinMultiplier to MaxMultiplier. The rate is the one their kills use
+    // (xp_rate / xp_rate_by_level, bot_xp_rate / bot_xp_rate_by_level for gamebots, times rvr_zones_xp_rate in RvR).
+    // Exponent 0.4: 2x XP -> 1.32x drops, 5x -> 1.9x, 10x -> 2.5x. Exponent 1 follows the rate exactly.
+    "XpRate": {
+      "Enabled": true,
+      "Exponent": 0.4,
+      "MinMultiplier": 0.5,
+      "MaxMultiplier": 3.0
     }
   },
   "Coin": {

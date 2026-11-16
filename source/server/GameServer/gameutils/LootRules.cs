@@ -116,6 +116,15 @@ namespace DOL.GS
         /// <summary>How strong a random item's bonuses are (phase 3). Off by default: the old roll-then-trim is used.</summary>
         public RandomItemBudgetRules Budget { get; init; } = new();
 
+        /// <summary>
+        /// Drop chance follows the roller's experience rate (owner 2026-11-15): the higher the XP multiplier, the more
+        /// random items. Off by default.
+        /// </summary>
+        public RandomItemXpRateRules XpRate { get; init; } = new();
+
+        /// <summary>A final chance times the XP rate factor for one roller, kept from 0 to 100.</summary>
+        public double WithXpRate(double chance, double xpRate) => Math.Clamp(chance * XpRate.Factor(xpRate), 0, 100);
+
         /// <summary>The final percent chance for a roll: the multipliers applied, kept from 0 to 100.</summary>
         public double Scale(double chance, bool named, bool frontier)
         {
@@ -158,6 +167,40 @@ namespace DOL.GS
             if (Budget == null)
                 throw new InvalidDataException("RandomItems.Budget must be present when it is written.");
             Budget.Validate();
+            if (XpRate == null)
+                throw new InvalidDataException("RandomItems.XpRate must be present when it is written.");
+            XpRate.Validate();
+        }
+    }
+
+    /// <summary>
+    /// Random item chance scaled by the roller's experience rate: factor = rate ^ Exponent, kept from MinMultiplier to
+    /// MaxMultiplier. The rate is the one the roller's kills use (xp_rate or xp_rate_by_level for players, bot_xp_rate or
+    /// bot_xp_rate_by_level for autonomous gamebots, times rvr_zones_xp_rate in RvR zones). A rate of 1 changes nothing.
+    /// Exponent 1 follows the rate exactly; 0.4 turns 10x XP into about 2.5x drops.
+    /// </summary>
+    public sealed record RandomItemXpRateRules
+    {
+        public bool Enabled { get; init; } = false;
+
+        public double Exponent { get; init; } = 0.4;
+
+        public double MinMultiplier { get; init; } = 0.5;
+
+        public double MaxMultiplier { get; init; } = 3.0;
+
+        public double Factor(double xpRate)
+        {
+            if (!Enabled || !double.IsFinite(xpRate) || xpRate <= 0)
+                return 1.0;
+            return Math.Clamp(Math.Pow(xpRate, Exponent), MinMultiplier, MaxMultiplier);
+        }
+
+        internal void Validate()
+        {
+            LootRules.Range(Exponent, 0, 2, "RandomItems.XpRate.Exponent");
+            LootRules.Range(MinMultiplier, 0, 1, "RandomItems.XpRate.MinMultiplier");
+            LootRules.Range(MaxMultiplier, 1, 20, "RandomItems.XpRate.MaxMultiplier");
         }
     }
 
