@@ -141,6 +141,10 @@ public static partial class AutonomousBotGroupCoordinator
         public long? NoCampSinceTick { get; set; }
         // When the party entered "Choosing group target" with no camp (0 = not waiting). See TargetChoiceDeadlineMilliseconds.
         public long ChoosingTargetSinceTick { get; set; }
+        // DR-439: when a started PvE task last had no group fight (0 = fighting or not started), and when its pull gate
+        // was last logged. See ShouldLogPullGate.
+        public long NoGroupFightSinceTick { get; set; }
+        public long PullGateLoggedTick { get; set; }
         public AutonomousGroupRecoveryState Recovery { get; } = new();
         public bool RecoveryRendezvousChosen { get; set; }
         public long NextRecoveryReadinessTick { get; set; }
@@ -1296,21 +1300,118 @@ public static partial class AutonomousBotGroupCoordinator
                 return bot == expeditionPuller && bot.HealthPercent >= 70;
             }
             GameBot[] members = BotMembers(group);
-            GameBot leader = ChooseLeader(session, members);
-            GameBot puller = ChoosePuller(session, members);
-            if (leader == null) return false;
-            bool combatActor = AutonomousRvrStaging.UsesIndependentCombatActors(session.ObjectiveKind) || bot == puller;
-            return !IsAssemblyPhase(session.Phase) && !session.Recovery.IsRegrouping && combatActor &&
-                !session.Recovery.HasCasualty(RecoveryMembers(session, members, false)) &&
-                !session.RecoveringBetweenPulls && MembersReadyForPull(members) &&
-                // Bot-led groups: the hosted player near the camp, alive, and up on health and power like the rest.
-                BotLedGroups.ViewOf(group)?.BlocksPull != true &&
-                (session.ObjectiveKind != eAutonomousObjectiveKind.GroupPve ||
-                    HasActivePveComposition(session, members)) &&
-                members.Length >= 2 && members.All(member => !member.IsOnStableMasterRoute &&
-                    member.CurrentRegionID == leader.CurrentRegionID && member.GetDistanceTo(leader) <=
-                        PullCohesionRadius(corridorBlocker, bot.CurrentZone?.IsDungeon == true));
+            return PullBlocks(session, bot, members, corridorBlocker, firstOnly: true) == PullBlock.None;
         }
+    }
+
+    /// <summary>DR-439: every condition of the new-pull gate, one flag each, so the gate and its diagnostic
+    /// (AUTONOMOUS_GROUP_PULL_GATE) can never disagree. Overnight 2026-11-16: 280 of 1,097 PvE tasks expired with the
+    /// leader "Waiting for the complete party" while 271 of them had every member alive within 500 units, and
+    /// nothing said which condition was false.</summary>
+    [Flags]
+    public enum PullBlock
+    {
+        None = 0,
+        NoLeader = 1 << 0,
+        AssemblyPhase = 1 << 1,
+        Regrouping = 1 << 2,
+        NotCombatActor = 1 << 3,
+        Casualty = 1 << 4,
+        RecoveringBetweenPulls = 1 << 5,
+        MembersNotReady = 1 << 6,
+        HostedPlayerBlocks = 1 << 7,
+        PveComposition = 1 << 8,
+        TooFewMembers = 1 << 9,
+        MemberOnStableRoute = 1 << 10,
+        MemberOtherRegion = 1 << 11,
+        MemberOutOfFormation = 1 << 12,
+    }
+
+    /// <summary>The gate's conditions in its original order. firstOnly stops at the first failure (the hot path);
+    /// otherwise every failing condition is collected for the diagnostic. Caller holds Sync.</summary>
+    private static PullBlock PullBlocks(Session session, GameBot bot, GameBot[] members, bool corridorBlocker,
+        bool firstOnly)
+    {
+        GameBot leader = ChooseLeader(session, members);
+        if (leader == null) return PullBlock.NoLeader;
+        GameBot puller = ChoosePuller(session, members);
+        PullBlock blocks = PullBlock.None;
+        bool Fail(PullBlock block)
+        {
+            blocks |= block;
+            return firstOnly;
+        }
+        if (IsAssemblyPhase(session.Phase) && Fail(PullBlock.AssemblyPhase)) return blocks;
+        if (session.Recovery.IsRegrouping && Fail(PullBlock.Regrouping)) return blocks;
+        bool combatActor = AutonomousRvrStaging.UsesIndependentCombatActors(session.ObjectiveKind) || bot == puller;
+        if (!combatActor && Fail(PullBlock.NotCombatActor)) return blocks;
+        if (session.Recovery.HasCasualty(RecoveryMembers(session, members, false)) && Fail(PullBlock.Casualty)) return blocks;
+        if (session.RecoveringBetweenPulls && Fail(PullBlock.RecoveringBetweenPulls)) return blocks;
+        if (!MembersReadyForPull(members) && Fail(PullBlock.MembersNotReady)) return blocks;
+        // Bot-led groups: the hosted player near the camp, alive, and up on health and power like the rest.
+        if (BotLedGroups.ViewOf(session.Group)?.BlocksPull == true && Fail(PullBlock.HostedPlayerBlocks)) return blocks;
+        if (session.ObjectiveKind == eAutonomousObjectiveKind.GroupPve && !HasActivePveComposition(session, members) &&
+            Fail(PullBlock.PveComposition)) return blocks;
+        if (members.Length < 2 && Fail(PullBlock.TooFewMembers)) return blocks;
+        int radius = PullCohesionRadius(corridorBlocker, bot.CurrentZone?.IsDungeon == true);
+        foreach (GameBot member in members)
+        {
+            if (member.IsOnStableMasterRoute && Fail(PullBlock.MemberOnStableRoute)) return blocks;
+            if (member.CurrentRegionID != leader.CurrentRegionID)
+            {
+                if (Fail(PullBlock.MemberOtherRegion)) return blocks;
+            }
+            else if (member.GetDistanceTo(leader) > radius && Fail(PullBlock.MemberOutOfFormation)) return blocks;
+        }
+        return blocks;
+    }
+
+    /// <summary>DR-439: when a started PvE task has gone this long with no group fight, the coordinator logs the
+    /// puller's gate once, and again every PullGateRepeatMilliseconds while it stays idle.</summary>
+    public const long PullGateFirstLogMilliseconds = 5 * 60_000;
+    public const long PullGateRepeatMilliseconds = 15 * 60_000;
+
+    public static bool ShouldLogPullGate(long idleSinceTick, long lastLoggedTick, long nowTick)
+    {
+        if (idleSinceTick <= 0 || nowTick - idleSinceTick < PullGateFirstLogMilliseconds) return false;
+        // A log from an earlier idle episode does not count for this one.
+        return lastLoggedTick < idleSinceTick || nowTick - lastLoggedTick >= PullGateRepeatMilliseconds;
+    }
+
+    public static string PullBlockNames(PullBlock blocks) =>
+        blocks == PullBlock.None ? "none" : string.Join(",", Enum.GetValues<PullBlock>()
+            .Where(block => block != PullBlock.None && blocks.HasFlag(block)).Select(block => block.ToString()));
+
+    private static string DescribePullGate(Session session, GameBot[] members, long idleSinceTick)
+    {
+        GameBot leader = ChooseLeader(session, members);
+        GameBot puller = ChoosePuller(session, members);
+        PullBlock blocks = puller == null ? PullBlock.NoLeader : PullBlocks(session, puller, members, false, firstOnly: false);
+        HashSet<long> casualties = session.Recovery.CasualtyIds(RecoveryMembers(session, members, false));
+        string Member(GameBot member)
+        {
+            string role = session.PveRoles.TryGetValue(MemberKey(member), out BotPveGroupRole r) ? r.ToString() : "none";
+            string where = leader == null ? "?" : member.CurrentRegionID != leader.CurrentRegionID
+                ? $"region{member.CurrentRegionID}" : member.GetDistanceTo(leader).ToString();
+            var flags = new List<string>();
+            if (!member.IsAlive) flags.Add("dead");
+            if (member.IsReturningAfterRelease) flags.Add("returning");
+            if (member.IsOnStableMasterRoute) flags.Add("horse");
+            if (member.InCombat) flags.Add("combat");
+            if (casualties.Contains(MemberKey(member))) flags.Add("casualty");
+            return $"{member.Name}:{role}:{member.HealthPercent}/{(member.MaxMana > 0 ? member.ManaPercent.ToString() : "-")}/" +
+                   $"{member.EndurancePercent}:{where}{(flags.Count > 0 ? ":" + string.Join("+", flags) : "")}";
+        }
+        string campDistance = session.Camp == null || puller == null || puller.CurrentRegionID != session.Camp.RegionId
+            ? "-" : ((int)Math.Sqrt(Math.Pow(puller.X - session.Camp.X, 2) + Math.Pow(puller.Y - session.Camp.Y, 2))).ToString();
+        return $"AUTONOMOUS_GROUP_PULL_GATE group={session.Id} phase=\"{session.Phase}\" " +
+               $"idleSeconds={(GameLoop.GameLoopTime - idleSinceTick) / 1000} blocks={PullBlockNames(blocks)} " +
+               $"recoveringBetweenPulls={session.RecoveringBetweenPulls} combatObserved={session.CombatObserved} " +
+               $"regrouping={session.Recovery.IsRegrouping} lockedSize={session.LockedSize} " +
+               $"leader=\"{leader?.Name}\" puller=\"{puller?.Name}\" pullerActivity=\"{puller?.PersistentRecord?.Activity}\" " +
+               $"camp=\"{session.Camp?.Id}\" pullerToCamp={campDistance} " +
+               $"remainingSeconds={session.TaskClock.RemainingMilliseconds(GameLoop.GameLoopTime) / 1000} " +
+               $"members=\"{string.Join(";", members.Select(Member))}\"";
     }
 
     // A corridor monster can separate followers from their leader by more than
@@ -2523,6 +2624,18 @@ public static partial class AutonomousBotGroupCoordinator
                 FinishGroupTask(session,
                     $"The leader chose no group target within {TargetChoiceDeadlineMilliseconds / 60_000} minutes of the party forming up");
                 return false;
+            }
+
+            // DR-439: a started task with no group fight for 5 minutes logs which gate condition holds its puller.
+            bool idle = session.TaskClock.HasStarted && !groupCombatActive && !IsAssemblyPhase(session.Phase);
+            session.NoGroupFightSinceTick = idle
+                ? session.NoGroupFightSinceTick > 0 ? session.NoGroupFightSinceTick : GameLoop.GameLoopTime
+                : 0;
+            if (BotDiagnostics.Enabled &&
+                ShouldLogPullGate(session.NoGroupFightSinceTick, session.PullGateLoggedTick, GameLoop.GameLoopTime))
+            {
+                session.PullGateLoggedTick = GameLoop.GameLoopTime;
+                Log.Warn(DescribePullGate(session, members, session.NoGroupFightSinceTick));
             }
         }
 

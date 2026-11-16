@@ -226,6 +226,42 @@ public class UT_AutonomousBotDecisionEngine
     }
 
     [Test]
+    public void IdlePartyLogsItsPullGateAfterFiveMinutesThenEveryFifteen()
+    {
+        // DR-439: parties held in formation with nothing in the log saying which gate condition was false.
+        long since = 1_000_000;
+        long first = AutonomousBotGroupCoordinator.PullGateFirstLogMilliseconds;
+        long repeat = AutonomousBotGroupCoordinator.PullGateRepeatMilliseconds;
+        Assert.Multiple(() =>
+        {
+            Assert.That(AutonomousBotGroupCoordinator.ShouldLogPullGate(0, 0, long.MaxValue / 2), Is.False,
+                "0 means the party is fighting or its task has not started");
+            Assert.That(AutonomousBotGroupCoordinator.ShouldLogPullGate(since, 0, since + first - 1), Is.False);
+            Assert.That(AutonomousBotGroupCoordinator.ShouldLogPullGate(since, 0, since + first), Is.True);
+            long logged = since + first;
+            Assert.That(AutonomousBotGroupCoordinator.ShouldLogPullGate(since, logged, logged + repeat - 1), Is.False);
+            Assert.That(AutonomousBotGroupCoordinator.ShouldLogPullGate(since, logged, logged + repeat), Is.True);
+            // A new idle episode after a fight logs again at its own five minutes, not fifteen after the old log.
+            long next = logged + 60_000;
+            Assert.That(AutonomousBotGroupCoordinator.ShouldLogPullGate(next, logged, next + first), Is.True);
+        });
+    }
+
+    [Test]
+    public void PullBlockNamesListEveryFailedCondition()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(AutonomousBotGroupCoordinator.PullBlockNames(AutonomousBotGroupCoordinator.PullBlock.None),
+                Is.EqualTo("none"));
+            Assert.That(AutonomousBotGroupCoordinator.PullBlockNames(
+                    AutonomousBotGroupCoordinator.PullBlock.RecoveringBetweenPulls |
+                    AutonomousBotGroupCoordinator.PullBlock.PveComposition),
+                Is.EqualTo("RecoveringBetweenPulls,PveComposition"));
+        });
+    }
+
+    [Test]
     public void AssembledPartyWhoseLeaderChoosesNoTargetEndsAfterFiveMinutes()
     {
         // DR-252: a Mularn party stood in formation for 8.5 hours because nothing bounded this wait.

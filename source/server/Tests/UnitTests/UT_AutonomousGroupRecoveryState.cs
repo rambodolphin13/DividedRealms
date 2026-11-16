@@ -153,6 +153,22 @@ public sealed class UT_AutonomousGroupRecoveryState
         Assert.That(clock.Start(6_000, DateTime.UtcNow), Is.False);
     }
 
+    [Test]
+    public void CasualtyIdsNameTheMembersHasCasualtyCounts()
+    {
+        var recovery = new AutonomousGroupRecoveryState();
+        Member[] members = Ready();
+        recovery.Observe(members, false);
+        members[1] = members[1] with { Deaths = 1 };
+        members[2] = members[2] with { Returning = true };
+        Assert.Multiple(() =>
+        {
+            Assert.That(recovery.HasCasualty(members), Is.True);
+            Assert.That(recovery.CasualtyIds(members), Is.EquivalentTo(new long[] { 2, 3 }));
+            Assert.That(recovery.CasualtyIds(Ready()), Is.Empty);
+        });
+    }
+
     [TestCase(90, 80, 80, true, true)]
     [TestCase(89, 100, 100, true, false)]
     [TestCase(100, 79, 100, true, false)]

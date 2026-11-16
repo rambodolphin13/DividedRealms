@@ -18,6 +18,12 @@ namespace DOL.GS
             !member.Alive || member.Returning ||
             _deaths.TryGetValue(member.Id, out int previous) && member.Deaths > previous);
 
+        /// <summary>The members HasCasualty counts (DR-439 diagnostic).</summary>
+        public HashSet<long> CasualtyIds(IEnumerable<Member> members) => members.Where(member =>
+            !member.Alive || member.Returning ||
+            _deaths.TryGetValue(member.Id, out int previous) && member.Deaths > previous)
+            .Select(member => member.Id).ToHashSet();
+
         public bool Observe(Member[] members, bool taskStarted)
         {
             bool casualty = HasCasualty(members);
