@@ -37,7 +37,7 @@ namespace DOL.UnitTests
         }
 
         private static readonly IObjectDatabase Db = DispatchProxy.Create<IObjectDatabase, EmptyDb>();
-        private static readonly LootRules BudgetOn = new() { RandomItems = new RandomItemLootRules { Budget = new RandomItemBudgetRules { Enabled = true } } };
+        private static readonly LootRules BudgetOn = LootRules.Legacy with { RandomItems = LootRules.Legacy.RandomItems with { Budget = RandomItemBudgetRules.Legacy with { Enabled = true } } };
         private readonly Dictionary<FieldInfo, object> _rogDefaults = new();
         private GameServer _previous;
 
@@ -158,7 +158,7 @@ namespace DOL.UnitTests
         [Test]
         public void QualityRaisesTheTarget()
         {
-            RandomItemBudgetRules budget = new();
+            RandomItemBudgetRules budget = RandomItemBudgetRules.Legacy; // the formula on the 2026-11-06 fitted numbers
             double low = budget.Target(51, 95, false, 0), mid = budget.Target(51, 97, false, 0), high = budget.Target(51, 99, false, 0);
             Assert.That(low, Is.LessThan(mid));
             Assert.That(mid, Is.LessThan(high));
@@ -169,7 +169,7 @@ namespace DOL.UnitTests
         [Test]
         public void TargetFloorProcAndMax()
         {
-            RandomItemBudgetRules budget = new();
+            RandomItemBudgetRules budget = RandomItemBudgetRules.Legacy; // the formula on the 2026-11-06 fitted numbers
             Assert.That(budget.Target(5, 99, false, 0), Is.EqualTo(5 * 1.05).Within(0.001), "low levels aim at the floor");
             Assert.That(budget.Target(51, 99, true, 0), Is.EqualTo((51 * 0.88 - 6) * 1.05 * 0.7).Within(0.001));
             Assert.That(budget.Target(200, 99, false, 0), Is.EqualTo(80));
@@ -182,7 +182,7 @@ namespace DOL.UnitTests
         {
             Assert.That(() => LootRules.Parse("""{ "RandomItems": { "Budget": { "Floor": 90, "Max": 80 } } }"""),
                 Throws.InstanceOf<System.IO.InvalidDataException>());
-            Assert.That(LootRules.Parse("""{ "RandomItems": { "Budget": { "Enabled": true } } }""").RandomItems.Budget.PerLevel, Is.EqualTo(0.88));
+            Assert.That(LootRules.Parse("""{ "RandomItems": { "Budget": { "Enabled": true } } }""").RandomItems.Budget.PerLevel, Is.EqualTo(0.95), "unwritten budget settings keep the defaults (owner tuning)");
         }
 
         #endregion
@@ -217,7 +217,7 @@ namespace DOL.UnitTests
                 .GetValue(null) is eProperty[] adv ? adv.Select(p => (int)p).ToArray() : [];
             try
             {
-                foreach ((string label, LootRules rules, bool conFirst) in new[] { ("old", new LootRules(), false), ("new", tuned, true) })
+                foreach ((string label, LootRules rules, bool conFirst) in new[] { ("old", LootRules.Legacy, false), ("new", tuned, true) })
                 {
                     LootRulesFile.TestOverride = rules;
                     foreach (int con in new[] { -1, 0, 1, 2, 3, 4 })
@@ -369,6 +369,7 @@ namespace DOL.UnitTests
         [Test]
         public void WithTheBudgetOffQualityLeavesBonusesAlone()
         {
+            LootRulesFile.TestOverride = LootRules.Legacy;
             GeneratedUniqueItem item = Build(50, 51, 0).First(Magical);
             double before = item.BountyUtility;
             item.GenerateItemQuality(3);

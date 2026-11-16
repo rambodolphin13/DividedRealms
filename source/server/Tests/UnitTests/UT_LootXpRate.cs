@@ -82,7 +82,7 @@ namespace DOL.UnitTests
         {
             _previous = GameServer.Instance;
             GameServer.LoadTestDouble((TestServer)RuntimeHelpers.GetUninitializedObject(typeof(TestServer)));
-            LootRulesFile.TestOverride = null;
+            LootRulesFile.TestOverride = LootRules.Legacy;
         }
 
         [TearDown]
@@ -141,7 +141,7 @@ namespace DOL.UnitTests
         private static LootRules Rules(bool enabled = true, double exponent = 0.4, double min = 0.5, double max = 3.0, double chanceMultiplier = 1.0) =>
             new()
             {
-                RandomItems = new RandomItemLootRules
+                RandomItems = LootRules.Legacy.RandomItems with
                 {
                     ChanceMultiplier = chanceMultiplier,
                     XpRate = new RandomItemXpRateRules { Enabled = enabled, Exponent = exponent, MinMultiplier = min, MaxMultiplier = max },
@@ -159,7 +159,8 @@ namespace DOL.UnitTests
             Assert.That(rules.Factor(0.01), Is.EqualTo(0.5), "a low rate lowers drops, down to the floor");
             Assert.That(rules.Factor(0), Is.EqualTo(1.0), "a zero or bad rate changes nothing");
             Assert.That(rules.Factor(double.NaN), Is.EqualTo(1.0));
-            Assert.That(new RandomItemXpRateRules().Factor(10), Is.EqualTo(1.0), "off by default");
+            Assert.That(RandomItemXpRateRules.Off.Factor(10), Is.EqualTo(1.0), "switched off");
+            Assert.That(new RandomItemXpRateRules().Factor(10), Is.EqualTo(Math.Pow(10, 0.4)).Within(1e-9), "on by default (owner 2026-11-15)");
             Assert.That(new RandomItemXpRateRules { Enabled = true, Exponent = 1, MaxMultiplier = 20 }.Factor(10), Is.EqualTo(10).Within(1e-9), "exponent 1 follows the rate exactly");
         }
 
@@ -284,7 +285,7 @@ namespace DOL.UnitTests
         [Test]
         public void ANamedMobRollsQualityAsIfItConnedHigher()
         {
-            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { NamedQualityConBonus = 2 } };
+            LootRulesFile.TestOverride = new LootRules { RandomItems = LootRules.Legacy.RandomItems with { NamedQualityConBonus = 2 } };
             Bot bot = NewBot("solo");
             Mob named = NewMob();
             named.Name = "Grumoz";
@@ -322,11 +323,11 @@ namespace DOL.UnitTests
 
                 long Coin() => new LootGeneratorMoney().GenerateLoot(mob, bot).GetDrops().Single().Item.Price;
 
-                LootRulesFile.TestOverride = new LootRules();
+                LootRulesFile.TestOverride = LootRules.Legacy;
                 for (int i = 0; i < 20; i++)
                     Assert.That(Coin(), Is.InRange(minLoot, minLoot + (minLoot >> 1)), "off: as before");
 
-                LootRulesFile.TestOverride = new LootRules { Coin = new CoinLootRules { XpRate = new RandomItemXpRateRules { Enabled = true } } };
+                LootRulesFile.TestOverride = LootRules.Legacy with { Coin = LootRules.Legacy.Coin with { XpRate = new RandomItemXpRateRules { Enabled = true } } };
                 double factor = Math.Pow(10, 0.4);
                 for (int i = 0; i < 20; i++)
                     Assert.That(Coin(), Is.InRange((long)(minLoot * factor) - 1, (long)((minLoot + (minLoot >> 1)) * factor) + 1), "10x XP: about 2.5x coin");
@@ -387,7 +388,7 @@ namespace DOL.UnitTests
         {
             RecordingDb.Rows.Clear();
             GameServer.LoadTestDouble((RecordingServer)RuntimeHelpers.GetUninitializedObject(typeof(RecordingServer)));
-            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { SaveBadLuck = true, BadLuckStep = 1, BadLuckMax = 25 } };
+            LootRulesFile.TestOverride = new LootRules { RandomItems = LootRules.Legacy.RandomItems with { SaveBadLuck = true, BadLuckStep = 1, BadLuckMax = 25 } };
 
             Player first = NewPlayer("char-1");
             Assert.That(ROGMobGenerator.BadLuck(first), Is.EqualTo(0), "nothing saved yet");
@@ -405,7 +406,7 @@ namespace DOL.UnitTests
         [Test]
         public void ASimulationNeverMovesBadLuck()
         {
-            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { BadLuckStep = 1, BadLuckMax = 25 } };
+            LootRulesFile.TestOverride = new LootRules { RandomItems = LootRules.Legacy.RandomItems with { BadLuckStep = 1, BadLuckMax = 25 } };
             Bot bot = NewBot("gm");
             bot.TempProperties.SetProperty(ROGMobGenerator.BadLuckProperty, 4.0);
             var generator = new Scripted { Otherwise = false };
@@ -424,7 +425,7 @@ namespace DOL.UnitTests
         {
             RecordingDb.Rows.Clear();
             GameServer.LoadTestDouble((RecordingServer)RuntimeHelpers.GetUninitializedObject(typeof(RecordingServer)));
-            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { BadLuckStep = 1 } };
+            LootRulesFile.TestOverride = new LootRules { RandomItems = LootRules.Legacy.RandomItems with { BadLuckStep = 1 } };
             Player player = NewPlayer("char-2");
             ROGMobGenerator.BadLuck(player);
             player.TempProperties.SetProperty(ROGMobGenerator.BadLuckProperty, 7.0);

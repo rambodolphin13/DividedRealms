@@ -131,11 +131,11 @@ namespace DOL.UnitTests
         public void SetUp()
         {
             _previousServer = GameServer.Instance;
-            GameServer.LoadTestDouble((LootServer)RuntimeHelpers.GetUninitializedObject(typeof(LootServer)));
+            GameServer.LoadTestDouble((LootServer)RuntimeHelpers.GetUninitializedObject(typeof(LootServer))); LootRulesFile.TestOverride = LootRules.Legacy; // drop caps on the old one-per-3 numbers
         }
 
         [TearDown]
-        public void TearDown() { GameServer.LoadTestDouble(_previousServer); }
+        public void TearDown() { LootRulesFile.TestOverride = null; GameServer.LoadTestDouble(_previousServer); }
 
         private static void Field(Type type, object target, string name, object value)
         {

@@ -98,7 +98,7 @@ namespace DOL.UnitTests
         {
             _previous = GameServer.Instance;
             GameServer.LoadTestDouble((TestServer)RuntimeHelpers.GetUninitializedObject(typeof(TestServer)));
-            LootRulesFile.TestOverride = null;
+            LootRulesFile.TestOverride = LootRules.Legacy;
         }
 
         [TearDown]
@@ -156,7 +156,7 @@ namespace DOL.UnitTests
         }
 
         private static LootRules Rules(bool personal = true, double badLuckStep = 0, double badLuckMax = 25) =>
-            new() { RandomItems = new RandomItemLootRules { PersonalLoot = personal, BadLuckStep = badLuckStep, BadLuckMax = badLuckMax } };
+            new() { RandomItems = LootRules.Legacy.RandomItems with { PersonalLoot = personal, BadLuckStep = badLuckStep, BadLuckMax = badLuckMax } };
 
         #region Personal loot
 

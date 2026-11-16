@@ -38,7 +38,10 @@ namespace DOL.UnitTests
             Assert.That(rules.RandomItems.ChanceMultiplier, Is.EqualTo(0.5));
             Assert.That(rules.RandomItems.BaseChance, Is.EqualTo(14));
             Assert.That(rules.RandomItems.SoloBonus, Is.EqualTo(10));
-            Assert.That(rules.RandomItems.GroupLevelPenalties, Has.Length.EqualTo(2));
+            // the unwritten settings are the defaults, the owner's tuning since 2026-11-15
+            Assert.That(rules.RandomItems.GroupLevelPenalties, Is.Empty);
+            Assert.That(rules.RandomItems.NamedChanceMultiplier, Is.EqualTo(2.0));
+            Assert.That(rules.RandomItems.XpRate.Enabled, Is.True);
             Assert.That(rules.Coin.Multiplier, Is.EqualTo(1.0));
         }
 
@@ -79,18 +82,9 @@ namespace DOL.UnitTests
             Assert.That(items.ToaChancePerQuality, Is.EqualTo(3));
             Assert.That(items.SaveBadLuck, Is.True);
             Assert.That(rules.Coin.XpRate, Is.EqualTo(new RandomItemXpRateRules { Enabled = true }));
-            RandomItemLootRules defaults = new();
-            Assert.That((rules with
-                {
-                    RandomItems = items with
-                    {
-                        ChanceMultiplier = 1.0, NamedChanceMultiplier = 1.0, BadLuckStep = 0, Budget = defaults.Budget, XpRate = defaults.XpRate,
-                        GroupLevelPenalties = defaults.GroupLevelPenalties, GroupMembersPerDrop = defaults.GroupMembersPerDrop,
-                        GroupMaxDrops = defaults.GroupMaxDrops, NamedQualityConBonus = 0, ToaChancePerQuality = 0, SaveBadLuck = false,
-                    },
-                    Coin = rules.Coin with { XpRate = new RandomItemXpRateRules() },
-                }).ToJson(),
-                Is.EqualTo(LootRules.Defaults.ToJson()), "apart from the owner's tuning the example holds the defaults");
+            // since 2026-11-15 the owner's tuning is the code default, so the example and the defaults are the same game
+            Assert.That(rules.ToJson(), Is.EqualTo(LootRules.Defaults.ToJson()), "the example file is exactly the defaults");
+            Assert.That(LootRules.Legacy.ToJson(), Is.Not.EqualTo(LootRules.Defaults.ToJson()));
         }
 
         [Test]
@@ -107,7 +101,7 @@ namespace DOL.UnitTests
         [TestCase(20, 0)] [TestCase(27, 0)] [TestCase(28, 3)] [TestCase(41, 6)]
         public void GroupPenaltiesMatchTheOldLevels(int mobLevel, int penalty)
         {
-            Assert.That(new RandomItemLootRules().GroupLevelPenalty(mobLevel), Is.EqualTo(penalty));
+            Assert.That(LootRules.Legacy.RandomItems.GroupLevelPenalty(mobLevel), Is.EqualTo(penalty));
         }
 
         #endregion
@@ -184,10 +178,10 @@ namespace DOL.UnitTests
         [Test]
         public void DeletingTheFileGoesBackToDefaults()
         {
-            File.WriteAllText(RulesPath, """{ "RandomItems": { "ChanceMultiplier": 0.5 } }""");
-            LootRulesFile.Refresh(true);
+            File.WriteAllText(RulesPath, """{ "RandomItems": { "ChanceMultiplier": 0.8 } }""");
+            Assert.That(LootRulesFile.Refresh(true).RandomItems.ChanceMultiplier, Is.EqualTo(0.8));
             File.Delete(RulesPath);
-            Assert.That(LootRulesFile.Refresh(false).RandomItems.ChanceMultiplier, Is.EqualTo(1.0));
+            Assert.That(LootRulesFile.Refresh(false).RandomItems.ChanceMultiplier, Is.EqualTo(0.5));
         }
 
         #endregion
@@ -285,17 +279,20 @@ namespace DOL.UnitTests
         }
 
         [Test]
-        public void ASoloYellowKillKeepsTheOldChanceByDefault()
+        public void ASoloYellowKillUsesTheTunedChanceByDefaultAndTheOldOneWithLegacy()
         {
             var generator = new ChanceRecorder();
             generator.GenerateLoot(NewMob(10), NewBot(10));
-            Assert.That(generator.Chances, Is.EqualTo(new[] { 24.0 }), "14 base + 10 solo");
+            LootRulesFile.TestOverride = LootRules.Legacy;
+            generator.GenerateLoot(NewMob(10), NewBot(10));
+            // (14 base + 10 solo) x 0.5 by default (the XP link is x1 at the test's bot_xp_rate of 1); the old 24 with Legacy
+            Assert.That(generator.Chances, Is.EqualTo(new[] { 12.0, 24.0 }));
         }
 
         [Test]
         public void HalfTheMultiplierHalvesASoloKill()
         {
-            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { ChanceMultiplier = 0.5 } };
+            LootRulesFile.TestOverride = new LootRules { RandomItems = LootRules.Legacy.RandomItems with { ChanceMultiplier = 0.5 } };
             var generator = new ChanceRecorder();
             generator.GenerateLoot(NewMob(10), NewBot(10));
             Assert.That(generator.Chances, Is.EqualTo(new[] { 12.0 }), "about 1 in 8");
@@ -304,7 +301,7 @@ namespace DOL.UnitTests
         [Test]
         public void AGroupKillUsesTheLevelPenaltiesAndTheMultiplier()
         {
-            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { ChanceMultiplier = 0.5 } };
+            LootRulesFile.TestOverride = new LootRules { RandomItems = LootRules.Legacy.RandomItems with { ChanceMultiplier = 0.5 } };
             Bot leader = NewBot(50), member = NewBot(50);
             GroupOf(leader, member);
             var generator = new ChanceRecorder();
@@ -315,7 +312,7 @@ namespace DOL.UnitTests
         [Test]
         public void NamedMobsUseTheNamedMultiplier()
         {
-            LootRulesFile.TestOverride = new LootRules { RandomItems = new RandomItemLootRules { NamedChanceMultiplier = 2 } };
+            LootRulesFile.TestOverride = new LootRules { RandomItems = LootRules.Legacy.RandomItems with { NamedChanceMultiplier = 2 } };
             var generator = new ChanceRecorder();
             generator.GenerateLoot(NewMob(10, "Grand Frog"), NewBot(10));
             Assert.That(generator.Chances, Is.EqualTo(new[] { 48.0 }));

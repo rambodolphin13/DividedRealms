@@ -8,7 +8,8 @@ namespace DOL.GS
 {
     /// <summary>
     /// Loot tuning read from runtime/server/loot-rules.json, beside bot-goals.json (loot redesign phase 2, owner
-    /// 2026-11-05). Every default is the number the code used before, so a missing file changes nothing.
+    /// 2026-11-05). Since 2026-11-15 the defaults are the owner's tuning (the values in docs/loot-rules.example.json), so a
+    /// missing file, or a setting left out of it, gets the tuned game; <see cref="Legacy"/> holds the drop rates from before.
     /// </summary>
     public sealed record LootRules
     {
@@ -19,6 +20,29 @@ namespace DOL.GS
         public CoinLootRules Coin { get; init; } = new();
 
         public static LootRules Defaults => new();
+
+        /// <summary>
+        /// The drop rates and item strength from before the loot rules were tuned (the old hard-coded numbers): every
+        /// tuning off. Write these values into loot-rules.json to go back to them.
+        /// </summary>
+        public static LootRules Legacy => new()
+        {
+            RandomItems = new RandomItemLootRules
+            {
+                ChanceMultiplier = 1.0,
+                NamedChanceMultiplier = 1.0,
+                GroupLevelPenalties = [new(27, 3), new(40, 3)],
+                GroupMembersPerDrop = 3,
+                GroupMaxDrops = 3,
+                BadLuckStep = 0,
+                SaveBadLuck = false,
+                NamedQualityConBonus = 0,
+                ToaChancePerQuality = 0,
+                Budget = RandomItemBudgetRules.Legacy,
+                XpRate = RandomItemXpRateRules.Off,
+            },
+            Coin = new CoinLootRules { XpRate = RandomItemXpRateRules.Off },
+        };
 
         public void Validate()
         {
@@ -63,10 +87,10 @@ namespace DOL.GS
     public sealed record RandomItemLootRules
     {
         /// <summary>Every final chance is multiplied by this. 0.5 halves every random item drop.</summary>
-        public double ChanceMultiplier { get; init; } = 1.0;
+        public double ChanceMultiplier { get; init; } = 0.5; // owner 2026-11-05: about 1 in 8 solo before the XP link
 
         /// <summary>Extra multiplier for named mobs (capitalized names) and epic NPCs.</summary>
-        public double NamedChanceMultiplier { get; init; } = 1.0;
+        public double NamedChanceMultiplier { get; init; } = 2.0; // owner 2026-11-15
 
         /// <summary>Extra multiplier when the loot owner is in the frontier.</summary>
         public double FrontierChanceMultiplier { get; init; } = 1.0;
@@ -79,12 +103,12 @@ namespace DOL.GS
 
         public int SoloBonus { get; init; } = 10;
 
-        public LootLevelPenalty[] GroupLevelPenalties { get; init; } = [new(27, 3), new(40, 3)];
+        public LootLevelPenalty[] GroupLevelPenalties { get; init; } = []; // owner 2026-11-15 (was -3 above 27, -3 above 40)
 
         /// <summary>A group may get one item per this many members (rounded), from 1 to GroupMaxDrops.</summary>
-        public int GroupMembersPerDrop { get; init; } = 3;
+        public int GroupMembersPerDrop { get; init; } = 2; // owner 2026-11-15 (was 3)
 
-        public int GroupMaxDrops { get; init; } = 3;
+        public int GroupMaxDrops { get; init; } = 4; // owner 2026-11-15 (was 3)
 
         /// <summary>Above this mob level a group may get one more item.</summary>
         public int GroupExtraDropAboveLevel { get; init; } = 65;
@@ -107,35 +131,35 @@ namespace DOL.GS
 
         /// <summary>
         /// Bad-luck protection (phase 5): every roll a participant misses adds this many percent to their next roll, up to
-        /// BadLuckMax, until they get an item. 0 turns it off (the default, so drop rates stay as they were).
+        /// BadLuckMax, until they get an item. 0 turns it off; the default is 1 (owner 2026-11-15).
         /// </summary>
-        public double BadLuckStep { get; init; } = 0;
+        public double BadLuckStep { get; init; } = 1; // owner 2026-11-15 (was 0, off)
 
         public double BadLuckMax { get; init; } = 25;
 
-        /// <summary>How strong a random item's bonuses are (phase 3). Off by default: the old roll-then-trim is used.</summary>
+        /// <summary>How strong a random item's bonuses are (phase 3). On by default; Enabled false uses the old roll-then-trim.</summary>
         public RandomItemBudgetRules Budget { get; init; } = new();
 
         /// <summary>
         /// Drop chance follows the roller's experience rate (owner 2026-11-15): the higher the XP multiplier, the more
-        /// random items. Off by default.
+        /// random items. On by default.
         /// </summary>
         public RandomItemXpRateRules XpRate { get; init; } = new();
 
         /// <summary>
         /// Named mobs and epic NPCs roll item quality as if they conned this many steps higher (owner 2026-11-15), so
-        /// they give 98-99 items more often. 0 (the default) is the old roll.
+        /// they give 98-99 items more often. The default is 2; 0 is the old roll.
         /// </summary>
-        public int NamedQualityConBonus { get; init; } = 0;
+        public int NamedQualityConBonus { get; init; } = 2;
 
         /// <summary>
         /// Percent added to the rog_toa_item_chance server setting per quality point above rog_starting_qual (owner
         /// 2026-11-15): with 15 and 3, quality 95 rolls 15% a line and quality 99 27%. Only when that setting is above 0.
         /// </summary>
-        public double ToaChancePerQuality { get; init; } = 0;
+        public double ToaChancePerQuality { get; init; } = 3;
 
         /// <summary>Real players' bad-luck bonus is saved with the character, so logging out keeps it (owner 2026-11-15).</summary>
-        public bool SaveBadLuck { get; init; } = false;
+        public bool SaveBadLuck { get; init; } = true;
 
         /// <summary>A final chance times the XP rate factor for one roller, kept from 0 to 100.</summary>
         public double WithXpRate(double chance, double xpRate) => Math.Clamp(chance * XpRate.Factor(xpRate), 0, 100);
@@ -198,7 +222,11 @@ namespace DOL.GS
     /// </summary>
     public sealed record RandomItemXpRateRules
     {
-        public bool Enabled { get; init; } = false;
+        /// <summary>On by default (owner 2026-11-15).</summary>
+        public bool Enabled { get; init; } = true;
+
+        /// <summary>The link switched off.</summary>
+        public static RandomItemXpRateRules Off => new() { Enabled = false };
 
         public double Exponent { get; init; } = 0.4;
 
@@ -228,13 +256,17 @@ namespace DOL.GS
     /// </summary>
     public sealed record RandomItemBudgetRules
     {
-        public bool Enabled { get; init; } = false;
+        /// <summary>On by default since 2026-11-15 (owner: "items too weak").</summary>
+        public bool Enabled { get; init; } = true;
+
+        /// <summary>The old roll-then-trim, and the budget numbers fitted to it on 2026-11-06 should it be switched on.</summary>
+        public static RandomItemBudgetRules Legacy => new() { Enabled = false, PerLevel = 0.88, LowQualityFactor = 0.85, HighQualityFactor = 1.05 };
 
         /// <summary>
         /// The level budget is level * PerLevel - LevelOffset. The defaults were fitted so a quality 96 item matches the old
         /// roll's average utility (measured 2026-11-06: about 4.5, 10.5, 21 and 35 at levels 10, 20, 35 and 51).
         /// </summary>
-        public double PerLevel { get; init; } = 0.88;
+        public double PerLevel { get; init; } = 0.95; // owner 2026-11-15 (fitted value 0.88)
 
         public double LevelOffset { get; init; } = 6;
 
@@ -247,9 +279,9 @@ namespace DOL.GS
         /// <summary>Quality at or below LowQuality gets LowQualityFactor of the level budget, at or above HighQuality
         /// gets HighQualityFactor, in a straight line between. Random items roll 95 to 99 quality.</summary>
         public int LowQuality { get; init; } = 95;
-        public double LowQualityFactor { get; init; } = 0.85;
+        public double LowQualityFactor { get; init; } = 0.90; // owner 2026-11-15 (was 0.85)
         public int HighQuality { get; init; } = 99;
-        public double HighQualityFactor { get; init; } = 1.05;
+        public double HighQualityFactor { get; init; } = 1.15; // owner 2026-11-15 (was 1.05)
 
         /// <summary>An item with a proc aims this much lower.</summary>
         public double ProcFactor { get; init; } = 0.7;
@@ -295,7 +327,7 @@ namespace DOL.GS
 
         public double NamedMultiplier { get; init; } = 1.0;
 
-        /// <summary>Coin follows the killer's experience rate, the same curve as RandomItems.XpRate (owner 2026-11-15). Off by default.</summary>
+        /// <summary>Coin follows the killer's experience rate, the same curve as RandomItems.XpRate (owner 2026-11-15). On by default.</summary>
         public RandomItemXpRateRules XpRate { get; init; } = new();
 
         internal void Validate()

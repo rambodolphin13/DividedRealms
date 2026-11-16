@@ -1,6 +1,7 @@
 // Loot tuning. Copy to runtime/server/loot-rules.json (beside bot-goals.json). The server re-reads it within
 // 10 seconds of a save; /lootrules shows what is in use and /lootrules reload reads it at once.
-// Leave a setting out to keep its default (the defaults are the drop rates from before this file existed).
+// Leave a setting out to keep its default. Since 2026-11-15 the defaults are the values below (the owner's tuning), so this
+// file only needs the settings you want different. LootRules.Legacy in the code lists the drop rates from before.
 {
   "Version": 1,
   "RandomItems": {
