@@ -675,10 +675,16 @@ namespace DOL.GS.Commands
 
                                 case "mith":
                                     {
-                                        long amount = long.Parse(args[3]) * 100 * 100 * 1000 * 1000;
-                                        player.AddMoney(amount);
-                                        InventoryLogging.LogInventoryAction(client.Player, player, eInventoryActionType.Other, amount);
-                                        client.Out.SendMessage("You gave " + player.Name + " mithril successfully!", eChatType.CT_Important,
+                                        // The money row's Mithril field shows the account's Mithril store balance (DR-389) and coin
+                                        // mithril is folded into a platinum display that tops out at 65,535, so give store Mithril.
+                                        long amount = long.Parse(args[3]);
+                                        if (MithrilBalance.Add(player, amount, "from " + client.Player.Name) <= 0)
+                                        {
+                                            client.Out.SendMessage(player.Name + " has no account to hold Mithril, or the amount is not above 0.",
+                                                                   eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                                            return;
+                                        }
+                                        client.Out.SendMessage("You gave " + player.Name + " " + amount + " Mithril (store balance " + MithrilBalance.Get(player) + ").", eChatType.CT_Important,
                                                                eChatLoc.CL_SystemWindow);
                                         player.Out.SendMessage(
                                             client.Player.Name + "(PrivLevel: " + client.Account.PrivLevel + ") has given you some mithril!",

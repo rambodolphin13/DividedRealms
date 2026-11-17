@@ -255,6 +255,18 @@ namespace DOL.GS
             }
         }
 
+        /// <summary>
+        /// Bosses whose loot table drops at least one item on every kill (owner 2026-11-17, DR-458): without this a Midgard
+        /// killer got no named item from Prince Abdin about one kill in three, only the random item and coin.
+        /// </summary>
+        public static readonly HashSet<string> AlwaysDropsNamedLoot = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Prince Abdin",
+            "Prince Asmoien",
+            "Prince Ba'alorien",
+            "Princess Nahemah",
+        };
+
         public override LootList GenerateLoot(GameNPC mob, GameObject killer)
         {
             LootList loot = base.GenerateLoot(mob, killer);
@@ -407,6 +419,9 @@ namespace DOL.GS
                 log.ErrorFormat("Error in LootGeneratorTemplate for mob {0}.  Exception: {1} {2}", mob.Name, ex.Message,
                     ex.StackTrace);
             }
+
+            if (loot != null && mob != null && AlwaysDropsNamedLoot.Contains(mob.Name ?? string.Empty))
+                loot.RollNowAtLeastOne();
 
             return loot;
         }

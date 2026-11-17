@@ -1,0 +1,60 @@
+[
+ {
+  "table": "ItemTemplate",
+  "insert": {
+   "Id_nb": "mithril_merchant_gem",
+   "Name": "Merchant Summoning Gem",
+   "Level": 1,
+   "Object_Type": 0,
+   "Item_Type": 40,
+   "Model": 488,
+   "MaxCount": 1,
+   "PackSize": 1,
+   "Quality": 100,
+   "Condition": 50000,
+   "MaxCondition": 50000,
+   "Durability": 50000,
+   "MaxDurability": 50000,
+   "Weight": 1,
+   "IsPickable": 1,
+   "IsDropable": 1,
+   "CanDropAsLoot": 0,
+   "IsTradable": 0,
+   "Realm": 0,
+   "PackageID": "DR Mithril store 2026-11-17",
+   "Price": 10,
+   "ClassType": "DOL.GS.MithrilStoreItem",
+   "Description": "Use to call a merchant, a smith and a recharger to your side for two minutes. The gem is not used up; it can be used again after five minutes. Not in combat or houses."
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "f2ef9aba-c718-5598-a7c7-35e60d69aa69",
+   "ItemListID": "mithril_store_alb",
+   "ItemTemplateID": "mithril_merchant_gem",
+   "PageNumber": 1,
+   "SlotPosition": 9
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "d698e0e4-23e8-5e2e-b2a8-6391123b831c",
+   "ItemListID": "mithril_store_mid",
+   "ItemTemplateID": "mithril_merchant_gem",
+   "PageNumber": 1,
+   "SlotPosition": 9
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "insert": {
+   "MerchantItem_ID": "ce6ba5df-fe8b-5f94-8d96-83a70c91c089",
+   "ItemListID": "mithril_store_hib",
+   "ItemTemplateID": "mithril_merchant_gem",
+   "PageNumber": 1,
+   "SlotPosition": 9
+  }
+ }
+]
