@@ -22,7 +22,7 @@
    "IsTradable": 0,
    "Realm": 0,
    "PackageID": "DR Mithril store 2026-11-17",
-   "Price": 750,
+   "Price": 10,
    "ClassType": "DOL.GS.MithrilStoreItem",
    "Description": "Use to call a merchant, a smith and a recharger to your side for two minutes. The gem is not used up; it can be used again after five minutes. Not in combat or houses."
   }

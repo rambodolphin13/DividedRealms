@@ -1,6 +1,6 @@
 {
  "format": "offline-daoc-world-editor-2",
- "created": "2026-11-17T12:32:57.329712+00:00",
+ "created": "2026-11-17T12:37:33.756283+00:00",
  "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
  "changes": [
   {
@@ -74,7 +74,7 @@
     "IsDropable": 1,
     "CanDropAsLoot": 0,
     "IsTradable": 0,
-    "Price": 750,
+    "Price": 10,
     "MaxCount": 1,
     "IsIndestructible": 0,
     "PackSize": 1,
@@ -88,7 +88,7 @@
     "ClassType": "DOL.GS.MithrilStoreItem",
     "SalvageYieldID": 0,
     "LastTimeRowUpdated": "2000-01-01 00:00:00",
-    "ItemTemplate_ID": "ebc00df4-a182-4ffe-9e38-8adfa85eba9f"
+    "ItemTemplate_ID": "459bd9d4-8f83-4f9c-8dfd-6f257b7ffe8c"
    }
   },
   {
