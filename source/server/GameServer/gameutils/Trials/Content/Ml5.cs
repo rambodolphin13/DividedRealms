@@ -528,7 +528,7 @@ namespace DOL.GS.Trials
         }
 
         public static IEnumerable<GameLiving> Party(TrialRun run) =>
-            run.Players.Cast<GameLiving>().Concat(run.Leader.Group?.GetMembersInTheGroup() ?? Enumerable.Empty<GameLiving>()).Distinct().ToList();
+            run.PartyMembers.ToList();
 
         public static void MoveParty(TrialRun run, TrialPoint point)
         {

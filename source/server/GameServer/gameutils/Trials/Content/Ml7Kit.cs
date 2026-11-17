@@ -70,11 +70,7 @@ namespace DOL.GS.Trials
         /// <summary>Moves the leader, the group and its bots. A dead bot stays where it fell.</summary>
         public static void MoveParty(TrialRun run, TrialPoint point)
         {
-            IEnumerable<GameLiving> party = run.Players.Cast<GameLiving>();
-            if (run.Leader.Group != null)
-                party = party.Concat(run.Leader.Group.GetMembersInTheGroup());
-
-            foreach (GameLiving member in party.Distinct().ToList())
+            foreach (GameLiving member in run.PartyMembers.ToList())
                 member.MoveTo(run.Starter.CurrentRegionID, point.X, point.Y, point.Z, point.Heading);
         }
 

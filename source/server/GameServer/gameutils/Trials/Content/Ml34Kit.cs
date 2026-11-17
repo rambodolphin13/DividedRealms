@@ -181,8 +181,7 @@ namespace DOL.GS.Trials
         /// <summary>Everyone in the leader's party, bots too, wherever they stand.</summary>
         public static List<GameLiving> Party(TrialRun run)
         {
-            IEnumerable<GameLiving> group = run.Leader.Group?.GetMembersInTheGroup() ?? Enumerable.Empty<GameLiving>();
-            return run.Players.Cast<GameLiving>().Concat(group).Distinct()
+            return run.PartyMembers
                 .Where(living => living.IsAlive && living.CurrentRegion == run.Starter.CurrentRegion).ToList();
         }
 
