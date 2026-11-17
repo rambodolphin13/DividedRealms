@@ -71,6 +71,34 @@ public class UT_DiscordFixes1117
     }
 
     [Test]
+    public void LegendaryTokenReachesTheTopRecipes()
+    {
+        // DR-464: 1050-1115 recipes were purple (0%) at 1000. At 1100 the 1115 recipes are orange.
+        Assert.That(MithrilStoreItem.LegendarySkill, Is.EqualTo(1100));
+        Assert.That(1115 - MithrilStoreItem.LegendarySkill, Is.LessThan(20));
+    }
+
+    [Test]
+    public void SingleTradeTokenRaisesItsSecondaries()
+    {
+        Assert.That(MithrilStoreItem.TradesRaisedBy(eCraftingSkill.ArmorCrafting), Is.EquivalentTo(new[]
+            { eCraftingSkill.ArmorCrafting, eCraftingSkill.MetalWorking, eCraftingSkill.LeatherCrafting, eCraftingSkill.ClothWorking }));
+        Assert.That(MithrilStoreItem.TradesRaisedBy(eCraftingSkill.Tailoring), Does.Contain(eCraftingSkill.ClothWorking));
+        Assert.That(MithrilStoreItem.TradesRaisedBy(eCraftingSkill.Fletching), Does.Contain(eCraftingSkill.WoodWorking));
+        Assert.That(MithrilStoreItem.TradesRaisedBy(eCraftingSkill.Alchemy), Does.Contain(eCraftingSkill.HerbalCrafting));
+        Assert.That(MithrilStoreItem.TradesRaisedBy(eCraftingSkill.SpellCrafting), Does.Contain(eCraftingSkill.GemCutting));
+    }
+
+    [Test]
+    public void AllTradesTokenRaisesSecondariesButNotBountyOrBasic()
+    {
+        var all = MithrilStoreItem.TradesRaisedBy(null);
+        Assert.That(all, Does.Contain(eCraftingSkill.MetalWorking).And.Contain(eCraftingSkill.WoodWorking)
+            .And.Contain(eCraftingSkill.LeatherCrafting).And.Contain(eCraftingSkill.ClothWorking));
+        Assert.That(all, Does.Not.Contain(eCraftingSkill.BountyCrafting).And.Not.Contain(eCraftingSkill.BasicCrafting));
+    }
+
+    [Test]
     public void MerchantGemCampLastsTwoMinutes()
     {
         Assert.That(SummonedMerchantCamp.DurationMs, Is.EqualTo(120_000));

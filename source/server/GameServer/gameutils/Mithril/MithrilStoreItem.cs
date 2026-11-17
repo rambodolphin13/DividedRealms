@@ -12,7 +12,7 @@ namespace DOL.GS
     /// <item>mithril_xp_potion / mithril_rp_potion / mithril_bp_potion: experience, realm or bounty points now.</item>
     /// <item>mithril_xp_off / mithril_rp_off: switch experience or realm point gain off or on again.</item>
     /// <item>mithril_cl15_token / mithril_ml10_token / mithril_boost_token (level 50 + CL15 + ML10).</item>
-    /// <item>mithril_lgm_&lt;skill&gt; / mithril_lgm_all: Legendary Grandmaster (1000) in one trade or all.</item>
+    /// <item>mithril_lgm_&lt;skill&gt; / mithril_lgm_all: Legendary Grandmaster (1100) in one trade (and its secondaries) or all.</item>
     /// <item>mithril_repair_kit: drag onto an item to restore its condition and durability.</item>
     /// <item>mithril_name_change / mithril_gender_change / mithril_race_change: used through /mithril.</item>
     /// </list>
@@ -188,11 +188,42 @@ namespace DOL.GS
                 and not eCraftingSkill.BountyCrafting;
         }
 
+        /// <summary>
+        /// Skill the tokens set. Owner decision 2026-11-17: 1100, the Legendary Grandmaster title rung
+        /// (AbstractProfession), so recipes up to 1115 con orange instead of purple (0%) at 1000 (DR-464).
+        /// </summary>
+        public const int LegendarySkill = 1100;
+
+        /// <summary>
+        /// Secondary trades whose skill the main trade's recipes require (CheckSecondCraftingSkillRequirement:
+        /// recipe level - 60 / - 30 / - 20), so a single-trade token raises them too.
+        /// </summary>
+        public static eCraftingSkill[] SecondariesOf(eCraftingSkill trade)
+        {
+            return trade switch
+            {
+                eCraftingSkill.ArmorCrafting => [eCraftingSkill.MetalWorking, eCraftingSkill.LeatherCrafting, eCraftingSkill.ClothWorking],
+                eCraftingSkill.WeaponCrafting => [eCraftingSkill.MetalWorking, eCraftingSkill.WoodWorking, eCraftingSkill.LeatherCrafting, eCraftingSkill.ClothWorking],
+                eCraftingSkill.Tailoring => [eCraftingSkill.ClothWorking, eCraftingSkill.LeatherCrafting, eCraftingSkill.MetalWorking],
+                eCraftingSkill.Fletching => [eCraftingSkill.WoodWorking, eCraftingSkill.MetalWorking, eCraftingSkill.ClothWorking, eCraftingSkill.LeatherCrafting],
+                eCraftingSkill.SiegeCrafting => [eCraftingSkill.WoodWorking, eCraftingSkill.MetalWorking],
+                eCraftingSkill.SpellCrafting => [eCraftingSkill.GemCutting],
+                eCraftingSkill.Alchemy => [eCraftingSkill.HerbalCrafting],
+                _ => []
+            };
+        }
+
+        /// <summary>The trades a token raises: one trade plus its secondaries, or every legendary trade.</summary>
+        public static eCraftingSkill[] TradesRaisedBy(eCraftingSkill? only)
+        {
+            return only.HasValue
+                ? [only.Value, .. SecondariesOf(only.Value)]
+                : Enum.GetValues<eCraftingSkill>().Where(IsLegendaryTrade).Distinct().ToArray();
+        }
+
         private static string Legendary(GamePlayer player, eCraftingSkill? only)
         {
-            eCraftingSkill[] trades = only.HasValue
-                ? [only.Value]
-                : Enum.GetValues<eCraftingSkill>().Where(s => IsLegendaryTrade(s) && CraftingMgr.getSkillbyEnum(s) != null).Distinct().ToArray();
+            eCraftingSkill[] trades = TradesRaisedBy(only);
             int raised = 0;
 
             foreach (eCraftingSkill trade in trades)
@@ -203,7 +234,7 @@ namespace DOL.GS
                 player.AddCraftingSkill(trade, 1);
                 int now = player.GetCraftingSkillValue(trade);
 
-                if (now < 1000 && player.GainCraftingSkill(trade, 1000 - now))
+                if (now < LegendarySkill && player.GainCraftingSkill(trade, LegendarySkill - now))
                     raised++;
             }
 
