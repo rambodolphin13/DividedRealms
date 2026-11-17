@@ -12034,7 +12034,14 @@ namespace DOL.GS
         /// <summary>
         /// Jumps the player out of the house he is in
         /// </summary>
-        public void LeaveHouse()
+        public void LeaveHouse() => LeaveHouse(true);
+
+        /// <summary>
+        /// Takes the player out of the house they are in. Pass false when the caller moves the player straight
+        /// on (porters, portals, /jump): they then go to the destination in one move instead of being dropped
+        /// outside the house first (DR-452).
+        /// </summary>
+        public void LeaveHouse(bool moveOutdoors)
         {
             if (CurrentHouse == null || (!InHouse))
             {
@@ -12046,7 +12053,7 @@ namespace DOL.GS
             InHouse = false;
             CurrentHouse = null;
 
-            house.Exit(this, false);
+            house.Exit(this, false, moveOutdoors);
         }
 
 

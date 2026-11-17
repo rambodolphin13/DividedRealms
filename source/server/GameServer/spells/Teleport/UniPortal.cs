@@ -51,7 +51,7 @@ namespace DOL.GS.Spells
 
 			// Won't do anything since the player is moved instantly.
 			// SendEffectAnimation(player, 0, false, 1);
-			player.LeaveHouse();
+			player.LeaveHouse(moveOutdoors: false); // one move to the destination, not via the front door (DR-452)
 			player.MoveTo((ushort) m_destination.RegionID, m_destination.X, m_destination.Y, m_destination.Z, (ushort) m_destination.Heading);
 		}
 	}
@@ -95,7 +95,7 @@ namespace DOL.GS.Spells
 
 			// Won't do anything since the player is moved instantly.
 			// SendEffectAnimation(player, 0, false, 1);
-			player.LeaveHouse();
+			player.LeaveHouse(moveOutdoors: false); // one move to the destination, not via the front door (DR-452)
 			player.MoveTo(m_destination.Region, m_destination.X, m_destination.Y, m_destination.Z, m_destination.Heading);
 		}
 	}
