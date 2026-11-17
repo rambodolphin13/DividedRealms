@@ -1,0 +1,83 @@
+insert Spell dr-blank-potion-870001 Draught of Supremacy
+insert Spell dr-blank-potion-870011 Supremacy: Fortitude
+insert Spell dr-blank-potion-870012 Supremacy: Dexterity
+insert Spell dr-blank-potion-870013 Supremacy: Enlightenment
+insert Spell dr-blank-potion-870014 Supremacy: Might
+insert Spell dr-blank-potion-870015 Supremacy: Deftness
+insert Spell dr-blank-potion-870016 Supremacy: Resistance
+insert Spell dr-blank-potion-870002 Draught of Omni-Healing
+insert Spell dr-blank-potion-870003 Draught of Omni-Regen
+insert Spell dr-blank-potion-870004 Draught of Tenacity
+insert Spell dr-blank-potion-870006 Draught of Restoration
+insert SpellXCustomValues 870101
+insert SpellXCustomValues 870102
+insert SpellXCustomValues 870103
+insert SpellXCustomValues 870104
+insert SpellXCustomValues 870105
+insert SpellXCustomValues 870106
+insert SpellXCustomValues 870107
+insert SpellXCustomValues 870108
+insert LineXSpell dr-blank-potion-item-870001
+insert LineXSpell dr-blank-potion-potions-870001
+insert LineXSpell dr-blank-potion-item-870002
+insert LineXSpell dr-blank-potion-potions-870002
+insert LineXSpell dr-blank-potion-item-870003
+insert LineXSpell dr-blank-potion-potions-870003
+insert LineXSpell dr-blank-potion-item-870004
+insert LineXSpell dr-blank-potion-potions-870004
+insert LineXSpell dr-blank-potion-item-870006
+insert LineXSpell dr-blank-potion-potions-870006
+update ItemTemplate lvcr652: SpellID: 0 -> 870001, CanUseEvery: 5 -> 30
+update ItemTemplate lvcr4101: SpellID: 0 -> 870001, CanUseEvery: 5 -> 30
+update ItemTemplate lvcr7650: SpellID: 0 -> 870001, CanUseEvery: 5 -> 30
+update ItemTemplate lvcr9978: SpellID: 0 -> 870001, CanUseEvery: 5 -> 30
+update ItemTemplate lvcr14650: SpellID: 0 -> 870001, CanUseEvery: 5 -> 30
+update ItemTemplate lvcr16358: SpellID: 0 -> 870001, CanUseEvery: 5 -> 30
+update ItemTemplate lvcr648: SpellID: 0 -> 870002
+update ItemTemplate lvcr4102: SpellID: 0 -> 870002
+update ItemTemplate lvcr7646: SpellID: 0 -> 870002
+update ItemTemplate lvcr9979: SpellID: 0 -> 870002
+update ItemTemplate lvcr14646: SpellID: 0 -> 870002
+update ItemTemplate lvcr16359: SpellID: 0 -> 870002
+update ItemTemplate lvcr647: SpellID: 0 -> 870003
+update ItemTemplate lvcr4103: SpellID: 0 -> 870003
+update ItemTemplate lvcr7645: SpellID: 0 -> 870003
+update ItemTemplate lvcr9980: SpellID: 0 -> 870003
+update ItemTemplate lvcr14645: SpellID: 0 -> 870003
+update ItemTemplate lvcr16360: SpellID: 0 -> 870003
+update ItemTemplate lvcr649: SpellID: 0 -> 870004
+update ItemTemplate lvcr4105: SpellID: 0 -> 870004
+update ItemTemplate lvcr7647: SpellID: 0 -> 870004
+update ItemTemplate lvcr9982: SpellID: 0 -> 870004
+update ItemTemplate lvcr14647: SpellID: 0 -> 870004
+update ItemTemplate lvcr16362: SpellID: 0 -> 870004
+update ItemTemplate lvcr651: SpellID: 0 -> 870006
+update ItemTemplate lvcr7649: SpellID: 0 -> 870006
+update ItemTemplate lvcr14649: SpellID: 0 -> 870006
+update ItemTemplate lvci_essence_of_supremacy: Price: 0 -> 10000
+update ItemTemplate lvci_essence_of_omni_healing: Price: 0 -> 10000
+update ItemTemplate lvci_essence_of_omni_regen: Price: 0 -> 10000
+update ItemTemplate lvci_essence_of_tenacity: Price: 0 -> 10000
+update ItemTemplate lvci_essence_of_celerity: Price: 0 -> 10000
+update ItemTemplate lvci_essence_of_restoration: Price: 0 -> 10000
+insert MerchantItem dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_supremacy
+insert MerchantItem dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_omni_healing
+insert MerchantItem dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_omni_regen
+insert MerchantItem dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_tenacity
+insert MerchantItem dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_celerity
+insert MerchantItem dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_restoration
+insert MerchantItem dr-blank-potion-MidExpensiveTrade-lvci_essence_of_supremacy
+insert MerchantItem dr-blank-potion-MidExpensiveTrade-lvci_essence_of_omni_healing
+insert MerchantItem dr-blank-potion-MidExpensiveTrade-lvci_essence_of_omni_regen
+insert MerchantItem dr-blank-potion-MidExpensiveTrade-lvci_essence_of_tenacity
+insert MerchantItem dr-blank-potion-MidExpensiveTrade-lvci_essence_of_celerity
+insert MerchantItem dr-blank-potion-MidExpensiveTrade-lvci_essence_of_restoration
+insert MerchantItem dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_supremacy
+insert MerchantItem dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_omni_healing
+insert MerchantItem dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_omni_regen
+insert MerchantItem dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_tenacity
+insert MerchantItem dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_celerity
+insert MerchantItem dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_restoration
+
+80 row edits for C:\Users\natex\Desktop\DAoC Offline\Source\artifacts\modern-client-test\runtime\data\opendaoc.sqlite3.db
+Patch: pending-fixes\blank-potions-2026-11-17.patch.json  (nothing applied yet)

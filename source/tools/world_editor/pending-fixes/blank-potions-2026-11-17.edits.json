@@ -1,0 +1,766 @@
+[
+ {
+  "table": "Spell",
+  "copy": "dr-live-potion-8110",
+  "key": "dr-blank-potion-870001",
+  "set": {
+   "Name": "Draught of Supremacy",
+   "Value": 62.0,
+   "Duration": 7200,
+   "Description": "Draught of Supremacy: Strength, Constitution, Dexterity and Acuity +62, Strength/Constitution and Dexterity/Quickness +93, and +10% resistance to heat, cold, matter, body, spirit and energy for 2 hours.",
+   "SpellID": 870001,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "dr-live-potion-8112",
+  "key": "dr-blank-potion-870011",
+  "set": {
+   "Name": "Supremacy: Fortitude",
+   "Value": 62.0,
+   "Duration": 7200,
+   "Description": "Draught of Supremacy: Strength, Constitution, Dexterity and Acuity +62, Strength/Constitution and Dexterity/Quickness +93, and +10% resistance to heat, cold, matter, body, spirit and energy for 2 hours.",
+   "SpellID": 870011,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "dr-live-potion-8113",
+  "key": "dr-blank-potion-870012",
+  "set": {
+   "Name": "Supremacy: Dexterity",
+   "Value": 62.0,
+   "Duration": 7200,
+   "Description": "Draught of Supremacy: Strength, Constitution, Dexterity and Acuity +62, Strength/Constitution and Dexterity/Quickness +93, and +10% resistance to heat, cold, matter, body, spirit and energy for 2 hours.",
+   "SpellID": 870012,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "dr-live-potion-8114",
+  "key": "dr-blank-potion-870013",
+  "set": {
+   "Name": "Supremacy: Enlightenment",
+   "Value": 62.0,
+   "Duration": 7200,
+   "Description": "Draught of Supremacy: Strength, Constitution, Dexterity and Acuity +62, Strength/Constitution and Dexterity/Quickness +93, and +10% resistance to heat, cold, matter, body, spirit and energy for 2 hours.",
+   "SpellID": 870013,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "dr-live-potion-8115",
+  "key": "dr-blank-potion-870014",
+  "set": {
+   "Name": "Supremacy: Might",
+   "Value": 93.0,
+   "Duration": 7200,
+   "Description": "Draught of Supremacy: Strength, Constitution, Dexterity and Acuity +62, Strength/Constitution and Dexterity/Quickness +93, and +10% resistance to heat, cold, matter, body, spirit and energy for 2 hours.",
+   "SpellID": 870014,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "dr-live-potion-8116",
+  "key": "dr-blank-potion-870015",
+  "set": {
+   "Name": "Supremacy: Deftness",
+   "Value": 93.0,
+   "Duration": 7200,
+   "Description": "Draught of Supremacy: Strength, Constitution, Dexterity and Acuity +62, Strength/Constitution and Dexterity/Quickness +93, and +10% resistance to heat, cold, matter, body, spirit and energy for 2 hours.",
+   "SpellID": 870015,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "1091",
+  "key": "dr-blank-potion-870016",
+  "set": {
+   "Name": "Supremacy: Resistance",
+   "Value": 10.0,
+   "Duration": 7200,
+   "Target": "Self",
+   "Range": 0,
+   "Radius": 0,
+   "Power": 0,
+   "CastTime": 0.0,
+   "Concentration": 0,
+   "Pulse": 0,
+   "Frequency": 0,
+   "SharedTimerGroup": 0,
+   "Description": "+10% resistance to heat, cold, matter, body, spirit and energy.",
+   "SpellID": 870016,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "31048",
+  "key": "dr-blank-potion-870002",
+  "set": {
+   "Name": "Draught of Omni-Healing",
+   "Description": "Restores health, power and endurance at once.",
+   "SpellID": 870002,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "31052",
+  "key": "dr-blank-potion-870003",
+  "set": {
+   "Name": "Draught of Omni-Regen",
+   "Description": "Increases health, power and endurance regeneration.",
+   "SpellID": 870003,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "1715",
+  "key": "dr-blank-potion-870004",
+  "set": {
+   "Name": "Draught of Tenacity",
+   "Target": "Self",
+   "Range": 0,
+   "Radius": 0,
+   "Duration": 1200,
+   "Power": 0,
+   "Concentration": 0,
+   "Pulse": 0,
+   "Frequency": 0,
+   "CastTime": 3.0,
+   "SharedTimerGroup": 2,
+   "Description": "Reduces the endurance your attacks cost by 25% for 20 minutes.",
+   "SpellID": 870004,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "Spell",
+  "copy": "31048",
+  "key": "dr-blank-potion-870006",
+  "set": {
+   "Name": "Draught of Restoration",
+   "Type": "SickHeal",
+   "Value": 0.0,
+   "Damage": 0.0,
+   "Description": "Removes resurrection illness.",
+   "SpellID": 870006,
+   "PackageID": "OfflineBlankPotions"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870101,
+   "SpellID": 870001,
+   "KeyName": "MultipleSubSpells",
+   "Value": "870011"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870102,
+   "SpellID": 870001,
+   "KeyName": "MultipleSubSpells",
+   "Value": "870012"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870103,
+   "SpellID": 870001,
+   "KeyName": "MultipleSubSpells",
+   "Value": "870013"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870104,
+   "SpellID": 870001,
+   "KeyName": "MultipleSubSpells",
+   "Value": "870014"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870105,
+   "SpellID": 870001,
+   "KeyName": "MultipleSubSpells",
+   "Value": "870015"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870106,
+   "SpellID": 870001,
+   "KeyName": "MultipleSubSpells",
+   "Value": "870016"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870107,
+   "SpellID": 870002,
+   "KeyName": "MultipleSubSpells",
+   "Value": "31050"
+  }
+ },
+ {
+  "table": "SpellXCustomValues",
+  "insert": {
+   "CustomParamID": 870108,
+   "SpellID": 870002,
+   "KeyName": "MultipleSubSpells",
+   "Value": "31049"
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-item-870001",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-item-870001",
+   "LineName": "Item Effects",
+   "SpellID": 870001,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-potions-870001",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-potions-870001",
+   "LineName": "Potions",
+   "SpellID": 870001,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-item-870002",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-item-870002",
+   "LineName": "Item Effects",
+   "SpellID": 870002,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-potions-870002",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-potions-870002",
+   "LineName": "Potions",
+   "SpellID": 870002,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-item-870003",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-item-870003",
+   "LineName": "Item Effects",
+   "SpellID": 870003,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-potions-870003",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-potions-870003",
+   "LineName": "Potions",
+   "SpellID": 870003,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-item-870004",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-item-870004",
+   "LineName": "Item Effects",
+   "SpellID": 870004,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-potions-870004",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-potions-870004",
+   "LineName": "Potions",
+   "SpellID": 870004,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-item-870006",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-item-870006",
+   "LineName": "Item Effects",
+   "SpellID": 870006,
+   "Level": 1
+  }
+ },
+ {
+  "table": "LineXSpell",
+  "key": "dr-blank-potion-potions-870006",
+  "insert": {
+   "LineXSpell_ID": "dr-blank-potion-potions-870006",
+   "LineName": "Potions",
+   "SpellID": 870006,
+   "Level": 1
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr652",
+  "set": {
+   "SpellID": 870001,
+   "CanUseEvery": 30
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr4101",
+  "set": {
+   "SpellID": 870001,
+   "CanUseEvery": 30
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr7650",
+  "set": {
+   "SpellID": 870001,
+   "CanUseEvery": 30
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr9978",
+  "set": {
+   "SpellID": 870001,
+   "CanUseEvery": 30
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr14650",
+  "set": {
+   "SpellID": 870001,
+   "CanUseEvery": 30
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr16358",
+  "set": {
+   "SpellID": 870001,
+   "CanUseEvery": 30
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr648",
+  "set": {
+   "SpellID": 870002
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr4102",
+  "set": {
+   "SpellID": 870002
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr7646",
+  "set": {
+   "SpellID": 870002
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr9979",
+  "set": {
+   "SpellID": 870002
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr14646",
+  "set": {
+   "SpellID": 870002
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr16359",
+  "set": {
+   "SpellID": 870002
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr647",
+  "set": {
+   "SpellID": 870003
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr4103",
+  "set": {
+   "SpellID": 870003
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr7645",
+  "set": {
+   "SpellID": 870003
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr9980",
+  "set": {
+   "SpellID": 870003
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr14645",
+  "set": {
+   "SpellID": 870003
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr16360",
+  "set": {
+   "SpellID": 870003
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr649",
+  "set": {
+   "SpellID": 870004
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr4105",
+  "set": {
+   "SpellID": 870004
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr7647",
+  "set": {
+   "SpellID": 870004
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr9982",
+  "set": {
+   "SpellID": 870004
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr14647",
+  "set": {
+   "SpellID": 870004
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr16362",
+  "set": {
+   "SpellID": 870004
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr651",
+  "set": {
+   "SpellID": 870006
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr7649",
+  "set": {
+   "SpellID": 870006
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvcr14649",
+  "set": {
+   "SpellID": 870006
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvci_essence_of_supremacy",
+  "set": {
+   "Price": 10000
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvci_essence_of_omni_healing",
+  "set": {
+   "Price": 10000
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvci_essence_of_omni_regen",
+  "set": {
+   "Price": 10000
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvci_essence_of_tenacity",
+  "set": {
+   "Price": 10000
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvci_essence_of_celerity",
+  "set": {
+   "Price": 10000
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "lvci_essence_of_restoration",
+  "set": {
+   "Price": 10000
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_supremacy",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_supremacy",
+   "ItemListID": "AlbExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_supremacy",
+   "PageNumber": 2,
+   "SlotPosition": 20
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_omni_healing",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_omni_healing",
+   "ItemListID": "AlbExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_omni_healing",
+   "PageNumber": 2,
+   "SlotPosition": 21
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_omni_regen",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_omni_regen",
+   "ItemListID": "AlbExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_omni_regen",
+   "PageNumber": 2,
+   "SlotPosition": 22
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_tenacity",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_tenacity",
+   "ItemListID": "AlbExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_tenacity",
+   "PageNumber": 2,
+   "SlotPosition": 23
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_celerity",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_celerity",
+   "ItemListID": "AlbExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_celerity",
+   "PageNumber": 2,
+   "SlotPosition": 24
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_restoration",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-AlbExpensiveTrade-lvci_essence_of_restoration",
+   "ItemListID": "AlbExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_restoration",
+   "PageNumber": 2,
+   "SlotPosition": 25
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_supremacy",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_supremacy",
+   "ItemListID": "MidExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_supremacy",
+   "PageNumber": 2,
+   "SlotPosition": 20
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_omni_healing",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_omni_healing",
+   "ItemListID": "MidExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_omni_healing",
+   "PageNumber": 2,
+   "SlotPosition": 21
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_omni_regen",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_omni_regen",
+   "ItemListID": "MidExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_omni_regen",
+   "PageNumber": 2,
+   "SlotPosition": 22
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_tenacity",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_tenacity",
+   "ItemListID": "MidExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_tenacity",
+   "PageNumber": 2,
+   "SlotPosition": 23
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_celerity",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_celerity",
+   "ItemListID": "MidExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_celerity",
+   "PageNumber": 2,
+   "SlotPosition": 24
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_restoration",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-MidExpensiveTrade-lvci_essence_of_restoration",
+   "ItemListID": "MidExpensiveTrade",
+   "ItemTemplateID": "lvci_essence_of_restoration",
+   "PageNumber": 2,
+   "SlotPosition": 25
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_supremacy",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_supremacy",
+   "ItemListID": "HibExpensiveCraftComponents",
+   "ItemTemplateID": "lvci_essence_of_supremacy",
+   "PageNumber": 4,
+   "SlotPosition": 22
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_omni_healing",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_omni_healing",
+   "ItemListID": "HibExpensiveCraftComponents",
+   "ItemTemplateID": "lvci_essence_of_omni_healing",
+   "PageNumber": 4,
+   "SlotPosition": 23
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_omni_regen",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_omni_regen",
+   "ItemListID": "HibExpensiveCraftComponents",
+   "ItemTemplateID": "lvci_essence_of_omni_regen",
+   "PageNumber": 4,
+   "SlotPosition": 24
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_tenacity",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_tenacity",
+   "ItemListID": "HibExpensiveCraftComponents",
+   "ItemTemplateID": "lvci_essence_of_tenacity",
+   "PageNumber": 4,
+   "SlotPosition": 25
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_celerity",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_celerity",
+   "ItemListID": "HibExpensiveCraftComponents",
+   "ItemTemplateID": "lvci_essence_of_celerity",
+   "PageNumber": 4,
+   "SlotPosition": 26
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_restoration",
+  "insert": {
+   "MerchantItem_ID": "dr-blank-potion-HibExpensiveCraftComponents-lvci_essence_of_restoration",
+   "ItemListID": "HibExpensiveCraftComponents",
+   "ItemTemplateID": "lvci_essence_of_restoration",
+   "PageNumber": 4,
+   "SlotPosition": 27
+  }
+ }
+]
