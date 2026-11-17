@@ -75,6 +75,54 @@ public sealed class ClaudeTakeoverEditionTests
         });
     }
 
+    // Owner 2026-11-16: 249 gamebots rolled a Sovereign because the roster button ignored bots_use_custom_classes.
+    [TestCase(null, false)]
+    [TestCase("False", false)]
+    [TestCase("True", true)]
+    public void RosterKeepsTheCustomClassesForPlayersUnlessBotsMayUseThem(string? botsUseCustom, bool customAllowed)
+    {
+        using var connection = new SQLiteConnection("Data Source=:memory:;Version=3;");
+        connection.Open();
+        using (var setup = connection.CreateCommand())
+        {
+            setup.CommandText = """
+                CREATE TABLE ServerProperty (Category TEXT, `Key` TEXT, Value TEXT);
+                INSERT INTO ServerProperty VALUES ('classes','enable_stormforged','True'),('classes','enable_pendragon','True'),
+                    ('classes','enable_tuatha','True'),('classes','enable_mauler_test','True'),('classes','enable_warlock_test','False');
+                """;
+            setup.ExecuteNonQuery();
+            if (botsUseCustom != null)
+            {
+                setup.CommandText = "INSERT INTO ServerProperty VALUES ('bots','bots_use_custom_classes',@v)";
+                setup.Parameters.AddWithValue("@v", botsUseCustom);
+                setup.ExecuteNonQuery();
+            }
+        }
+        using SQLiteTransaction transaction = connection.BeginTransaction();
+        MethodInfo read = Launcher.GetType("OfflineDaoc.Launcher.MainForm")!.GetMethod("EnabledModernClassSwitches", HiddenStatic)!;
+        var switches = (ISet<string>)read.Invoke(null, [connection, transaction])!;
+
+        MethodInfo generate = Launcher.GetType("OfflineDaoc.Launcher.BotCharacterGenerator")!
+            .GetMethod("Generate", BindingFlags.Static | BindingFlags.Public, [typeof(int), typeof(ISet<string>), typeof(ISet<string>)])!;
+        var reserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<int> rolls = Enumerable.Range(1, 3).SelectMany(realm => Enumerable.Range(0, 600).Select(_ =>
+        {
+            object identity = generate.Invoke(null, [realm, reserved, switches])!;
+            return (int)identity.GetType().GetProperty("ClassId")!.GetValue(identity)!;
+        })).ToList();
+        Assert.Multiple(() =>
+        {
+            Assert.That(switches, Does.Contain("enable_mauler_test").And.Not.Contain("enable_warlock_test"));
+            Assert.That(switches.Contains("enable_stormforged") && switches.Contains("enable_pendragon") && switches.Contains("enable_tuatha"),
+                Is.EqualTo(customAllowed));
+            Assert.That(rolls, Does.Contain(60).And.Contain(61).And.Contain(62));
+            if (customAllowed)
+                Assert.That(rolls, Does.Contain(64).And.Contain(65).And.Contain(67));
+            else
+                Assert.That(rolls, Has.None.EqualTo(64).And.None.EqualTo(65).And.None.EqualTo(67));
+        });
+    }
+
     [TestCase(true, "VERSION 0.37b")]
     [TestCase(false, "VERSION 0.37")]
     public void VersionLabelNamesTheInstalledEdition(bool customClass, string expected)
