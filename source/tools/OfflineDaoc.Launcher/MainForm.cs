@@ -2255,7 +2255,13 @@ internal sealed partial class MainForm : Form
     private void ShowAccountInSidebar()
     {
         if (_accountsEntry is null) return;
-        try { _accountsEntry.Text = "Account: " + ReadCredentials().Account; }
+        // The entry always reads "Accounts" first: two players took "Account: <name>" for a missing button (DR-455).
+        try
+        {
+            string account = ReadCredentials().Account;
+            if (account.Length > 14) account = account[..13] + "…";
+            _accountsEntry.Text = string.IsNullOrWhiteSpace(account) ? "Accounts" : $"Accounts ({account})";
+        }
         catch (Exception) { _accountsEntry.Text = "Accounts"; }
     }
 
