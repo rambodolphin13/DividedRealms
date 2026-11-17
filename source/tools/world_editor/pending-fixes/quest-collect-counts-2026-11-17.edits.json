@@ -1,0 +1,723 @@
+[
+ {
+  "table": "DataQuest",
+  "key": "20010",
+  "set": {
+   "CollectItemTemplate": "|||cq_damp_skeleton_bone;2|cq_potion_of_healing"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20040",
+  "set": {
+   "CollectItemTemplate": "|||cq_metal_sphere;2||cq_brishene_s_pendant|cq_brishene_s_report|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20059",
+  "set": {
+   "CollectItemTemplate": "|||cq_seed_pouch;2"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20096",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bear_claw;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20099",
+  "set": {
+   "CollectItemTemplate": "||||||cq_tawny_lynx_pelt;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20104",
+  "set": {
+   "CollectItemTemplate": "||||cq_sjora_ear;3"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20109",
+  "set": {
+   "CollectItemTemplate": "|||cq_tomte_bracer;3"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20143",
+  "set": {
+   "CollectItemTemplate": "|||||cq_map_piece;5||cq_eye_of_griffon_frostwing|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20309",
+  "set": {
+   "CollectItemTemplate": "||||cq_spraggoncle_cloak;4|cq_note_for_reidie|cq_dye"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20310",
+  "set": {
+   "CollectItemTemplate": "||cq_river_beetle_drone_carapace;2|||||||cq_boss_s_corpse|cq_blackthorn_leaves|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20645",
+  "set": {
+   "CollectItemTemplate": "|||cq_vial_of_sea_slime;3||cq_vial_of_inishail_fly_venom||cq_vial_of_tidal_mongrel_saliva"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20646",
+  "set": {
+   "CollectItemTemplate": "|||cq_vial_of_sea_slime;3||cq_vial_of_inishail_fly_venom||cq_vial_of_tidal_mongrel_saliva"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20647",
+  "set": {
+   "CollectItemTemplate": "|||cq_vial_of_sea_slime;3||cq_vial_of_inishail_fly_venom||cq_vial_of_tidal_mongrel_saliva"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20648",
+  "set": {
+   "CollectItemTemplate": "|||cq_vial_of_sea_slime;3||cq_vial_of_inishail_fly_venom||cq_vial_of_tidal_mongrel_saliva"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20649",
+  "set": {
+   "CollectItemTemplate": "|||cq_vial_of_sea_slime;3||cq_vial_of_inishail_fly_venom||cq_vial_of_tidal_mongrel_saliva"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20819",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_bit_of_mud;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20820",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20821",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20822",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20823",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20824",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20825",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20826",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20827",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20828",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20829",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20830",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20831",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20832",
+  "set": {
+   "CollectItemTemplate": "|||||||||||cq_rat_tail;10"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20833",
+  "set": {
+   "CollectItemTemplate": "||||cq_bantam_shrouder_tentacle;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20834",
+  "set": {
+   "CollectItemTemplate": "||||cq_tangleweed;2||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20852",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20853",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20854",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20855",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20856",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20857",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20858",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20859",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20860",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20861",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20862",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20863",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20864",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20865",
+  "set": {
+   "CollectItemTemplate": "|||cq_scrolls_of_information|||cq_fomorian_collar;2|cq_pouch_for_niara|cq_note_for_anraoi"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20939",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20940",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20941",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20942",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20943",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20944",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20945",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20946",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "20947",
+  "set": {
+   "CollectItemTemplate": "|||||cq_bag_of_eitn_ot_pyrk;5||cq_complete_waterstrider_hatchling_carcass||cq_fearann_wyvern_hatchling_stomach"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21102",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21103",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21104",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21105",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21106",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21107",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21108",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21109",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21110",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21111",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21112",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21113",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21114",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21115",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21116",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21117",
+  "set": {
+   "CollectItemTemplate": "||||||cq_vial_of_water_snake_venom;5"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21140",
+  "set": {
+   "CollectItemTemplate": "|||cq_thrall_chains;3|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21238",
+  "set": {
+   "CollectItemTemplate": "|||cq_skadedjur_remains;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21239",
+  "set": {
+   "CollectItemTemplate": "|||cq_skadedjur_remains;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21240",
+  "set": {
+   "CollectItemTemplate": "|||cq_skadedjur_remains;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21241",
+  "set": {
+   "CollectItemTemplate": "|||cq_skadedjur_remains;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21242",
+  "set": {
+   "CollectItemTemplate": "|||cq_skadedjur_remains;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21243",
+  "set": {
+   "CollectItemTemplate": "|||cq_skadedjur_remains;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21244",
+  "set": {
+   "CollectItemTemplate": "|||cq_skadedjur_remains;3||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21407",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21408",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21409",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21410",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21411",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21412",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21413",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21414",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21415",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21416",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21417",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21418",
+  "set": {
+   "CollectItemTemplate": "||||cq_empyrean_keeper_sword;2|||cq_smidget_s_gem||"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21463",
+  "set": {
+   "CollectItemTemplate": "|||cq_wildling_ear;3"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21515",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21516",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21517",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21518",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21519",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21520",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21521",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21522",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21523",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21524",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21525",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ },
+ {
+  "table": "DataQuest",
+  "key": "21526",
+  "set": {
+   "CollectItemTemplate": "|cq_curmudgeon_fighter_head|||cq_druid_dagger;2||cq_smirky_s_ring|cq_smirky_s_ring||cq_sack_of_rotting_fish|"
+  }
+ }
+]

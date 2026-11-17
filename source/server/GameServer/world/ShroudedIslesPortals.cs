@@ -129,7 +129,7 @@ namespace DOL.GS
                     return;
                 }
                 LastUse[player] = now;
-                player.LeaveHouse();
+                player.LeaveHouse(moveOutdoors: false); // one move to the destination, not via the front door (DR-452)
                 player.Out.SendMessage("You step through the portal to the Shrouded Isles.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 player.MoveTo(_point.TargetRegion, _point.TargetX, _point.TargetY, _point.TargetZ, _point.TargetHeading);
             }

@@ -20,23 +20,25 @@ namespace DOL.GS
                 return native;
 
             int seconds, maximum, interval;
+            // 1.87 (DR-186): out of combat, standing regenerates health and power as fast as sitting.
             bool resting = living.IsSitting;
             switch (resource)
             {
                 case eProperty.HealthRegenerationAmount:
                     if (native <= 0) return native; // Disease and bleeding remain authoritative.
-                    seconds = Properties.REST_HEALTH_SECONDS; maximum = living.MaxHealth;
+                    seconds = Properties.REST_HEALTH_SECONDS; maximum = living.MaxHealth; resting = true;
                     interval = ClassicRestRegeneration.HealthAndPowerInterval(living.IsSitting, false);
                     break;
                 case eProperty.PowerRegenerationAmount:
                     if (living is GamePlayer player && (eCharacterClass?)player.CharacterClass?.ID is
                         eCharacterClass.Vampiir or eCharacterClass.MaulerAlb or eCharacterClass.MaulerMid or eCharacterClass.MaulerHib)
                         return native;
-                    seconds = Properties.REST_POWER_SECONDS; maximum = living.MaxMana;
+                    seconds = Properties.REST_POWER_SECONDS; maximum = living.MaxMana; resting = true;
                     interval = ClassicRestRegeneration.HealthAndPowerInterval(living.IsSitting, false);
                     break;
                 case eProperty.EnduranceRegenerationAmount:
-                    if (living.IsMoving) return native;
+                    // 1.87 (DR-187): moving keeps the standing rate instead of none.
+                    resting = living.IsSitting && !living.IsMoving;
                     seconds = Properties.REST_ENDURANCE_SECONDS; maximum = living.MaxEndurance; interval = 1000;
                     break;
                 default: return native;

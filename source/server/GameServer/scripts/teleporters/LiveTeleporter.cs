@@ -119,6 +119,18 @@ namespace DOL.GS.Scripts
             return true;
         }
 
+        public override bool SayReceive(GameLiving source, string text)
+        {
+            if (!base.SayReceive(source, text))
+                return false;
+
+            // /say works like clicking the [link] (DR-453).
+            if (source is GamePlayer player && PorterSay.ShouldAnswer(this, player) && PorterSay.Destination(text) is { } word)
+                WhisperReceive(player, word);
+
+            return true;
+        }
+
         public override bool WhisperReceive(GameLiving source, string str) // What to do when a player whispers me
         {
             if (!base.WhisperReceive(source, str)) return false;
@@ -545,7 +557,7 @@ namespace DOL.GS.Scripts
         {
             if (player.InCombat == false && GameRelic.IsPlayerCarryingRelic(player) == false)
             {
-                player.LeaveHouse();
+                player.LeaveHouse(moveOutdoors: false); // one move to the destination, not via the front door (DR-452)
                 GameLocation currentLocation =
                     new GameLocation("TeleportStart", player.CurrentRegionID, player.X, player.Y, player.Z);
                 player.MoveTo((ushort) destination.RegionID, destination.X, destination.Y, destination.Z,

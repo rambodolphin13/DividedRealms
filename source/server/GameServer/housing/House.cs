@@ -403,9 +403,16 @@ namespace DOL.GS.Housing
 		/// </summary>
 		/// <param name="player">the player who wants to get in</param>
 		/// <param name="silent">text or not</param>
-		public void Exit(GamePlayer player, bool silent)
+		public void Exit(GamePlayer player, bool silent) => Exit(player, silent, true);
+
+		/// <summary>
+		/// Takes the player out of the house. With <paramref name="moveOutdoors"/> false the caller moves the
+		/// player itself (a porter or portal), so they are not first dropped at the front door (DR-452).
+		/// </summary>
+		public void Exit(GamePlayer player, bool silent, bool moveOutdoors)
 		{
-			player.MoveTo(OutdoorJumpPoint);
+			if (moveOutdoors)
+				player.MoveTo(OutdoorJumpPoint);
 
 			if (!silent)
 			{

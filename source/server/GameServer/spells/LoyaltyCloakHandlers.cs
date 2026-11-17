@@ -68,7 +68,13 @@ namespace DOL.GS.Spells
     {
         public override string ShortDescription =>
             $"Increases {TargetPronoun} magic resistances by {Spell.Value}% and gives a {Spell.Value}% chance to shrug off crowd control.";
+        // All six magic resists, as the description and EffectHelper's list say; it gave Body alone (DR-276).
         public override eProperty Property1 => eProperty.Resist_Body;
+        public override eProperty Property2 => eProperty.Resist_Cold;
+        public override eProperty Property3 => eProperty.Resist_Energy;
+        public override eProperty Property4 => eProperty.Resist_Heat;
+        public override eProperty Property5 => eProperty.Resist_Matter;
+        public override eProperty Property6 => eProperty.Resist_Spirit;
     }
 
     /// <summary>Armsman and Valkyrie cloaks: melee attacks ignore bladeturn for the duration.</summary>

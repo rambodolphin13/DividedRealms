@@ -113,7 +113,8 @@ namespace DOL.UnitTests
             Assert.That(OutOfCombatRecovery.Amount(player, eProperty.HealthRegenerationAmount, 0), Is.Zero);
             Assert.That(OutOfCombatRecovery.Amount(player, eProperty.HealthRegenerationAmount, 200), Is.EqualTo(200));
             player.Moving = true;
-            Assert.That(OutOfCombatRecovery.Amount(player, eProperty.EnduranceRegenerationAmount, 0), Is.Zero);
+            // 1.87 (DR-187): moving keeps the standing endurance rate.
+            Assert.That(OutOfCombatRecovery.Amount(player, eProperty.EnduranceRegenerationAmount, 0), Is.GreaterThan(0));
             Properties.FASTER_OUT_OF_COMBAT_RECOVERY = false;
             Assert.That(OutOfCombatRecovery.Amount(player, eProperty.PowerRegenerationAmount, 12), Is.EqualTo(12));
         }

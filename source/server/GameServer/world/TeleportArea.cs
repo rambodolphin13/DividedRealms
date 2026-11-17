@@ -51,7 +51,7 @@ namespace DOL.GS
 		{
 			if (player.InCombat == false && GameRelic.IsPlayerCarryingRelic(player) == false)
 			{
-				player.LeaveHouse();
+				player.LeaveHouse(moveOutdoors: false); // one move to the destination, not via the front door (DR-452)
 				GameLocation currentLocation = new GameLocation("TeleportStart", player.CurrentRegionID, player.X, player.Y, player.Z);
 				player.MoveTo((ushort)destination.RegionID, destination.X, destination.Y, destination.Z, (ushort)destination.Heading);
 				GameServer.ServerRules.OnPlayerTeleport(player, currentLocation, destination);

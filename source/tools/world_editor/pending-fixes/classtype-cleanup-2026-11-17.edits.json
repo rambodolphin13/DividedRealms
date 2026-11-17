@@ -1,0 +1,6 @@
+[
+  {"table": "NpcTemplate", "where": {"TemplateId": 212}, "set": {"ClassType": ""}},
+  {"table": "ItemTemplate", "where": {"ClassType": "0"}, "set": {"ClassType": ""}},
+  {"table": "ItemTemplate", "where": {"ClassType": "helm"}, "set": {"ClassType": ""}},
+  {"table": "ItemTemplate", "where": {"ClassType": "DOL.Storm.GameInventoryItem_D2"}, "set": {"ClassType": ""}}
+]
