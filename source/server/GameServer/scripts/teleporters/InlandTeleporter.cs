@@ -103,57 +103,16 @@ namespace DOL.GS.Scripts
 
             TurnTo(player, 10000);
             
-            var message = string.Empty;
-
-            switch (Realm)
+            // The border-town porters (Castle Sauvage, Svasud Faste, Druim Ligen) give the same menu as the capital
+            // porters (DR-428), so [Border Keeps] and [Frontier Regions] reach the New Frontiers from here too. The
+            // old words ([Avalon Marsh], [Gotar], [Shannon Estuary]...) still work when whispered.
+            if (PorterMenu.For(Realm) == null)
             {
-                case eRealm.Albion:
-
-                    message = "Greetings, " + player.Name +
-                              " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
-                              "[Castle Sauvage] in Camelot Hills or \n[Snowdonia Fortress] in Black Mtns. North,\n" +
-                              "[Avalon Marsh] wharf,\n" +
-                              "[Gothwaite Harbor] in the [Shrouded Isles],\n" +
-                              "[Camelot] our glorious capital,\n" +
-                              "[Entrance] to the areas of [Housing]\n\n" +
-                              "or one of the many [towns] throughout Albion.";
-                              //"For this event duration, I can send you to [Darkness Falls]";
-                    break;
-
-                case eRealm.Midgard:
-                    
-                    message = "Greetings, " + player.Name +
-                              " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
-                              "[Svasud Faste] in Mularn or \n[Vindsaul Faste] in West Svealand,\n" +
-                              "Beaches of [Gotar] near Nailiten,\n" +
-                              "[Aegirhamn] in the [Shrouded Isles],\n" +
-                              "Our glorious city of [Jordheim],\n" +
-                              "[Entrance] to the areas of [Housing]\n\n" +
-                              "or one of the many [towns] throughout Midgard.";
-                    break;
-
-                case eRealm.Hibernia:
-                    
-                    message = "Greetings, " + player.Name +
-                              " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
-                              "[Druim Ligen] in Connacht or \n[Druim Cain] in Bri Leith,\n" +
-                              "[Shannon Estuary] watchtower,\n" +
-                              "[Domnann] Grove in the [Shrouded Isles],\n" +
-                              "[Tir na Nog] our glorious capital,\n" +
-                              "[Entrance] to the areas of [Housing]\n\n" +
-                              "or one of the many [towns] throughout Hibernia.";
-                    break;
-
-                default:
-                    SayTo(player, "I have no Realm set, so don't know what locations to offer..");
-                    break;
+                SayTo(player, "I have no Realm set, so don't know what locations to offer..");
+                return true;
             }
-            
-            message += "\n\n" +
-                       "Perhaps you would like the challenge of the [Epic Dungeon]?";
-            message += BattlegroundTeleportOptions.MenuLine;
 
-            SayTo(player, message);
+            SayTo(player, PorterMenu.Greeting(Realm, false, Resolver(player)));
 
             return true;
         }
@@ -185,8 +144,30 @@ namespace DOL.GS.Scripts
 
         }
 
+        /// <summary>Whether a word sent back to this porter by <paramref name="player"/> reaches a place.</summary>
+        protected Func<string, bool> Resolver(GamePlayer player)
+        {
+            HashSet<string> travel = TravelCatalogue.KnownWords(player.Realm);
+            return name => !string.IsNullOrEmpty(name) &&
+                           (travel.Contains(name) ||
+                            WorldMgr.GetTeleportLocation(DestinationRealm, String.Format("{0}:{1}", Type, name)) != null);
+        }
+
         protected virtual bool GetTeleportLocation(GamePlayer player, string text)
         {
+            if (string.Equals(text, PorterMenu.BorderKeepsWord, StringComparison.OrdinalIgnoreCase))
+            {
+                SayTo(player, PorterMenu.BorderKeeps(Realm, false, Resolver(player)));
+                return false;
+            }
+
+            if (string.Equals(text, PorterMenu.FrontierRegionsWord, StringComparison.OrdinalIgnoreCase))
+            {
+                SayTo(player, PorterMenu.FrontierRegionsIntro(Resolver(player)));
+                TravelCatalogue.TryHandle(this, player, "New Frontiers", out _);
+                return false;
+            }
+
             switch (Realm) // Only offer locations based on what realm i am set at.
             {
                 case eRealm.Albion:
@@ -457,6 +438,14 @@ namespace DOL.GS.Scripts
                     OnDestinationPicked(player, port);
                 }
 
+                return false;
+            }
+
+            // The travel catalogue (the [anywhere else] menu, the New Frontiers keeps the realm holds), as at the
+            // capital porters. Checked after this porter's own rows so its classic names keep their old meaning.
+            if (TravelCatalogue.TryHandle(this, player, text, out DbTeleport travel))
+            {
+                if (travel != null) OnDestinationPicked(player, travel);
                 return false;
             }
 
