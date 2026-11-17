@@ -3624,7 +3624,8 @@ namespace DOL.AI.Brain
             // protecting a group member. Generic aggro may still contain the
             // previous pull and used to make archers/casters repeatedly switch
             // away from the fight their pet had already started.
-            Body.TargetObject = protectionTarget ?? directAttacker ?? activePetTarget ?? CalculateNextAttackTarget();
+            // A companion in a player's group fights the leader's target before its own attacker (DR-417/418/421).
+            Body.TargetObject = protectionTarget ?? LeaderFocusTarget() ?? directAttacker ?? activePetTarget ?? CalculateNextAttackTarget();
             RedirectPetFromControlledTarget(Body.TargetObject as GameLiving);
             MaintainTankPeel();
             // A tethered boss outside its tether is immune: stop hitting it and lead it home (AutonomousTetherReset).
