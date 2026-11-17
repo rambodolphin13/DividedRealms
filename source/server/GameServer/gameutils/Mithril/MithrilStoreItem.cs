@@ -178,12 +178,21 @@ namespace DOL.GS
                 ? skill : null;
         }
 
+        /// <summary>
+        /// Trades the all-trades token raises. Bountycraft (1.125) stays at 1 on every character and is reset to 1 at login,
+        /// so the token leaves it alone (DR-460).
+        /// </summary>
+        public static bool IsLegendaryTrade(eCraftingSkill skill)
+        {
+            return skill is not eCraftingSkill.NoCrafting and not eCraftingSkill._Last and not eCraftingSkill.BasicCrafting
+                and not eCraftingSkill.BountyCrafting;
+        }
+
         private static string Legendary(GamePlayer player, eCraftingSkill? only)
         {
             eCraftingSkill[] trades = only.HasValue
                 ? [only.Value]
-                : Enum.GetValues<eCraftingSkill>().Where(s => s is not eCraftingSkill.NoCrafting and not eCraftingSkill._Last
-                    and not eCraftingSkill.BasicCrafting && CraftingMgr.getSkillbyEnum(s) != null).Distinct().ToArray();
+                : Enum.GetValues<eCraftingSkill>().Where(s => IsLegendaryTrade(s) && CraftingMgr.getSkillbyEnum(s) != null).Distinct().ToArray();
             int raised = 0;
 
             foreach (eCraftingSkill trade in trades)

@@ -61,6 +61,16 @@ public class UT_DiscordFixes1117
     }
 
     [Test]
+    public void AllTradesTokenSkipsBountycraftAndBasicCrafting()
+    {
+        Assert.That(MithrilStoreItem.IsLegendaryTrade(eCraftingSkill.BountyCrafting), Is.False);
+        Assert.That(MithrilStoreItem.IsLegendaryTrade(eCraftingSkill.BasicCrafting), Is.False);
+        Assert.That(MithrilStoreItem.IsLegendaryTrade(eCraftingSkill.NoCrafting), Is.False);
+        Assert.That(MithrilStoreItem.IsLegendaryTrade(eCraftingSkill.WeaponCrafting), Is.True);
+        Assert.That(MithrilStoreItem.IsLegendaryTrade(eCraftingSkill.SpellCrafting), Is.True);
+    }
+
+    [Test]
     public void MerchantGemCampLastsTwoMinutes()
     {
         Assert.That(SummonedMerchantCamp.DurationMs, Is.EqualTo(120_000));
