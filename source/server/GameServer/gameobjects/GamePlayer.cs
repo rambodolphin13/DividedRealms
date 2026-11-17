@@ -11904,7 +11904,9 @@ namespace DOL.GS
 
             lock (_craftingLock)
             {
-                if (m_craftingSkills.ContainsKey(skill))
+                // Adds a trade the character lacks. This used to test ContainsKey the wrong way round: a known trade threw on
+                // Dictionary.Add and an unknown one was never added (Legendary Grandmaster tokens failed both ways).
+                if (!m_craftingSkills.ContainsKey(skill))
                 {
                     AbstractCraftingSkill craftingSkill = CraftingMgr.getSkillbyEnum(skill);
                     if (craftingSkill != null)
