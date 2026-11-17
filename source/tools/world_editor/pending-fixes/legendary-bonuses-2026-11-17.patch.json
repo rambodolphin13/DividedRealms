@@ -1,0 +1,3933 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-17T22:37:42.116372+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Bishops_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Bishops_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Bishops_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Bishops_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Falchion",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Falchion",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Falchion",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Falchion",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Rapier",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Rapier",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Rapier",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Rapier",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Coffin_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Coffin_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Coffin_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Coffin_Mace",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Short_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Stiletto",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Stiletto",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Stiletto",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Stiletto",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Great_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Great_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Great_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Great_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_great_sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Great_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_great_sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Great_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_War_Pick",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_War_Pick",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_War_Pick",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_War_Pick",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Lucerne_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Lucerne_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Lucerne_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Lucerne_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_glaive",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Glaive",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_glaive",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Glaive",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Military_Fork",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Military_Fork",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Military_Fork",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Military_Fork",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_spiked_flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Spiked_Flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_spiked_flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Spiked_Flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Pick_Flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Pick_Flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Pick_Flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Pick_Flail",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_fist_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "tempestuous_fist_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_fist_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "benthic_fist_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_hand_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "tempestuous_hand_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_hand_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "benthic_hand_wrap",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_fist_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "tempestuous_fist_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_fist_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "benthic_fist_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_hand_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "tempestuous_hand_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_hand_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "benthic_hand_wrap_mid",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_War_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_War_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_war_hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_War_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Longsword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Longsword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Longsword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_double_bladed_axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Double_Bladed_Axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Double_Bladed_Axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Double_Bladed_Axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_great_club",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Great_Club",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_great_club",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Great_Club",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Great_Sword3",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Great_Sword3",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Great_Sword3",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Great_Sword3",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_battleaxe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Battleaxe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_battleaxe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Battleaxe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_war_axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_War_Axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_war_axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_War_Axe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_fang_greave",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Fang_Greave",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_fang_greave",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Fang_Greave",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_moon_claw",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Moon_Claw",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_moon_claw",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Moon_Claw",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_hooked_spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Hooked_Spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_hooked_spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Hooked_Spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_fist_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "tempestuous_fist_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_fist_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "benthic_fist_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_hand_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "tempestuous_hand_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_hand_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "benthic_hand_wrap_hib",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_dire_hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Dire_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Dire_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Dire_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_War_Adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_War_Adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_war_adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_War_Adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Long_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Long_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Long_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Hammer",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Adze",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Short_Sword2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Short_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Short_Sword2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Short_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Great_Hammer2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Great_Hammer2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Great_Hammer2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Great_Hammer2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Lithic_Great_Sword2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Great_Sword2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Great_Sword2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Great_Sword2",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_battle_spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_Battle_Spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_battle_spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Battle_Spear",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lithic_war_scythe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Tempestuous_War_Scythe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "pyroclasmic_war_scythe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_War_Scythe",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_LongSword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Pyroclasmic_Long_Sword",
+   "op": "update",
+   "before": {
+    "Bonus4Type": 148,
+    "Bonus4": 10,
+    "Bonus5Type": 164,
+    "Bonus5": 2,
+    "Bonus6Type": 0,
+    "Bonus6": 0,
+    "Bonus7Type": 0,
+    "Bonus7": 0
+   },
+   "after": {
+    "Bonus4Type": 0,
+    "Bonus4": 0,
+    "Bonus5Type": 148,
+    "Bonus5": 10,
+    "Bonus6Type": 173,
+    "Bonus6": 3,
+    "Bonus7Type": 200,
+    "Bonus7": 3
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
