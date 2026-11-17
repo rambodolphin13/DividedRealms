@@ -2807,20 +2807,27 @@ internal sealed partial class MainForm : Form
         return value is not string text || !text.Trim().Equals("false", StringComparison.OrdinalIgnoreCase);
     }
 
-    // The newer class switches (classes / enable_*_test, enable_stormforged, ...) that are True in this world.
+    // The newer class switches (classes / enable_*_test, enable_stormforged, ...) that are True in this world, minus the
+    // custom classes (Stormforged, Pendragon, Tuatha) unless bots / bots_use_custom_classes is True: they stay for players.
     private static HashSet<string> EnabledModernClassSwitches(SQLiteConnection connection, SQLiteTransaction transaction)
     {
         var enabled = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (string key in BotCharacterGenerator.ModernClassSwitches)
         {
-            using var command = connection.CreateCommand();
-            command.Transaction = transaction;
-            command.CommandText = "SELECT Value FROM ServerProperty WHERE `Key`=@key LIMIT 1";
-            command.Parameters.AddWithValue("@key", key);
-            if (command.ExecuteScalar() is string text && text.Trim().Equals("true", StringComparison.OrdinalIgnoreCase))
+            if (PropertyIsTrue(connection, transaction, key))
                 enabled.Add(key);
         }
-        return enabled;
+        return BotCharacterGenerator.BotClassSwitches(enabled,
+            PropertyIsTrue(connection, transaction, BotCharacterGenerator.BotsUseCustomClassesKey));
+    }
+
+    private static bool PropertyIsTrue(SQLiteConnection connection, SQLiteTransaction transaction, string key)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "SELECT Value FROM ServerProperty WHERE `Key`=@key LIMIT 1";
+        command.Parameters.AddWithValue("@key", key);
+        return command.ExecuteScalar() is string text && text.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
     }
 
     private IReadOnlyList<BotCharacterGenerator.Identity> GenerateBotCharacters(int realm, int count, int level = 1)

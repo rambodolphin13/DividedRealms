@@ -107,6 +107,21 @@ internal static class BotCharacterGenerator
     public static IEnumerable<string> ModernClassSwitches =>
         ModernChoices.Values.SelectMany(entries => entries).Select(entry => entry.Switch).Distinct();
 
+    /// <summary>The server property (bots / bots_use_custom_classes) that lets gamebots roll the custom classes.</summary>
+    public const string BotsUseCustomClassesKey = "bots_use_custom_classes";
+
+    /// <summary>
+    /// Stormforged (64), Pendragon (65) and Tuatha (67) are for players unless bots_use_custom_classes is on (owner,
+    /// 2026-11-11). The server's AutonomousBotIdentityGenerator.IsBotClassAllowed has the same rule; the launcher's
+    /// roster missed it, so 249 test-world gamebots rolled a Sovereign (owner, 2026-11-16).
+    /// </summary>
+    public static readonly IReadOnlySet<string> CustomClassSwitches =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "enable_stormforged", "enable_pendragon", "enable_tuatha" };
+
+    /// <summary>The switches a gamebot may roll from: the enabled ones, minus the custom classes unless bots may use them.</summary>
+    public static HashSet<string> BotClassSwitches(IEnumerable<string> enabledSwitches, bool botsUseCustomClasses) =>
+        new(enabledSwitches.Where(key => botsUseCustomClasses || !CustomClassSwitches.Contains(key)), StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// A new bot. Its name is three in four in the 2003 style and one in four a lore name (OfflineDaoc.Shared.EraBotNames has
     /// the mix and the research); newer classes come in only while their switch is on.
