@@ -2098,8 +2098,20 @@ namespace DOL.GS.Spells
 			if (Caster is GameNPC npc)
 				spell = npc.GetScaledSpell(spell);
 
-			ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(m_caster, spell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells));
+			ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(m_caster, spell, SubSpellLine(m_spellLine));
 			spellHandler.StartSpell(target);
+		}
+
+		/// <summary>
+		/// Line a sub spell is cast on. Potion and item sub spells keep their parent's line, so stat buffs land at full value
+		/// (SingleStatBuff gives those lines effectiveness 1.0); on Reserved_Spells they fell to the 0.75 spec floor
+		/// (Draught of Courage / Superior Courage / Heroism, crafting pass 2026-11-17).
+		/// </summary>
+		public static SpellLine SubSpellLine(SpellLine parent)
+		{
+			return parent?.KeyName is GlobalSpellsLines.Potions_Effects or GlobalSpellsLines.Item_Effects
+				? parent
+				: SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
 		}
 
 		/// <summary>

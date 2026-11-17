@@ -83,8 +83,8 @@ namespace DOL.GS
    
 					if (material == null)
 					{
-						player.Out.SendMessage("Can't find material (" + material.Id_nb + ") needed to salvage this item!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						log.ErrorFormat("Salvage Error for ID: {0}:  Material not found: {1}", salvageYield.ID, material.Id_nb);
+						player.Out.SendMessage("Can't find material (" + salvageYield.MaterialId_nb + ") needed to salvage this item!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+						log.ErrorFormat("Salvage Error for ID: {0}:  Material not found: {1}", salvageYield.ID, salvageYield.MaterialId_nb);
 					}
 				}
    
@@ -247,9 +247,14 @@ namespace DOL.GS
 		{
 			if (siegeWeapon == null)
 				return 0;
-			// Galenas
-			siegeWeapon.ReleaseControl();
-			siegeWeapon.RemoveFromWorld();
+
+			// Checked before the engine leaves the world, so a busy player or bad data no longer loses it with no refund.
+			if (player.IsCrafting || player.IsSalvagingOrRepairing)
+			{
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.IsAllowedToBeginWork.EndCurrentAction"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return 0;
+			}
+
 			bool error = false;
 			var recipe = DOLDB<DbCraftedItem>.SelectObject(DB.Column("Id_nb").IsEqualTo(siegeWeapon.ItemId));
 
@@ -269,11 +274,9 @@ namespace DOL.GS
 				return 1;
             }
 
-            if (player.IsCrafting || player.IsSalvagingOrRepairing)
-            {
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.IsAllowedToBeginWork.EndCurrentAction"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return 0;
-            }
+			// Galenas
+			siegeWeapon.ReleaseControl();
+			siegeWeapon.RemoveFromWorld();
 			DbInventoryItem item;
 			DbItemTemplate template;
 			foreach (DbCraftedXItem material in rawMaterials)

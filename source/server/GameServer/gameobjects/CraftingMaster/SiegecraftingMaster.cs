@@ -3,6 +3,7 @@ using DOL.Language;
 namespace DOL.GS
 {
 	[NPCGuildScript("Siegecrafting Master")]
+	[NPCGuildScript("Siegecrafters Master")] // the world's trainer (Jaeltrat, HyBrasil) uses this guild name
 	public class SiegecraftingMaster : CraftNPC
 	{
 		private static readonly eCraftingSkill[] m_trainedSkills = 

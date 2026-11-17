@@ -234,16 +234,37 @@ namespace DOL.GS
                 player.AddCraftingSkill(trade, 1);
                 int now = player.GetCraftingSkillValue(trade);
 
-                if (now < LegendarySkill && player.GainCraftingSkill(trade, LegendarySkill - now))
+                if (now < LegendarySkill && player.GainCraftingSkill(trade, LegendarySkill - now, announce: false))
                     raised++;
             }
 
             if (raised == 0)
                 return Tell(player, "You are already a Legendary Grandmaster there.");
 
+            player.CraftingPrimarySkill = PrimaryAfterToken(player.CraftingPrimarySkill, only);
             player.Out.SendUpdateCraftingSkills();
             player.SaveIntoDatabase();
-            return raised == 1 ? "You are now a Legendary Grandmaster." : $"You are now a Legendary Grandmaster in {raised} trades.";
+            string done = raised == 1 ? "You are now a Legendary Grandmaster." : $"You are now a Legendary Grandmaster in {raised} trades.";
+
+            if (player.CraftingPrimarySkill is eCraftingSkill.BasicCrafting or eCraftingSkill.NoCrafting)
+                done += " Speak to a crafting master to choose the trade your title shows.";
+
+            return done;
+        }
+
+        /// <summary>
+        /// A character who never chose a trade keeps Basic Crafting (title "Basic Crafter's Helper"). A single-trade token
+        /// makes that trade the primary; a chosen primary is never changed.
+        /// </summary>
+        public static eCraftingSkill PrimaryAfterToken(eCraftingSkill current, eCraftingSkill? only)
+        {
+            if (current is not (eCraftingSkill.BasicCrafting or eCraftingSkill.NoCrafting))
+                return current;
+
+            return only is eCraftingSkill.WeaponCrafting or eCraftingSkill.ArmorCrafting or eCraftingSkill.Tailoring
+                or eCraftingSkill.Fletching or eCraftingSkill.SpellCrafting or eCraftingSkill.Alchemy or eCraftingSkill.SiegeCrafting
+                ? only.Value
+                : current;
         }
     }
 }

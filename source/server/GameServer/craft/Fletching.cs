@@ -83,6 +83,7 @@ namespace DOL.GS
 					return recipe.Level - 15;
 
 				case (int)eObjectType.Staff: //tested
+				case (int)eObjectType.MaulerStaff: // crafting pass 2026-11-17: mauler staves skipped the secondary check
 					return recipe.Level - 35;
 			}
 

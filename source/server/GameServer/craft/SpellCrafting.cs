@@ -201,7 +201,7 @@ namespace DOL.GS
 					return false;
 				}
 
-				if (bonusLevel - GetItemMaxImbuePoints(item) > 6)
+				if (bonusLevel - GetItemMaxImbuePoints(item) > 5) // live: at most 5 points over
 				{
 					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "SpellCrafting.IsAllowedToCombine.NoMoreLevels", item.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return false;
@@ -502,7 +502,7 @@ namespace DOL.GS
             if(bonusLevel - maxBonusLevel < 0) return 100;
 
             try {
-            int success = 34 + ItemQualOCModifiers[item.Quality - 94];
+            int success = 34 + ItemQualOCModifiers[Math.Clamp(item.Quality, 94, 100) - 94];
             success -= OCStartPercentages[bonusLevel-maxBonusLevel];
             int skillbonus = (player.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) / 10);
             if (skillbonus > 100) 
@@ -531,27 +531,20 @@ namespace DOL.GS
 		/// <returns></returns>
 		protected int GetItemMaxImbuePoints(DbInventoryItem item)
 		{
-			//if (item.Level > 51) return 32;
-			if (item.Level < 1) return 0;
-            // Luhz Crafting Update:
-            // All items have MP level imbue points
-            //return itemMaxBonusLevel[item.Level - 1, 100 - 94];
-            
-            if (item.Quality == 100)
-	            return (int)Math.Round(0.625 * item.Level);
-            if (item.Quality == 99)
-	            return (int)Math.Round(0.55 * item.Level);
-            if (item.Quality == 98)
-	            return (int)Math.Round(0.475 * item.Level);
-            if (item.Quality == 97)
-	            return (int)Math.Round(0.42 * item.Level);
-            if (item.Quality == 96)
-	            return (int)Math.Round(0.353 * item.Level);
-            if (item.Quality == 95)
-	            return (int)Math.Round(0.295 * item.Level);
-            
-            return (int)Math.Round(0.2 * item.Level);
-            
+			return MaxImbuePointsForLevel(item.Level);
+		}
+
+		/// <summary>
+		/// Live 1.87: "Crafted item quality is no longer considered"; every crafted item gets the 100% column of the
+		/// Mythic table (level 51 = 32, level 49 = 31). Items above level 51 stay at 32.
+		/// </summary>
+		public static int MaxImbuePointsForLevel(int level)
+		{
+			if (level < 1)
+				return 0;
+
+			int row = Math.Min(level, itemMaxBonusLevel.GetLength(0)) - 1;
+			return itemMaxBonusLevel[row, itemMaxBonusLevel.GetLength(1) - 1];
 		}
 
 		/// <summary>
@@ -611,8 +604,19 @@ namespace DOL.GS
 		/// <returns></returns>
 		protected int GetGemImbuePoints(int bonusType, int bonusValue)
 		{
+			return GemImbuePoints(bonusType, bonusValue);
+		}
+
+		// Live 1.118: stat gems became 2,5,...,29 and cost 1,2,4,6,8,9,11,13,15,16 points. Pre-1.118 values keep the old cost.
+		private static readonly int[] StatGemValues = { 2, 5, 8, 11, 14, 17, 20, 23, 26, 29 };
+		private static readonly int[] StatGemCosts = { 1, 2, 4, 6, 8, 9, 11, 13, 15, 16 };
+
+		public static int GemImbuePoints(int bonusType, int bonusValue)
+		{
 			int gemBonus;
-			if (bonusType <= (int)eProperty.Stat_Last) gemBonus = (int)(((bonusValue - 1) * 2 / 3) + 1); //stat
+			int statTier = Array.IndexOf(StatGemValues, bonusValue);
+			if (bonusType <= (int)eProperty.Stat_Last && statTier >= 0) gemBonus = StatGemCosts[statTier];
+			else if (bonusType <= (int)eProperty.Stat_Last) gemBonus = (int)(((bonusValue - 1) * 2 / 3) + 1); //stat
 			else if (bonusType == (int)eProperty.MaxMana) gemBonus = (int)((bonusValue * 2) - 2); //mana
 			else if (bonusType == (int)eProperty.MaxHealth) gemBonus = (int)(bonusValue / 4); //HP
 			else if (bonusType <= (int)eProperty.Resist_Last) gemBonus = (int)((bonusValue * 2) - 2);//resist

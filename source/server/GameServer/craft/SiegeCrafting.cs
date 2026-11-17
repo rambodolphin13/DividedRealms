@@ -21,6 +21,7 @@ using DOL.Language;
 using DOL.GS.PacketHandler;
 using System;
 using System.Collections.Generic;
+using DOL.GS.Keeps;
 
 namespace DOL.GS
 {
@@ -56,6 +57,83 @@ namespace DOL.GS
 				player.GainCraftingSkill(eCraftingSkill.SiegeCrafting, 1);
 				player.Out.SendUpdateCraftingSkills();
 			}
+		}
+
+		/// <summary>
+		/// A crafted siege engine is deployed where the crafter stands, so it gets the same place rules as the bought kits
+		/// (SummonSiegeCatapult / SummonSiegeRam): frontier or battleground only, no dungeon or portal keep, one catapult
+		/// or trebuchet per 500 units, two rams per 200. Checked before any material is used (crafting pass 2026-11-17).
+		/// </summary>
+		protected override bool CanPlayerStartToCraftItem(GamePlayer player, Recipe recipe)
+		{
+			if (!base.CanPlayerStartToCraftItem(player, recipe))
+				return false;
+
+			string refusal = DeployRefusal(player, (eObjectType)recipe.Product.Object_Type);
+			if (refusal == null)
+				return true;
+
+			player.Out.SendMessage(refusal, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			return false;
+		}
+
+		public static bool IsDeployedEngine(eObjectType type)
+		{
+			return type is eObjectType.SiegeBalista or eObjectType.SiegeCatapult or eObjectType.SiegeRam or eObjectType.SiegeTrebuchet;
+		}
+
+		public static string DeployRefusal(GameLiving crafter, eObjectType type)
+		{
+			if (!IsDeployedEngine(type))
+				return null;
+
+			if (!(crafter.CurrentZone.IsOF || crafter.CurrentZone.IsBG) || crafter.CurrentRegion.IsDungeon)
+				return "You cannot deploy siege weapons here!";
+
+			foreach (AbstractArea area in crafter.CurrentAreas)
+			{
+				if (area is KeepArea keepArea && keepArea.Keep.IsPortalKeep)
+					return "You cannot deploy siege weapons at a portal keep!";
+			}
+
+			if (type is eObjectType.SiegeCatapult or eObjectType.SiegeTrebuchet)
+			{
+				foreach (GameNPC npc in crafter.GetNPCsInRadius(500))
+				{
+					if (npc is GameSiegeCatapult)
+						return "You are too close to another trebuchet or catapult to deploy here!";
+				}
+			}
+			else if (type is eObjectType.SiegeRam)
+			{
+				int rams = 0;
+				foreach (GameNPC npc in crafter.GetNPCsInRadius(200))
+				{
+					if (npc is GameSiegeRam && npc.Realm == crafter.Realm)
+						rams++;
+				}
+
+				if (rams >= 2)
+					return "Too many rams in this area to deploy another one here!";
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Ram size from its model (mini 2605, light 2600, medium 2601, heavy 2602). LoadFromDatabase copies only the name
+		/// and model, so every crafted ram stayed a level 1 light ram.
+		/// </summary>
+		public static byte RamLevelFromModel(int model)
+		{
+			return model switch
+			{
+				2605 => 0,
+				2600 => 1,
+				2601 => 2,
+				2602 => 3,
+				_ => 1
+			};
 		}
 
 		public override void BuildCraftedItem(GamePlayer player, Recipe recipe)
@@ -100,6 +178,7 @@ namespace DOL.GS
 			siegeweapon.ItemId = product.Id_nb;
 
 			siegeweapon.LoadFromDatabase(product);
+			siegeweapon.Level = siegeweapon is GameSiegeRam ? RamLevelFromModel(product.Model) : (byte)3;
 			siegeweapon.CurrentRegion = player.CurrentRegion;
 			siegeweapon.Heading = player.Heading;
 			siegeweapon.X = player.X;
@@ -107,6 +186,7 @@ namespace DOL.GS
 			siegeweapon.Z = player.Z;
 			siegeweapon.Realm = player.Realm;
 			siegeweapon.AddToWorld();
+			player.Out.SendMessage($"You deploy the {product.Name}.", eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
 		}
 	}
 }

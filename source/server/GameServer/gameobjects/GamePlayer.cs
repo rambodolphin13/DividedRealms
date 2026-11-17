@@ -11761,7 +11761,11 @@ namespace DOL.GS
         /// <param name="skill">Crafting skill to increase</param>
         /// <param name="count">How much increase or decrase</param>
         /// <returns>true if the skill is valid and -1 if not</returns>
-        public virtual bool GainCraftingSkill(eCraftingSkill skill, int count)
+        public virtual bool GainCraftingSkill(eCraftingSkill skill, int count) => GainCraftingSkill(skill, count, announce: true);
+
+        /// <param name="announce">false for a bought skill (Mithril Legendary token): no title-tier event (guild merit)
+        /// and no realm news line, only the chat line.</param>
+        public virtual bool GainCraftingSkill(eCraftingSkill skill, int count, bool announce)
         {
             if (skill == eCraftingSkill.NoCrafting) return false;
 
@@ -11774,11 +11778,11 @@ namespace DOL.GS
                     CraftingProgressMgr.TrackChange(this, m_craftingSkills);
                     Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainCraftingSkill.GainSkill", craftingSkill.Name, m_craftingSkills[skill]), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                     int currentSkillLevel = GetCraftingSkillValue(skill);
-                    if (HasPlayerReachedNewCraftingTitle(currentSkillLevel))
+                    if (announce && HasPlayerReachedNewCraftingTitle(currentSkillLevel))
                     {
                         GameEventMgr.Notify(GamePlayerEvent.NextCraftingTierReached, this,new NextCraftingTierReachedEventArgs(skill,currentSkillLevel) );
                     }
-                    if (GameServer.ServerRules.CanGenerateNews(this) && currentSkillLevel >= 1000 && currentSkillLevel - count < 1000)
+                    if (announce && GameServer.ServerRules.CanGenerateNews(this) && currentSkillLevel >= 1000 && currentSkillLevel - count < 1000)
                     {
                         string message = string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainCraftingSkill.ReachedSkill", Name, craftingSkill.Name));
                         NewsMgr.CreateNews(message, Realm, eNewsType.PvE, true);
