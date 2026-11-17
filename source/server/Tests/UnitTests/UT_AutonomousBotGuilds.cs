@@ -126,6 +126,56 @@ namespace DOL.GS.Tests
         }
 
         [Test]
+        public void RealmLogos_SplitTheClientInsigniaTableByRealm()
+        {
+            var alb = Planner.RealmLogos(eRealm.Albion);
+            var mid = Planner.RealmLogos(eRealm.Midgard);
+            var hib = Planner.RealmLogos(eRealm.Hibernia);
+            Assert.That(alb.Count, Is.EqualTo(85));
+            Assert.That(mid.Count, Is.EqualTo(85));
+            Assert.That(hib.Count, Is.EqualTo(85));
+            Assert.That(alb.Concat(mid).Concat(hib).OrderBy(x => x), Is.EqualTo(Enumerable.Range(1, 255)));
+            Assert.That(alb, Does.Contain(1).And.Contain(121).And.Contain(217));
+            Assert.That(mid, Does.Contain(41).And.Contain(122).And.Contain(236));
+            Assert.That(hib, Does.Contain(81).And.Contain(123).And.Contain(255));
+        }
+
+        [Test]
+        public void PackEmblem_MatchesTheEmblemWindow()
+        {
+            // EmblemDialogReponseHandler: (logo << 9) | (pattern << 7) | (primarycolor << 3) | secondarycolor
+            Assert.That(Planner.PackEmblem(200, 2, 13, 5), Is.EqualTo((200 << 9) | (2 << 7) | (13 << 3) | 5));
+            Assert.That(Planner.EmblemLogo(Planner.PackEmblem(255, 3, 15, 7)), Is.EqualTo(255));
+        }
+
+        [TestCase(eRealm.Albion)]
+        [TestCase(eRealm.Midgard)]
+        [TestCase(eRealm.Hibernia)]
+        public void Emblems_AreOwnRealmUniqueAndDeterministic(eRealm realm)
+        {
+            var taken = new HashSet<int>();
+            var first = new List<int>();
+            for (int ordinal = 0; ordinal < Planner.MaximumGuildsPerRealm; ordinal++)
+            {
+                int emblem = Planner.EmblemFor(realm, ordinal, taken.Contains);
+                Assert.That(emblem, Is.Not.EqualTo(0));
+                Assert.That(Planner.RealmLogos(realm), Does.Contain(Planner.EmblemLogo(emblem)));
+                int primary = (emblem >> 3) & 0x0F, secondary = emblem & 0x07;
+                Assert.That(primary, Is.Not.EqualTo(secondary), "colours differ so the pattern shows");
+                Assert.That(taken.Add(emblem), Is.True, $"Duplicate emblem {emblem}");
+                first.Add(emblem);
+            }
+
+            var again = new HashSet<int>();
+            for (int ordinal = 0; ordinal < Planner.MaximumGuildsPerRealm; ordinal++)
+            {
+                int emblem = Planner.EmblemFor(realm, ordinal, again.Contains);
+                Assert.That(emblem, Is.EqualTo(first[ordinal]));
+                again.Add(emblem);
+            }
+        }
+
+        [Test]
         public void Names_StillComeWhenEveryCombinationIsTaken()
         {
             var taken = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

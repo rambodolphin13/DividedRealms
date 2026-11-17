@@ -212,6 +212,7 @@ public static class AutonomousBotRealmGuilds
 
     private static void LoadState()
     {
+        var needEmblems = new List<OfflineBotGuildRecord>();
         lock (Sync)
         {
             BotGuilds.Clear();
@@ -224,6 +225,8 @@ public static class AutonomousBotRealmGuilds
                 BotGuildCharter charter = Enum.TryParse(row.Charter, out BotGuildCharter parsed) ? parsed : BotGuildCharter.Leveling;
                 BotGuilds[row.GuildId] = new BotGuildInfo(row.GuildId, (eRealm)row.Realm, charter, row.Ordinal);
                 ApplyStartupRewrites(GuildMgr.GetGuildByGuildID(row.GuildId), charter, Enabled);
+                if (Enabled)
+                    needEmblems.Add(row);
             }
             int moved = 0;
             foreach (OfflineBotGuildMemberRecord row in GameServer.Database.SelectAllObjects<OfflineBotGuildMemberRecord>())
@@ -242,6 +245,8 @@ public static class AutonomousBotRealmGuilds
             if (moved > 0)
                 Log.Warn($"BOT_GUILDS moved {moved} gamebot(s) in player guilds to the base game's guild memberships");
         }
+        foreach (OfflineBotGuildRecord row in needEmblems)
+            GiveEmblem(GuildMgr.GetGuildByGuildID(row.GuildId), (eRealm)row.Realm, row.Ordinal);
         if (Log.IsInfoEnabled)
             Log.Info($"Bot guilds: loaded {BotGuilds.Count} bot guilds and {Members.Count} memberships (enabled: {Enabled}).");
     }
@@ -432,6 +437,7 @@ public static class AutonomousBotRealmGuilds
 
         AutonomousBotGuildEconomy.SetCharterDues(guild, charter);
         ApplyMemberRankRights(guild);
+        GiveEmblem(guild, realm, ordinal);
 
         var row = new OfflineBotGuildRecord
         {
@@ -444,6 +450,26 @@ public static class AutonomousBotRealmGuilds
         if (Log.IsInfoEnabled)
             Log.Info($"Bot guilds: founded {charter} guild \"{name}\" in {GlobalConstants.RealmToName(realm)}");
         return info;
+    }
+
+    /// <summary>
+    /// DR-449: a bot guild with no emblem gets one of its realm's logos with random colours, not used by any other
+    /// guild, so its members' cloaks and shields and the keeps it claims show it. New guilds get one when founded;
+    /// guilds founded before this get one at the next start (only while bot guilds are on). An emblem already set
+    /// is kept. True when one was given.
+    /// </summary>
+    public static bool GiveEmblem(Guild guild, eRealm realm, int ordinal)
+    {
+        if (guild == null || guild.Emblem != 0)
+            return false;
+        var taken = GuildMgr.GetGuilds().Select(other => other.Emblem).Where(emblem => emblem != 0).ToHashSet();
+        guild.Emblem = AutonomousBotGuildPlanner.EmblemFor(realm, ordinal, taken.Contains);
+        using (AiProfile.Lock(AutonomousBotStatusPersistence.DatabaseWriteLock, AiSystem.LockDatabaseWrite))
+            guild.SaveIntoDatabase();
+        if (Log.IsInfoEnabled)
+            Log.Info($"BOT_GUILDS emblem {guild.Emblem} (logo {AutonomousBotGuildPlanner.EmblemLogo(guild.Emblem)}) for \"{guild.Name}\"");
+        AutonomousBotGuilds.OnGuildAppearanceChanged(guild);
+        return true;
     }
 
     /// <summary>The rank a player joins a bot guild at: 8, the lowest rank that may speak in guild chat.</summary>

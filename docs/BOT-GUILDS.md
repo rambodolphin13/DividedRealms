@@ -82,6 +82,14 @@ Protectors, Tir na Nog Adventurers).
   Some are casual, as many 2003 guilds were ("Pie and Pints", "Tavern Regulars"). Names are
   unique on the server.
 - **Rank titles** are set by charter (for example Warlord, Captain, Soldier, Recruit for RvR).
+- **Emblems (DR-449):** every bot guild gets an emblem when it is founded: a logo of its own realm
+  with a random pattern and two different colours, never one another guild already uses. Members
+  wear it on cloaks and shields, and keeps the guild claims from then on fly it.
+  - Realm logos come from the stock 1.130 client's `insignia.csv` file prefixes: `B_` Albion
+    (1-40, 121, 124-148, 199-217), `N_` Midgard (41-80, 122, 174-198, 218-236), `H_` Hibernia
+    (81-120, 123, 149-173, 237-255).
+  - Guilds founded before this get one at the next server start, only while `bot_guilds_enabled`
+    is on. An emblem already set is never changed. The log line is `BOT_GUILDS emblem`.
 - **When it runs:** 90 seconds after start, then every 10 minutes. It reads the roster and writes
   only its own two tables (below) and new `Guild`/`GuildRank` rows, so it never competes with the
   bots' own status saves.
@@ -234,11 +242,6 @@ something (docs/bot-voices/DESIGN.md 3.7). The lines in `AutonomousBotGuildChatL
 
 - **Guild houses:** buying and furnishing a house needs the housing system's lot and rent flow,
   and bots would never use the house. A bot guild house would be decoration only.
-- **Emblems:**
-  - Bot guilds have no emblem, so a keep they claim shows the default banner.
-  - The emblem number packs a logo id, and which logo ids each realm's client offers isn't known
-    here. A guessed id could draw nothing or another realm's logo.
-  - Needs a check in the client first.
 - **Shared Leveling-guild camps:** guildmates group first (phase 3), but a Leveling guild doesn't
   pick one camp for its members outside groups.
 - **Spending the guild bank:** bot guilds collect dues but don't spend the bank yet (in this

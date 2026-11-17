@@ -338,6 +338,58 @@ public static class AutonomousBotGuildPlanner
 
     #endregion
 
+    // The stock 1.130 client's gamedata insignia.csv (Research\Reference src_client_insignia): logo ids by file prefix,
+    // B_ Albion, N_ Midgard, H_ Hibernia. A bot guild only takes a logo of its own realm.
+    private static readonly int[] AlbionLogos = LogoRanges((1, 40), (121, 121), (124, 148), (199, 217));
+    private static readonly int[] MidgardLogos = LogoRanges((41, 80), (122, 122), (174, 198), (218, 236));
+    private static readonly int[] HiberniaLogos = LogoRanges((81, 120), (123, 123), (149, 173), (237, 255));
+
+    private static int[] LogoRanges(params (int First, int Last)[] ranges) =>
+        ranges.SelectMany(r => Enumerable.Range(r.First, r.Last - r.First + 1)).ToArray();
+
+    /// <summary>The emblem logos the client draws for a realm (insignia.csv).</summary>
+    public static IReadOnlyList<int> RealmLogos(eRealm realm) => realm switch
+    {
+        eRealm.Midgard => MidgardLogos,
+        eRealm.Hibernia => HiberniaLogos,
+        _ => AlbionLogos,
+    };
+
+    /// <summary>
+    /// Packs an emblem the way the emblem window does (EmblemDialogReponseHandler):
+    /// logo &lt;&lt; 9 | pattern &lt;&lt; 7 | primary colour &lt;&lt; 3 | secondary colour.
+    /// </summary>
+    public static int PackEmblem(int logo, int pattern, int primary, int secondary) =>
+        (logo << 9) | ((pattern & 0x03) << 7) | ((primary & 0x0F) << 3) | (secondary & 0x07);
+
+    /// <summary>The logo id of a packed emblem.</summary>
+    public static int EmblemLogo(int emblem) => emblem >> 9;
+
+    /// <summary>
+    /// An emblem for a new bot guild: a logo of its realm with random pattern and colours, deterministic for
+    /// (realm, ordinal), skipping emblems <paramref name="isTaken"/> reports (no two guilds share one, as
+    /// for players). Never 0.
+    /// </summary>
+    public static int EmblemFor(eRealm realm, int ordinal, Func<int, bool> isTaken)
+    {
+        IReadOnlyList<int> logos = RealmLogos(realm);
+        isTaken ??= _ => false;
+        var random = new Random(((int)realm * 6151) ^ (ordinal * 92821) ^ 0x5E3B);
+        int emblem = 0;
+        for (int attempt = 0; attempt < 2000; attempt++)
+        {
+            // Primary and secondary differ, so the pattern shows.
+            int primary = random.Next(16);
+            int secondary = random.Next(8);
+            if (primary == secondary)
+                secondary = (secondary + 1) % 8;
+            emblem = PackEmblem(logos[random.Next(logos.Count)], random.Next(4), primary, secondary);
+            if (!isTaken(emblem))
+                return emblem;
+        }
+        return emblem;
+    }
+
     /// <summary>Invite rule for a bot asked to join a player's guild.</summary>
     public enum InviteAnswer
     {
