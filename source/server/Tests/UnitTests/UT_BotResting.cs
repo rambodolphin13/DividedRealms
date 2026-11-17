@@ -21,7 +21,7 @@ namespace DOL.UnitTests
             Assert.That(BotRestRecovery.RecoveryAmount(native, maximum), Is.EqualTo(expected));
         }
 
-        [TestCase(false, false, 6000)]
+        [TestCase(false, false, 3000)] // 1.87: standing out of combat as fast as sitting (DR-186)
         [TestCase(true, false, 3000)]
         [TestCase(false, true, 14000)]
         [TestCase(true, true, 10000)]
@@ -34,8 +34,8 @@ namespace DOL.UnitTests
         [TestCase(true, false, false, 4)]
         [TestCase(false, true, false, 0)]
         [TestCase(true, true, false, 0)]
-        [TestCase(false, false, true, 0)]
-        [TestCase(true, false, true, 0)]
+        [TestCase(false, false, true, 1)] // 1.87: the standing rate while moving (DR-187)
+        [TestCase(true, false, true, 1)]
         [TestCase(false, true, true, 0)]
         [TestCase(true, true, true, 0)]
         public void SharedPlayerAndBotEnduranceBase(bool sitting, bool combat, bool moving, int amount)
