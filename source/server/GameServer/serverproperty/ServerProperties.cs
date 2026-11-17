@@ -2246,6 +2246,15 @@ namespace DOL.GS.ServerProperties
 
 		[ServerProperty("pve", "lootgenerator_mythirian_min_level", "Lowest mob level that can drop a mythirian.", 45)]
 		public static int LOOTGENERATOR_MYTHIRIAN_MIN_LEVEL;
+
+		[ServerProperty("pve", "lootgenerator_df_weapon_base_chance", "Percent chance that a Darkness Falls kill drops a CL15 Darkness Falls weapon. Only worlds with a DOL.GS.LootGeneratorDarknessFallsWeapons LootGenerator row use it.", 1.0)]
+		public static double LOOTGENERATOR_DF_WEAPON_BASE_CHANCE;
+
+		[ServerProperty("pve", "lootgenerator_df_weapon_named_multiplier", "Multiplier on the CL15 Darkness Falls weapon drop chance for named and epic mobs.", 5.0)]
+		public static double LOOTGENERATOR_DF_WEAPON_NAMED_MULTIPLIER;
+
+		[ServerProperty("pve", "lootgenerator_df_weapon_min_level", "Lowest Darkness Falls mob level that can drop a CL15 Darkness Falls weapon.", 50)]
+		public static int LOOTGENERATOR_DF_WEAPON_MIN_LEVEL;
 		
 		/// <summary>
 		/// Atlantean Glass Loot Generator Named Boost Count
