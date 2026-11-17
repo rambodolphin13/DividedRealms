@@ -113,7 +113,7 @@ namespace DOL.GS.Trials
         /// <summary>The participating player standing closest to a spot: whoever just clicked something there.</summary>
         private static GamePlayer NearestPlayer(TrialRun run, GameObject spot)
         {
-            IEnumerable<GamePlayer> players = run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>());
+            IEnumerable<GamePlayer> players = run.PartyPlayers;
             return players.Distinct().Where(player => player.IsAlive && player.ObjectState == GameObject.eObjectState.Active && player.CurrentRegion == run.Starter.CurrentRegion)
                 .OrderBy(player => (long)(player.X - spot.X) * (player.X - spot.X) + (long)(player.Y - spot.Y) * (player.Y - spot.Y))
                 .FirstOrDefault() ?? run.Leader;

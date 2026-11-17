@@ -53,11 +53,11 @@ namespace DOL.GS.Trials
             Definition = starter.Definition;
             Starter = starter;
             Leader = leader;
-            bool alone = Definition.Scope == TrialScope.Solo || leader.Group == null;
-            _players = alone ? new() { leader }
-                : leader.Group.GetPlayersInTheGroup().Where(player => player.IsWithinRadius(starter, Definition.LeashRange)).ToHashSet();
+            // The leader's group, and for a Raid-scope trial the battlegroup's other groups too (DR-352).
+            List<GameLiving> party = TrialParty.Members(leader, Definition.Scope).ToList();
+            _players = party.OfType<GamePlayer>().Where(player => player.IsWithinRadius(starter, Definition.LeashRange)).ToHashSet();
             _players.Add(leader);
-            PartySize = alone ? 1 : leader.Group.GetMembersInTheGroup().Count(member => member.IsWithinRadius(starter, Definition.LeashRange));
+            PartySize = Math.Max(1, party.Count(member => member.IsWithinRadius(starter, Definition.LeashRange)));
             HealthScale = TrialScaling.HealthScale(Definition.Scope, PartySize);
             DamageScale = TrialScaling.DamageScale(Definition.Scope, PartySize);
         }
@@ -71,7 +71,16 @@ namespace DOL.GS.Trials
         }
 
         public bool IsParticipant(GamePlayer player) => _players.Contains(player) ||
-            Definition.Scope != TrialScope.Solo && player.Group != null && player.Group == Leader.Group;
+            Definition.Scope != TrialScope.Solo && PartyPlayers.Contains(player);
+
+        /// <summary>Everyone taking part now, bots too, wherever they stand: the starting players and the party (TrialParty).
+        /// A solo trial still lists the leader's group here, as the kits always did (moving companions along, telling them).</summary>
+        public IEnumerable<GameLiving> PartyMembers =>
+            _players.Cast<GameLiving>().Concat(TrialParty.Members(Leader,
+                Definition.Scope == TrialScope.Solo ? TrialScope.Group : Definition.Scope)).Distinct();
+
+        /// <summary>The players of <see cref="PartyMembers"/>.</summary>
+        public IEnumerable<GamePlayer> PartyPlayers => PartyMembers.OfType<GamePlayer>();
 
         /// <summary>In a solo trial only the starter and their pets count.</summary>
         public bool MayHurt(GameObject source)
@@ -97,7 +106,7 @@ namespace DOL.GS.Trials
 
         public void Tell(string message)
         {
-            foreach (GamePlayer player in _players.Concat(Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct().Where(player => player.ObjectState == GameObject.eObjectState.Active))
+            foreach (GamePlayer player in PartyPlayers.Where(player => player.ObjectState == GameObject.eObjectState.Active))
                 player.Out.SendMessage(message, eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
         }
 
@@ -206,7 +215,7 @@ namespace DOL.GS.Trials
         {
             bool here = _players.Any(player => player.IsAlive && player.ObjectState == GameObject.eObjectState.Active &&
                 player.CurrentRegion == Starter.CurrentRegion && player.IsWithinRadius(Starter, Definition.LeashRange));
-            bool bots = Definition.Scope != TrialScope.Solo && Leader.Group?.GetMembersInTheGroup()
+            bool bots = Definition.Scope != TrialScope.Solo && PartyMembers
                 .Any(member => member is GameBot && member.IsAlive && member.IsWithinRadius(Starter, Definition.LeashRange)) == true;
 
             _abandoned = here || bots ? 0 : _abandoned + 1;

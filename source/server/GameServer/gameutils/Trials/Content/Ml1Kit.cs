@@ -100,9 +100,7 @@ namespace DOL.GS.Trials
         /// <summary>Moves the party, standing apart. The temple's gates have no door rows, so chambers are entered this way.</summary>
         public static void MoveParty(TrialRun run, TrialPoint to)
         {
-            List<GameLiving> party = run.Definition.Scope == TrialScope.Solo || run.Leader.Group == null
-                ? new List<GameLiving> { run.Leader }
-                : run.Leader.Group.GetMembersInTheGroup();
+            List<GameLiving> party = TrialParty.Members(run.Leader, run.Definition.Scope).ToList();
 
             for (int i = 0; i < party.Count; i++)
             {

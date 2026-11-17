@@ -237,7 +237,7 @@ namespace DOL.GS.Trials
 
         /// <summary>Players, bots and their companions taking part, alive or dead, still near the trial.</summary>
         internal static IEnumerable<GameLiving> Party(TrialRun run) =>
-            run.Players.Cast<GameLiving>().Concat(run.Leader.Group?.GetMembersInTheGroup() ?? Enumerable.Empty<GameLiving>()).Distinct()
+            run.PartyMembers
                 .Where(living => living.ObjectState == GameObject.eObjectState.Active && living.CurrentRegion == run.Starter.CurrentRegion &&
                                  living.IsWithinRadius(run.Starter, run.Definition.LeashRange));
 
@@ -1260,7 +1260,7 @@ namespace DOL.GS.Trials
             Dictionary<GamePlayer, TrialMob> shadows = run.Get<Dictionary<GamePlayer, TrialMob>>("shadows") ?? new();
             run.Set("shadows", shadows);
 
-            foreach (GamePlayer player in run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct().ToList())
+            foreach (GamePlayer player in run.PartyPlayers.ToList())
             {
                 if (shadows.ContainsKey(player) || !player.IsAlive || player.HasFinishedMLStep(9, 8) || !PastChan(player.X, player.Z) || run.Mobs("sphinx").Any(sphinx => sphinx.InCombat))
                     continue;

@@ -176,7 +176,7 @@ namespace DOL.GS.Trials
         {
             TrialDefinition definition = run.Definition;
             IEnumerable<GamePlayer> players = definition.Scope == TrialScope.Solo ? new[] { run.Leader }
-                : run.Players.Concat(run.Leader.Group?.GetPlayersInTheGroup() ?? Enumerable.Empty<GamePlayer>()).Distinct();
+                : run.PartyPlayers;
 
             // Credit the character in play now: a participant who relogged mid-run is a new object (crediting the stale one
             // writes a step the relogged character never loads); one still logged out earns nothing.
