@@ -18,6 +18,9 @@ REALMS = {1: "alb", 2: "mid", 3: "hib"}
 # Live merchant spots: Camelot outside the throne room, Jordheim main hall porter exit, Tir na nOg past the main porter.
 ANCHOR = {1: (10, 32547, 24320, 8447), 2: (101, 32046, 27428, 8792), 3: (201, 33418, 31180, 7999)}
 OFFSETS = [(220, 0), (220, 180), (220, -180)]
+# Hibernia: +220 X from Channeler Glasny is inside the alcove wall (no navmesh floor; MattSC/Niebaum report 2026-11-17).
+# Use the merchant hall just east of that wall instead, facing east into the room (navmesh-checked, 80-unit clearance).
+SPOTS = {3: [(33968, 31230, 8000, 3072), (33968, 31330, 8001, 3072), (33968, 31130, 7999, 3072)]}
 
 # Official Mithril mount prices (darkageofcamelot.com "Mounts: Mithril Mounts"); horsemap id -> price, realm (0 = all).
 MOUNTS = [(71, 2100, 0), (72, 2100, 0), (73, 2100, 0), (77, 1385, 1), (75, 1385, 2), (74, 1385, 3), (63, 1385, 0),
@@ -144,9 +147,10 @@ def main(world, ref, out):
                                               ("Pattern Merchant", f"mithril_patterns_{short}"),
                                               ("Dye Merchant", "mithril_dyes")]):
             dx, dy = OFFSETS[k]
+            px, py, pz, heading = SPOTS[realm][k] if realm in SPOTS else (x + dx, y + dy, z, 0)
             edits.append({"table": "Mob", "insert": {
                 "Mob_ID": uid("npc", realm, name), "ClassType": MERCHANT, "Name": name, "Guild": "Mithril Store",
-                "Realm": realm, "Region": region, "X": x + dx, "Y": y + dy, "Z": z, "Heading": 0,
+                "Realm": realm, "Region": region, "X": px, "Y": py, "Z": pz, "Heading": heading,
                 "Model": models[k % len(models)], "Size": 50, "Level": 50, "Speed": 0, "RespawnInterval": 0, "RoamingRange": 0,
                 "AggroLevel": 0, "AggroRange": 0, "Flags": 16, "MeleeDamageType": 1, "Strength": 30, "Constitution": 30,
                 "Dexterity": 30, "Quickness": 30, "Intelligence": 30, "Piety": 30, "Empathy": 30, "Charisma": 30,
