@@ -1,0 +1,818 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-17T22:43:50.791269+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "ItemTemplate",
+   "key": "ice_ball",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 11
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "ice_ball2",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 11
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "ice_ball3",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 11
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr16007",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 100,
+    "Type_Damage": 11
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr16017",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 75,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr16032",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 13
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr16038",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 100,
+    "Type_Damage": 13
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr16042",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr16048",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 130,
+    "SPD_ABS": 110,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr2001",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 100,
+    "Type_Damage": 11
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr2011",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 75,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr2026",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 13
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr2032",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 100,
+    "Type_Damage": 13
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr2036",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr2042",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 130,
+    "SPD_ABS": 110,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr2047",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20503",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20509",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 130,
+    "SPD_ABS": 100,
+    "Type_Damage": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20523",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20529",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 100,
+    "Type_Damage": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20534",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20540",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 145,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20554",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 10
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20560",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 150,
+    "SPD_ABS": 100,
+    "Type_Damage": 10
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20800",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 150,
+    "SPD_ABS": 100,
+    "Type_Damage": 15
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr20801",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 150,
+    "Type_Damage": 15
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr3803",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 130,
+    "SPD_ABS": 100,
+    "Type_Damage": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr3817",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr3823",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 100,
+    "Type_Damage": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr3828",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr3834",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 145,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr3848",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 10
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr3854",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 150,
+    "SPD_ABS": 100,
+    "Type_Damage": 10
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr4094",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 150,
+    "SPD_ABS": 100,
+    "Type_Damage": 15
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr4095",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 150,
+    "Type_Damage": 15
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8625",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 100,
+    "Type_Damage": 11
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8635",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 75,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8650",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 13
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8656",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 100,
+    "Type_Damage": 13
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8660",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8666",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 130,
+    "SPD_ABS": 110,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8671",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8677",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 130,
+    "SPD_ABS": 100,
+    "Type_Damage": 2
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8691",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8697",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 100,
+    "Type_Damage": 3
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8702",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 125,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8708",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 145,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8722",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 110,
+    "SPD_ABS": 100,
+    "Type_Damage": 10
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr8728",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 150,
+    "SPD_ABS": 100,
+    "Type_Damage": 10
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr9532",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 150,
+    "SPD_ABS": 100,
+    "Type_Damage": 15
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "lvcr9533",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 120,
+    "SPD_ABS": 150,
+    "Type_Damage": 15
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "stone_shot",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "stone_shot2",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "stone_shot3",
+   "op": "update",
+   "before": {
+    "DPS_AF": 0,
+    "SPD_ABS": 0,
+    "Type_Damage": 0
+   },
+   "after": {
+    "DPS_AF": 100,
+    "SPD_ABS": 100,
+    "Type_Damage": 1
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

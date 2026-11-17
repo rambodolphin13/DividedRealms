@@ -124,6 +124,12 @@ namespace DOL.GS
 		/// Ram size from its model (mini 2605, light 2600, medium 2601, heavy 2602). LoadFromDatabase copies only the name
 		/// and model, so every crafted ram stayed a level 1 light ram.
 		/// </summary>
+		/// <summary>Fortified catapult, trebuchet, ballista and palintone: +50% health, +25% damage (owner design 2026-11-17).</summary>
+		public static bool IsFortifiedProduct(string name)
+		{
+			return name != null && name.Contains("fortified", StringComparison.OrdinalIgnoreCase);
+		}
+
 		public static byte RamLevelFromModel(int model)
 		{
 			return model switch
@@ -179,6 +185,7 @@ namespace DOL.GS
 
 			siegeweapon.LoadFromDatabase(product);
 			siegeweapon.Level = siegeweapon is GameSiegeRam ? RamLevelFromModel(product.Model) : (byte)3;
+			siegeweapon.IsFortified = siegeweapon is not GameSiegeRam && IsFortifiedProduct(product.Name);
 			siegeweapon.CurrentRegion = player.CurrentRegion;
 			siegeweapon.Heading = player.Heading;
 			siegeweapon.X = player.X;

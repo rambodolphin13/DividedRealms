@@ -147,8 +147,66 @@ namespace DOL.GS
 		{
 			get
 			{
-				return 10000;
+				return SiegeAmmo.Health(IsFortified);
 			}
+		}
+
+		/// <summary>A crafted "fortified" engine: +50% health and +25% damage (crafting pass 2026-11-17).</summary>
+		public bool IsFortified { get; set; }
+
+		/// <summary>The crafted ammunition this engine takes (none: rams and cauldrons).</summary>
+		public virtual eSiegeAmmoKind AmmoKind => eSiegeAmmoKind.None;
+
+		private int m_selectedAmmo = -1;
+		protected SiegeShot m_pendingShot;
+
+		/// <summary>The shot being fired now: the loaded ammunition, or the engine's plain shot.</summary>
+		public SiegeShot PendingShot => m_pendingShot.AmmoName == null && m_pendingShot.Damage == 0 ? SiegeShot.Plain(MeleeDamageType) : m_pendingShot;
+
+		/// <summary>
+		/// Lists the controller's backpack ammunition this engine takes; the siege window shows it and its Load button
+		/// picks one (crafting pass 2026-11-17).
+		/// </summary>
+		public void RefreshAmmo()
+		{
+			DbInventoryItem selected = m_selectedAmmo >= 0 && m_selectedAmmo < m_ammo.Count ? m_ammo[m_selectedAmmo] as DbInventoryItem : null;
+			m_ammo.Clear();
+
+			if (Owner is GamePlayer player && AmmoKind != eSiegeAmmoKind.None)
+			{
+				foreach (DbInventoryItem item in player.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
+				{
+					if (item != null && item.Count > 0 && SiegeAmmo.KindOf(item.Template) == AmmoKind)
+						m_ammo.Add(item);
+				}
+			}
+
+			m_selectedAmmo = selected != null ? m_ammo.IndexOf(selected) : -1;
+			AmmoSlot = m_selectedAmmo >= 0 ? (ushort)m_selectedAmmo : (ushort)0x14;
+		}
+
+		/// <summary>Uses one piece of the loaded ammunition and returns its shot, or the plain shot.</summary>
+		protected SiegeShot TakeShot()
+		{
+			RefreshAmmo();
+
+			if (Owner is GamePlayer player && m_selectedAmmo >= 0 && m_ammo[m_selectedAmmo] is DbInventoryItem item)
+			{
+				SiegeShot shot = SiegeAmmo.ShotOf(item.Template, MeleeDamageType);
+				player.Inventory.RemoveCountFromStack(item, 1);
+				RefreshAmmo();
+				return shot;
+			}
+
+			return SiegeShot.Plain(MeleeDamageType);
+		}
+
+		/// <summary>Damage to one target from the pending shot (ammo, fortified bonus and the target's resist).</summary>
+		public int ShotDamage(GameLiving target, int baseAmount)
+		{
+			SiegeShot shot = PendingShot;
+			int resist = shot.IsAmmo && target is not GameDoorBase ? target.GetResist(shot.DamageType) : 0;
+			return SiegeAmmo.Damage(baseAmount, shot, IsFortified, resist);
 		}
 
 		public override int Mana
@@ -271,6 +329,7 @@ namespace DOL.GS
 			if (player is GamePlayer assignedController)
 			{
 				assignedController.SiegeWeapon = this;
+				RefreshAmmo();
 				assignedController.Out.SendSiegeWeaponInterface(this, SiegeWeaponTimer.TimeUntilElapsed / 100);
 				assignedController.Out.SendMessage("You take control of " + GetName(0, false) + ".", eChatType.CT_Say, eChatLoc.CL_SystemWindow);
 			}
@@ -415,7 +474,35 @@ namespace DOL.GS
 
 		public void Load(int ammo)
 		{
-			AmmoSlot = (ushort)ammo;
+			RefreshAmmo();
+
+			if (ammo >= 0 && ammo < m_ammo.Count && m_ammo[ammo] is DbInventoryItem item)
+			{
+				m_selectedAmmo = ammo;
+				AmmoSlot = (ushort)ammo;
+				OwnerOut?.SendMessage("You load " + item.Name + " into " + GetName(0, false) + ".", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			}
+			else
+			{
+				m_selectedAmmo = -1;
+				AmmoSlot = 0x14;
+			}
+
+			if (Owner is GamePlayer player)
+				player.Out.SendSiegeWeaponInterface(this, SiegeWeaponTimer.TimeUntilElapsed / 100);
+		}
+
+		/// <summary>Dropping ammunition on the engine loads it (it stays in the backpack until fired).</summary>
+		public override bool ReceiveItem(GameLiving source, DbInventoryItem item)
+		{
+			if (source == Owner && item != null && AmmoKind != eSiegeAmmoKind.None && SiegeAmmo.KindOf(item.Template) == AmmoKind)
+			{
+				RefreshAmmo();
+				Load(m_ammo.IndexOf(item));
+				return true; // handled; the item stays in the backpack until fired
+			}
+
+			return base.ReceiveItem(source, item);
 		}
 		public void Aimed()
 		{
@@ -466,6 +553,7 @@ namespace DOL.GS
 			if (Owner is GameBot bot)
 			{
 				if (SiegeWeaponTimer.IsAlive || !BotSiegeRuntime.CanDamage(this, TargetObject as GameLiving)) return;
+				m_pendingShot = SiegeShot.Plain(MeleeDamageType);
 				GameObject firedTarget = TargetObject;
 				int generation = _botShotGeneration;
 				ShotsFired++;
@@ -476,7 +564,13 @@ namespace DOL.GS
 					return 0;
 				}, Math.Max(1, GetActionDelay(SiegeTimer.eAction.Fire)));
 			}
-			else new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(MakeDelayedDamage), GetActionDelay(SiegeTimer.eAction.Fire));
+			else
+			{
+				m_pendingShot = TakeShot();
+				if (m_pendingShot.IsAmmo)
+					OwnerOut?.SendMessage("You fire " + m_pendingShot.AmmoName + ".", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(MakeDelayedDamage), GetActionDelay(SiegeTimer.eAction.Fire));
+			}
 			BroadcastFireAnimation(GetActionDelay(SiegeTimer.eAction.Fire));
 			if (Owner != null)
 				OwnerOut?.SendMessage("You fire " + GetName(0, false) + "!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -715,12 +809,6 @@ namespace DOL.GS
 		}
 		#endregion
 		#region override function
-		public override bool ReceiveItem(GameLiving source, DOL.Database.DbInventoryItem item)
-		{
-			//todo check if bullet
-			return base.ReceiveItem(source, item);
-		}
-
 		public override void ModifyAttack(AttackData attackData)
 		{
 			attackData.Damage /= 30;

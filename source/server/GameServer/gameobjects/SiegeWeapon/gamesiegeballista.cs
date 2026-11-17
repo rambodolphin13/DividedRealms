@@ -27,6 +27,8 @@ namespace DOL.GS
 	{
 		private FireLosCheckListener _fireLosCheckListener;
 
+		public override eSiegeAmmoKind AmmoKind => eSiegeAmmoKind.Bolt;
+
 		public GameSiegeBallista() : base()
 		{
 			MeleeDamageType = eDamageType.Thrust;
@@ -91,20 +93,20 @@ namespace DOL.GS
 			GameLiving target = (TargetObject as GameLiving);
 			if (target == null || target is Keeps.GuardLord) return; // siege never kills a keep lord
 
-			int damageAmount = SiegeDefense.Reduce(target, CalcDamageToTarget(target) + Util.Random(50));
+			int damageAmount = SiegeDefense.Reduce(target, ShotDamage(target, CalcDamageToTarget(target) + Util.Random(50)));
 
 			AttackData ad = new AttackData();
 			ad.Target = target;
 			ad.AttackType = AttackData.eAttackType.Ranged;
 			ad.AttackResult = eAttackResult.HitUnstyled;
 			ad.Damage = damageAmount;
-			ad.DamageType = MeleeDamageType;
+			ad.DamageType = PendingShot.DamageType;
 
 			if(Owner != null)
 			{
 				ad.Attacker = Owner;
 				int before = target.Health;
-				target.TakeDamage(Owner, eDamageType.Crush, damageAmount, 0);
+				target.TakeDamage(Owner, PendingShot.DamageType, damageAmount, 0);
 				RecordBotHit(before, target);
 				target.OnAttackedByEnemy(ad);
 
@@ -114,7 +116,7 @@ namespace DOL.GS
 			else
 			{
 				ad.Attacker = this;
-				target.TakeDamage(this, eDamageType.Crush, damageAmount, 0);
+				target.TakeDamage(this, PendingShot.DamageType, damageAmount, 0);
 				target.OnAttackedByEnemy(ad);
 			}
 
