@@ -102,6 +102,12 @@
    "From": "DR-dev-0.1f",
    "File": "world-DR-dev-0.1g.json",
    "Sha256": "45F75D640DECA6B418EC6C647E4A56F03235F83D84EFED85B8F5E39EED5F7DB7"
+  },
+  {
+   "Version": "DR-dev-0.1h",
+   "From": "DR-dev-0.1g",
+   "File": "world-DR-dev-0.1h.json",
+   "Sha256": "2718E32A2BA658515528F660D99EFBCF58E58C57BEE1C4D21F223EDA2243E9BE"
   }
  ]
 }

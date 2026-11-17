@@ -1702,34 +1702,74 @@
    "Realm": 3
   },
   "101": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Dun Crimthain",
    "Realm": 3
   },
   "102": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Dun Bolg",
    "Realm": 3
   },
   "103": {
-   "Level": 1,
+   "Level": 4,
    "Name": "Dun nGed",
    "Realm": 3
   },
   "104": {
-   "Level": 1,
+   "Level": 4,
    "Name": "Dun Da Behnn",
    "Realm": 3
   },
   "105": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Dun Scathaig",
    "Realm": 3
   },
   "106": {
-   "Level": 1,
+   "Level": 4,
    "Name": "Dun Ailinne",
    "Realm": 3
+  },
+  "1074": {
+   "Level": 4,
+   "Name": "Caer Benowyc Spire",
+   "Realm": 1
+  },
+  "1075": {
+   "Level": 4,
+   "Name": "Caer Berkstead Spire",
+   "Realm": 1
+  },
+  "1076": {
+   "Level": 4,
+   "Name": "Caer Erasleigh Outpost",
+   "Realm": 1
+  },
+  "1077": {
+   "Level": 4,
+   "Name": "Caer Boldiam Spire",
+   "Realm": 1
+  },
+  "1078": {
+   "Level": 4,
+   "Name": "Caer Sursbrooke Spire",
+   "Realm": 1
+  },
+  "1079": {
+   "Level": 4,
+   "Name": "Caer Hurbury Spire",
+   "Realm": 1
+  },
+  "1080": {
+   "Level": 4,
+   "Name": "Caer Renaris Outpost",
+   "Realm": 1
+  },
+  "1099": {
+   "Level": 4,
+   "Name": "Bledmeer Faste Spire",
+   "Realm": 2
   },
   "11": {
    "Level": 1,
@@ -1741,9 +1781,74 @@
    "Name": "Dun Dagda",
    "Realm": 3
   },
+  "1100": {
+   "Level": 4,
+   "Name": "Nottmoor Faste Spire",
+   "Realm": 2
+  },
+  "1101": {
+   "Level": 4,
+   "Name": "Hlidskialf Faste Outpost",
+   "Realm": 2
+  },
+  "1102": {
+   "Level": 4,
+   "Name": "Blendrake Faste Outpost",
+   "Realm": 2
+  },
+  "1103": {
+   "Level": 4,
+   "Name": "Glenlock Faste Outpost",
+   "Realm": 2
+  },
+  "1104": {
+   "Level": 4,
+   "Name": "Fensalir Faste Spire",
+   "Realm": 2
+  },
+  "1105": {
+   "Level": 4,
+   "Name": "Arvakr Faste Spire",
+   "Realm": 2
+  },
   "111": {
    "Level": 10,
    "Name": "Dun Lamfhota",
+   "Realm": 3
+  },
+  "1124": {
+   "Level": 4,
+   "Name": "Dun Crauchon Spire",
+   "Realm": 3
+  },
+  "1125": {
+   "Level": 4,
+   "Name": "Dun Crimthain Spire",
+   "Realm": 3
+  },
+  "1126": {
+   "Level": 4,
+   "Name": "Dun Bolg Spire",
+   "Realm": 3
+  },
+  "1127": {
+   "Level": 4,
+   "Name": "Dun nGed Outpost",
+   "Realm": 3
+  },
+  "1128": {
+   "Level": 4,
+   "Name": "Dun Da Behnn Outpost",
+   "Realm": 3
+  },
+  "1129": {
+   "Level": 4,
+   "Name": "Dun Scathaig Outpost",
+   "Realm": 3
+  },
+  "1130": {
+   "Level": 4,
+   "Name": "Dun Ailinne Spire",
    "Realm": 3
   },
   "12": {
@@ -1775,6 +1880,111 @@
    "Level": 1,
    "Name": "Albion Portal Keep",
    "Realm": 1
+  },
+  "175": {
+   "Level": 5,
+   "Name": "Caer Benowyc",
+   "Realm": 1
+  },
+  "176": {
+   "Level": 5,
+   "Name": "Caer Berkstead",
+   "Realm": 1
+  },
+  "177": {
+   "Level": 5,
+   "Name": "Caer Erasleigh",
+   "Realm": 1
+  },
+  "178": {
+   "Level": 5,
+   "Name": "Caer Boldiam",
+   "Realm": 1
+  },
+  "179": {
+   "Level": 5,
+   "Name": "Caer Sursbrooke",
+   "Realm": 1
+  },
+  "180": {
+   "Level": 5,
+   "Name": "Caer Hurbury",
+   "Realm": 1
+  },
+  "181": {
+   "Level": 5,
+   "Name": "Caer Renaris",
+   "Realm": 1
+  },
+  "182": {
+   "Level": 5,
+   "Name": "Bledmeer Faste",
+   "Realm": 2
+  },
+  "183": {
+   "Level": 5,
+   "Name": "Nottmoor Faste",
+   "Realm": 2
+  },
+  "184": {
+   "Level": 5,
+   "Name": "Hlidskialf Faste",
+   "Realm": 2
+  },
+  "185": {
+   "Level": 5,
+   "Name": "Blendrake Faste",
+   "Realm": 2
+  },
+  "186": {
+   "Level": 5,
+   "Name": "Glenlock Faste",
+   "Realm": 2
+  },
+  "187": {
+   "Level": 5,
+   "Name": "Fensalir Faste",
+   "Realm": 2
+  },
+  "188": {
+   "Level": 5,
+   "Name": "Arvakr Faste",
+   "Realm": 2
+  },
+  "189": {
+   "Level": 4,
+   "Name": "Dun Crauchon",
+   "Realm": 3
+  },
+  "190": {
+   "Level": 5,
+   "Name": "Dun Crimthain",
+   "Realm": 3
+  },
+  "191": {
+   "Level": 5,
+   "Name": "Dun Bolg",
+   "Realm": 3
+  },
+  "192": {
+   "Level": 1,
+   "Name": "Dun nGed",
+   "Realm": 3
+  },
+  "193": {
+   "Level": 1,
+   "Name": "Dun Da Behnn",
+   "Realm": 3
+  },
+  "194": {
+   "Level": 5,
+   "Name": "Dun Scathaig",
+   "Realm": 3
+  },
+  "195": {
+   "Level": 1,
+   "Name": "Dun Ailinne",
+   "Realm": 3
   },
   "198": {
    "Level": 10,
@@ -1836,10 +2046,45 @@
    "Name": "Hibernia Portal Keep",
    "Realm": 3
   },
+  "306": {
+   "Level": 4,
+   "Name": "Caer Benowyc Guardtower",
+   "Realm": 1
+  },
+  "307": {
+   "Level": 4,
+   "Name": "Caer Berkstead Guardtower",
+   "Realm": 1
+  },
+  "308": {
+   "Level": 4,
+   "Name": "Caer Erasleigh Watchtower",
+   "Realm": 1
+  },
+  "309": {
+   "Level": 4,
+   "Name": "Caer Boldiam Watchtower",
+   "Realm": 1
+  },
   "31": {
    "Level": 1,
    "Name": "Caer Caledon",
    "Realm": 0
+  },
+  "310": {
+   "Level": 4,
+   "Name": "Caer Sursbrooke Watchtower",
+   "Realm": 1
+  },
+  "311": {
+   "Level": 4,
+   "Name": "Caer Hurbury Guardtower",
+   "Realm": 1
+  },
+  "312": {
+   "Level": 4,
+   "Name": "Caer Renaris Guardtower",
+   "Realm": 1
   },
   "32": {
    "Level": 1,
@@ -1851,15 +2096,85 @@
    "Name": "Dun Abermenai",
    "Realm": 0
   },
+  "331": {
+   "Level": 4,
+   "Name": "Bledmeer Faste Guardtower",
+   "Realm": 2
+  },
+  "332": {
+   "Level": 4,
+   "Name": "Nottmoor Faste Watchtower",
+   "Realm": 2
+  },
+  "333": {
+   "Level": 4,
+   "Name": "Hlidskialf Faste Guardtower",
+   "Realm": 2
+  },
+  "334": {
+   "Level": 4,
+   "Name": "Blendrake Faste Watchtower",
+   "Realm": 2
+  },
+  "335": {
+   "Level": 4,
+   "Name": "Glenlock Faste Guardtower",
+   "Realm": 2
+  },
+  "336": {
+   "Level": 4,
+   "Name": "Fensalir Faste Guardtower",
+   "Realm": 2
+  },
+  "337": {
+   "Level": 4,
+   "Name": "Arvakr Faste Guardtower",
+   "Realm": 2
+  },
   "35": {
    "Level": 1,
    "Name": "Hibernia Portal Keep",
+   "Realm": 3
+  },
+  "356": {
+   "Level": 4,
+   "Name": "Dun Crauchon Guardtower",
+   "Realm": 3
+  },
+  "357": {
+   "Level": 4,
+   "Name": "Dun Crimthain Watchtower",
+   "Realm": 3
+  },
+  "358": {
+   "Level": 4,
+   "Name": "Dun Bolg Watchtower",
+   "Realm": 3
+  },
+  "359": {
+   "Level": 4,
+   "Name": "Dun nGed Guardtower",
    "Realm": 3
   },
   "36": {
    "Level": 1,
    "Name": "Midgard Portal Keep",
    "Realm": 2
+  },
+  "360": {
+   "Level": 4,
+   "Name": "Dun Da Behnn Watchtower",
+   "Realm": 3
+  },
+  "361": {
+   "Level": 4,
+   "Name": "Dun Scathaig Watchtower",
+   "Realm": 3
+  },
+  "362": {
+   "Level": 4,
+   "Name": "Dun Ailinne Guardtower",
+   "Realm": 3
   },
   "37": {
    "Level": 1,
@@ -1937,38 +2252,73 @@
    "Realm": 0
   },
   "50": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Caer Benowyc",
    "Realm": 1
   },
   "51": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Caer Berkstead",
    "Realm": 1
   },
   "52": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Caer Erasleigh",
    "Realm": 1
   },
   "53": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Caer Boldiam",
    "Realm": 1
   },
   "54": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Caer Sursbrooke",
    "Realm": 1
   },
   "55": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Caer Hurbury",
    "Realm": 1
   },
   "56": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Caer Renaris",
+   "Realm": 1
+  },
+  "562": {
+   "Level": 4,
+   "Name": "Caer Benowyc Watchtower",
+   "Realm": 1
+  },
+  "563": {
+   "Level": 4,
+   "Name": "Caer Berkstead Watchtower",
+   "Realm": 1
+  },
+  "564": {
+   "Level": 4,
+   "Name": "Caer Erasleigh Guardtower",
+   "Realm": 1
+  },
+  "565": {
+   "Level": 4,
+   "Name": "Caer Boldiam Guardtower",
+   "Realm": 1
+  },
+  "566": {
+   "Level": 4,
+   "Name": "Caer Sursbrooke Guardtower",
+   "Realm": 1
+  },
+  "567": {
+   "Level": 4,
+   "Name": "Caer Hurbury Watchtower",
+   "Realm": 1
+  },
+  "568": {
+   "Level": 4,
+   "Name": "Caer Renaris Watchtower",
    "Realm": 1
   },
   "57": {
@@ -1980,6 +2330,76 @@
    "Level": 10,
    "Name": "Castle Myrddin",
    "Realm": 1
+  },
+  "587": {
+   "Level": 4,
+   "Name": "Bledmeer Faste Watchtower",
+   "Realm": 2
+  },
+  "588": {
+   "Level": 4,
+   "Name": "Nottmoor Faste Guardtower",
+   "Realm": 2
+  },
+  "589": {
+   "Level": 4,
+   "Name": "Hlidskialf Faste Watchtower",
+   "Realm": 2
+  },
+  "590": {
+   "Level": 4,
+   "Name": "Blendrake Faste Guardtower",
+   "Realm": 2
+  },
+  "591": {
+   "Level": 4,
+   "Name": "Glenlock Faste Watchtower",
+   "Realm": 2
+  },
+  "592": {
+   "Level": 4,
+   "Name": "Fensalir Faste Watchtower",
+   "Realm": 2
+  },
+  "593": {
+   "Level": 4,
+   "Name": "Arvakr Faste Watchtower",
+   "Realm": 2
+  },
+  "612": {
+   "Level": 4,
+   "Name": "Dun Crauchon Watchtower",
+   "Realm": 3
+  },
+  "613": {
+   "Level": 4,
+   "Name": "Dun Crimthain Guardtower",
+   "Realm": 3
+  },
+  "614": {
+   "Level": 4,
+   "Name": "Dun Bolg Guardtower",
+   "Realm": 3
+  },
+  "615": {
+   "Level": 4,
+   "Name": "Dun nGed Watchtower",
+   "Realm": 3
+  },
+  "616": {
+   "Level": 4,
+   "Name": "Dun Da Behnn Guardtower",
+   "Realm": 3
+  },
+  "617": {
+   "Level": 4,
+   "Name": "Dun Scathaig Guardtower",
+   "Realm": 3
+  },
+  "618": {
+   "Level": 4,
+   "Name": "Dun Ailinne Watchtower",
+   "Realm": 3
   },
   "637": {
    "Level": 1,
@@ -2017,44 +2437,149 @@
    "Realm": 2
   },
   "75": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Bledmeer Faste",
    "Realm": 2
   },
   "76": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Nottmoor Faste",
    "Realm": 2
   },
   "77": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Hlidskialf Faste",
    "Realm": 2
   },
   "78": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Blendrake Faste",
    "Realm": 2
   },
   "79": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Glenlock Faste",
    "Realm": 2
   },
   "80": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Fensalir Faste",
    "Realm": 2
   },
   "81": {
-   "Level": 5,
+   "Level": 4,
    "Name": "Arvakr Faste",
    "Realm": 2
+  },
+  "818": {
+   "Level": 4,
+   "Name": "Caer Benowyc Outpost",
+   "Realm": 1
+  },
+  "819": {
+   "Level": 4,
+   "Name": "Caer Berkstead Outpost",
+   "Realm": 1
   },
   "82": {
    "Level": 10,
    "Name": "Grallarhorn Faste",
    "Realm": 2
+  },
+  "820": {
+   "Level": 4,
+   "Name": "Caer Erasleigh Spire",
+   "Realm": 1
+  },
+  "821": {
+   "Level": 4,
+   "Name": "Caer Boldiam Outpost",
+   "Realm": 1
+  },
+  "822": {
+   "Level": 4,
+   "Name": "Caer Sursbrooke Outpost",
+   "Realm": 1
+  },
+  "823": {
+   "Level": 4,
+   "Name": "Caer Hurbury Outpost",
+   "Realm": 1
+  },
+  "824": {
+   "Level": 4,
+   "Name": "Caer Renaris Spire",
+   "Realm": 1
+  },
+  "843": {
+   "Level": 4,
+   "Name": "Bledmeer Faste Outpost",
+   "Realm": 2
+  },
+  "844": {
+   "Level": 4,
+   "Name": "Nottmoor Faste Outpost",
+   "Realm": 2
+  },
+  "845": {
+   "Level": 4,
+   "Name": "Hlidskialf Faste Spire",
+   "Realm": 2
+  },
+  "846": {
+   "Level": 4,
+   "Name": "Blendrake Faste Spire",
+   "Realm": 2
+  },
+  "847": {
+   "Level": 4,
+   "Name": "Glenlock Faste Spire",
+   "Realm": 2
+  },
+  "848": {
+   "Level": 4,
+   "Name": "Fensalir Faste Outpost",
+   "Realm": 2
+  },
+  "849": {
+   "Level": 4,
+   "Name": "Arvakr Faste Outpost",
+   "Realm": 2
+  },
+  "868": {
+   "Level": 4,
+   "Name": "Dun Crauchon Outpost",
+   "Realm": 3
+  },
+  "869": {
+   "Level": 4,
+   "Name": "Dun Crimthain Outpost",
+   "Realm": 3
+  },
+  "870": {
+   "Level": 4,
+   "Name": "Dun Bolg Outpost",
+   "Realm": 3
+  },
+  "871": {
+   "Level": 4,
+   "Name": "Dun nGed Spire",
+   "Realm": 3
+  },
+  "872": {
+   "Level": 4,
+   "Name": "Dun Da Behnn Spire",
+   "Realm": 3
+  },
+  "873": {
+   "Level": 4,
+   "Name": "Dun Scathaig Spire",
+   "Realm": 3
+  },
+  "874": {
+   "Level": 4,
+   "Name": "Dun Ailinne Outpost",
+   "Realm": 3
   },
   "893": {
    "Level": 1,
@@ -2092,5 +2617,5 @@
    "Realm": 3
   }
  },
- "_source": "The default world: keep owners and levels and keep door health/state as in the original v0.32 world (the last release built before any test runs changed them); the two battleground keeps added later (Dun Abermenai, Dun Murdaigean) as shipped in 0.35. build_release_036.py resets the release world to these and verifies it."
+ "_source": "The default world: keep owners and levels and keep door health/state as in the original v0.32 world (the last release built before any test runs changed them); the two battleground keeps added later (Dun Abermenai, Dun Murdaigean) as shipped in 0.35. build_release_036.py resets the release world to these and verifies it. DR-dev-0.1h (2026-11-16): New Frontiers added 105 keeps and towers (region 163, EoD new-style keeps, unclaimed at their import realm and level) and moved the 21 Old Frontiers keeps that shared their ids (50-56, 75-81, 100-106) to 175-195 with their owners and levels unchanged; doors unchanged."
 }
