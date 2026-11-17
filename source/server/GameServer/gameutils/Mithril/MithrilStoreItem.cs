@@ -42,6 +42,7 @@ namespace DOL.GS
                 "mithril_ml10_token" => MasterTo10(player),
                 "mithril_boost_token" => Boost(player),
                 "mithril_lgm_all" => Legendary(player, null),
+                "mithril_merchant_gem" => Tell(player, SummonedMerchantCamp.Summon(player)),   // reusable: never used up
                 "mithril_name_change" or "mithril_gender_change" or "mithril_race_change" => Tell(player,
                     "Keep this token in your backpack and type /mithril rename <name>, /mithril gender or /mithril race <race>."),
                 _ when id.StartsWith("mithril_lgm_") => Legendary(player, ParseSkill(id["mithril_lgm_".Length..])),

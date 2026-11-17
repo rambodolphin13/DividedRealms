@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+using System;
 using System.Collections.Generic;
 using DOL.Database;
 
@@ -154,35 +155,71 @@ namespace DOL.GS
 				// and move on.
 
 				// new logic
-				var lootCandidates = new List<LootEntry>();
-				foreach (LootEntry lootEntry in m_randomItemDrops)
-				{
-					if (lootEntry.Chance >= Util.Random(1, 100))
-						lootCandidates.Add(lootEntry);
-				}
-				// At this point, the candidate list is filled with items that passed
-				// the %chance to drop, so we need to put DropCount of them into the return loot object.
-				//
-				// Initial control thought is to use the ArrayList.RemoveAt method and change the loop control
-				// to include a check on lootCandidates.Count. This assumes that the removeAt function re-builds
-				// the array and updates ArrayList.Count. If not, we'll be throwing exceptions like mad.
-
-				// copy random winners to returned loot list
-
-				if (lootCandidates.Count > 0)
-				{
-					for (int i = 0; (i < DropCount && lootCandidates.Count != 0); i++)
-					{
-						int tmpidx = Util.Random(lootCandidates.Count - 1);
-						loot.Add(new LootDrop(lootCandidates[tmpidx].ItemTemplate, null));
-						if (--(lootCandidates[tmpidx].Count) <= 0)
-							lootCandidates.SwapRemoveAt(tmpidx);
-					}
-
-				}
+				foreach (DbItemTemplate winner in RollRandomWinners())
+					loot.Add(new LootDrop(winner, null));
 			}
 
 			return loot.ToArray();
+		}
+
+		/// <summary>
+		/// Rolls each random entry against its chance and returns up to DropCount winners.
+		/// </summary>
+		private List<DbItemTemplate> RollRandomWinners()
+		{
+			var winners = new List<DbItemTemplate>();
+			var lootCandidates = new List<LootEntry>();
+			foreach (LootEntry lootEntry in m_randomItemDrops)
+			{
+				if (lootEntry.Chance >= Util.Random(1, 100))
+					lootCandidates.Add(new LootEntry(lootEntry.Chance, lootEntry.ItemTemplate, lootEntry.Count));
+			}
+
+			for (int i = 0; (i < DropCount && lootCandidates.Count != 0); i++)
+			{
+				int tmpidx = Util.Random(lootCandidates.Count - 1);
+				winners.Add(lootCandidates[tmpidx].ItemTemplate);
+				if (--(lootCandidates[tmpidx].Count) <= 0)
+					lootCandidates.SwapRemoveAt(tmpidx);
+			}
+
+			return winners;
+		}
+
+		/// <summary>
+		/// Rolls this list's random entries now and keeps the winners as fixed drops. When nothing wins, one entry is picked,
+		/// weighted by its chance, so the kill always drops at least one item from this list (owner 2026-11-17: Darkness Falls
+		/// princes drop named loot on every kill). The list keeps no random entries afterwards.
+		/// </summary>
+		public void RollNowAtLeastOne()
+		{
+			if (m_randomItemDrops.Count == 0)
+				return;
+
+			List<DbItemTemplate> winners = DropCount > 0 ? RollRandomWinners() : new List<DbItemTemplate>();
+
+			if (winners.Count == 0)
+			{
+				long total = 0;
+				foreach (LootEntry entry in m_randomItemDrops)
+					total += Math.Max(1, entry.Chance);
+
+				long roll = Util.Random(1, (int) Math.Min(int.MaxValue, total));
+				foreach (LootEntry entry in m_randomItemDrops)
+				{
+					roll -= Math.Max(1, entry.Chance);
+					if (roll <= 0)
+					{
+						winners.Add(entry.ItemTemplate);
+						break;
+					}
+				}
+			}
+
+			foreach (DbItemTemplate winner in winners)
+				AddFixed(winner, 1);
+
+			m_randomItemDrops.Clear();
 		}
 	}
 
