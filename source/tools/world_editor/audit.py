@@ -24,6 +24,27 @@ HERE = Path(__file__).resolve().parent
 NEAR, FAR = 64, 1000
 FLYING, SWIMMING, STATUE = 0x20, 0x100, 0x80
 
+# Water monsters the server moves in straight lines off the mesh (Pathfinder.IsWaterSpawn): Atlantis sea zones below
+# the surface, and New Frontiers spawns under its 7879 water level outside the low land areas of Zone.IsUnderwater.
+ATLANTIS_SEA_ZONES = set(range(30, 35)) | set(range(70, 78)) | set(range(130, 135))
+ATLANTIS_SEA_LEVEL = 7950
+NF_REGION, NF_WATER_LEVEL = 163, 7879
+NF_LAND_BELOW_WATER = (  # (x0, x1, y0, y1), copied from Zone.IsUnderwater
+    (479000, 488000, 664000, 670000), (472000, 488000, 656000, 664000), (468500, 488000, 624000, 654000),
+    (431000, 466000, 659000, 683000), (431000, 460000, 646000, 659001), (431000, 455000, 624000, 646001),
+    (431000, 471000, 671000, 683000), (456000, 479000, 558000, 618000), (360000, 424000, 586000, 618000),
+    (360000, 424000, 563000, 578000), (428000, 444000, 505000, 555000), (603000, 620000, 500000, 553000),
+    (592000, 617000, 633000, 678000), (581000, 617000, 662000, 678000), (626000, 681000, 584000, 615000),
+    (610000, 652000, 297000, 353000), (671000, 693000, 408000, 421000), (674000, 716000, 364000, 394000))
+
+
+def water_spawn(region, zone, x, y, z):
+    if zone in ATLANTIS_SEA_ZONES and z < ATLANTIS_SEA_LEVEL:
+        return True
+    if region != NF_REGION or z >= NF_WATER_LEVEL:
+        return False
+    return not any(x0 < x < x1 and y0 < y < y1 for x0, x1, y0, y1 in NF_LAND_BELOW_WATER)
+
 
 def _navcomp():
     for root in (HERE.parents[1] / 'server/tools/navmesh_splice', HERE / 'navmesh_splice'):
@@ -115,6 +136,8 @@ def run(db: Path, navmesh: Path, regions=None, zones=None, routes=True, progress
         for r in con.execute('SELECT Mob_ID, Name, Region, X, Y, Z, Flags FROM Mob'):
             flags = r['Flags'] or 0
             ignore = 'flying' if flags & FLYING else 'swimming' if flags & SWIMMING else 'statue' if flags & STATUE else ''
+            if not ignore and water_spawn(r['Region'], world.zone(r['Region'], r['X'], r['Y']), r['X'], r['Y'], r['Z']):
+                ignore = 'under water'
             check('npc', r['Mob_ID'], r['Name'], r['Region'], r['X'], r['Y'], r['Z'], ignore)
             n += 1
             if n % 5000 == 0:

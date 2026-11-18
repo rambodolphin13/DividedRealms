@@ -1434,6 +1434,8 @@ namespace DOL.GS
         }
 
         private long _nextCompanionRecallTick;
+        private int _companionStallBest;
+        private long _companionStallSince;
 
         public bool TryReturnTemporaryCompanionToLeader(bool afterRevival = false)
         {
@@ -1447,17 +1449,35 @@ namespace DOL.GS
                 return false;
             _nextCompanionRecallTick = GameLoop.GameLoopTime + TemporaryCompanionRecovery.CheckIntervalMilliseconds;
             bool sameGroup = Group != null && Group == Owner.Group && Group.IsInTheGroup(this) && Group.IsInTheGroup(Owner);
-            if (!TemporaryCompanionRecovery.ShouldRecall(true, IsAlive, ObjectState == eObjectState.Active,
+            bool sameRegion = CurrentRegionID == Owner.CurrentRegionID;
+            int distance = sameRegion ? GetDistanceTo(Owner) : int.MaxValue;
+
+            // DR-474: a following companion stuck short of the player (a failed path paused it) is recalled too.
+            bool stallEligible = !afterRevival && !IsReturningAfterRelease && sameRegion && sameGroup &&
+                PlayerGroupLeader == Owner && !IsOnStableMasterRoute && !Owner.IsOnHorse && !InCombat && !IsAttacking &&
+                Brain is BotBrain { } followBrain && followBrain.FSM.GetCurrentState()?.StateType == eFSMStateType.FOLLOW &&
+                !CompanionRaidSiege.Holds(this) && !TemporaryCompanionRecovery.HasCombatNearOwner(Owner);
+            bool stalled = TemporaryCompanionRecovery.StallStep(stallEligible, distance, GameLoop.GameLoopTime,
+                ref _companionStallBest, ref _companionStallSince);
+
+            if (!stalled && !TemporaryCompanionRecovery.ShouldRecall(true, IsAlive, ObjectState == eObjectState.Active,
                 sameGroup, PlayerGroupLeader == Owner, IsOnStableMasterRoute, Owner.IsOnHorse,
-                CurrentRegionID == Owner.CurrentRegionID, GetDistanceTo(Owner), afterRevival || IsReturningAfterRelease))
+                sameRegion, distance, afterRevival || IsReturningAfterRelease))
                 return false;
 
             // A combat knockback/dragon throw must not recall and reset an entire raid.
             // Genuine portal transfers use the separate transfer coordinator.
             if (DragonCombatGeometry.IsRecoveringFromThrow(Owner) ||
-                CurrentRegionID == Owner.CurrentRegionID && TemporaryCompanionRecovery.HasPartyCombat(this) &&
+                !stalled && sameRegion && TemporaryCompanionRecovery.HasPartyCombat(this) &&
                 !TemporaryCompanionRecovery.FrontierChaseLeash(this))
                 return false;
+            if (stalled)
+            {
+                _companionStallSince = 0;
+                if (log.IsInfoEnabled)
+                    log.Info($"COMPANION_STALL_RECALL bot={Name} owner={Owner.Name} region={CurrentRegionID} zone={CurrentZone?.ID} " +
+                        $"distance={distance} at=({X},{Y},{Z}) owner_at=({Owner.X},{Owner.Y},{Owner.Z})");
+            }
             // A raid squad on a keep siege holds its post until the event ends (goal 11: no leash during sieges).
             if (CurrentRegionID == Owner.CurrentRegionID && CompanionRaidSiege.Holds(this))
                 return false;

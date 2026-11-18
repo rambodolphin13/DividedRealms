@@ -17,6 +17,10 @@ namespace DOL.UnitTests
         [TestCase((ushort) 82, 7112, false, Description = "Land of Atum lies below sea level but is land")]
         [TestCase((ushort) 81, 6418, false, Description = "Stygian Delta is land")]
         [TestCase((ushort) 1, 1000, false, Description = "Not Atlantis")]
+        [TestCase((ushort) 164, 6431, true, Description = "Irish Sea barracuda (New Frontiers)")]
+        [TestCase((ushort) 164, 7879, true, Description = "Irish Sea ray at the surface")]
+        [TestCase((ushort) 164, 8441, false, Description = "Irish Sea islet boggart")]
+        [TestCase((ushort) 168, 6000, false, Description = "Jamtland is land")]
         public void OnlySeaZoneSpawnsBelowTheSurfaceStayOffTheMesh(ushort zone, int z, bool expected)
         {
             Assert.That(Pathfinder.IsBelowAtlantisSea(zone, z), Is.EqualTo(expected));

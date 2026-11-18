@@ -64,4 +64,33 @@ public class UT_TemporaryCompanionRecovery
         Assert.That(TemporaryCompanionRecovery.CanPrioritizeOwnerResurrection(true, true, true, true, true, true, false), Is.False);
         Assert.That(TemporaryCompanionRecovery.CanPrioritizeOwnerResurrection(true, true, false, false, true, true, false), Is.False);
     }
+
+    [Test]
+    public void StalledFollowerIsRecalledAfterTwelveSecondsWithoutProgress()
+    {
+        int best = 0; long since = 0;
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 900, 1_000, ref best, ref since), Is.False, "first look starts the clock");
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 880, 7_000, ref best, ref since), Is.False);
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 950, 13_000, ref best, ref since), Is.True, "no 100 units closed in 12 s");
+    }
+
+    [Test]
+    public void ProgressNearnessOrNotFollowingResetsTheStallClock()
+    {
+        int best = 0; long since = 0;
+        TemporaryCompanionRecovery.StallStep(true, 1500, 1_000, ref best, ref since);
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 1300, 12_000, ref best, ref since), Is.False, "closed 200 units");
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 1300, 23_000, ref best, ref since), Is.False);
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 1300, 24_000, ref best, ref since), Is.True);
+
+        best = 0; since = 0;
+        TemporaryCompanionRecovery.StallStep(true, 900, 1_000, ref best, ref since);
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 400, 8_000, ref best, ref since), Is.False, "in formation range");
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 900, 19_000, ref best, ref since), Is.False);
+
+        best = 0; since = 0;
+        TemporaryCompanionRecovery.StallStep(true, 900, 1_000, ref best, ref since);
+        Assert.That(TemporaryCompanionRecovery.StallStep(false, 900, 20_000, ref best, ref since), Is.False, "fighting or held");
+        Assert.That(TemporaryCompanionRecovery.StallStep(true, 900, 30_000, ref best, ref since), Is.False);
+    }
 }

@@ -32,7 +32,30 @@ namespace DOL.GS
             CompanionPvpEngagement.Enemy(companion.Owner, companion.TargetObject as GameLiving) &&
             !HasCombatNearOwner(companion.Owner);
 
-        private static bool HasCombatNearOwner(GamePlayer owner) => owner?.Group != null &&
+        // DR-474: a following companion that stops short of the player (a failed path off the navmesh: the player on a
+        // keep wall or tower, a bot that crossed a zone border at the wrong height) was never recalled, because the
+        // recall only fired beyond 3000 units. Now a companion more than StallDistance from the player that has not
+        // closed StallProgress units for StallMilliseconds is put back in formation.
+        public const int StallDistance = 500;
+        public const int StallProgress = 100;
+        public const int StallMilliseconds = 12_000;
+
+        /// <summary>
+        /// One stall check. <paramref name="best"/> is the closest the companion has been since <paramref name="since"/>.
+        /// Not eligible (fighting, held, not following) or within StallDistance resets the clock. True when stalled.
+        /// </summary>
+        public static bool StallStep(bool eligible, int distance, long now, ref int best, ref long since)
+        {
+            if (!eligible || distance <= StallDistance || since <= 0 || distance < best - StallProgress)
+            {
+                best = distance;
+                since = now;
+                return false;
+            }
+            return now - since >= StallMilliseconds;
+        }
+
+        public static bool HasCombatNearOwner(GamePlayer owner) => owner?.Group != null &&
             owner.Group.GetMembersInTheGroup().Any(member => member.IsAlive &&
                 member.CurrentRegionID == owner.CurrentRegionID && owner.IsWithinRadius(member, MaximumLeaderDistance) &&
                 (member.InCombat || member.IsAttacking ||

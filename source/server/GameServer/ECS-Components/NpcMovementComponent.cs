@@ -481,7 +481,8 @@ namespace DOL.GS
 
             int maxRoamingRadius = Owner.RoamingRange;
 
-            if (Owner.CurrentZone.IsPathfindingEnabled && !Pathfinder.IsBelowAtlantisSea(Owner.CurrentZone.ID, (int) Owner.SpawnPoint.Z))
+            if (Owner.CurrentZone.IsPathfindingEnabled && !Pathfinder.IsBelowAtlantisSea(Owner.CurrentZone.ID, (int) Owner.SpawnPoint.Z) &&
+                (Owner is GameBot || !Pathfinder.IsWaterSpawn(Owner.CurrentZone, (int) Owner.SpawnPoint.X, (int) Owner.SpawnPoint.Y, (int) Owner.SpawnPoint.Z)))
             {
                 EDtPolyFlags[] filters = PathfindingProvider.Instance.DefaultFilters;
                 Vector3? target = PathfindingProvider.Instance.GetRandomPoint(Owner.CurrentZone, new(Owner.SpawnPoint.X, Owner.SpawnPoint.Y, Owner.SpawnPoint.Z), maxRoamingRadius, filters);
@@ -780,8 +781,11 @@ namespace DOL.GS
                     PathToInternal(destination, speed, false);
                     break;
                 }
+                // DR-474: companions following a player get the same repair. A straight walk out of a zone with no
+                // mesh, or across a zone border, can leave them off the mesh, and a failed path then paused them for good.
                 case PathfindingStatus.NoPathFound when allowFloorRepair &&
-                    Owner is GameBot { IsAutonomousWorldBot: true, IsOnStableMasterRoute: false, InCombat: false }:
+                    Owner is GameBot { IsOnStableMasterRoute: false, InCombat: false } repairBot &&
+                    (repairBot.IsAutonomousWorldBot || repairBot.IsTemporaryGroupHelper):
                 {
                     // Only a failed path triggers these two bounded lookups.
                     // Old mob/bind Z and interrupted slope movement can leave a

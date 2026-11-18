@@ -89,8 +89,25 @@ namespace DOL.GS
         // the mesh and move in straight lines, or Detour finds no start point and they stand still.
         public const int ATLANTIS_SEA_LEVEL = 7950;
 
+        // New Frontiers' Irish Sea (zone 164, DR-432) has the same flat surface mesh. Its sea monsters spawn at or
+        // below 7879; the islet monsters stand above 8000.
+        public const ushort IRISH_SEA_ZONE = 164;
+        public const int IRISH_SEA_LEVEL = 7900;
+
         public static bool IsBelowAtlantisSea(ushort zoneId, int spawnZ) =>
-            spawnZ < ATLANTIS_SEA_LEVEL && zoneId is (>= 30 and <= 34) or (>= 70 and <= 72) or (>= 73 and <= 77) or (>= 130 and <= 134);
+            spawnZ < ATLANTIS_SEA_LEVEL && zoneId is (>= 30 and <= 34) or (>= 70 and <= 72) or (>= 73 and <= 77) or (>= 130 and <= 134) ||
+            zoneId == IRISH_SEA_ZONE && spawnZ < IRISH_SEA_LEVEL;
+
+        public const ushort NEW_FRONTIERS_REGION = 163;
+
+        /// <summary>
+        /// A monster that lives under water off the mesh: Atlantis sea zones below the surface, and in New Frontiers
+        /// (DR-432) any spawn the zone's own water rule puts under water (rivers, lakes and the Irish Sea; region
+        /// water level 7879, with Zone.IsUnderwater's low land areas excluded). These swim in straight lines.
+        /// </summary>
+        public static bool IsWaterSpawn(Zone zone, int x, int y, int z) =>
+            zone != null && (IsBelowAtlantisSea(zone.ID, z) ||
+                zone.ZoneRegion?.ID == NEW_FRONTIERS_REGION && zone.IsUnderwater(x, y, z));
 
         public bool ShouldPath(Zone zone, Vector3 target)
         {
@@ -100,7 +117,8 @@ namespace DOL.GS
             if ((Owner.Flags & (eFlags.FLYING | eFlags.SWIMMING)) != 0 || Owner is GameTaxi || Owner is GameTaxiBoat)
                 return false;
 
-            if (Owner.SpawnPoint != null && IsBelowAtlantisSea(zone.ID, (int) Owner.SpawnPoint.Z))
+            if (Owner.SpawnPoint != null && (IsBelowAtlantisSea(zone.ID, (int) Owner.SpawnPoint.Z) ||
+                Owner is not GameBot && IsWaterSpawn(zone, (int) Owner.SpawnPoint.X, (int) Owner.SpawnPoint.Y, (int) Owner.SpawnPoint.Z)))
                 return false;
 
             // Target is in a different zone (TODO: implement this maybe? not sure if really required).
