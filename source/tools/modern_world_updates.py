@@ -13,6 +13,12 @@ world in release-baselines/modern next to this repository (outside Git: they are
 next build (keep_baseline), so each release only needs the build command. Building the same version again replaces its
 step (from the same previous release).
 
+repairs.json beside the steps lists repairs (each a name, a note and SQL statements that only match broken rows). Every new
+step carries all of them, after its row changes, so a world that missed a change in an earlier step is put right by the
+next release whatever it had before. `repair-keeps` writes the DR-483 repair (Old Frontier keeps whose 0.1h move to New
+Frontiers was skipped because the game had changed their level). check --played also brings each start up to date as a
+played world (every keep taken, claimed and levelled) and requires every keep in its place.
+
 seed rebuilds the chain from the published releases' clean worlds (oldest first, at least two). check applies the whole
 chain to each start and compares with the target: only re-rolled monster fields may differ (the running server re-rolls
 monster size, level, stats and model, so two builds of the same world differ there and an older step can re-roll a row
@@ -34,6 +40,7 @@ REPO = Path(__file__).resolve().parents[2]
 CHAIN = REPO / 'source/tools/release-baselines/modern/world-updates'
 BASELINES = REPO.parent / 'release-baselines' / 'modern'     # each release's clean world: world-<version>.sqlite3.db
 INDEX = 'world-updates.json'
+REPAIRS = 'repairs.json'
 CLEAN_WORLD = 'world-clean.sqlite3.db'      # the shipped world; the launcher makes data/opendaoc.sqlite3.db from it
 POLICY = REPO / 'source/tools/OfflineDaoc.ProgressImport/progress-policy.json'
 # Monster fields the running server rewrites itself (size, level and stats are re-rolled; an NPC whose template lists
@@ -95,6 +102,7 @@ def add_step(chain: Path, version: str, from_version: str, from_db: Path, to_db:
         raise SystemExit(f'{version} must start from {previous_release(chain, version)}, not {from_version}')
     steps = [s for s in data['Steps'] if s['Version'] != version]
     update = make_patch.world_update(from_db, to_db, policy(), version)
+    update['Repairs'] = repairs(chain)
     make_patch.check_world_update(update, from_db, to_db, policy())
     name = f'world-{version}.json'
     chain.mkdir(parents=True, exist_ok=True)
@@ -102,6 +110,50 @@ def add_step(chain: Path, version: str, from_version: str, from_db: Path, to_db:
     steps.append({'Version': version, 'From': from_version, 'File': name, 'Sha256': sha(chain / name)})
     save(chain, {'Format': 1, 'Steps': steps})
     return update['Summary']
+
+
+def repairs(chain: Path) -> list:
+    path = chain / REPAIRS
+    return json.loads(path.read_text(encoding='utf-8')) if path.is_file() else []
+
+
+def sql_value(v) -> str:
+    if v is None:
+        return 'NULL'
+    if isinstance(v, (int, float)):
+        return repr(v)
+    if isinstance(v, bytes):
+        return "X'" + v.hex() + "'"
+    return "'" + str(v).replace("'", "''") + "'"
+
+
+# DR-483: the 0.1h step moved Old Frontier keeps 50-56/75-81/100-106 to New Frontiers (region 163) with a field update
+# that needs the shipped Level, so a keep the game had levelled or taken stayed in its Old Frontier with its new owner,
+# got the New Frontiers walls in 0.1i, and New Frontiers lost that keep. The repair gives such a row its New Frontiers
+# values from the clean world, owner and claim included (the renumbered Old Frontier copy 175-195 already stands there).
+KEEP_REPAIR = 'dr483-nf-keeps-left-in-old-frontiers'
+
+
+def keep_repair(world: Path) -> dict:
+    con = sqlite3.connect(world.resolve().as_uri() + '?mode=ro', uri=True)
+    cols = [r[1] for r in con.execute('PRAGMA table_info("Keep")')]
+    skip = {'KeepID', 'Keep_ID', 'LastTimeRowUpdated'}
+    sql = []
+    for row in con.execute('SELECT * FROM "Keep" WHERE Region = 163 AND KeepID < 256 ORDER BY KeepID'):
+        r = dict(zip(cols, row))
+        sets = ', '.join(f'"{c}" = {sql_value(r[c])}' for c in cols if c not in skip)
+        sql.append(f'UPDATE "Keep" SET {sets} WHERE KeepID = {r["KeepID"]} AND Region <> 163')
+    con.close()
+    if not sql:
+        raise SystemExit(f'{world} has no New Frontiers keeps (region 163, KeepID < 256)')
+    return {'Name': KEEP_REPAIR, 'Note': 'Old Frontier keeps the 0.1h step could not move to New Frontiers', 'Sql': sql}
+
+
+def add_repair(chain: Path, repair: dict) -> list:
+    data = [r for r in repairs(chain) if r['Name'] != repair['Name']] + [repair]
+    chain.mkdir(parents=True, exist_ok=True)
+    (chain / REPAIRS).write_text(json.dumps(data, indent=1) + '\n', encoding='utf-8')
+    return data
 
 
 def seed(chain: Path, worlds: list[tuple[str, Path]]) -> dict:
@@ -138,6 +190,41 @@ def applied_versions(con: sqlite3.Connection) -> set[str]:
     if not con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='offline_patch_log'").fetchone():
         return set()
     return {row[0] for row in con.execute('SELECT Version FROM offline_patch_log')}
+
+
+# What a played world's server rewrites in keep rows (captures, claims, upgrades).
+PLAYED_KEEP_SQL = ["UPDATE Keep SET Level = Level + 1, Realm = CASE Realm WHEN 1 THEN 2 WHEN 2 THEN 3 ELSE 1 END, "
+                   "ClaimedGuildName = 'Played Guild'"]
+KEEP_PLACE = 'SELECT KeepID, Name, Region, X, Y, Z FROM Keep ORDER BY KeepID'
+
+
+def check_played(chain: Path, starts: list[tuple[str, Path]], target_db: Path) -> dict:
+    """Each start with every keep taken, claimed and levelled, brought up to date: every keep must stand where the target
+    world has it (DR-483: a field update needing the shipped Level left levelled keeps behind)."""
+    steps = [(s['Version'], json.loads((chain / s['File']).read_text(encoding='utf-8'))) for s in load(chain)['Steps']]
+    t = sqlite3.connect(target_db.resolve().as_uri() + '?mode=ro', uri=True)
+    want = {r[0]: r for r in t.execute(KEEP_PLACE)}
+    t.close()
+    result = {}
+    for name, db in starts:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            work = Path(tmp) / 'world.db'
+            shutil.copy2(db, work)
+            con = sqlite3.connect(work)
+            for sql in PLAYED_KEEP_SQL:
+                con.execute(sql)
+            done = applied_versions(con)
+            for version, step in steps:
+                if version not in done:
+                    make_patch.apply_world_update(con, step)
+            have = {r[0]: r for r in con.execute(KEEP_PLACE)}
+            con.close()
+        wrong = sorted(k for k in set(want) | set(have) if want.get(k) != have.get(k))
+        if wrong:
+            raise SystemExit(f'played world from {name}: {len(wrong)} keep(s) not where the target has them, e.g. '
+                             + '; '.join(f'{k}: {have.get(k)} != {want.get(k)}' for k in wrong[:4]))
+        result[name] = {'keeps_in_place': len(have)}
+    return result
 
 
 def check(chain: Path, starts: list[tuple[str, Path]], target_db: Path) -> dict:
@@ -183,7 +270,9 @@ def pairs(values: list[str]) -> list[tuple[str, Path]]:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('command', choices=('seed', 'check'))
+    parser.add_argument('command', choices=('seed', 'check', 'repair-keeps'))
+    parser.add_argument('--played', action='store_true', help='check: also check each start as a played world '
+                        '(keeps taken, claimed and levelled): every keep must end where the target has it')
     parser.add_argument('--chain', type=Path, default=CHAIN)
     parser.add_argument('--world', action='append', default=[], help='seed: <release version>=<its clean world>, oldest first')
     parser.add_argument('--start', action='append', default=[], help='check: <name>=<world to bring up to date>')
@@ -191,7 +280,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.command == 'seed':
         print(json.dumps(seed(args.chain.resolve(), pairs(args.world)), indent=1))
+    elif args.command == 'repair-keeps':
+        if not args.target:
+            raise SystemExit('repair-keeps needs --target (a clean world with the New Frontiers keeps)')
+        data = add_repair(args.chain.resolve(), keep_repair(args.target))
+        print(json.dumps([{'Name': r['Name'], 'Statements': len(r['Sql'])} for r in data], indent=1))
     else:
         if not args.target:
             raise SystemExit('check needs --target')
-        print(json.dumps(check(args.chain.resolve(), pairs(args.start), args.target.resolve()), indent=1))
+        out = check(args.chain.resolve(), pairs(args.start), args.target.resolve())
+        if args.played:
+            out = {'clean': out, 'played': check_played(args.chain.resolve(), pairs(args.start), args.target.resolve())}
+        print(json.dumps(out, indent=1))

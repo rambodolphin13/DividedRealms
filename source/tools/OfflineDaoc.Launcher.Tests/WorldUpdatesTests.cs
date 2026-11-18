@@ -155,6 +155,46 @@ public sealed class WorldUpdatesTests
         Assert.That(Value(World, "SELECT count(*) FROM sqlite_master WHERE name='offline_patch_log'"), Is.EqualTo(0L));
     }
 
+    // DR-483: a step's repairs put right a row an earlier step could not change (the game had rewritten it) and leave a
+    // row that is already right alone.
+    [Test]
+    public void ARepairPutsRightAKeepAnEarlierStepLeftBehind()
+    {
+        using (var c = new SQLiteConnection($"Data Source={World};Pooling=False"))
+        {
+            c.Open();
+            using var cmd = new SQLiteCommand("CREATE TABLE Keep (KeepID INTEGER PRIMARY KEY, Name TEXT, Region INTEGER, Realm INTEGER); " +
+                                              "INSERT INTO Keep VALUES (50, 'Caer Benowyc', 1, 2), (51, 'Caer Berkstead', 163, 3)", c);
+            cmd.ExecuteNonQuery();
+        }
+        var step = new
+        {
+            Version = "DR-dev-0.1k", IgnoreColumns = Array.Empty<string>(), NewTables = Array.Empty<object>(), NewColumns = Array.Empty<object>(),
+            Tables = Array.Empty<object>(),
+            Repairs = new object[]
+            {
+                new
+                {
+                    Name = "dr483", Note = "keeps left in the Old Frontiers",
+                    Sql = new[]
+                    {
+                        "UPDATE \"Keep\" SET \"Region\" = 163, \"Realm\" = 1 WHERE KeepID = 50 AND Region <> 163",
+                        "UPDATE \"Keep\" SET \"Region\" = 163, \"Realm\" = 1 WHERE KeepID = 51 AND Region <> 163",
+                    }
+                }
+            }
+        };
+        string path = Path.Combine(Runtime, WorldUpdates.Folder, "world-DR-dev-0.1k.json");
+        File.WriteAllText(path, JsonSerializer.Serialize(step));
+        var chain = new WorldUpdates.Chain(1, [new("DR-dev-0.1k", "world-DR-dev-0.1k.json", Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))))]);
+        File.WriteAllText(Path.Combine(Runtime, WorldUpdates.Folder, WorldUpdates.Index), JsonSerializer.Serialize(chain));
+
+        var log = WorldUpdates.Prepare(Runtime);
+        Assert.That(Value(World, "SELECT Region || '/' || Realm FROM Keep WHERE KeepID = 50"), Is.EqualTo("163/1"), "the stuck keep moves and gets its owner back");
+        Assert.That(Value(World, "SELECT Realm FROM Keep WHERE KeepID = 51"), Is.EqualTo(3L), "a keep already in place keeps the game's owner");
+        Assert.That(log, Has.Some.Contains("1 repaired"));
+    }
+
     [Test]
     public void AFolderWithoutUpdatesIsLeftAlone()
     {

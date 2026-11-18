@@ -109,6 +109,20 @@ internal sealed class WorldUpdate(string database, string updateFile, string ver
             if (tableKept > 0) notes.Add($"{table}: {tableKept} row(s) left as the game had them");
             kept += tableKept;
         }
+        // Repairs: statements that put right rows an earlier update could not change because the game had rewritten
+        // them (DR-483: Old Frontier keeps that never moved to New Frontiers). Each only matches broken rows, so a
+        // world that is already right, or that had the repair in an earlier step, is left as it is.
+        long repaired = 0;
+        if (root.TryGetProperty("Repairs", out var repairs))
+            foreach (var repair in repairs.EnumerateArray())
+            {
+                long rows = 0;
+                foreach (var sql in repair.GetProperty("Sql").EnumerateArray())
+                    using (var cmd = Cmd(c, tx, sql.GetString()!))
+                        rows += cmd.ExecuteNonQuery();
+                if (rows > 0) notes.Add($"repair {repair.GetProperty("Name").GetString()}: {rows} row(s) put right");
+                repaired += rows;
+            }
         using (var log = Cmd(c, tx, "INSERT INTO offline_patch_log (Version, AppliedUtc, Notes) VALUES (@v, @t, @n)"))
         {
             log.Parameters.AddWithValue("@v", version);
@@ -118,7 +132,7 @@ internal sealed class WorldUpdate(string database, string updateFile, string ver
         }
         tx.Commit();
         say($"World data updated to {version}: {added} added, {changed} changed, {removed} removed, {already} already up to date, " +
-            $"{kept} left as the game had them.");
+            $"{kept} left as the game had them" + (repaired > 0 ? $", {repaired} repaired." : "."));
         foreach (string note in notes) say("  " + note);
     }
 

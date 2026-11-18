@@ -74,43 +74,32 @@ namespace DOL.GS.Keeps
 					continue;
 				
 				AbstractGameKeep keep;
-				// if ((datakeep.KeepID >> 8) != 0 || ((datakeep.KeepID & 0xFF) > 150))
-				// {
-				// 	keep = keepRegion.CreateGameKeepTower();
-				// }
-				// else
-				// {
-					
-				// set SkinType to 99 for relic keeps
-				keep = datakeep.SkinType == 99 ? keepRegion.CreateRelicGameKeep() : keepRegion.CreateGameKeep();
-						
-				// }
+				if (IsFrontierTowerRow(datakeep, keeps))
+					keep = keepRegion.CreateGameKeepTower();
+				else
+				{
+					// set SkinType to 99 for relic keeps
+					keep = datakeep.SkinType == 99 ? keepRegion.CreateRelicGameKeep() : keepRegion.CreateGameKeep();
+				}
 
 				keep.Load(datakeep);
 				RegisterKeep(datakeep.KeepID, keep);
 			}
 
-			// This adds owner keeps to towers / portal keeps
-			// foreach (AbstractGameKeep keep in m_keepList.Values)
-			// {
-			// 	GameKeepTower tower = keep as GameKeepTower;
-			// 	if (tower != null)
-			// 	{
-			// 		int index = tower.KeepID & 0xFF;
-			// 		GameKeep ownerKeep = GetKeepByID(index) as GameKeep;
-			// 		if (ownerKeep != null)
-			// 		{
-			// 			ownerKeep.AddTower(tower);
-			// 		}
-			// 		tower.Keep = ownerKeep;
-			// 		tower.OwnerKeepID = index;
-			//
-			// 		if (tower.OwnerKeepID < 10)
-			// 		{
-			// 			log.WarnFormat("Tower.OwnerKeepID < 10 for KeepID {0}. Doors on this tower will not be targetable! ({0} & 0xFF < 10). Choose a different KeepID to correct this issue.", tower.KeepID);
-			// 		}
-			// 	}
-			// }
+			// Link each tower to its keep (KeepID & 0xFF). The client names a tower door by owner keep and tower number
+			// (KeepID >> 8), so a tower loaded as a plain keep got a door id the client never sends (DR-473).
+			foreach (AbstractGameKeep keep in m_keepList.Values)
+			{
+				if (keep is not GameKeepTower tower)
+					continue;
+
+				tower.OwnerKeepID = tower.KeepID & 0xFF;
+				if (GetKeepByID(tower.OwnerKeepID) is GameKeep ownerKeep)
+				{
+					tower.Keep = ownerKeep;
+					ownerKeep.AddTower(tower);
+				}
+			}
 			if (ServerProperties.Properties.USE_NEW_KEEPS == 2)
 				log.ErrorFormat("ServerProperty USE_NEW_KEEPS is actually set to 2 but it is no longer used. Loading as if he were 0 but please set to 0 or 1 !");
 				    
@@ -171,6 +160,30 @@ namespace DOL.GS.Keeps
 			return true;
 		}
 
+
+		/// <summary>
+		/// A New Frontiers tower: KeepID is its keep's id plus 256 per tower, in a frontier region, and that keep is in
+		/// the same region. Battleground portal keeps share the numbering but stay keeps (their region is no frontier).
+		/// Old Frontier keeps renumbered to 175-195 stay keeps too (their high byte is 0).
+		/// </summary>
+		public static bool IsFrontierTowerRow(DbKeep row, IEnumerable<DbKeep> all)
+		{
+			if (row.KeepID >> 8 == 0 || row.SkinType == 99)
+				return false;
+
+			Region region = WorldMgr.GetRegion(row.Region);
+			if (region == null || !region.IsFrontier)
+				return false;
+
+			int owner = row.KeepID & 0xFF;
+			foreach (DbKeep other in all)
+			{
+				if (other.KeepID == owner)
+					return other.Region == row.Region;
+			}
+
+			return false;
+		}
 
 		public virtual bool IsNewKeepComponent(int skin)
 		{

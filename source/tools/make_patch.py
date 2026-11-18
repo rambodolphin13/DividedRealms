@@ -197,6 +197,11 @@ def apply_world_update(con, update: dict) -> int:
         for row in t["Delete"]:
             cur = con.execute(f'DELETE FROM "{table}" WHERE {where}', [decode(row[i]) for i in cmp])
             kept += cur.rowcount == 0
+    # Repairs (modern_world_updates.py repairs.json): statements that only match rows an earlier update could not
+    # change because the game had rewritten them; a right world is left as it is.
+    for repair in update.get("Repairs", []):
+        for sql in repair["Sql"]:
+            con.execute(sql)
     return kept
 
 

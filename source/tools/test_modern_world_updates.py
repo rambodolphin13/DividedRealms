@@ -1,4 +1,5 @@
 """The release-by-release world updates (modern_world_updates.py), as build_modern_test_package.py uses them for each new release."""
+import json
 import shutil
 import sqlite3
 import tempfile
@@ -102,6 +103,34 @@ class NextReleaseTests(unittest.TestCase):
         shutil.copy2(self.baselines / 'world-r3.sqlite3.db', played)
         bring_up_to_date(played, self.chain)
         self.assertEqual(mobs(played), mobs(clean))
+
+    def test_a_new_release_carries_the_repairs_and_the_played_check_needs_them(self):
+        """DR-483: a keep the game levelled missed its move; the played check finds it until a step carries the repair."""
+        for v in ('r1', 'r2', 'r3'):
+            con = sqlite3.connect(self.baselines / f'world-{v}.sqlite3.db')
+            con.execute('CREATE TABLE Keep (KeepID INTEGER PRIMARY KEY, Name TEXT, Region INTEGER, X INTEGER, Y INTEGER, Z INTEGER, '
+                        'Realm INTEGER, Level INTEGER, ClaimedGuildName TEXT)')
+            moved = v != 'r1'
+            con.execute('INSERT INTO Keep VALUES (50, ?, ?, ?, 0, 0, 1, ?, \'\')',
+                        ('Caer Benowyc', 163, 500, 4) if moved else ('Caer Benowyc', 1, 100, 5))
+            con.commit()
+            con.close()
+        m.seed(self.chain, [(v, self.baselines / f'world-{v}.sqlite3.db') for v in ('r1', 'r2', 'r3')])
+        r3 = self.baselines / 'world-r3.sqlite3.db'
+        with self.assertRaises(SystemExit):
+            m.check_played(self.chain, [('r1', self.baselines / 'world-r1.sqlite3.db')], r3)
+        m.add_repair(self.chain, m.keep_repair(r3))
+        con = sqlite3.connect(r3)
+        rows = con.execute('SELECT * FROM Keep').fetchall()
+        con.close()
+        clean = self.tmp / 'clean-r4.db'
+        shutil.copy2(r3, clean)
+        m.add_step(self.chain, 'r4', 'r3', r3, clean)
+        self.assertEqual(json.loads((self.chain / 'world-r4.json').read_text())['Repairs'][0]['Name'], m.KEEP_REPAIR)
+        self.assertEqual(m.check_played(self.chain, [('r1', self.baselines / 'world-r1.sqlite3.db')], clean), {'r1': {'keeps_in_place': 1}})
+        con = sqlite3.connect(clean)
+        self.assertEqual(con.execute('SELECT * FROM Keep').fetchall(), rows, 'the clean world is not touched by its own repair')
+        con.close()
 
     def test_an_older_label_or_a_missing_world_stops_the_build(self):
         with self.assertRaises(SystemExit):
