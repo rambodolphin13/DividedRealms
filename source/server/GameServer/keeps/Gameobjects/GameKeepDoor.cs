@@ -558,6 +558,7 @@ namespace DOL.GS.Keeps
         public override void Die(GameObject killer)
         {
             base.Die(killer);
+            AutonomousRvrEventLayer.ObserveKeepBreached(Component?.Keep);
 
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
                 player.Out.SendMessage($"The {Name} is broken!", eChatType.CT_System, eChatLoc.CL_SystemWindow);

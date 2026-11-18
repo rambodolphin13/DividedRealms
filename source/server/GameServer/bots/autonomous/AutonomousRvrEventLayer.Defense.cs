@@ -49,6 +49,7 @@ namespace DOL.GS
         private sealed record Warning(GamePlayer Player, string Text, long Until, long Next);
         private static readonly ConcurrentDictionary<string, Alarm> DefenseAlarms = new();
         private static readonly ConcurrentDictionary<string, long> KeepCombatPressure = new();
+        private static readonly ConcurrentDictionary<string, long> KeepsBreached = new();
         private static readonly Dictionary<string, Warning> DefenseWarnings = new();
         private static long _nextDefensePulse;
 
@@ -107,6 +108,21 @@ namespace DOL.GS
         }
 
         /// <summary>When an enemy realm last damaged this keep (0 if never).</summary>
+        /// <summary>
+        /// Owner 2026-11-18 (Discord, BornToReignGamingYT: Albion never came to defend its power relic keep): a player's
+        /// attack still gathers the defenders into one force, but they march the moment one of the keep's doors falls
+        /// instead of waiting out the ten-minute muster. A /raid 80 could take the keep before the defense left. The
+        /// skip-muster rule (GoStraightInWhenUnderFire) counts only bot warbands at the keep, never a player's own bots.
+        /// </summary>
+        public static void ObserveKeepBreached(AbstractGameKeep keep)
+        {
+            if (keep != null) KeepsBreached[$"rvr-keep-{keep.KeepID}"] = GameLoop.GameLoopTime;
+        }
+
+        /// <summary>A player-raised defense still gathering marches once a door of its keep is down. Pure.</summary>
+        public static bool DefenseMarchesOnBreach(bool defenseReaction, bool marching, bool breached) =>
+            defenseReaction && !marching && breached;
+
         public static long LastKeepPressure(AbstractGameKeep keep) =>
             keep == null ? 0 : KeepCombatPressure.GetValueOrDefault($"rvr-keep-{keep.KeepID}");
 
@@ -198,6 +214,7 @@ namespace DOL.GS
                     if (now - pair.Value.Tick > DefenseQuietMilliseconds)
                     {
                         DefenseAlarms.TryRemove(pair.Key, out _);
+                        KeepsBreached.TryRemove(pair.Key, out _);
                         continue;
                     }
                     var alarm = pair.Value;
@@ -215,6 +232,9 @@ namespace DOL.GS
                         DefenseAlarms.TryRemove(pair.Key, out _);
                         continue;
                     }
+                    if (DefenseMarchesOnBreach(active.DefenseReaction, active.DefenseMarching,
+                            KeepsBreached.TryGetValue(pair.Key, out long breachedTick) && breachedTick >= active.CreatedTick - DefenseQuietMilliseconds))
+                        GiveDefenseMarch(active, now, "a door of the keep has fallen; the defenders march at once");
                     bool grew = !firstAlarm && active.DefenseScale > before;
                     if (firstAlarm || grew)
                     {

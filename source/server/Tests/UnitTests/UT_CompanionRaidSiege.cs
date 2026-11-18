@@ -73,5 +73,14 @@ namespace DOL.UnitTests
             Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.Distance, false, true), Is.EqualTo(eActiveWeaponSlot.TwoHanded));
             Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.Standard, false, false), Is.Null);
         }
+
+        [Test]
+        public void APlayerRaisedDefenseMarchesWhenAKeepDoorFalls()
+        {
+            Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(true, false, true), Is.True);
+            Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(true, false, false), Is.False);
+            Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(true, true, true), Is.False);
+            Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(false, false, true), Is.False, "bot-planned sieges keep their own muster");
+        }
     }
 }
