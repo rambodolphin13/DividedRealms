@@ -64,5 +64,14 @@ namespace DOL.UnitTests
             Assert.That(GameBot.CompanionWearsInto(null), Is.True);
             Assert.That(GameBot.CompanionWearsInto(new DOL.Database.DbInventoryItem()), Is.False);
         }
+
+        [Test]
+        public void AccountCompanionsSwingTheWeaponSetTheyHold()
+        {
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.TwoHanded, true, true), Is.EqualTo(eActiveWeaponSlot.TwoHanded));
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.TwoHanded, true, false), Is.EqualTo(eActiveWeaponSlot.Standard));
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.Distance, false, true), Is.EqualTo(eActiveWeaponSlot.TwoHanded));
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.Standard, false, false), Is.Null);
+        }
     }
 }

@@ -45,7 +45,10 @@ namespace DOL.GS
                 return false;
 
             BotSpec spec = bot.BotSpec;
-            if (spec == null || spec.WeaponOneType == 0 && spec.WeaponTwoType == 0)
+            // An account companion uses what its player gives it (Discord 2026-11-18, DR-391): any melee weapon it is
+            // trained for. Matching its build plan's rolled weapon type made a Paladin holding a crush hammer on a slash
+            // plan refuse to swing, or make and wield a starter weapon of the plan's type instead.
+            if (spec == null || bot.IsAccountCompanion || spec.WeaponOneType == 0 && spec.WeaponTwoType == 0)
                 return HasConfiguredWeaponProficiency(bot, item);
 
             eObjectType type = (eObjectType)item.Object_Type;

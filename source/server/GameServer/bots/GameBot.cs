@@ -5128,6 +5128,8 @@ namespace DOL.GS
 
             if (CharacterClass.ID == (int)eCharacterClass.Savage)
                 return EnsureSavageWeaponReady();
+            if (IsAccountCompanion)
+                return ReadyCompanionWeapon();
 
             eInventorySlot target = PrimaryWeaponUsesTwoHands
                 ? eInventorySlot.TwoHandWeapon : eInventorySlot.RightHandWeapon;
@@ -5178,6 +5180,29 @@ namespace DOL.GS
 
             return changed;
         }
+
+        /// <summary>
+        /// An account companion wields the weapon its player equipped, in the hand it was put in: the active set if it is
+        /// usable, else the one-hand set, else the two-hand set. Nothing is made, moved or put away (DR-391).
+        /// </summary>
+        private bool ReadyCompanionWeapon()
+        {
+            bool standard = BotWeaponStats.FitsConfiguredSlot(this, Inventory.GetItem(eInventorySlot.RightHandWeapon), eInventorySlot.RightHandWeapon);
+            bool twoHanded = BotWeaponStats.FitsConfiguredSlot(this, Inventory.GetItem(eInventorySlot.TwoHandWeapon), eInventorySlot.TwoHandWeapon);
+            eActiveWeaponSlot? wanted = CompanionWeaponSet(ActiveWeaponSlot, standard, twoHanded);
+            if (wanted == null || wanted == ActiveWeaponSlot)
+                return false;
+            SwitchWeapon(wanted.Value);
+            return true;
+        }
+
+        /// <summary>Which weapon set an account companion uses (null: none it can swing). Pure.</summary>
+        public static eActiveWeaponSlot? CompanionWeaponSet(eActiveWeaponSlot active, bool standardUsable, bool twoHandedUsable) =>
+            active == eActiveWeaponSlot.Standard && standardUsable || active == eActiveWeaponSlot.TwoHanded && twoHandedUsable
+                ? active
+                : standardUsable ? eActiveWeaponSlot.Standard
+                : twoHandedUsable ? eActiveWeaponSlot.TwoHanded
+                : null;
 
         private bool TryEquipBestSavageWeapon(eInventorySlot target)
         {
