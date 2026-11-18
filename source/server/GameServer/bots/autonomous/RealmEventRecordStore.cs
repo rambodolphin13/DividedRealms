@@ -86,6 +86,9 @@ public static class RealmEventRecordStore
     {
         if(!File.Exists(path))return;
         using var connection=Open(path,false);using var command=connection.CreateCommand();
+        // The lore store shares this file and can make it before the first event: no Events table yet, nothing to close.
+        command.CommandText="SELECT count(*) FROM sqlite_master WHERE type='table' AND name='Events'";
+        if((long)command.ExecuteScalar()==0)return;
         // The exact end time is unknown after an unclean stop; do not invent it.
         command.CommandText="UPDATE Events SET Outcome='Interrupted',Phase='Stopped',Details=Details || ' | Previous server session ended without a final outcome; end time unknown.' WHERE Outcome='In progress'";
         command.ExecuteNonQuery();

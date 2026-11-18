@@ -201,6 +201,35 @@ namespace DOL.UnitTests
             }
         }
 
+        // The lore store can make the shared ledger file first (LoreFirstKills only): closing interrupted events must not
+        // fail on the missing Events table, or every flush throws and no event is ever saved (soak 2026-11-18).
+        [Test]
+        public void ALedgerFileTheLoreStoreMadeFirstStillTakesEvents()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), "ut-shared-ledger-" + Guid.NewGuid().ToString("N"));
+            string path = RealmEventRecordStore.PathIn(folder);
+            try
+            {
+                Directory.CreateDirectory(folder);
+                using (var c = new System.Data.SQLite.SQLiteConnection($"Data Source={path};Pooling=False"))
+                {
+                    c.Open();
+                    using var cmd = c.CreateCommand();
+                    cmd.CommandText = "CREATE TABLE LoreFirstKills(Realm INTEGER NOT NULL, BossId TEXT NOT NULL, KilledUtc TEXT NOT NULL, Killer TEXT NOT NULL, EventId TEXT NOT NULL, PRIMARY KEY(Realm, BossId))";
+                    cmd.ExecuteNonQuery();
+                }
+                Assert.DoesNotThrow(() => RealmEventRecordStore.CloseInterrupted(path));
+                RealmEventRecordStore.Save(path, [new RealmEventRecord("r1", "keep-50", "Caer Benowyc", "Keep", "Albion",
+                    "2026-11-18T07:00:00.0000000Z", "2026-11-18T07:10:00.0000000Z", "Ended", "Captured", "x", 8, 8)]);
+                Assert.That(RealmEventRecordStore.Results(path, "keep-50", 10, automaticOnly: false), Has.Count.EqualTo(1));
+            }
+            finally
+            {
+                System.Data.SQLite.SQLiteConnection.ClearAllPools();
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
         [Test]
         public void TheSiegePoolCountsTheAttackersLevelFiftiesAndTheirRvrDuty()
         {
