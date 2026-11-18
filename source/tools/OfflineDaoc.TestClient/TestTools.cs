@@ -97,6 +97,11 @@ namespace OfflineDaoc.TestClient
                 new[] { "slot", "house", "position" }, ("slot", "integer", "Backpack slot of the item"), ("house", "integer", "House number"),
                 ("position", "integer", "Hookpoint id (or garden tile)"), ("method", "integer", "Client placement mode, default 5 (hookpoint)"),
                 ("x", "integer", "Indoor x, default 0"), ("y", "integer", "Indoor y, default 0")));
+            All.Add(Make("keep_door", "Click a keep or tower door as the client does: door id 7OOOTCCD (owner keep, tower number, component, " +
+                "door index), or give keep/tower/component/index. A GM on a door the server does not know gets 'This door is not in the database'.",
+                KeepDoor, none, ("door", "integer", "Whole door id"), ("keep", "integer", "Owner keep id (KeepID & 0xFF)"),
+                ("tower", "integer", "Tower number (KeepID >> 8), default 0"), ("component", "integer", "Component id, default 0"),
+                ("index", "integer", "Door index, default 1"), ("open", "boolean", "Default true")));
             All.Add(Make("buy", "Buy from the open merchant window.", Buy, new[] { "item_slot" }, ("item_slot", "integer", ""),
                 ("count", "integer", "Default 1"), ("menu", "integer", "Default 0")));
             All.Add(Make("answer_dialog", "Answer the open yes / no dialog.", AnswerDialog, none, ("response", "integer", "1 yes (default), 0 no")));
@@ -664,6 +669,16 @@ namespace OfflineDaoc.TestClient
             long since = s.LastSeq;
             s.HousePlace(Whole(a, "slot", 0), Whole(a, "house", 0), Whole(a, "position", 0), Whole(a, "method", 5),
                 Whole(a, "x", 0), Whole(a, "y", 0));
+            return Collect(s, since, 1200);
+        }
+
+        object KeepDoor(JsonObject a)
+        {
+            TestSession s = Session(a);
+            long since = s.LastSeq;
+            int id = a["door"] != null ? Whole(a, "door", 0)
+                : 700000000 + Whole(a, "keep", 0) * 100000 + Whole(a, "tower", 0) * 10000 + Whole(a, "component", 0) * 100 + Whole(a, "index", 1);
+            s.DoorRequest(id, a["open"] == null || bool.Parse(a["open"].ToString()));
             return Collect(s, since, 1200);
         }
 

@@ -798,6 +798,15 @@ namespace OfflineDaoc.TestClient
             _client.Send(0x0B, w);
         }
 
+        /// <summary>DoorRequestHandler: door id and state (1 open), as the client sends when a door is clicked. Keep doors are
+        /// 7 OOO T CC D: type 7, owner keep, tower number, component, door index.</summary>
+        public void DoorRequest(int doorId, bool open)
+        {
+            var w = new DaocClient.Writer();
+            w.Int((uint)doorId); w.Byte((byte)(open ? 1 : 0)); w.Byte(0); w.Short(0);
+            _client.Send(0x99, w);
+        }
+
         /// <summary>HousingPlaceItemHandler: item flag, slot, house, unknown, position, method, rotation, indoor x, indoor y.</summary>
         public void HousePlace(int slot, int house, int position, int method, int x, int y)
         {
