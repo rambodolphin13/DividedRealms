@@ -2690,6 +2690,18 @@ namespace DOL.GS.ServerProperties
 		public static bool BOT_GUILD_RECRUIT_PLAYER;
 
 		/// <summary>
+		/// Real players in a bot guild climb its ranks over time (AutonomousBotGuildPlayerRanks).
+		/// </summary>
+		[ServerProperty("guild", "bot_guild_player_promotion", "When bot guilds are on: a real player in a bot guild is promoted from rank 8 up to rank 0 over time (hours in the guild, time grouped with guildmates, level and the guild's kind of deeds). /gc standing shows the next step. Nobody is demoted.", true)]
+		public static bool BOT_GUILD_PLAYER_PROMOTION;
+
+		/// <summary>
+		/// Scales the hours a player needs for each bot guild rank.
+		/// </summary>
+		[ServerProperty("guild", "bot_guild_player_rank_pace", "Multiplies the hours (in the guild and grouped with guildmates) a player needs for each bot guild rank: 1 is normal, 0.5 twice as fast, 0.01 for testing.", 1.0)]
+		public static double BOT_GUILD_PLAYER_RANK_PACE;
+
+		/// <summary>
 		/// Bot guilds claim keeps and towers their realm takes, under the usual claim rules.
 		/// </summary>
 		[ServerProperty("guild", "bot_guild_claims_keeps", "When bot guilds are on: after a realm takes a keep or tower, a bot guild with enough members inside claims it (claim_num, half for towers; guilds_claim_limit), never while a real player of that realm is inside. Its warbands answer first when that keep is attacked.", true)]

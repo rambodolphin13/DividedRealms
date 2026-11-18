@@ -164,6 +164,30 @@ something (docs/bot-voices/DESIGN.md 3.7). The lines in `AutonomousBotGuildChatL
   - No: no more offers for 24 hours.
 - **Unprompted offers:** now and then, an officer standing near you while you're unguilded and
   within 10 levels offers an invite, at most once a day per character.
+- **Promotion (2026-11-18, `AutonomousBotGuildPlayerRanks`):** a real player climbs from rank 8 to
+  rank 0. Bots only hold ranks 9, 1 and 0, so players use the ranks the bots leave empty. A rank-0
+  player sits beside the bot leader; the bots' own leader, keep and economy code ignores players.
+  Every minute online in the guild counts, and so does every minute grouped with a guildmate (bot
+  or player). Deeds count from the day you joined.
+
+  | Rank | Needs (hours × `bot_guild_player_rank_pace`) | New right |
+  |---|---|---|
+  | 7 | 2h in guild | emblem |
+  | 5 | 8h, 2h grouped, level 20 | alliance chat |
+  | 3 | 20h, 6h grouped, level 40, 1 deed | officer chat |
+  | 2 | 40h, 12h grouped, level 50, 2 deeds | invite, promote |
+  | 1 | 80h, 25h grouped, level 50, 3 deeds | claim/upgrade keeps |
+  | 0 | 150h, 50h grouped, level 50, 4 deeds | everything (bank, dues, alliances, remove) |
+
+  - **Deeds:** RvR guilds count one per 25 RvR kills, raiding guilds one per 2 named kills, and
+    crafting guilds use the primary trade skill (400/600/800/1000). Every guild also counts one
+    deed per 15h grouped with guildmates, and the larger number is used.
+  - **Rules:** you climb in order, and a failed step stops the climb. Several steps can be
+    reached at once. You are never demoted, and a rank set by hand stays.
+  - **Leaving:** joining another guild starts you over. Rejoining the same guild with nothing in
+    between keeps your progress.
+  - **Announcements:** a system message, a guild message, and one or two bots congratulate you.
+  - **`/gc standing`** shows your rank, your time and deeds, and what the next rank needs.
 
 ### 3.6 Grouping (phase 3)
 
@@ -258,6 +282,8 @@ something (docs/bot-voices/DESIGN.md 3.7). The lines in `AutonomousBotGuildChatL
 | `bot_guild_min_level` | 5 | lowest level that joins a bot guild |
 | `bot_guild_social` | True | guild chat, greetings, replies, recruiting (phase 2) |
 | `bot_guild_recruit_player` | True | bot officers may invite you (phase 2) |
+| `bot_guild_player_promotion` | True | real players climb bot guild ranks to 0 (3.5) |
+| `bot_guild_player_rank_pace` | 1.0 | scales the hours each rank needs (0.01 for testing) |
 | `bot_guild_claims_keeps` | True | keep claims and claim defense (phase 4) |
 | `bot_guild_economy` | True | dues, merit points, buffs (phase 5) |
 | `bot_guild_alliances` | True | realm alliances (phase 6) |

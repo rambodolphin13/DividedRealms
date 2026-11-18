@@ -205,6 +205,19 @@ public static class AutonomousBotGuildSocial
         }
     }
 
+    /// <summary>A real player was promoted in a bot guild (AutonomousBotGuildPlayerRanks): one or two members congratulate.</summary>
+    public static void OnPlayerPromoted(GamePlayer player, Guild guild, string title)
+    {
+        if (!Enabled || player == null || guild == null)
+            return;
+        GameBot[] speakers = Speakers(guild);
+        int count = Math.Min(speakers.Length, 1 + (Random.Shared.NextDouble() < 0.5 ? 1 : 0));
+        string name = player.Name;
+        for (int i = 0; i < count; i++)
+            ScheduleGuildLine(speakers[i], guild, 2_500 + i * 2_000 + Random.Shared.Next(2_000),
+                () => FreshLine(guild.GuildID, () => Lines.Promoted(name, title, Random.Shared), GameLoop.GameLoopTime));
+    }
+
     /// <summary>Called by GameBot when an autonomous gamebot gains one or more levels.</summary>
     public static void OnBotLevelUp(GameBot bot)
     {

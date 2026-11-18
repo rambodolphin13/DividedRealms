@@ -46,6 +46,10 @@ public static class AutonomousBotGuildChatLines
         $"welcome to {guild}, {player}!", $"welcome {player}!", $"glad to have you {player}", $"welcome aboard {player}",
         $"hey {player}, welcome. ask if you need anything");
 
+    public static string Promoted(string player, string title, Random random) => Pick(random,
+        $"grats on {title}, {player}!", $"well earned {player}", $"grats {player}, {title} suits you", $"gz {player}",
+        $"about time {player}, grats", $"{title} {player}, nice");
+
     public static string GuildGroup(int guildmates, string zone, bool rvr, Random random)
     {
         string where = string.IsNullOrWhiteSpace(zone) ? "the usual spot" : zone;

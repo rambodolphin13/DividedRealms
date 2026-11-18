@@ -1276,6 +1276,18 @@ namespace DOL.GS.Commands
 						client.Out.SendGuildLeaveCommand(client.Player, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.ConfirmLeave", client.Player.Guild.Name));
 						break;
 					}
+					// Your standing in a bot guild and what the next rank needs (AutonomousBotGuildPlayerRanks).
+					case "standing":
+					{
+						if (client.Player.Guild == null)
+						{
+							client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.NotMember"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+							return;
+						}
+						foreach (string line in AutonomousBotGuildPlayerRanks.StandingLines(client.Player))
+							client.Out.SendMessage(line, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						break;
+					}
 					case "promote":
 					{
 						if (client.Player.Guild == null)
