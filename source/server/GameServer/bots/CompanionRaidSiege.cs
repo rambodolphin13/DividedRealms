@@ -177,7 +177,6 @@ namespace DOL.GS
             GameBot bot = brain?.BotBody;
             if (bot == null || !CompanionRaid.IsMember(bot) || bot.Owner is not GamePlayer owner || !bot.IsAlive) return false;
             long now = GameLoop.GameLoopTime;
-            if (AutonomousWorldBotController.IsBattleground(bot)) BreakUnreachableTarget(brain, bot, now);
             if (bot.TargetObject is GuardLord { ShieldedFromBots: true } shielded)
             {
                 // The lord is off limits while the keep door stands (GuardLord.ShieldedFromBots).
@@ -187,6 +186,10 @@ namespace DOL.GS
                 bot.TargetObject = null;
             }
             Session s = Sessions.GetValueOrDefault(owner) ?? TryBegin(owner, now);
+            // Discord 2026-11-17 (BornToReignGamingYT, "/raid bots don't always attack the doors"): this ran only in
+            // battlegrounds, so in the frontier a melee bot a wall archer had hit kept that archer as its target and stood
+            // under the wall. It now runs for every keep siege too.
+            if (s != null || AutonomousWorldBotController.IsBattleground(bot)) BreakUnreachableTarget(brain, bot, now);
             if (s == null) return false;
             if (Ended(s, now, out string reason)) { End(s, reason); return false; }
 
@@ -204,7 +207,7 @@ namespace DOL.GS
             {
                 // The bodyguard stays with the player, and joins in when the player hits the keep door (0.35 known issue:
                 // they stood at the door while the player attacked it).
-                if (s.Mode == Mode.Assault && !brain.HasAggro && !bot.InCombat &&
+                if (s.Mode == Mode.Assault && !brain.HasAggro &&
                     owner.TargetObject is GameKeepDoor guarded && guarded.IsAlive && guarded.Realm != bot.Realm &&
                     owner.IsAttacking && bot.IsWithinRadius(guarded, AssistRadius))
                     brain.AssistPlayerAttack(guarded);
@@ -227,8 +230,10 @@ namespace DOL.GS
             lock (s) { if (operating) s.Operating.Add(bot); else s.Operating.Remove(bot); }
             if (operating) return true;
 
-            // Everyone else works their job through the normal combat AI.
-            if (brain.HasAggro || bot.InCombat) return false;
+            // Everyone else works their job through the normal combat AI. Only a fight the bot actually has counts: wall
+            // archers keep the whole gate in combat (InCombat), and with that test the squads stood at the door doing
+            // nothing whenever arrows were landing (Discord 2026-11-17).
+            if (brain.HasAggro) return false;
             GameLiving target = squad.Job switch
             {
                 Job.WallClear => WallTarget(bot, keep, nearby),
