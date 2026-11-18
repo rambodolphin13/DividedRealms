@@ -650,13 +650,17 @@ namespace DOL.GS
         }
 
         /// <summary>
-        /// Takes a dropped item only when it is a real upgrade for this companion, and wears it.
-        /// The item it replaces goes into its backpack. Nothing is taken when the backpack is full.
+        /// Takes a dropped item only when it fits an empty equipment slot this companion can use, and wears it.
+        /// Nothing is taken when the backpack is full.
+        /// Discord 2026-11-17 (BornToReignGamingYT): companions the player had dressed by hand took off that armour for
+        /// random drops the gear score rated higher. The player chooses what an account companion wears; a drop for a
+        /// slot that is already filled goes into its backpack instead (TryCompanionAutoPickUpItem: "keeps").
         /// </summary>
         internal bool TryTakeCompanionUpgrade(DbInventoryItem item)
         {
             if (!IsAccountCompanion || !IsAlive || Inventory == null || item == null || item.IsStackable ||
-                !AutonomousBotEconomy.TryGetEquipmentUpgrade(this, item, out eInventorySlot equipSlot))
+                !AutonomousBotEconomy.TryGetEquipmentUpgrade(this, item, out eInventorySlot equipSlot) ||
+                !CompanionWearsInto(Inventory.GetItem(equipSlot)))
                 return false;
 
             eInventorySlot backpack = Inventory.FindFirstEmptySlot(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
@@ -718,9 +722,13 @@ namespace DOL.GS
             return store() ? TryPickUpResult.Success : TryPickUpResult.Blocked;
         }
 
+        /// <summary>An account companion puts a drop on only into an empty slot; it never replaces what it wears.</summary>
+        public static bool CompanionWearsInto(DbInventoryItem worn) => worn == null;
+
         internal static int CompanionUpgradeValue(GameBot bot, DbInventoryItem item)
         {
-            if (!AutonomousBotEconomy.TryGetEquipmentUpgrade(bot, item, out eInventorySlot slot))
+            if (!AutonomousBotEconomy.TryGetEquipmentUpgrade(bot, item, out eInventorySlot slot) ||
+                !CompanionWearsInto(bot.Inventory.GetItem(slot)))
                 return int.MinValue;
             return AutonomousBotEconomy.EquipmentGain(bot, item, bot.Inventory.GetItem(slot));
         }

@@ -65,7 +65,12 @@ namespace DOL.GS
 
         private static readonly ConcurrentDictionary<GamePlayer, Session> Sessions = new();
         private static readonly ConcurrentDictionary<GamePlayer, (AbstractGameKeep Keep, long Tick)> AssaultRequests = new();
-        private static readonly ConcurrentDictionary<AbstractGameKeep, long> FriendlyKeepsUnderAttack = new();
+        // Holder: the realm that owned the keep when it was hit. Discord 2026-11-17 (BornToReignGamingYT, third report after
+        // DR-163/DR-300): the raid's own hits were stored here keyed only by keep, so the moment the keep flipped the
+        // assault session ended ("keep taken") and the next think began a Defense session for the player's new keep from
+        // that stale "attack": every squad but the bodyguard went to hold the doors inside, leash recall off, for up to
+        // five quiet minutes, and only the player's own group followed them out.
+        private static readonly ConcurrentDictionary<AbstractGameKeep, (long Tick, eRealm Holder)> FriendlyKeepsUnderAttack = new();
         // Melee raid bots drop a target they cannot walk to (a wall archer) and leave it alone for a while.
         private static readonly ConcurrentDictionary<(GameBot Bot, GameLiving Target), long> Unreachable = new();
         private static readonly WeakKeyMap<GameBot, (GameLiving Target, int Failures, long Next)> ReachWatch = new();
@@ -106,8 +111,15 @@ namespace DOL.GS
         /// <summary>Any enemy damage to a keep; raids of that keep's realm nearby may rally to defend it.</summary>
         public static void ObserveKeepUnderAttack(AbstractGameKeep keep)
         {
-            if (keep != null && keep.Realm != eRealm.None) FriendlyKeepsUnderAttack[keep] = GameLoop.GameLoopTime;
+            if (keep != null && keep.Realm != eRealm.None) FriendlyKeepsUnderAttack[keep] = (GameLoop.GameLoopTime, keep.Realm);
         }
+
+        /// <summary>
+        /// A keep hit while <paramref name="holderWhenHit"/> owned it calls this raid to defend only when the raid's realm
+        /// owned it then and owns it now; a keep the raid has just taken is not under attack from its own earlier hits.
+        /// </summary>
+        public static bool CallsDefense(eRealm holderWhenHit, eRealm holderNow, eRealm raidRealm) =>
+            raidRealm != eRealm.None && holderWhenHit == raidRealm && holderNow == raidRealm;
 
         // ---- Queries used by the follow, engagement and recall code ----
 
@@ -249,8 +261,8 @@ namespace DOL.GS
                 mode = Mode.Defense;
                 foreach (var pair in FriendlyKeepsUnderAttack)
                 {
-                    if (now - pair.Value > RequestFreshMilliseconds) { FriendlyKeepsUnderAttack.TryRemove(pair.Key, out _); continue; }
-                    if (pair.Key.Realm == owner.Realm && owner.CurrentRegionID == pair.Key.Region &&
+                    if (now - pair.Value.Tick > RequestFreshMilliseconds) { FriendlyKeepsUnderAttack.TryRemove(pair.Key, out _); continue; }
+                    if (CallsDefense(pair.Value.Holder, pair.Key.Realm, owner.Realm) && owner.CurrentRegionID == pair.Key.Region &&
                         owner.IsWithinRadius(new Point3D(pair.Key.X, pair.Key.Y, pair.Key.Z), 3500))
                     { keep = pair.Key; break; }
                 }
@@ -287,7 +299,7 @@ namespace DOL.GS
                 bool near = owner.CurrentRegionID == keep.Region && owner.IsWithinRadius(new Point3D(keep.X, keep.Y, keep.Z), 9000);
                 lock (s) { if (near) s.AwaySince = 0; else if (s.AwaySince == 0) s.AwaySince = now; }
                 if (s.AwaySince != 0 && now - s.AwaySince > AwayEndMilliseconds) reason = "player left the keep";
-                long pressure = s.Mode == Mode.Defense ? FriendlyKeepsUnderAttack.GetValueOrDefault(keep)
+                long pressure = s.Mode == Mode.Defense ? FriendlyKeepsUnderAttack.GetValueOrDefault(keep).Tick
                     : AutonomousRvrEventLayer.LastKeepPressure(keep);
                 if (pressure > s.LastPressure) s.LastPressure = pressure;
                 if (reason == null && now - s.LastPressure > QuietEndMilliseconds) reason = "the fighting is over";

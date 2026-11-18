@@ -47,5 +47,22 @@ namespace DOL.UnitTests
             Assert.That(CompanionRaidSiege.EngineFor(CompanionRaidSiege.Job.Defend), Is.Null);
             Assert.That(CompanionRaidSiege.EngineFor(CompanionRaidSiege.Job.Ram), Is.EqualTo(BotSiegeKind.Ram));
         }
+
+        [Test]
+        public void ARaidsOwnHitsOnAKeepItJustTookDoNotCallADefense()
+        {
+            // Discord 2026-11-17: the raid hit an Albion keep, took it for Midgard, then held its doors instead of following.
+            Assert.That(CompanionRaidSiege.CallsDefense(eRealm.Albion, eRealm.Midgard, eRealm.Midgard), Is.False);
+            Assert.That(CompanionRaidSiege.CallsDefense(eRealm.Midgard, eRealm.Midgard, eRealm.Midgard), Is.True);
+            Assert.That(CompanionRaidSiege.CallsDefense(eRealm.Midgard, eRealm.Albion, eRealm.Midgard), Is.False);
+            Assert.That(CompanionRaidSiege.CallsDefense(eRealm.None, eRealm.None, eRealm.None), Is.False);
+        }
+
+        [Test]
+        public void AccountCompanionsOnlyWearDropsIntoEmptySlots()
+        {
+            Assert.That(GameBot.CompanionWearsInto(null), Is.True);
+            Assert.That(GameBot.CompanionWearsInto(new DOL.Database.DbInventoryItem()), Is.False);
+        }
     }
 }
