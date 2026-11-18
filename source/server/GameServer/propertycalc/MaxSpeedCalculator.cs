@@ -92,14 +92,18 @@ namespace DOL.GS.PropertyCalc
                 if (player.IsStealthed && DOL.GS.Spells.StormSovereignAbilities.HasVeil(player))
                     speedIncrease *= 1.1;
 
-                // Speedwarp negates speed boosts (and mounts), as carrying a relic does.
-                if (GameRelic.IsPlayerCarryingRelic(player) || DOL.GS.Spells.SpeedwarpSpellHandler.IsWarped(player))
+                // Speedwarp negates speed boosts and mounts.
+                if (DOL.GS.Spells.SpeedwarpSpellHandler.IsWarped(player))
                 {
                     if (speedIncrease > 1.0)
                         speedIncrease = 1.0;
 
                     horseSpeed = 1.0;
                 }
+                // Owner 2026-11-18 (Discord, BornToReignGamingYT: "so slow" carrying a relic home): a relic carrier keeps
+                // its speed buffs, unlike live. It still cannot ride (AbstractServerRules refuses the mount).
+                else if (GameRelic.IsPlayerCarryingRelic(player))
+                    horseSpeed = 1.0;
 
                 if (player.IsSprinting)
                     speedIncrease *= SPRINT;
@@ -150,8 +154,6 @@ namespace DOL.GS.PropertyCalc
                     speedIncrease *= 0.2 + healthPercent * (0.8 / 0.33); // 33% HP = full speed, 0% HP = 20% speed
             }
 
-            if (living is GameBot && GameRelic.IsPlayerCarryingRelic(living))
-                speedIncrease = Math.Min(speedIncrease, 1.0);
             return (int) Math.Round(maxSpeedBase * speedIncrease);
         }
     }
