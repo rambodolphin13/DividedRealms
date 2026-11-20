@@ -95,5 +95,10 @@ namespace DOL.UnitTests
         [TestCase(5_001, 5_000, true)]  // every melee order expired: no lock on the follow path (DR-275)
         public void MeleeStationOrdersAllExpire(long now, long latestUntil, bool expired) =>
             Assert.That(EncounterMeleeStations.AllExpired(now, latestUntil), Is.EqualTo(expired));
+
+        [TestCase(163054803, 163054800)]   // a milegate's third piece belongs with gate doors 163054801/02 (DR-472)
+        [TestCase(163000401, 163000400)]
+        public void DoorPiecesShareTheirFixture(int doorId, int fixtureBase) =>
+            Assert.That(DOL.GS.PacketHandler.Client.v168.DoorRequestHandler.FixtureBase(doorId), Is.EqualTo(fixtureBase));
     }
 }

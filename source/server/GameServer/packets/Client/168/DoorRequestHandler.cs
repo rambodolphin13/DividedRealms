@@ -162,9 +162,14 @@ namespace DOL.GS.PacketHandler.Client.v168
                 }
                 else
                 {
-                    // New frontiers. We don't want this (relic gates, etc).
-                    if (player.CurrentRegionID == 163 && player.Client.Account.PrivLevel == 1)
+                    // New frontiers. We don't want this (relic gates, etc). DR-472: a milegate's upper doors are pieces of the
+                    // same fixture as its two gate doors (only those two are in the database), so a piece whose fixture has a
+                    // plain door opens like it; relic gate and keep pieces stay shut. Every refusal is logged.
+                    if (player.CurrentRegionID == 163 && player.Client.Account.PrivLevel == 1 && !FixtureHasPlainDoor(doorId))
+                    {
+                        ReportUnknownDoor(player, doorId, doorState);
                         return;
+                    }
 
                     player.Out.SendDebugMessage($"Door {doorId} not found in door list, opening via GM door hack.");
                     ReportUnknownDoor(player, doorId, doorState);
@@ -188,6 +193,22 @@ namespace DOL.GS.PacketHandler.Client.v168
                         dummyDoor.Open(player);
                 }
             }
+        }
+
+        /// <summary>Door ids are zone * 1000000 + fixture * 100 + piece. The first piece number of a door's fixture.</summary>
+        public static int FixtureBase(int doorId) => doorId / 100 * 100;
+
+        /// <summary>True when piece 1 or 2 of the door's fixture is an ordinary door (not a relic gate or keep door).</summary>
+        private static bool FixtureHasPlainDoor(int doorId)
+        {
+            int fixture = FixtureBase(doorId);
+            for (int piece = 1; piece <= 2; piece++)
+            {
+                if (fixture + piece != doorId && DoorMgr.GetDoorByID(fixture + piece) is GameDoor) // relic gates and keep doors are not GameDoor
+                    return true;
+            }
+
+            return false;
         }
 
         private static readonly DOL.Logging.Logger Log = DOL.Logging.LoggerManager.Create(typeof(DoorRequestHandler));
