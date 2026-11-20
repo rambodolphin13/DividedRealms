@@ -66,5 +66,18 @@ namespace DOL.UnitTests
         [TestCase(eCraftingSkill.Tailoring, false, false)]     // no spellcraft or alchemy
         public void SpellcraftButtonLightsForAnySpellcrafter(eCraftingSkill itemSkill, bool knows, bool expected) =>
             Assert.That(DOL.GS.PacketHandler.PacketLib1124.CraftButtonEnabled(itemSkill, knows), Is.EqualTo(expected));
+
+        [TestCase(1, 2, false, true)]   // the next Master Level, as before
+        [TestCase(2, 6, false, true)]   // live 1.76: an ML2 player may hold an ML6 step
+        [TestCase(5, 5, false, false)]  // a level already reached
+        [TestCase(2, 6, true, false)]   // the step is already done
+        public void TrialStepsCountForAnyMasterLevelNotYetReached(int ml, int stepMl, bool finished, bool expected) =>
+            Assert.That(MasterLevelRules.CanEarnStep(ml, stepMl, finished), Is.EqualTo(expected));
+
+        [TestCase(true, false, true)]
+        [TestCase(false, true, true)]   // Ring of Unyielding Will, Crocodile Tear Ring: in water, not flagged
+        [TestCase(false, false, false)]
+        public void SeaFloorFightsLendBreath(bool flagged, bool belowWater, bool expected) =>
+            Assert.That(SeaFloorBreath.FightIsUnderwater(flagged, belowWater), Is.EqualTo(expected));
     }
 }

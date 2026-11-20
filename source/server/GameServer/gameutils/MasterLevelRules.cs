@@ -83,24 +83,34 @@ namespace DOL.GS
                 Refresh(player);
         }
 
-        /// <summary>Records a finished trial for the player's next Master Level and raises it when all are done.</summary>
+        /// <summary>
+        /// Pure rule: a trial step counts for any Master Level the player has not reached yet, not only the next one
+        /// (DR-359: live let an ML2 player hold an ML6 step, patch 1.76).
+        /// </summary>
+        public static bool CanEarnStep(int mlLevel, int masterLevel, bool finished) => mlLevel < masterLevel && !finished;
+
+        /// <summary>
+        /// Records a finished trial for a Master Level the player has not reached. The next Master Level is raised when
+        /// all its steps are done, and so is each one after it whose steps were already earned ahead.
+        /// </summary>
         public static bool CompleteTrialStep(GamePlayer player, int masterLevel, int step)
         {
-            if (player.MLLevel + 1 != masterLevel || player.HasFinishedMLStep(masterLevel, step))
+            if (!CanEarnStep(player.MLLevel, masterLevel, player.HasFinishedMLStep(masterLevel, step)))
                 return false;
 
             EnsureTraining(player);
             player.SetFinishedMLStep(masterLevel, step);
             player.Out.SendMessage($"You have finished trial {masterLevel}.{step}!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 
-            if (player.GetCountMLStepsCompleted((byte)masterLevel) >= player.GetStepCountForML((byte)masterLevel))
-            {
-                player.MLLevel = masterLevel;
-                player.MLExperience = 0;
-                player.Out.SendMessage($"You have reached Master Level {player.MLLevel}!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-                Refresh(player);
-            }
-            else
+            if (masterLevel > player.MLLevel + 1)
+                player.Out.SendMessage($"It is kept for Master Level {masterLevel} and counts once you reach Master Level {masterLevel - 1}.",
+                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+            bool raised = false;
+            while (PromoteFinishedLevel(player))
+                raised = true;
+
+            if (!raised)
                 player.Out.SendMasterLevelWindow((byte)masterLevel);
             return true;
         }

@@ -204,9 +204,9 @@ namespace DOL.GS.Trials
         /// <summary>Many trials are fought on the sea floor, and a long fight must not end in drowning.</summary>
         private void GrantBreath()
         {
-            foreach (GamePlayer player in _players.Where(player => !player.CanBreathUnderWater))
+            foreach (GamePlayer player in _players)
             {
-                player.CanBreathUnderWater = true;
+                SeaFloorBreath.Lend(player);
                 _breathing.Add(player);
             }
         }
@@ -318,8 +318,8 @@ namespace DOL.GS.Trials
             }
             foreach (TrialMob mob in _mobs.Where(mob => mob.ObjectState == GameObject.eObjectState.Active).ToList())
                 mob.Delete();
-            foreach (GamePlayer player in _breathing)
-                player.CanBreathUnderWater = false;
+            // DR-120: a few minutes to swim up instead of drowning the moment the trial ends.
+            SeaFloorBreath.ReleaseLater(_breathing, Definition.Name);
             if (success)
                 TrialManager.Award(this);
             TrialManager.Finished(this);

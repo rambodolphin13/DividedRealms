@@ -459,6 +459,9 @@ namespace DOL.GS
         private int _originY;
         private int _originZ;
         private long _lastPlayerNear;
+        // DR-120: players this fight lent water breathing to (sea-floor sites).
+        private readonly HashSet<GamePlayer> _breathing = [];
+        private bool _underwater;
         private long _readyAt;
 
         public bool Running => _timer != null;
@@ -553,6 +556,7 @@ namespace DOL.GS
             _originY = Y;
             _originZ = Z;
             _lastPlayerNear = GameLoop.GameLoopTime;
+            _underwater = SeaFloorBreath.FightIsUnderwater(encounter.Underwater, IsUnderwater);
             _timer = new ECSGameTimer(this, Tick, TickMs);
             NextStage();
         }
@@ -788,6 +792,7 @@ namespace DOL.GS
             }
 
             WakeUnguardedBosses();
+            LendBreath();
 
             if (TickEscort())
                 return Running ? TickMs : 0;
@@ -813,6 +818,19 @@ namespace DOL.GS
             return TickMs;
         }
 
+        private void LendBreath()
+        {
+            if (!_underwater)
+                return;
+
+            foreach (GamePlayer player in GetPlayersInRadius((ushort) LeashRadius))
+            {
+                if (player.IsAlive && SeaFloorBreath.Lend(player))
+                    player.Out.SendMessage("The site's old magic lets you breathe underwater while the fight lasts.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                _breathing.Add(player);
+            }
+        }
+
         private static bool PlayerNear(GameObject place)
         {
             return place.ObjectState == eObjectState.Active && place.GetPlayersInRadius((ushort) LeashRadius).Cast<GamePlayer>().Any(player => player.IsAlive);
@@ -834,6 +852,8 @@ namespace DOL.GS
 
             _alive.Clear();
             _credited.Clear();
+            SeaFloorBreath.ReleaseLater(_breathing, $"The fight for {_encounter?.Name}");
+            _breathing.Clear();
             _timer = null;
             _starter = null;
             _readyAt = GameLoop.GameLoopTime + (_watch != null ? RareSpawnCooldownMs : CooldownMs);
