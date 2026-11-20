@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using DOL.Database;
 
@@ -21,12 +22,30 @@ namespace DOL.GS
         public static bool IsTraining(DbInventoryItem item) =>
             item?.Creator == nameof(BotStarterInstruments) || item?.Id_nb?.StartsWith("bot_starter_instrument_", StringComparison.Ordinal) == true;
 
+        /// <summary>An account companion gets a training lute only when it owns no instrument of any type. Pure.</summary>
+        public static bool CompanionNeedsTrainingLute(IEnumerable<DbInventoryItem> items) =>
+            items?.Any(item => item != null && item.Object_Type == (int)eObjectType.Instrument && item.Model > 0) != true;
+
         public static bool Ensure(GameBot bot)
         {
             if (bot?.Inventory == null || bot.CharacterClass == null ||
                 !Applies((eCharacterClass)bot.CharacterClass.ID)) return false;
             bool added = false;
-            foreach (eInstrumentType type in new[] { eInstrumentType.Drum, eInstrumentType.Flute, eInstrumentType.Lute })
+            // DR-490: an account companion is the player's own character. Any instrument plays any song (1.97), so it
+            // keeps what its player gave it: training copies go once it owns a real one, and it gets one training lute
+            // only when it has no instrument at all.
+            eInstrumentType[] types = bot.IsAccountCompanion
+                ? CompanionNeedsTrainingLute(bot.Inventory.AllItems) ? new[] { eInstrumentType.Lute } : Array.Empty<eInstrumentType>()
+                : new[] { eInstrumentType.Drum, eInstrumentType.Flute, eInstrumentType.Lute };
+            if (bot.IsAccountCompanion)
+            {
+                var allOwned = bot.Inventory.AllItems.Where(item => item.Object_Type == (int)eObjectType.Instrument && item.Model > 0).ToList();
+                var allTraining = allOwned.Where(IsTraining).ToList();
+                foreach (DbInventoryItem spare in allTraining.Skip(allOwned.Count > allTraining.Count ? 0 : 1).ToList())
+                    if (bot.Inventory.RemoveItem(spare))
+                        added = true;
+            }
+            foreach (eInstrumentType type in types)
             {
                 // Any instrument of the type anywhere the bot keeps things counts (owner 2026-11-05: with a full bag one
                 // was stowed in the vault slots, missed here, and a new training lute made each time - 3 of them), and

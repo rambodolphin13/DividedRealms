@@ -455,6 +455,12 @@ namespace DOL.GS
             RealmLevel = Math.Max(RealmLevel, AutonomousBotRealmPointRewards.RealmLevelFor(CompanionRealmPoints));
             _companionDirty = true;
 
+            // DR-493: the companion's guild gets the realm points as it does from a player (GamePlayer.GainRealmPoints:
+            // only for a player account, not a GM's).
+            Guild guild = CompanionGuildFor(CompanionCharacter?.GuildID, GuildMgr.GetGuildByGuildID);
+            if (guild != null && Owner?.Client?.Account?.PrivLevel == 1)
+                guild.RealmPoints += amount;
+
             if (Owner?.Client?.ClientState is not GameClient.eClientState.Playing)
                 return;
             Owner.Out.SendMessage($"{Name} gets {amount} realm points!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -465,6 +471,10 @@ namespace DOL.GS
                 Owner.Out.SendMessage($"{Name} has reached realm rank {rank}!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
             }
         }
+
+        /// <summary>The guild an account companion's character belongs to, or null. Pure apart from the lookup.</summary>
+        public static Guild CompanionGuildFor(string guildId, Func<string, Guild> lookup) =>
+            string.IsNullOrEmpty(guildId) || lookup == null ? null : lookup(guildId);
 
         private void GainAccountCompanionBountyPoints(long amount)
         {

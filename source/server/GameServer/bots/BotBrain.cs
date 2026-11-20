@@ -2508,7 +2508,9 @@ namespace DOL.AI.Brain
             bool skaldFighting = immediateCombat && (eCharacterClass)bot.CharacterClass.ID == eCharacterClass.Skald;
             if (skaldFighting)
                 SwitchToUsableMeleeWeapon();
-            if (immediateCombat && !minstrelAtRange && !skaldFighting)
+            // DR-490: an account companion its player left without a melee weapon keeps playing through the fight.
+            bool unarmedCompanion = immediateCombat && bot.IsAccountCompanion && !CompanionHasMeleeWeapon(bot);
+            if (immediateCombat && !minstrelAtRange && !skaldFighting && !unarmedCompanion)
             {
                 StopTwistedSong();
                 SwitchToUsableMeleeWeapon();
@@ -3014,9 +3016,13 @@ namespace DOL.AI.Brain
 
         internal static bool TryEquipRealInstrument(GameLiving bot, int requiredInstrument)
         {
+            // DR-490: since 1.97 any drum, flute or lute plays any song (SpellHandler.CheckInstrument), so an account
+            // companion plays its best instrument for every song instead of swapping to a training copy of the song's old
+            // type. Gamebots keep their instrument per song type.
+            bool anyType = bot is GameBot { IsAccountCompanion: true };
             bool CorrectInstrument(DbInventoryItem item) =>
                 item?.Object_Type == (int)eObjectType.Instrument &&
-                (requiredInstrument <= 0 || item.DPS_AF == requiredInstrument);
+                (anyType || requiredInstrument <= 0 || item.DPS_AF == requiredInstrument);
 
             // The best instrument of the type it carries: a real one before a training one (owner 2026-11-05: given a
             // Melodic Lute, a Minstrel kept playing her training lute), then the higher level and quality.
@@ -4226,6 +4232,11 @@ namespace DOL.AI.Brain
             Body.styleComponent.NextCombatStyle = BotMeleeStylePolicy.Select(BotBody,
                 Body.attackComponent.attackAction.LastAttackData, false);
         }
+
+        /// <summary>Whether the bot holds a main-hand or two-hand weapon it can swing (instruments are not weapons).</summary>
+        internal static bool CompanionHasMeleeWeapon(GameBot bot) =>
+            BotWeaponStats.FitsConfiguredSlot(bot, bot?.Inventory?.GetItem(eInventorySlot.RightHandWeapon), eInventorySlot.RightHandWeapon) ||
+            BotWeaponStats.FitsConfiguredSlot(bot, bot?.Inventory?.GetItem(eInventorySlot.TwoHandWeapon), eInventorySlot.TwoHandWeapon);
 
         private bool SwitchToUsableMeleeWeapon()
         {

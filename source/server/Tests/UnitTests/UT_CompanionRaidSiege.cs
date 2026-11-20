@@ -75,6 +75,43 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void TheRaidTakesTheDoorThePlayerStandsAtAndTargets()
+        {
+            // DR-491: the player's targeted door leads the squads when it stands, is the enemy's and the player is at it.
+            Assert.That(CompanionRaidSiege.OrdersDoor(true, true, true, 400), Is.True);
+            Assert.That(CompanionRaidSiege.OrdersDoor(true, true, true, CompanionRaidSiege.OrderedDoorRadius + 1), Is.False);
+            Assert.That(CompanionRaidSiege.OrdersDoor(false, true, true, 400), Is.False, "a broken door");
+            Assert.That(CompanionRaidSiege.OrdersDoor(true, false, true, 400), Is.False, "the player's own realm's door");
+            Assert.That(CompanionRaidSiege.OrdersDoor(true, true, false, 400), Is.False, "another region");
+        }
+
+        [Test]
+        public void ACompanionsRealmPointsLookUpOnlyARealGuild()
+        {
+            // DR-493: the companion's guild comes from its character's guild id.
+            int lookups = 0;
+            Guild Lookup(string id) { lookups++; return null; }
+            Assert.That(GameBot.CompanionGuildFor(null, Lookup), Is.Null);
+            Assert.That(GameBot.CompanionGuildFor("", Lookup), Is.Null);
+            Assert.That(lookups, Is.Zero);
+            GameBot.CompanionGuildFor("guild-1", Lookup);
+            Assert.That(lookups, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ABardCompanionGetsATrainingLuteOnlyWithNoInstrumentAtAll()
+        {
+            // DR-490: any instrument plays any song since 1.97, so a companion's own drum or lute is enough.
+            static DOL.Database.DbInventoryItem Instrument(int type) => new GameInventoryItem(new DOL.Database.DbItemTemplate
+                { Id_nb = $"instrument_{type}", Name = "instrument", Model = 227, Object_Type = (int)eObjectType.Instrument, DPS_AF = type });
+            static DOL.Database.DbInventoryItem Sword() => new GameInventoryItem(new DOL.Database.DbItemTemplate
+                { Id_nb = "sword", Name = "sword", Model = 4, Object_Type = (int)eObjectType.Blades });
+            Assert.That(BotStarterInstruments.CompanionNeedsTrainingLute(new[] { Sword() }), Is.True);
+            Assert.That(BotStarterInstruments.CompanionNeedsTrainingLute(new[] { Sword(), Instrument((int)eInstrumentType.Drum) }), Is.False);
+            Assert.That(BotStarterInstruments.CompanionNeedsTrainingLute(null), Is.True);
+        }
+
+        [Test]
         public void AccountCompanionsPutTheirWeaponInHandEvenWhenTheSlotAlreadyMatches()
         {
             // DR-489: a companion loads with slot Standard and nothing in hand; that must still switch.

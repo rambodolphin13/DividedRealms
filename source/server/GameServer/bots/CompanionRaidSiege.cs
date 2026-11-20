@@ -27,6 +27,8 @@ namespace DOL.GS
 
         public const int SquadSize = 8;
         public const int AssistRadius = 1500;
+        /// <summary>How close the player stands to a targeted door for it to be the raid's door (DR-491).</summary>
+        public const int OrderedDoorRadius = 1000;
         private const long RequestFreshMilliseconds = 30_000;
         private const long QuietEndMilliseconds = 5 * 60_000;
         private const long AwayEndMilliseconds = 90_000;
@@ -217,7 +219,7 @@ namespace DOL.GS
 
             AbstractGameKeep keep = s.Keep;
             bool attacking = s.Mode == Mode.Assault;
-            GameKeepDoor door = attacking ? AutonomousWorldBotController.SiegeDoor(bot, keep) : null;
+            GameKeepDoor door = attacking ? RaidDoor(owner, bot, keep) : null;
             GameNPC[] nearby = bot.GetNPCsInRadius(5000).ToArray();
             GameSiegeWeapon[] engines = nearby.OfType<GameSiegeWeapon>().Where(w => w.IsAlive && w.ObjectState == GameObject.eObjectState.Active).ToArray();
             UpdatePost(s, squad, bot, door, engines, now);
@@ -420,8 +422,8 @@ namespace DOL.GS
             Vector2 centre = new(keep.X, keep.Y);
             if (s.Mode == Mode.Assault && door == null)
             {
-                // Every door is down: storm the lord.
-                GuardLord lord = keep.Guards.Values.OfType<GuardLord>().FirstOrDefault(l => l.IsAlive);
+                // Every door is down: storm the lord (a relic keep's commander, DR-491).
+                GameKeepGuard lord = KeepBoss(keep);
                 if (lord != null) post = new(lord.X, lord.Y, lord.Z);
             }
             else if (anchor != null)
@@ -620,7 +622,7 @@ namespace DOL.GS
         {
             if (door == null)
             {
-                GuardLord lord = keep.Guards.Values.OfType<GuardLord>().FirstOrDefault(l => l.IsAlive);
+                GameKeepGuard lord = KeepBoss(keep);
                 if (lord != null && Reachable(bot, lord)) return lord;
             }
             return Attacker(bot, keep, nearby, 900, reachableOnly: true);
@@ -672,6 +674,42 @@ namespace DOL.GS
             bot.StopMovingOnPath();
             bot.TargetObject = null;
             Log.Info($"RAID_UNREACHABLE_TARGET player={bot.Owner?.Name} bot={bot.Name} target=\"{target.Name}\" heightAbove={target.Z - bot.Z} position={bot.X},{bot.Y},{bot.Z}");
+        }
+
+        /// <summary>
+        /// DR-491 (Discord 2026-11-18, relic raid): the door the squads batter. The player's own door comes first: one the
+        /// player has targeted and stands by. In a relic keep the next door is the closed one nearest the player, not the
+        /// next door number: after the gates the numbers lead to upper-floor doors the squads could not walk to, so they
+        /// stood under them and ignored the door the player was hitting. Elsewhere the gamebot siege order.
+        /// </summary>
+        private static GameKeepDoor RaidDoor(GamePlayer owner, GameBot bot, AbstractGameKeep keep)
+        {
+            if (owner.TargetObject is GameKeepDoor ordered &&
+                OrdersDoor(ordered.IsAlive, ordered.Realm != owner.Realm, ordered.CurrentRegionID == owner.CurrentRegionID,
+                    owner.GetDistanceTo(ordered)))
+                return ordered;
+            if (keep.IsRelic)
+            {
+                GameKeepDoor nearOwner = keep.Doors.Values
+                    .Where(d => d.IsAlive && d.IsAttackableDoor && d.State == eDoorState.Closed && d.Realm != owner.Realm)
+                    .OrderBy(owner.GetDistanceTo).FirstOrDefault();
+                if (nearOwner != null && owner.IsWithinRadius(nearOwner, AssistRadius)) return nearOwner;
+            }
+            return AutonomousWorldBotController.SiegeDoor(bot, keep);
+        }
+
+        /// <summary>The player's targeted door is the raid's door when it stands, is the enemy's and the player is at it. Pure.</summary>
+        public static bool OrdersDoor(bool alive, bool enemy, bool sameRegion, int ownerDistance) =>
+            alive && enemy && sameRegion && ownerDistance >= 0 && ownerDistance <= OrderedDoorRadius;
+
+        /// <summary>The keep's lord, or for a relic keep (no lord) its commander nearest the keep centre.</summary>
+        private static GameKeepGuard KeepBoss(AbstractGameKeep keep)
+        {
+            GameKeepGuard lord = keep.Guards.Values.OfType<GuardLord>().FirstOrDefault(l => l.IsAlive);
+            return lord ?? (keep.IsRelic
+                ? keep.Guards.Values.OfType<GuardCommander>().Where(c => c.IsAlive)
+                    .OrderBy(c => Vector2.DistanceSquared(new(c.X, c.Y), new(keep.X, keep.Y))).FirstOrDefault()
+                : null);
         }
 
         // A walkable route that does not pass a closed enemy door (melee never chases a wall-top archer).
