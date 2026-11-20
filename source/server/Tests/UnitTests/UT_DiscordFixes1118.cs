@@ -17,5 +17,14 @@ namespace DOL.UnitTests
         [TestCase(false, false, "You can't reach your vaults while dead.")]
         public void BankOnlyRefusesTheDeadAndThoseInCombat(bool alive, bool inCombat, string expected) =>
             Assert.That(BankCommandHandler.Refusal(alive, inCombat), Is.EqualTo(expected));
+
+        [Test]
+        public void ArtifactCreditMissTellsThePlayerWhy()
+        {
+            Assert.That(ArtifactEncounters.MissedMessage("The weakened criosphinx", "Shades of Mist", "dead"), Does.Contain("while you were dead"));
+            Assert.That(ArtifactEncounters.MissedMessage("Danos", "Guard of Valor", "far"), Does.Contain("too far").And.Contain("7000"));
+            Assert.That(ArtifactEncounters.MissedMessage("Danos", "Guard of Valor", "offline"), Is.Null);
+            Assert.That(ArtifactEncounters.MissedReason(null, null), Is.EqualTo("offline"));
+        }
     }
 }

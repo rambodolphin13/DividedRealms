@@ -24,6 +24,7 @@ namespace DOL.GS
 
     public static partial class ArtifactEncounters
     {
+        private static readonly Logging.Logger log = Logging.LoggerManager.Create(typeof(ArtifactEncounters));
         public const string PackagePrefix = "artifact:";
         public const int RepeatGlassReward = 25;
         public const int CreditRadius = 7000;
@@ -116,8 +117,54 @@ namespace DOL.GS
 
             Add(killer);
 
-            players.RemoveWhere(player => !CanEarnReward(player) || player.CurrentRegionID != boss.CurrentRegionID || !player.IsWithinRadius(boss, CreditRadius));
+            foreach (GamePlayer player in players)
+            {
+                string reason = MissedReason(player, boss);
+                if (reason != null)
+                    TellMissed(player, boss, reason);
+            }
+
+            players.RemoveWhere(player => MissedReason(player, boss) != null);
             return players;
+        }
+
+        /// <summary>
+        /// Why a player on the kill gets no encounter credit, or null when they get it. Dead players and players beyond
+        /// <see cref="CreditRadius"/> of the boss get none (DR-495: before this they were told nothing).
+        /// </summary>
+        public static string MissedReason(GamePlayer player, GameNPC boss)
+        {
+            if (player == null || player.ObjectState != GameObject.eObjectState.Active)
+                return "offline";
+
+            if (!player.IsAlive)
+                return "dead";
+
+            if (player.CurrentRegionID != boss.CurrentRegionID || !player.IsWithinRadius(boss, CreditRadius))
+                return "far";
+
+            return null;
+        }
+
+        public static string MissedMessage(string bossName, string encounterName, string reason) => reason switch
+        {
+            "dead" => $"{bossName} fell while you were dead, so the encounter for {encounterName} gives you no credit. Stay alive to the last kill.",
+            "far" => $"{bossName} fell too far from you, so the encounter for {encounterName} gives you no credit. Stay within {CreditRadius} of the fight.",
+            _ => null
+        };
+
+        private static void TellMissed(GamePlayer player, GameNPC boss, string reason)
+        {
+            string artifactId = (boss as ArtifactBoss)?.ArtifactId ?? ArtifactIdOf(boss);
+            if (artifactId == null)
+                return;
+
+            string encounterName = ArtifactCatalog.NameOf(artifactId);
+            log.Info($"ARTIFACT_CREDIT_MISSED artifact={artifactId} boss=\"{boss.Name}\" player={player?.Name} reason={reason}");
+
+            string message = MissedMessage(boss.GetName(0, true), encounterName, reason);
+            if (message != null && player?.Out != null)
+                player.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
         }
 
         /// <summary>Only a living player in the world earns encounter credit or glass.</summary>
@@ -182,6 +229,7 @@ namespace DOL.GS
                 }
 
                 ArtifactProgress.Update(player, artifactId, row => row.EncounterDone = true);
+                log.Info($"ARTIFACT_CREDIT artifact={artifactId} player={player.Name}");
                 player.Out.SendMessage($"You have completed the encounter for {name}! Speak to an Artifact Scholar to receive it.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
             }
         }
