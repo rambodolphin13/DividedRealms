@@ -1115,6 +1115,52 @@ namespace DOL.GS
             _deathRecoveryTimer.Start(3000);
         }
 
+        /// <summary>
+        /// DR-420: a companion left out of the world by a failed move (removed, never added back) or a corpse whose release
+        /// timer stopped was skipped by every later transfer of its player, so it stayed "On the way to you" until it was
+        /// summoned again. Called for such a companion when its player transfers. True when it was put back beside them.
+        /// </summary>
+        public bool RepairAfterOwnerTransfer(GamePlayer owner, Vector3 destination)
+        {
+            TemporaryGroupStableTravel.TransferRepair repair = TemporaryGroupStableTravel.TransferRepairFor(IsTemporaryGroupHelper,
+                ObjectState, IsAlive, _deathRecoveryTimer?.IsAlive == true);
+            if (repair == TemporaryGroupStableTravel.TransferRepair.None || owner == null)
+                return false;
+
+            if (repair == TemporaryGroupStableTravel.TransferRepair.RestartReleaseTimer)
+            {
+                log.Warn($"COMPANION_TRANSFER_REPAIR bot={Name} owner={owner.Name} action=restart_release_timer region={CurrentRegionID} at=({X},{Y},{Z})");
+                StartDeathRecoveryTimer();
+                return false;
+            }
+
+            ushort fromRegion = CurrentRegionID;
+            X = (int)Math.Round(destination.X);
+            Y = (int)Math.Round(destination.Y);
+            Z = (int)Math.Round(destination.Z);
+            Heading = owner.Heading;
+            CurrentRegionID = owner.CurrentRegionID;
+            if (!AddToWorld())
+            {
+                log.Warn($"COMPANION_TRANSFER_REPAIR bot={Name} owner={owner.Name} action=add_failed from={fromRegion} to={owner.CurrentRegionID}");
+                return false;
+            }
+
+            log.Warn($"COMPANION_TRANSFER_REPAIR bot={Name} owner={owner.Name} action=back_in_world alive={IsAlive} from={fromRegion} to={owner.CurrentRegionID}");
+            if (!IsAlive)
+            {
+                StartDeathRecoveryTimer();
+                return true;
+            }
+
+            EnterPlayerLedGroup(owner);
+            Follow(owner, BotManager.FOLLOW_DISTANCE, BotManager.MAX_FOLLOW_DISTANCE);
+            if (Brain is BotBrain brain)
+                brain.FSM.SetCurrentState(eFSMStateType.FOLLOW);
+            Brain?.Start();
+            return true;
+        }
+
         private long _nextDeathRecoveryErrorTick;
 
         private int HandleDeathRecovery(ECSGameTimer timer)
