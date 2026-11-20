@@ -129,5 +129,21 @@ namespace DOL.UnitTests
             Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(true, true, true), Is.False);
             Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(false, false, true), Is.False, "bot-planned sieges keep their own muster");
         }
+
+        [Test]
+        public void ACompanionLostOnAJumpIsRepairedByThePlayersNextTransfer()
+        {
+            // DR-420: two Wizards stayed "On the way to you" across many jumps until summoned again.
+            var R = TemporaryGroupStableTravel.TransferRepair.PutBackInWorld;
+            var T = TemporaryGroupStableTravel.TransferRepair.RestartReleaseTimer;
+            var N = TemporaryGroupStableTravel.TransferRepair.None;
+            Assert.That(TemporaryGroupStableTravel.TransferRepairFor(true, GameObject.eObjectState.Inactive, true, false), Is.EqualTo(R));
+            Assert.That(TemporaryGroupStableTravel.TransferRepairFor(true, GameObject.eObjectState.Inactive, false, false), Is.EqualTo(R));
+            Assert.That(TemporaryGroupStableTravel.TransferRepairFor(true, GameObject.eObjectState.Active, false, false), Is.EqualTo(T));
+            Assert.That(TemporaryGroupStableTravel.TransferRepairFor(true, GameObject.eObjectState.Active, false, true), Is.EqualTo(N), "a running release timer is left to work");
+            Assert.That(TemporaryGroupStableTravel.TransferRepairFor(true, GameObject.eObjectState.Active, true, false), Is.EqualTo(N));
+            Assert.That(TemporaryGroupStableTravel.TransferRepairFor(true, GameObject.eObjectState.Deleted, true, false), Is.EqualTo(N), "dismissed");
+            Assert.That(TemporaryGroupStableTravel.TransferRepairFor(false, GameObject.eObjectState.Inactive, true, false), Is.EqualTo(N), "gamebots keep their own recovery");
+        }
     }
 }

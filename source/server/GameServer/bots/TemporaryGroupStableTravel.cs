@@ -90,6 +90,19 @@ public static class TemporaryGroupStableTravel
         isTemporaryHelper && isAlive && isActive && sharesGroup && followsPlayer &&
         distanceToPlayer <= CompanionBoardingRadius;
 
+    public enum TransferRepair { None, PutBackInWorld, RestartReleaseTimer }
+
+    /// <summary>
+    /// DR-420, pure: what a player's transfer does for a companion it would otherwise skip. One out of the world but not
+    /// deleted (a move removed it and never added it back) is put back; a corpse in the world with no running release
+    /// timer gets its timer again. Deleted (dismissed) companions and autonomous gamebots are left alone.
+    /// </summary>
+    public static TransferRepair TransferRepairFor(bool temporaryHelper, GameObject.eObjectState state, bool alive, bool releaseTimerRunning) =>
+        !temporaryHelper || state == GameObject.eObjectState.Deleted ? TransferRepair.None
+        : state == GameObject.eObjectState.Inactive ? TransferRepair.PutBackInWorld
+        : !alive && !releaseTimerRunning ? TransferRepair.RestartReleaseTimer
+        : TransferRepair.None;
+
     public static bool ShouldRelocateForOwnerTransfer(
         bool hasConfirmedPlayerTransfer,
         bool isTemporaryHelper,
@@ -356,7 +369,17 @@ public static class TemporaryGroupStableTravel
         foreach (GameBot bot in player.Group.GetMembersInTheGroup().OfType<GameBot>())
         {
             if (!bot.IsAlive || bot.ObjectState != GameObject.eObjectState.Active)
-                continue; // Dead helpers retain their corpse/recovery timer.
+            {
+                // Dead helpers retain their corpse/recovery timer. DR-420: one lost out of the world by a failed move, or
+                // a corpse whose release timer stopped, is repaired here instead of being skipped on every later trip.
+                if (bot.Group == player.Group && bot.PlayerGroupLeader == player &&
+                    bot.RepairAfterOwnerTransfer(player, FormationPoint(player, ordinal)))
+                {
+                    ordinal++;
+                    relocated++;
+                }
+                continue;
+            }
             // A helper already fighting near where the player landed stays in that fight (Legion's purgatory: the
             // zone point back down lands about 3000 from him, where the raid is still fighting).
             if (bot.CurrentRegionID == player.CurrentRegionID && bot.InCombat && bot.IsWithinRadius(player, 4000))
