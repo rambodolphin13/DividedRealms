@@ -75,6 +75,16 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void AccountCompanionsPutTheirWeaponInHandEvenWhenTheSlotAlreadyMatches()
+        {
+            // DR-489: a companion loads with slot Standard and nothing in hand; that must still switch.
+            Assert.That(GameBot.CompanionWeaponSwitchNeeded(eActiveWeaponSlot.Standard, eActiveWeaponSlot.Standard, false), Is.True);
+            Assert.That(GameBot.CompanionWeaponSwitchNeeded(eActiveWeaponSlot.Standard, eActiveWeaponSlot.Standard, true), Is.False);
+            Assert.That(GameBot.CompanionWeaponSwitchNeeded(eActiveWeaponSlot.Standard, eActiveWeaponSlot.TwoHanded, true), Is.True);
+            Assert.That(GameBot.CompanionWeaponSwitchNeeded(eActiveWeaponSlot.Standard, null, false), Is.False);
+        }
+
+        [Test]
         public void APlayerRaisedDefenseMarchesWhenAKeepDoorFalls()
         {
             Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(true, false, true), Is.True);

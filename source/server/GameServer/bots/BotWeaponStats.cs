@@ -120,8 +120,9 @@ namespace DOL.GS
             if (slot == eInventorySlot.LeftHandWeapon && !CanWieldOffhandWeapon(bot)) return false;
             if (slot == eInventorySlot.LeftHandWeapon && bot.BotSpec?.SpecType == eSpecType.LeftAxe)
                 return item.Object_Type is (int)eObjectType.Axe or (int)eObjectType.LeftAxe;
+            // DR-489: an account companion swings the main-hand weapon its player gave it, of any type it can use.
             if (slot is eInventorySlot.RightHandWeapon or eInventorySlot.TwoHandWeapon &&
-                bot.BotSpec?.SpecType == eSpecType.LeftAxe)
+                bot.BotSpec?.SpecType == eSpecType.LeftAxe && !bot.IsAccountCompanion)
                 return item.Object_Type == (int)bot.BotSpec.WeaponOneType;
             return true;
         }

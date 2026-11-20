@@ -119,7 +119,7 @@ namespace DOL.GS
             return Tell(player, player.GainRP ? "You gain realm points again." : "You no longer gain realm points. Use this again to switch it back on.");
         }
 
-        private static string ChampionTo15(GamePlayer player)
+        public static string ChampionTo15(GamePlayer player)
         {
             if (player.Level < 50)
                 return Tell(player, "You must be level 50 to use this.");
@@ -129,17 +129,17 @@ namespace DOL.GS
 
             player.Champion = true;
 
-            while (player.ChampionLevel < Math.Min(15, player.ChampionMaxLevel))
-            {
-                player.GainChampionExperience(Math.Max(1, player.ChampionExperienceForNextLevel - player.ChampionExperience), eXPSource.Other);
+            // DR-488: set the champion experience and levels directly. Granting it through GainChampionExperience
+            // scaled item experience down to 0, so the old loop never ended and froze the game loop.
+            int target = Math.Min(15, player.ChampionMaxLevel);
+            long experience = player.GetChampionExperienceForLevel(target);
+            if (player.ChampionExperience < experience)
+                player.ChampionExperience = experience;
 
-                while (player.ChampionLevel < player.ChampionMaxLevel && player.ChampionExperience >= player.ChampionExperienceForNextLevel)
-                    player.ChampionLevelUp();
+            while (player.ChampionLevel < target)
+                player.ChampionLevelUp();
 
-                if (player.ChampionMaxLevel <= player.ChampionLevel)
-                    break;
-            }
-
+            player.Out.SendUpdatePoints();
             player.SaveIntoDatabase();
             return $"You are now Champion Level {player.ChampionLevel}.";
         }

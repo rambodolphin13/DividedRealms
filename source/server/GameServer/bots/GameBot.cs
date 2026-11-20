@@ -5210,11 +5210,17 @@ namespace DOL.GS
             bool standard = BotWeaponStats.FitsConfiguredSlot(this, Inventory.GetItem(eInventorySlot.RightHandWeapon), eInventorySlot.RightHandWeapon);
             bool twoHanded = BotWeaponStats.FitsConfiguredSlot(this, Inventory.GetItem(eInventorySlot.TwoHandWeapon), eInventorySlot.TwoHandWeapon);
             eActiveWeaponSlot? wanted = CompanionWeaponSet(ActiveWeaponSlot, standard, twoHanded);
-            if (wanted == null || wanted == ActiveWeaponSlot)
+            // DR-489: a companion loads with its slot already Standard but nothing in hand, so a matching slot alone
+            // is not enough: switch whenever the item in hand is not the one in that slot.
+            if (!CompanionWeaponSwitchNeeded(ActiveWeaponSlot, wanted, wanted != null && ActiveSlotMatchesInventory(wanted.Value)))
                 return false;
             SwitchWeapon(wanted.Value);
             return true;
         }
+
+        /// <summary>Whether an account companion must run SwitchWeapon to hold its wanted set. Pure.</summary>
+        public static bool CompanionWeaponSwitchNeeded(eActiveWeaponSlot active, eActiveWeaponSlot? wanted, bool inHandMatchesSlot) =>
+            wanted != null && (wanted != active || !inHandMatchesSlot);
 
         /// <summary>Which weapon set an account companion uses (null: none it can swing). Pure.</summary>
         public static eActiveWeaponSlot? CompanionWeaponSet(eActiveWeaponSlot active, bool standardUsable, bool twoHandedUsable) =>

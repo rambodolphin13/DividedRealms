@@ -445,6 +445,59 @@ namespace DOL.UnitTests
                 Type = "Heal", Target = "Realm", Value = -25 }, 1)), Is.True, "percentage heals also qualify");
         }
 
+        private sealed class TokenPlayer : GamePlayer
+        {
+            private TokenPlayer() : base(null, null) { }
+            public override byte Level { get; set; }
+            public int LevelUps;
+            // Item experience is scaled to 0 for a real player; the token must not depend on it (DR-488).
+            public override void GainChampionExperience(long experience, eXPSource source) { }
+            public override void ChampionLevelUp()
+            {
+                if (LevelUps > 20)
+                    throw new System.InvalidOperationException("champion token kept levelling (DR-488 loop)");
+                ChampionLevel++;
+                LevelUps++;
+            }
+            public override void SaveIntoDatabase() { }
+            public override DOL.GS.PacketHandler.IPacketLib Out => new BotDummyPacketLib();
+        }
+
+        private static TokenPlayer TokenUser(byte level)
+        {
+            var player = (TokenPlayer)RuntimeHelpers.GetUninitializedObject(typeof(TokenPlayer));
+            typeof(GamePlayer).GetField("m_dbCharacter", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(player, new DbCoreCharacter());
+            player.Level = level;
+            return player;
+        }
+
+        [Test]
+        public void ChampionTokenRaisesALevelFiftyToFifteenWithoutLooping()
+        {
+            TokenPlayer player = TokenUser(50);
+            player.ChampionLevel = 3;
+
+            string answer = MithrilStoreItem.ChampionTo15(player);
+
+            Assert.That(player.Champion, Is.True);
+            Assert.That(player.ChampionLevel, Is.EqualTo(15));
+            Assert.That(player.LevelUps, Is.EqualTo(12), "one level-up per missing level");
+            Assert.That(player.ChampionExperience, Is.GreaterThanOrEqualTo(player.GetChampionExperienceForLevel(15)));
+            Assert.That(answer, Does.Contain("Champion Level 15"));
+        }
+
+        [Test]
+        public void ChampionTokenRefusesBelowFiftyAndAtFifteen()
+        {
+            TokenPlayer young = TokenUser(49);
+            MithrilStoreItem.ChampionTo15(young);
+            Assert.That(young.ChampionLevel, Is.Zero);
+
+            TokenPlayer done = TokenUser(50);
+            done.ChampionLevel = 15;
+            MithrilStoreItem.ChampionTo15(done);
+            Assert.That(done.LevelUps, Is.Zero);
+        }
         private sealed class ProgressionPlayer : GamePlayer
         {
             private ProgressionPlayer() : base(null, null) { }
