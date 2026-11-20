@@ -65,6 +65,34 @@ namespace DOL.GS
             rows[artifactId] = row;
         }
 
+        /// <summary>
+        /// Marks an encounter done for a character that is not logged in as a player (an account companion, DR-245).
+        /// False when it was already done.
+        /// </summary>
+        public static bool MarkEncounterDone(string characterId, string artifactId)
+        {
+            if (string.IsNullOrEmpty(characterId) || string.IsNullOrEmpty(artifactId))
+                return false;
+
+            OfflineArtifactProgress row = DOLDB<OfflineArtifactProgress>.SelectObjects(
+                    DB.Column("CharacterID").IsEqualTo(characterId).And(DB.Column("ArtifactID").IsEqualTo(artifactId)))
+                .FirstOrDefault();
+
+            if (row != null)
+            {
+                if (row.EncounterDone)
+                    return false;
+
+                row.EncounterDone = true;
+                row.Dirty = true;
+                GameServer.Database.SaveObject(row);
+                return true;
+            }
+
+            GameServer.Database.AddObject(new OfflineArtifactProgress { CharacterID = characterId, ArtifactID = artifactId, EncounterDone = true });
+            return true;
+        }
+
         public static void RememberLevel(GamePlayer player, ArtifactItem item)
         {
             string artifactId = ArtifactCatalog.ArtifactOf(item.Id_nb);

@@ -194,6 +194,7 @@ namespace DOL.GS
             }
 
             AwardCredit(players, artifactId);
+            AwardCompanionCredit(players, artifactId, boss);
         }
 
         private static bool AllKilled(string[] required, string artifactId, ushort region, long now, out HashSet<GamePlayer> everyone)
@@ -233,6 +234,39 @@ namespace DOL.GS
                 player.Out.SendMessage($"You have completed the encounter for {name}! Speak to an Artifact Scholar to receive it.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
             }
         }
+
+        /// <summary>
+        /// Account companions (the player's own characters as bots) of the credited players earn the encounter too when
+        /// they are alive and within <see cref="CreditRadius"/> of the boss (DR-245). It is saved on their character, so
+        /// the Artifact Scholar hands them the artifact when that character logs in.
+        /// </summary>
+        public static void AwardCompanionCredit(IEnumerable<GamePlayer> players, string artifactId, GameObject boss)
+        {
+            string name = ArtifactCatalog.NameOf(artifactId);
+
+            foreach (GamePlayer player in players)
+            {
+                if (!CanEarnReward(player))
+                    continue;
+
+                foreach (GameBot companion in AccountCompanionManager.ActiveFor(player))
+                {
+                    if (!CompanionEarns(companion.IsAlive, companion.ObjectState == GameObject.eObjectState.Active,
+                            boss != null && companion.CurrentRegionID == boss.CurrentRegionID && companion.IsWithinRadius(boss, CreditRadius)))
+                        continue;
+
+                    if (!ArtifactProgress.MarkEncounterDone(companion.CompanionCharacterId, artifactId))
+                        continue;
+
+                    log.Info($"ARTIFACT_CREDIT artifact={artifactId} companion={companion.Name} owner={player.Name}");
+                    player.Out.SendMessage($"{companion.Name} has also completed the encounter for {name}. Log in as {companion.Name} and speak to an Artifact Scholar to receive it.",
+                        eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                }
+            }
+        }
+
+        /// <summary>Pure rule: a companion earns encounter credit when it is alive, in the world and near the boss.</summary>
+        public static bool CompanionEarns(bool alive, bool inWorld, bool near) => alive && inWorld && near;
 
         private static void GiveGlass(GamePlayer player, int count)
         {
@@ -664,6 +698,7 @@ namespace DOL.GS
                 return;
 
             ArtifactEncounters.AwardCredit(_credited.ToList(), _encounter.ArtifactId);
+            ArtifactEncounters.AwardCompanionCredit(_credited.ToList(), _encounter.ArtifactId, boss);
             _credited.Clear();
         }
 

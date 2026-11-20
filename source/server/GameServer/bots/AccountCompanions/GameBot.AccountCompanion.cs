@@ -36,6 +36,13 @@ namespace DOL.GS
         /// <summary>The character's bounty points, earned in RvR beside its owner and saved back to it.</summary>
         public long CompanionBountyPoints { get; private set; }
 
+        // DR-494: the character's Master Level and Champion progress, earned beside its owner at level 50.
+        public int CompanionMLLevel { get; private set; }
+        public long CompanionMLExperience { get; private set; }
+        public bool CompanionChampion { get; private set; }
+        public int CompanionChampionLevel { get; private set; }
+        public long CompanionChampionExperience { get; private set; }
+
         public GameBot(GamePlayer owner, DbCoreCharacter character, AccountCompanionRecord record)
         {
             Owner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -77,6 +84,11 @@ namespace DOL.GS
             Experience = Math.Max(0, character.Experience);
             CompanionRealmPoints = Math.Max(0, character.RealmPoints);
             CompanionBountyPoints = Math.Max(0, character.BountyPoints);
+            CompanionMLLevel = Math.Clamp(character.MLLevel, 0, GamePlayer.ML_MAX_LEVEL);
+            CompanionMLExperience = Math.Max(0, character.MLExperience);
+            CompanionChampion = character.Champion;
+            CompanionChampionLevel = Math.Clamp(character.ChampionLevel, 0, GamePlayer.CL_MAX_LEVEL);
+            CompanionChampionExperience = Math.Max(0, character.ChampionExperience);
             RealmLevel = Math.Max(Math.Max(0, character.RealmLevel), AutonomousBotRealmPointRewards.RealmLevelFor(CompanionRealmPoints));
             RefreshSpecDependantSkills(false);
             SetBotSpells();
@@ -399,9 +411,6 @@ namespace DOL.GS
 
         private void GainAccountCompanionExperience(GainedExperienceEventArgs arguments)
         {
-            if (Level >= AccountCompanionRules.MaxLevel)
-                return;
-
             long gained = arguments.ExpTotal;
             if (arguments.AllowMultiply)
             {
@@ -419,6 +428,12 @@ namespace DOL.GS
             }
             if (gained <= 0)
                 return;
+
+            if (Level >= AccountCompanionRules.MaxLevel)
+            {
+                GainAccountCompanionMasterExperience(gained);
+                return;
+            }
 
             byte previousLevel = Level;
             Experience += gained;
@@ -448,10 +463,48 @@ namespace DOL.GS
         /// Realm points for an RvR kill beside the owner: kept on the character as a player's are, with the
         /// realm rank they reach. The owner sees what the companion got.
         /// </summary>
+        /// <summary>DR-494: kill experience at level 50 fills the character's Master Level bar, as a player's does.</summary>
+        private void GainAccountCompanionMasterExperience(long experience)
+        {
+            AccountCompanionEndgame.Progress progress = AccountCompanionEndgame.AddMasterExperience(CompanionMLLevel,
+                CompanionMLExperience, experience, MasterLevelRules.LevelSpan, ServerProperties.Properties.ML_XP_RATE);
+            if (progress.Level == CompanionMLLevel && progress.Experience == CompanionMLExperience)
+                return;
+
+            CompanionMLLevel = progress.Level;
+            CompanionMLExperience = progress.Experience;
+            _companionDirty = true;
+            if (progress.LevelsGained <= 0)
+                return;
+
+            if (Owner?.Client?.ClientState is GameClient.eClientState.Playing)
+                Owner.Out.SendMessage($"{Name} has reached Master Level {CompanionMLLevel}!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            SaveAccountCompanion("master level");
+        }
+
+        /// <summary>DR-494: realm points at level 50 fill a Champion's bar, as a player's do (ChampionRules).</summary>
+        private void GainAccountCompanionChampionExperience(long realmPoints)
+        {
+            if (Level < AccountCompanionRules.MaxLevel)
+                return;
+
+            AccountCompanionEndgame.Progress progress = AccountCompanionEndgame.AddChampionExperience(CompanionChampion,
+                CompanionChampionLevel, CompanionChampionExperience, realmPoints, ServerProperties.Properties.CL_RP_RATE);
+            if (progress.Experience == CompanionChampionExperience)
+                return;
+
+            CompanionChampionLevel = progress.Level;
+            CompanionChampionExperience = progress.Experience;
+            _companionDirty = true;
+            if (progress.LevelsGained > 0 && Owner?.Client?.ClientState is GameClient.eClientState.Playing)
+                Owner.Out.SendMessage($"{Name} has reached Champion Level {CompanionChampionLevel}!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+        }
+
         private void GainAccountCompanionRealmPoints(long amount)
         {
             int previousRealmLevel = RealmLevel;
             CompanionRealmPoints += amount;
+            GainAccountCompanionChampionExperience(amount);
             RealmLevel = Math.Max(RealmLevel, AutonomousBotRealmPointRewards.RealmLevelFor(CompanionRealmPoints));
             _companionDirty = true;
 
@@ -615,6 +668,15 @@ namespace DOL.GS
             target.RealmPoints = Math.Max(target.RealmPoints, CompanionRealmPoints);
             target.RealmLevel = Math.Max(target.RealmLevel, RealmLevel);
             target.BountyPoints = CompanionBountyPoints;
+            // DR-494: Master Level and Champion progress are only ever raised by a companion save.
+            if (CompanionMLLevel > target.MLLevel || CompanionMLLevel == target.MLLevel && CompanionMLExperience > target.MLExperience)
+            {
+                target.MLLevel = CompanionMLLevel;
+                target.MLExperience = CompanionMLExperience;
+                target.MLGranted = true;
+            }
+            target.ChampionLevel = Math.Max(target.ChampionLevel, CompanionChampionLevel);
+            target.ChampionExperience = Math.Max(target.ChampionExperience, CompanionChampionExperience);
             target.IsLevelSecondStage = CompanionSecondStage;
             target.SerializedSpecs = AccountCompanionRules.MergeSerializedSpecs(target.SerializedSpecs,
                 GetSpecList().Where(spec => spec.Trainable && spec.AllowSave).Select(spec => (spec.KeyName, spec.Level)));
