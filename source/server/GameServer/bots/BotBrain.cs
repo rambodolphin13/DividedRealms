@@ -374,6 +374,11 @@ namespace DOL.AI.Brain
                 }
             }
 
+            // DR-454: the group's fight counts too. A companion whose own list held only the mezzed add thought every
+            // monster was controlled and broke the mez, while the rest of the group fought another one.
+            if (!uncontrolledAvailable)
+                uncontrolledAvailable = GroupFightsUncontrolled();
+
             foreach (var pair in AggroList)
             {
                 GameLiving living = pair.Key;

@@ -26,5 +26,12 @@ namespace DOL.UnitTests
             Assert.That(ArtifactEncounters.MissedMessage("Danos", "Guard of Valor", "offline"), Is.Null);
             Assert.That(ArtifactEncounters.MissedReason(null, null), Is.EqualTo("offline"));
         }
+
+        [TestCase(true, true, false, true)]
+        [TestCase(true, true, true, false)]    // the group mate's target is mezzed too
+        [TestCase(false, true, false, false)]  // a group mate who is not fighting
+        [TestCase(true, false, false, false)]  // a heal target or a dead monster
+        public void GroupFightKeepsCompanionsOffTheMezzedAdd(bool fighting, bool enemy, bool controlled, bool expected) =>
+            Assert.That(DOL.AI.Brain.BotBrain.UncontrolledFightRule(fighting, enemy, controlled), Is.EqualTo(expected));
     }
 }

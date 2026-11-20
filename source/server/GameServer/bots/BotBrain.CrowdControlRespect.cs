@@ -26,6 +26,38 @@ namespace DOL.AI.Brain
         /// <summary>Pure rule: a controlled target is passed over only while an uncontrolled one is in the fight.</summary>
         public static bool PassOverControlled(bool controlled, bool uncontrolledAvailable) => controlled && uncontrolledAvailable;
 
+        /// <summary>
+        /// True when someone in the bot's group (or the player it assists) is fighting a live monster that is not
+        /// mesmerized or breakably rooted (DR-454).
+        /// </summary>
+        private bool GroupFightsUncontrolled()
+        {
+            var fighters = new System.Collections.Generic.List<GameLiving>();
+            if (Body.Group != null)
+                fighters.AddRange(Body.Group.GetMembersInTheGroup());
+            if (AssistedPlayer is GameLiving assisted && !fighters.Contains(assisted))
+                fighters.Add(assisted);
+
+            foreach (GameLiving member in fighters)
+            {
+                if (member == null || member == Body || !member.IsAlive)
+                    continue;
+                if (IsUncontrolledFight(member.TargetObject as GameLiving, member.InCombat || member.IsAttacking))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool IsUncontrolledFight(GameLiving target, bool memberFighting) =>
+            UncontrolledFightRule(memberFighting, target is { IsAlive: true } && target.ObjectState == GameObject.eObjectState.Active &&
+                target.CurrentRegion == Body.CurrentRegion && Body.IsWithinRadius(target, MAX_AGGRO_LIST_DISTANCE) &&
+                GameServer.ServerRules.IsAllowedToAttack(Body, target, true), IsBreakablyControlled(target));
+
+        /// <summary>Pure rule: a group member's target counts when they fight it, the bot may attack it and it is not held.</summary>
+        public static bool UncontrolledFightRule(bool memberFighting, bool attackableLiveEnemy, bool controlled) =>
+            memberFighting && attackableLiveEnemy && !controlled;
+
         /// <summary>The pet leaves a controlled monster for the bot's own (uncontrolled) target.</summary>
         private void RedirectPetFromControlledTarget(GameLiving botTarget)
         {
