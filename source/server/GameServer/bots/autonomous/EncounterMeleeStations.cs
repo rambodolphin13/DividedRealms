@@ -20,6 +20,9 @@ namespace DOL.GS
         private static readonly Dictionary<GameLiving, Order> Orders = new();
         // Read on every bot's follow turn: no lock while nobody holds an order (the usual case).
         private static int _count;
+        // DR-275: the latest expiry of any order. Past it every order has expired, so the read needs no lock: before this an
+        // order whose bot never asked again (fight over, dead, logged out) kept _count above 0 and every bot took the lock.
+        private static long _latestUntil;
 
         /// <summary>Keep <paramref name="minimumFollow"/> from <paramref name="target"/> while fighting it, until
         /// <paramref name="now"/> + <see cref="OrderMilliseconds"/>.</summary>
@@ -31,6 +34,8 @@ namespace DOL.GS
                 if (Orders.Count > 2_048) Orders.Clear();
                 Orders[bot] = new(target, minimumFollow, now + OrderMilliseconds);
                 System.Threading.Volatile.Write(ref _count, Orders.Count);
+                if (now + OrderMilliseconds > System.Threading.Interlocked.Read(ref _latestUntil))
+                    System.Threading.Interlocked.Exchange(ref _latestUntil, now + OrderMilliseconds);
             }
         }
 
@@ -38,6 +43,11 @@ namespace DOL.GS
         public static int? MinimumFollowFor(GameLiving bot, GameObject currentTarget, long now)
         {
             if (bot == null || currentTarget == null || System.Threading.Volatile.Read(ref _count) == 0) return null;
+            if (AllExpired(now, System.Threading.Interlocked.Read(ref _latestUntil)))
+            {
+                ClearIfAllExpired(now);
+                return null;
+            }
             lock (Orders)
             {
                 if (!Orders.TryGetValue(bot, out Order order)) return null;
@@ -72,12 +82,26 @@ namespace DOL.GS
                 npc.Follow(target, minimumFollow, npc.StickMaximumRange);
         }
 
+        /// <summary>Pure rule (DR-275): no order can still hold once the latest expiry has passed.</summary>
+        public static bool AllExpired(long now, long latestUntil) => now > latestUntil;
+
+        private static void ClearIfAllExpired(long now)
+        {
+            lock (Orders)
+            {
+                if (Orders.Count == 0 || !AllExpired(now, System.Threading.Interlocked.Read(ref _latestUntil))) return;
+                Orders.Clear();
+                System.Threading.Volatile.Write(ref _count, 0);
+            }
+        }
+
         public static void ResetForTests()
         {
             lock (Orders)
             {
                 Orders.Clear();
                 System.Threading.Volatile.Write(ref _count, 0);
+                System.Threading.Interlocked.Exchange(ref _latestUntil, 0);
             }
         }
 

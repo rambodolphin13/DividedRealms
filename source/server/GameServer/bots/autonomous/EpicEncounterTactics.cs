@@ -1022,6 +1022,22 @@ namespace DOL.GS
         // fight: raiders near it withdraw whatever they are fighting (BlastNear).
         private static readonly Dictionary<GameNPC, (int Health, long Tick, double Rate, long Seen)> BlastRates = new();
         private static int _blastBosses;
+        public const long BlastSeenWindowMs = 30_000;
+
+        /// <summary>Pure rule (DR-274): a blast entry is kept while its boss was seen in a fight within the window.</summary>
+        public static bool KeepBlastEntry(long seen, long now) => now - seen < BlastSeenWindowMs;
+
+        /// <summary>Call holding the BlastRates lock.</summary>
+        private static void PruneBlastRates(long now)
+        {
+            List<GameNPC> stale = null;
+            foreach (var (boss, rate) in BlastRates)
+                if (!KeepBlastEntry(rate.Seen, now) || boss.ObjectState != GameObject.eObjectState.Active || !boss.IsAlive)
+                    (stale ??= []).Add(boss);
+            if (stale == null) return;
+            foreach (GameNPC boss in stale) BlastRates.Remove(boss);
+            System.Threading.Volatile.Write(ref _blastBosses, BlastRates.Count);
+        }
 
         /// <summary>The boss's current health loss in percent a second (0 when unknown).</summary>
         public static double BlastRate(GameNPC boss, long now)
@@ -1138,7 +1154,12 @@ namespace DOL.GS
             if (raider == null) return null;
             GameNPC[] bosses;
             lock (BlastRates)
-                bosses = BlastRates.Where(b => now - b.Value.Seen < 30_000).Select(b => b.Key).ToArray();
+            {
+                // DR-274: forget bosses not seen in a fight for the window (dead, gone, fight over), so the count drops
+                // back to 0 and every bot's Think takes the lock-free exit again instead of this global lock.
+                PruneBlastRates(now);
+                bosses = BlastRates.Where(b => now - b.Value.Seen < BlastSeenWindowMs).Select(b => b.Key).ToArray();
+            }
             foreach (GameNPC boss in bosses)
             {
                 if (!Present(boss) || boss.CurrentRegionID != raider.CurrentRegionID) continue;

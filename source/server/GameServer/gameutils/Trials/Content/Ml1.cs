@@ -377,6 +377,9 @@ namespace DOL.GS.Trials
         private static TrialDefinition GreaterGood()
         {
             TrialPoint oxomis = new(374154, 517386, 5165);
+            // DR-375: live (Prima ToA p.44) "Kill either chief": both chiefs are monsters and either one gives credit, so a
+            // neutral peacemaker starts the trial and Arxem keeps a camp south of it.
+            TrialPoint arxem = new(370099, 528271, 6406);
             return new TrialDefinition
             {
                 ML = 1,
@@ -385,11 +388,11 @@ namespace DOL.GS.Trials
                 Scope = TrialScope.Raid,
                 Zone = TrialZone.Oceanus,
                 Anchor = new TrialPoint(370099, 526771, 6406, 2628),
-                StarterName = "Zhton Chief Arxem",
-                StarterModel = TritonChiefModel,
-                Intro = "Our clans are dying and still Oxomis of the Kynhroe will not stop this war. Swim north to his rock in Oceanus Boreal and end him. " +
-                    "His monitors will keep mending him while they live, so cut them down, and expect his goons at his side.",
-                Victory = "Chief Oxomis falls, and the Zhton war drums go quiet.",
+                StarterName = "Triton peacemaker",
+                StarterModel = TritonModel,
+                Intro = "The Zhton and the Kynhroe are dying and still their chiefs will not stop this war. End either chief and the other clan will lay down its spears. " +
+                    "Oxomis of the Kynhroe holds a rock to the north, and his monitors keep mending him while they live. Arxem of the Zhton camps just south of here with his guards.",
+                Victory = "A chief falls, and the war drums of Mesothalassa go quiet.",
                 Replaces = new[] { "Zhton Chief Arxem", "Kynhroe Chief Oxomis" },
                 LeashRange = 14000,
                 TimeLimitSeconds = 1800,
@@ -397,11 +400,12 @@ namespace DOL.GS.Trials
                 {
                     new TrialPhase
                     {
-                        Announce = "Chief Oxomis waits on his rock to the north with his cronies about him.",
-                        Mobs = BuildGreaterGood(oxomis),
+                        Announce = "Chief Oxomis waits on his rock to the north and Chief Arxem in his camp to the south. Either will do.",
+                        Mobs = BuildGreaterGood(oxomis, arxem),
+                        Done = run => ChiefFallen(run.Mobs("chief").Count()),
                         OnTick = run =>
                         {
-                            TrialMob chief = run.Mobs("chief").FirstOrDefault();
+                            TrialMob chief = run.Mobs("chief").FirstOrDefault(mob => mob.Name == "Kynhroe Chief Oxomis");
                             int menders = run.Mobs("monitor").Count();
                             if (chief != null && menders > 0 && Ml12Kit.Every(run, "mend", 6))
                                 Ml12Kit.Heal(chief, 0.015 * menders);
@@ -411,7 +415,10 @@ namespace DOL.GS.Trials
             };
         }
 
-        private static List<TrialMobSpec> BuildGreaterGood(TrialPoint oxomis)
+        /// <summary>Pure rule (DR-375): the trial is won as soon as one of the two chiefs is down.</summary>
+        public static bool ChiefFallen(int chiefsStanding) => chiefsStanding < 2;
+
+        private static List<TrialMobSpec> BuildGreaterGood(TrialPoint oxomis, TrialPoint arxem)
         {
             List<TrialMobSpec> mobs = new()
             {
@@ -455,6 +462,33 @@ namespace DOL.GS.Trials
                 AggroRange = 900,
                 Required = false,
                 Tag = "goon",
+            }));
+            mobs.Add(new TrialMobSpec
+            {
+                Name = "Zhton Chief Arxem",
+                Model = TritonChiefModel,
+                Size = 60,
+                Level = 60,
+                Health = 40000,
+                DamageFactor = 1.0,
+                MeleeDamage = eDamageType.Thrust,
+                At = arxem,
+                AggroRange = 900,
+                Tag = "chief",
+            });
+            mobs.AddRange(Ml12Kit.Circle(arxem, 600, 4, at => new TrialMobSpec
+            {
+                Name = "Zhton guard",
+                Model = TritonGuardModel,
+                Size = 52,
+                Level = 56,
+                Health = 3500,
+                DamageFactor = 0.7,
+                MeleeDamage = eDamageType.Slash,
+                At = at,
+                AggroRange = 900,
+                Required = false,
+                Tag = "zguard",
             }));
             return mobs;
         }

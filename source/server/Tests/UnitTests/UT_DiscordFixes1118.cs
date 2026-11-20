@@ -79,5 +79,21 @@ namespace DOL.UnitTests
         [TestCase(false, false, false)]
         public void SeaFloorFightsLendBreath(bool flagged, bool belowWater, bool expected) =>
             Assert.That(SeaFloorBreath.FightIsUnderwater(flagged, belowWater), Is.EqualTo(expected));
+
+        [TestCase(2, false)]
+        [TestCase(1, true)]    // Oxomis or Arxem down: either chief gives credit (DR-375)
+        [TestCase(0, true)]
+        public void GreaterGoodIsWonByEitherChief(int standing, bool won) =>
+            Assert.That(DOL.GS.Trials.Ml1.ChiefFallen(standing), Is.EqualTo(won));
+
+        [TestCase(0, 29_999, true)]
+        [TestCase(0, 30_000, false)]   // not seen for the window: forgotten, so bots stop taking the lock (DR-274)
+        public void BlastTrackerForgetsBossesOutOfTheFight(long seen, long now, bool kept) =>
+            Assert.That(EpicEncounterTactics.KeepBlastEntry(seen, now), Is.EqualTo(kept));
+
+        [TestCase(5_000, 5_000, false)]
+        [TestCase(5_001, 5_000, true)]  // every melee order expired: no lock on the follow path (DR-275)
+        public void MeleeStationOrdersAllExpire(long now, long latestUntil, bool expired) =>
+            Assert.That(EncounterMeleeStations.AllExpired(now, latestUntil), Is.EqualTo(expired));
     }
 }
