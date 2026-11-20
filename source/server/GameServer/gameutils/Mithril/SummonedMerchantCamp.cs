@@ -12,7 +12,7 @@ namespace DOL.GS
     public static class SummonedMerchantCamp
     {
         public const int DurationMs = 120_000;
-        public const int ReuseMs = 300_000;
+        public const int ReuseMs = DurationMs; // one camp at a time: call the next as soon as this one leaves (DR-291, 2026-11-20; was 5 min)
         public const string MerchantList = "ML_transmuteritems";
         private const string LastUseProperty = "DR_MERCHANT_GEM_LAST_USE";
 
