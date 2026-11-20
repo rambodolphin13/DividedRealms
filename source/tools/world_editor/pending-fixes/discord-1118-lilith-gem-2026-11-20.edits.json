@@ -1,0 +1,55 @@
+[
+ {
+  "table": "Mob",
+  "insert": {
+   "ClassType": "DOL.GS.GameEpicNPC",
+   "Name": "Lilith the Demon Queen",
+   "Guild": "Epic Encounter",
+   "X": 24554,
+   "Y": 31993,
+   "Z": 18284,
+   "Speed": 191,
+   "Heading": 3072,
+   "Region": 249,
+   "Model": 2120,
+   "Size": 250,
+   "Strength": 0,
+   "Constitution": 0,
+   "Dexterity": 0,
+   "Quickness": 0,
+   "Intelligence": 0,
+   "Piety": 0,
+   "Empathy": 0,
+   "Charisma": 0,
+   "Level": 65,
+   "Realm": 0,
+   "EquipmentTemplateID": "",
+   "NPCTemplateID": 60163314,
+   "Race": 2001,
+   "Flags": 0,
+   "AggroLevel": 200,
+   "AggroRange": 500,
+   "MeleeDamageType": 2,
+   "RespawnInterval": 3600,
+   "FactionID": 191,
+   "BodyType": 2,
+   "HouseNumber": 0,
+   "Brain": "",
+   "PathID": "DFLilithPatrol",
+   "OwnerID": "",
+   "RoamingRange": 0,
+   "IsCloakHoodUp": 0,
+   "Gender": 2,
+   "PackageID": "OfflineDFLilith",
+   "VisibleWeaponSlots": 0,
+   "Mob_ID": "4cbcc163-bec6-4b5f-8467-05ffd4261daa"
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "mithril_merchant_gem",
+  "set": {
+   "Description": "Use to call a merchant, a smith and a recharger to your side for two minutes. The gem is not used up; it can be used again as soon as they leave. Not in combat or houses."
+  }
+ }
+]
