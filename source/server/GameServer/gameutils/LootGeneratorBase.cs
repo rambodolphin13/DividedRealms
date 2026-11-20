@@ -75,9 +75,37 @@ namespace DOL.GS
 			if (owner == null || drop == null)
 				return false;
 
-			return drop.Realm == 0 || drop.Realm == (int)owner.Realm ||
-			       owner is GamePlayer player && player.CanUseCrossRealmItems ||
-			       owner is GameBot && ServerProperties.Properties.ALLOW_CROSS_REALM_ITEMS;
+			if (owner is GamePlayer player && player.CanUseCrossRealmItems ||
+			    owner is GameBot && ServerProperties.Properties.ALLOW_CROSS_REALM_ITEMS)
+				return true;
+
+			if (drop.Realm == (int)owner.Realm)
+				return true;
+
+			// "any realm" items still have to be wearable by someone in the owner's realm: the live drop tables hold
+			// realm-0 plate, chain, studded, reinforced and scale chests (DR-486: Adremal gave a Midgard group plate)
+			return drop.Realm == 0 && RealmCanWearArmor(owner.Realm, drop.Object_Type);
+		}
+
+		/// <summary>
+		/// False only for armor no class of the realm can wear: plate outside Albion, studded/chain in Hibernia,
+		/// reinforced/scale outside Hibernia. Cloth, leather and every non-armor type are true.
+		/// </summary>
+		public static bool RealmCanWearArmor(eRealm realm, int objectType)
+		{
+			switch ((eObjectType)objectType)
+			{
+				case eObjectType.Studded:
+				case eObjectType.Chain:
+					return realm != eRealm.Hibernia;
+				case eObjectType.Plate:
+					return realm == eRealm.Albion;
+				case eObjectType.Reinforced:
+				case eObjectType.Scale:
+					return realm == eRealm.Hibernia;
+				default:
+					return true;
+			}
 		}
 	}
 }
