@@ -59,5 +59,12 @@ namespace DOL.UnitTests
         [TestCase(true, true, false, false)]
         public void CompanionEarnsArtifactCreditWhenAliveAndNear(bool alive, bool inWorld, bool near, bool expected) =>
             Assert.That(ArtifactEncounters.CompanionEarns(alive, inWorld, near), Is.EqualTo(expected));
+
+        [TestCase(eCraftingSkill.ArmorCrafting, true, true)]   // armor crafter with spellcraft as a secondary trade
+        [TestCase(eCraftingSkill.WeaponCrafting, true, true)]
+        [TestCase(eCraftingSkill.NoCrafting, true, false)]     // dropped (not crafted) gear
+        [TestCase(eCraftingSkill.Tailoring, false, false)]     // no spellcraft or alchemy
+        public void SpellcraftButtonLightsForAnySpellcrafter(eCraftingSkill itemSkill, bool knows, bool expected) =>
+            Assert.That(DOL.GS.PacketHandler.PacketLib1124.CraftButtonEnabled(itemSkill, knows), Is.EqualTo(expected));
     }
 }

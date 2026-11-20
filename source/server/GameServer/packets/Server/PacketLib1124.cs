@@ -927,6 +927,10 @@ namespace DOL.GS.PacketHandler
 			}
 		}
 
+		/// <summary>The item's craft button: a crafted armor or weapon, and the player knows Spellcrafting or Alchemy (DR-247).</summary>
+		public static bool CraftButtonEnabled(eCraftingSkill itemSkill, bool hasSpellcraftOrAlchemy) =>
+			hasSpellcraftOrAlchemy && itemSkill is eCraftingSkill.ArmorCrafting or eCraftingSkill.Fletching or eCraftingSkill.Tailoring or eCraftingSkill.WeaponCrafting;
+
 		protected override void WriteItemData(GSTCPPacketOut pak, DbInventoryItem item)
 		{
 			if (item == null)
@@ -1022,8 +1026,11 @@ namespace DOL.GS.PacketHandler
 			}
 			//flag |= 0x01; // newGuildEmblem
 			flag |= 0x02; // enable salvage button
-			AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(m_gameClient.Player.CraftingPrimarySkill);
-			if (skill != null && skill is AdvancedCraftingSkill/* && ((AdvancedCraftingSkill)skill).IsAllowedToCombine(_gameClient.Player, item)*/)
+			// DR-247: the craft button only lit when Spellcrafting or Alchemy was the primary trade, so an armor or weapon
+			// crafter with spellcraft as a secondary skill could never spellcraft alone. Any level in either is enough.
+			if (CraftButtonEnabled(CraftingMgr.GetCraftingSkill(item),
+				    m_gameClient.Player.CraftingSkills.ContainsKey(eCraftingSkill.SpellCrafting) ||
+				    m_gameClient.Player.CraftingSkills.ContainsKey(eCraftingSkill.Alchemy)))
 				flag |= 0x04; // enable craft button
 			ushort icon1 = 0;
 			ushort icon2 = 0;
