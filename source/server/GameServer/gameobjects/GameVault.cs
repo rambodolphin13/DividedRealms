@@ -131,6 +131,24 @@ namespace DOL.GS
             if (!base.Interact(player))
                 return false;
 
+            Show(player);
+            return true;
+        }
+
+        /// <summary>
+        /// Opens the vault window without the interact range check (/bank, DR-487). Permissions still apply.
+        /// </summary>
+        public virtual bool OpenRemotely(GamePlayer player)
+        {
+            if (player == null || !CanView(player))
+                return false;
+
+            Show(player);
+            return true;
+        }
+
+        private void Show(GamePlayer player)
+        {
             player.ActiveInventoryObject?.RemoveObserver(player);
 
             lock (Lock)
@@ -140,7 +158,6 @@ namespace DOL.GS
 
             player.ActiveInventoryObject = this;
             player.Out.SendInventoryItemsUpdate(GetClientInventory(player), eInventoryWindowType.HouseVault);
-            return true;
         }
 
         /// <summary>
