@@ -20,6 +20,12 @@ namespace DOL.GS.Commands
                 return false;
             }
 
+            if (GameRelic.IsPlayerCarryingRelic(player))
+            {
+                message = GameRelic.CarrierPortRefusal;
+                return false;
+            }
+
             if (!player.MoveTo(bot.CurrentRegionID, bot.X, bot.Y, bot.Z, bot.Heading))
             {
                 message = $"Could not teleport to {bot.Name}'s current location.";

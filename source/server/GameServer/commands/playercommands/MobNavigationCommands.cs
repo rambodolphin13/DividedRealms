@@ -147,6 +147,11 @@ public static class PlayerMobNavigator
             message = "You must be alive and off a horse route before using /tele mob.";
             return false;
         }
+        if (GameRelic.IsPlayerCarryingRelic(player))
+        {
+            message = GameRelic.CarrierPortRefusal;
+            return false;
+        }
         if (!TryResolveDestination(player, exactName, true, out Destination destination, out message)) return false;
         Stop(player, string.Empty, false);
         if (PlayerCompanionGrind.IsActive(player)) PlayerCompanionGrind.Stop(player, "you used /tele mob");

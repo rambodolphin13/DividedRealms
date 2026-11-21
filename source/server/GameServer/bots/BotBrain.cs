@@ -439,8 +439,12 @@ namespace DOL.AI.Brain
             return CleanUpAggroListAndGetHighestModifiedThreat();
         }
 
+        /// <summary>DR-393: a trial monster that takes no damage right now is never worth a bot's blows, even when it hits the bot.</summary>
+        public static bool CannotBeHurt(GameLiving target) => target is DOL.GS.Trials.TrialMob { Immune: true };
+
         public virtual bool CanAggroTarget(GameLiving target)
         {
+            if (CannotBeHurt(target)) return false;
             if (!CompanionEngagementMode.Allows(Body, target)) return false;
             if (!GameServer.ServerRules.IsAllowedToAttack(Body, target, true))
                 return false;
@@ -480,6 +484,7 @@ namespace DOL.AI.Brain
         /// </summary>
         private bool CanDefendAgainst(GameLiving target) =>
             target?.IsAlive == true &&
+            !CannotBeHurt(target) &&
             CompanionEngagementMode.Allows(Body, target) &&
             target.ObjectState == GameObject.eObjectState.Active &&
             target.CurrentRegion == Body.CurrentRegion &&
@@ -491,7 +496,7 @@ namespace DOL.AI.Brain
             if (!Body.IsAlive || Body.ObjectState != GameObject.eObjectState.Active || FSM.GetCurrentState() == FSM.GetState(eFSMStateType.PASSIVE))
                 return;
 
-            if (ad.GeneratesAggro)
+            if (ad.GeneratesAggro && !CannotBeHurt(ad.Attacker))
             {
                 if (BotBody?.IsRecoveryResting == true)
                     BotBody.WakeRecoveryRest();
