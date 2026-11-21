@@ -53,6 +53,6 @@ there (`.mcp.json` for Claude, `~/.codex/config.toml` for Codex). Scenarios are 
 - 1.130 behaviour: it announces 1.127, so `bot_show_as_players` is not sent to it and bots arrive as NPCs.
 - Walls: line-of-sight checks always answer "seen", because it has no world geometry. The navmesh gives the ground only.
 - Climbing and riding movement. Swimming is only what the `swim` tool says, because Atlantis zones hold no water
-  level. Boats can be summoned but not steered. `ground_target` sets a ground target for area spells. Walking stops at zone edges where
+  level; while it is on, `move_to` and `fight` go in a straight line, down to the sea floor too, not over the navmesh. Boats can be summoned but not steered. `ground_target` sets a ground target for area spells. Walking stops at zone edges where
   meshes don't join.
 - `status.unknown_packets` lists packets nothing decodes yet.

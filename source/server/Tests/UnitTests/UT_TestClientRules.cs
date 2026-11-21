@@ -76,5 +76,16 @@ namespace DOL.UnitTests
                     Is.EqualTo(new[] { "Sword", "Shields", "Parry" }));
             });
         }
+
+        [Test]
+        public void ASwimmingCharacterGoesStraightNotOverTheSurfaceMesh()
+        {
+            // DR-399: move_to and fight walked the surface navmesh, so a character on the sea floor rose to the top.
+            Assert.Multiple(() =>
+            {
+                Assert.That(SwimRules.UsesMesh(inSea: true), Is.False);
+                Assert.That(SwimRules.UsesMesh(inSea: false), Is.True);
+            });
+        }
     }
 }

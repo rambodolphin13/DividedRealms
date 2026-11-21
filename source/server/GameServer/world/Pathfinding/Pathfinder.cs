@@ -94,8 +94,11 @@ namespace DOL.GS
         public const ushort IRISH_SEA_ZONE = 164;
         public const int IRISH_SEA_LEVEL = 7900;
 
+        public static bool IsAtlantisSeaZone(ushort zoneId) =>
+            zoneId is (>= 30 and <= 34) or (>= 70 and <= 72) or (>= 73 and <= 77) or (>= 130 and <= 134);
+
         public static bool IsBelowAtlantisSea(ushort zoneId, int spawnZ) =>
-            spawnZ < ATLANTIS_SEA_LEVEL && zoneId is (>= 30 and <= 34) or (>= 70 and <= 72) or (>= 73 and <= 77) or (>= 130 and <= 134) ||
+            spawnZ < ATLANTIS_SEA_LEVEL && IsAtlantisSeaZone(zoneId) ||
             zoneId == IRISH_SEA_ZONE && spawnZ < IRISH_SEA_LEVEL;
 
         public const ushort NEW_FRONTIERS_REGION = 163;
@@ -117,7 +120,11 @@ namespace DOL.GS
             if ((Owner.Flags & (eFlags.FLYING | eFlags.SWIMMING)) != 0 || Owner is GameTaxi || Owner is GameTaxiBoat)
                 return false;
 
-            if (Owner.SpawnPoint != null && (IsBelowAtlantisSea(zone.ID, (int) Owner.SpawnPoint.Z) ||
+            // A bot in an Atlantis sea zone goes by where it is and where it is going (BotSeaSwim, DR-423), not by where
+            // it was summoned: one summoned on the sea floor walked straight for good, one summoned on top could not dive.
+            bool botInAtlantisSea = Owner is GameBot && IsAtlantisSeaZone(zone.ID);
+
+            if (!botInAtlantisSea && Owner.SpawnPoint != null && (IsBelowAtlantisSea(zone.ID, (int) Owner.SpawnPoint.Z) ||
                 Owner is not GameBot && IsWaterSpawn(zone, (int) Owner.SpawnPoint.X, (int) Owner.SpawnPoint.Y, (int) Owner.SpawnPoint.Z)))
                 return false;
 
