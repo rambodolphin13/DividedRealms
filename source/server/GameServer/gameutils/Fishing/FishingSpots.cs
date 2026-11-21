@@ -350,6 +350,13 @@ public static class FishingSpots
             return false;
         }
 
+        if (GameRelic.IsPlayerCarryingRelic(player))
+        {
+            Tell(player, GameRelic.CarrierPortRefusal);
+
+            return false;
+        }
+
         Region region = WorldMgr.GetRegion(spot.RegionID);
         Zone zone = region?.GetZone(spot.X, spot.Y);
 

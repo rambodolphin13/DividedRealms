@@ -89,13 +89,25 @@ namespace DOL.GS
         /// </summary>
         public static bool CanEarnStep(int mlLevel, int masterLevel, bool finished) => mlLevel < masterLevel && !finished;
 
+        /// <summary>A step of a Master Level the player already holds (reached by experience) that was never recorded.</summary>
+        public static bool IsPastStep(int mlLevel, int masterLevel, bool finished) => mlLevel >= masterLevel && !finished;
+
         /// <summary>
         /// Records a finished trial for a Master Level the player has not reached. The next Master Level is raised when
         /// all its steps are done, and so is each one after it whose steps were already earned ahead.
         /// </summary>
         public static bool CompleteTrialStep(GamePlayer player, int masterLevel, int step)
         {
-            if (!CanEarnStep(player.MLLevel, masterLevel, player.HasFinishedMLStep(masterLevel, step)))
+            bool finished = player.HasFinishedMLStep(masterLevel, step);
+            if (IsPastStep(player.MLLevel, masterLevel, finished))
+            {
+                // DR-422: kill experience raised them past this level mid-trials; the step is still theirs and they are told.
+                player.SetFinishedMLStep(masterLevel, step);
+                player.Out.SendMessage($"You have finished trial {masterLevel}.{step}! You are already Master Level {player.MLLevel}, so it adds nothing more.",
+                    eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                return true;
+            }
+            if (!CanEarnStep(player.MLLevel, masterLevel, finished))
                 return false;
 
             EnsureTraining(player);

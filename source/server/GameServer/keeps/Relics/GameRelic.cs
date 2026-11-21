@@ -675,6 +675,9 @@ namespace DOL.GS
             OutputOf(carrier)?.SendUpdateMaxSpeed();
         }
 
+        /// <summary>Live rule: a relic carrier walks home; no teleport takes them (DR-289).</summary>
+        public const string CarrierPortRefusal = "You can't teleport while carrying a relic.";
+
         public static bool IsPlayerCarryingRelic(GameLiving player)
         {
             return player?.TempProperties?.GetProperty<GameRelic>(PLAYER_CARRY_RELIC_WEAK) != null;

@@ -37,6 +37,12 @@ namespace DOL.GS.Commands
                 return;
             }
 
+            if (GameRelic.IsPlayerCarryingRelic(player))
+            {
+                DisplayMessage(client, GameRelic.CarrierPortRefusal);
+                return;
+            }
+
             Region capital = WorldMgr.GetRegion(CapitalRegion(player.Realm));
             RealmExchangeBroker broker = FindBroker(player.Realm, capital?.Objects.OfType<GameNPC>());
             if (broker == null)
