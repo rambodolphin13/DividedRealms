@@ -112,9 +112,15 @@ namespace DOL.GS.PropertyCalc
 
                 if (player.EffectList.GetOfType<TestudoEffect>() != null)
                     speedIncrease = Math.Min(speedIncrease, TestudoEffect.SPEED_FACTOR);
+
+                speedIncrease *= RunSpeedFactor(ServerProperties.Properties.PLAYER_RUN_SPEED_PERCENT);
             }
             else if (living is GameNPC npc)
             {
+                // A player's own companions keep up with a faster player; world gamebots and monsters do not change.
+                if (npc is GameBot { Owner: not null })
+                    speedIncrease *= RunSpeedFactor(ServerProperties.Properties.PLAYER_RUN_SPEED_PERCENT);
+
                 // Special handling for pets.
                 if (npc.Brain is IControlledBrain brain)
                 {
@@ -156,5 +162,8 @@ namespace DOL.GS.PropertyCalc
 
             return (int) Math.Round(maxSpeedBase * speedIncrease);
         }
+
+        /// <summary>The player_run_speed_percent property as a factor. Unset or nonsense (0 or less) is normal speed. Pure.</summary>
+        public static double RunSpeedFactor(int percent) => percent <= 0 ? 1.0 : percent / 100.0;
     }
 }

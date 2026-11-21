@@ -670,6 +670,12 @@ namespace DOL.GS.ServerProperties
 		public static bool ENABLE_PVE_SPEED;
 
 		/// <summary>
+		/// Base run speed of players and the companions that follow them, in percent (DR-450)
+		/// </summary>
+		[ServerProperty("server", "player_run_speed_percent", "Base run speed of players and their companion bots in percent of normal (100 = normal, 150 = half again as fast). Buffs, sprint and mounts multiply on top.", 100)]
+		public static int PLAYER_RUN_SPEED_PERCENT;
+
+		/// <summary>
 		/// Enable Encumberance Speed loss
 		/// </summary>
 		[ServerProperty("server", "enable_encumberance_speed_loss", "Set to true if you wish to enable the encumberance speed loss", true)]

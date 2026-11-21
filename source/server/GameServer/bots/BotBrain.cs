@@ -4276,8 +4276,11 @@ namespace DOL.AI.Brain
             }
             bool preferTwoHand = PreferTwoHandedSlot(twoHandUsable, oneHandUsable,
                 BotBody.BotSpec?.Is2H == true ||
-                BotBody.CharacterClass.ClassType == eClassType.ListCaster && BotBody.CharacterClass.ID != (int)eCharacterClass.Vampiir ||
-                BotBody.CharacterClass.ID is (int)eCharacterClass.Friar or (int)eCharacterClass.Valewalker);
+                // An account companion holds what its player gave it: a Healer handed a hammer and shield keeps them out
+                // instead of drawing the two-hander also in its slots because its class is a caster (DR-500).
+                !BotBody.IsAccountCompanion &&
+                (BotBody.CharacterClass.ClassType == eClassType.ListCaster && BotBody.CharacterClass.ID != (int)eCharacterClass.Vampiir ||
+                 BotBody.CharacterClass.ID is (int)eCharacterClass.Friar or (int)eCharacterClass.Valewalker));
 
             if (preferTwoHand)
             {

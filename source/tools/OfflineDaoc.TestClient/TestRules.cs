@@ -56,5 +56,26 @@ namespace OfflineDaoc.TestClient
             }
             return 0;
         }
+
+        // The three lines a kit trains (50 / 35 / 25): the class's lines in order, but only the first weapon line, then
+        // support lines. A Champion's first three lines are all weapons (Blades, Blunt, Piercing), which left Valor at 1
+        // and its whole spell line untested (DR-062).
+        public static string[] KitSpecs(IEnumerable<string> lines, ISet<string> supportLines)
+        {
+            var all = lines.ToList();
+            bool weaponTaken = false;
+            var main = new List<string>();
+            foreach (string line in all.Where(l => !supportLines.Contains(l)))
+            {
+                if (SpecWeapons.ContainsKey(line))
+                {
+                    if (weaponTaken)
+                        continue;
+                    weaponTaken = true;
+                }
+                main.Add(line);
+            }
+            return main.Concat(all.Where(supportLines.Contains)).Take(3).ToArray();
+        }
     }
 }
