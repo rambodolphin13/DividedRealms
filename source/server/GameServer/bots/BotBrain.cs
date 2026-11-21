@@ -4084,12 +4084,14 @@ namespace DOL.AI.Brain
             return any;
         }
 
-        private bool OutOfPowerForOffense()
+        /// <summary><paramref name="damageOnly"/>: only its damage spells count (a cheap debuff it can pay for is no nuke, DR-394).</summary>
+        private bool OutOfPowerForOffense(bool damageOnly = false)
         {
             if (Body.Spells == null || BotBody == null)
                 return false;
             return OutOfPower(Body.Spells
                 .Where(spell => spell != null && spell.IsHarmful && spell.Level <= Body.Level &&
+                    (!damageOnly || BotCasterPriority.IsDamage(spell)) &&
                     spell.Target is eSpellTarget.ENEMY or eSpellTarget.AREA or eSpellTarget.CONE &&
                     spell.SpellType is not eSpellType.Charm and not eSpellType.Amnesia and
                         not eSpellType.Confusion and not eSpellType.Taunt &&
@@ -4873,7 +4875,7 @@ namespace DOL.AI.Brain
                         spellsToCast.RemoveAll(spell => !BotCasterPriority.IsDamage(spell));
                     // DR-394: short of power for a nuke, a player's caster saves for it instead of spending on a debuff.
                     else if (BotCasterPriority.SavesPowerForNuke(PrefersCurrentSpellRange(), BotBody.IsPlayerLedGroup,
-                                 Body.TargetObject is GameNPC and not GameBot, OutOfPowerForOffense()))
+                                 Body.TargetObject is GameNPC and not GameBot, OutOfPowerForOffense(damageOnly: true)))
                     {
                         foreach (Spell held in spellsToCast)
                             BotTesterLog.Skipped(Body, held, "cast: saving power for a damage spell");
