@@ -122,6 +122,15 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void AccountCompanionsShowWhatTheyHoldEvenWithNoWeaponTheyCanSwing()
+        {
+            // A seer with only a shield, or a caster's staff: shown at load, not left in the slot unseen.
+            Assert.That(GameBot.CompanionShownSet(true, true), Is.EqualTo(eActiveWeaponSlot.Standard));
+            Assert.That(GameBot.CompanionShownSet(false, true), Is.EqualTo(eActiveWeaponSlot.TwoHanded));
+            Assert.That(GameBot.CompanionShownSet(false, false), Is.Null);
+        }
+
+        [Test]
         public void APlayerRaisedDefenseMarchesWhenAKeepDoorFalls()
         {
             Assert.That(AutonomousRvrEventLayer.DefenseMarchesOnBreach(true, false, true), Is.True);
