@@ -18,6 +18,13 @@ namespace DOL.GS
     {
         public const string ResourceName = "DOL.GS.ZoneWater.json";
 
+        /// <summary>
+        /// How far below the drawn surface a player is still swimming on top. The client draws Atlantis water at 8010 and
+        /// the stock region water level is 7970: a surface swimmer floats in that band. Testing against the drawn height
+        /// itself put every surface swimmer underwater, holding their breath (DR-503).
+        /// </summary>
+        public const int SurfaceMargin = 40;
+
         private static readonly Logger log = LoggerManager.Create(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly Dictionary<ushort, Shape[]> _zones = Load();
 
@@ -46,7 +53,7 @@ namespace DOL.GS
 
             foreach (Shape shape in shapes)
             {
-                if (z < shape.Height && shape.Contains(x, y))
+                if (z < shape.Height - SurfaceMargin && shape.Contains(x, y))
                 {
                     underwater = true;
                     break;

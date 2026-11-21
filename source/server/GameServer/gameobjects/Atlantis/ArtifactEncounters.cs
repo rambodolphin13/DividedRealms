@@ -225,6 +225,8 @@ namespace DOL.GS
 
                 if (ArtifactProgress.Get(player, artifactId)?.EncounterDone == true)
                 {
+                    // A repeat said only "You receive Atlantean Glass", which read as no credit at all (DR-495).
+                    player.Out.SendMessage($"You already have the encounter credit for {name}. /quest lists your artifact encounters.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                     GiveGlass(player, RepeatGlassReward);
                     continue;
                 }
