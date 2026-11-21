@@ -44,8 +44,17 @@ namespace DOL.GS
             bool toUnderSea = IsUnderSea(zone, to);
             if (!fromUnderSea && !toUnderSea)
                 return Route.Mesh;
-            return Choose(fromUnderSea, fromUnderSea || BotPlayerPresentation.Swimming(bot), toUnderSea);
+            return Choose(fromUnderSea, fromUnderSea || BotPlayerPresentation.Swimming(bot) || IsUnderSea(zone, FeetProbe(from)), toUnderSea);
         }
+
+        /// <summary>
+        /// A bot on the surface sheet (near 7997) stands above the drawn water (under 7970) and the sheet carries no
+        /// swim polygons, so neither swim test sees it: it is in the water when the sea is this close under its feet.
+        /// </summary>
+        public const float WadeDepth = 60f;
+
+        /// <summary>The point under a bot's feet that tells whether it floats on the sea. Pure.</summary>
+        public static Vector3 FeetProbe(Vector3 position) => new(position.X, position.Y, position.Z - WadeDepth);
 
         /// <summary>Under the surface sheet, in water the client draws (not a dry hollow below sea level).</summary>
         public static bool IsUnderSea(Zone zone, Vector3 point) =>

@@ -70,6 +70,17 @@ namespace DOL.UnitTests
             });
         }
 
+        [TestCase(7996f, true, Description = "On the surface sheet: sandbox 2026-11-21, the tank stayed here above the argo")]
+        [TestCase(7977f, true, Description = "A little way down")]
+        [TestCase(8040f, false, Description = "On an island beach")]
+        public void ABotOnTheSurfaceSheetCountsAsInTheWater(float z, bool expected)
+        {
+            // Drawn water lies under 7970 (surface 8010 less ZoneWater.SurfaceMargin) and the sheet above 7950.
+            float probe = BotSeaSwim.FeetProbe(new Vector3(359190, 621312, z)).Z;
+            bool drawnWater = probe < 8010 - ZoneWater.SurfaceMargin;
+            Assert.That(BotSeaSwim.IsUnderSea(76, probe, drawnWater), Is.EqualTo(expected));
+        }
+
         [TestCase((ushort) 30, true)]
         [TestCase((ushort) 72, true)]
         [TestCase((ushort) 77, true)]
