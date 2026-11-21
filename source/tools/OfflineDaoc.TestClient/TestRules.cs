@@ -78,4 +78,14 @@ namespace OfflineDaoc.TestClient
             return main.Concat(all.Where(supportLines.Contains)).Take(3).ToArray();
         }
     }
+
+    public static class SwimRules
+    {
+        // A swimming character goes straight to its goal, up or down. The Atlantis sea has a navmesh on its surface
+        // only, so a path over it took a character on the sea floor up to the surface and kept it there (DR-399).
+        public static bool UsesMesh(bool inSea)
+        {
+            return !inSea;
+        }
+    }
 }

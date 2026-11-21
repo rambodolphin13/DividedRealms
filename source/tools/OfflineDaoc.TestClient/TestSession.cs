@@ -724,10 +724,12 @@ namespace OfflineDaoc.TestClient
         }
 
         // A path over the zone's navmesh, or a straight line where the zone has none. False: no mesh was used.
+        // In the sea (the swim tool) it swims straight: the Atlantis sea is meshed on its surface only, so a mesh path
+        // to a place on the sea floor carried the character up to the surface (DR-399).
         public bool Walk(Vector3 to)
         {
             ZoneInfo zone = CurrentZone;
-            List<Vector3> path = zone == null ? null : _nav.FindPath(zone.Id, Position, to);
+            List<Vector3> path = zone == null || !SwimRules.UsesMesh(InSea) ? null : _nav.FindPath(zone.Id, Position, to);
             lock (_lock)
             {
                 _path = new Queue<Vector3>(path ?? new List<Vector3> { to });

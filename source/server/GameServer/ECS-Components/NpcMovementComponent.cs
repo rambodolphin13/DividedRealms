@@ -734,6 +734,24 @@ namespace DOL.GS
 
             Zone zone = Owner.CurrentZone;
 
+            // DR-423: the Atlantis sea is meshed as a flat sheet on the surface, so a bot there swims straight to and
+            // from anything under it; from land it first walks to the water above the place.
+            if (Owner is GameBot seaBot)
+            {
+                switch (BotSeaSwim.Choose(zone, seaBot, _ownerPosition, destination))
+                {
+                    case BotSeaSwim.Route.Straight:
+                        ClearAutonomousPathFailure();
+                        FallbackToWalk(this, destination, speed);
+                        return;
+                    case BotSeaSwim.Route.SurfaceAbove:
+                        Vector3 surface = BotSeaSwim.SurfaceAbove(destination);
+                        if (PathfindingProvider.Instance.TrySnapToMesh(zone, ref surface, BotSeaSwim.SurfaceSnapDistance))
+                            destination = surface;
+                        break;
+                }
+            }
+
             if (!_pathfinder.ShouldPath(zone, destination))
             {
                 if (IsPersistentAutonomous(this))
