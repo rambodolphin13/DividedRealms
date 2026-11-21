@@ -1,0 +1,168 @@
+[
+ {
+  "table": "CraftedItem",
+  "insert": {
+   "CraftedItemID": "2440",
+   "CraftedItem_ID": "2440",
+   "Id_nb": "duskwood_Sigil_Harmonious_Harp",
+   "CraftingLevel": 1025,
+   "CraftingSkillType": 12,
+   "MakeTemplated": 0
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "1f678496-3fec-50fa-9466-e646b946adc3",
+   "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+   "IngredientId_nb": "duskwood_wooden_boards",
+   "Count": 18
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "54ecc2e7-10c1-58f2-a896-180a6eff1f8c",
+   "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+   "IngredientId_nb": "silksteel_heavy_thread",
+   "Count": 12
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "7584d054-9d97-5b21-8853-7314e959f879",
+   "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+   "IngredientId_nb": "tempered_leather_squares",
+   "Count": 8
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "55431190-1472-5431-8821-dc9587f5cc85",
+   "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+   "IngredientId_nb": "Ra_gem",
+   "Count": 2
+  }
+ },
+ {
+  "table": "CraftedItem",
+  "insert": {
+   "CraftedItemID": "2441",
+   "CraftedItem_ID": "2441",
+   "Id_nb": "duskwood_Sigil_Arpeggio_Harp",
+   "CraftingLevel": 1025,
+   "CraftingSkillType": 12,
+   "MakeTemplated": 0
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "de3c74c8-add3-5346-8bba-0acb95b74e4f",
+   "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+   "IngredientId_nb": "duskwood_wooden_boards",
+   "Count": 18
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "cd91faf8-894e-55fb-b0ef-f785d47c0312",
+   "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+   "IngredientId_nb": "silksteel_heavy_thread",
+   "Count": 12
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "ce9af5f8-baa2-5c06-ae69-3128e0743547",
+   "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+   "IngredientId_nb": "tempered_leather_squares",
+   "Count": 8
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "a7070961-347e-5d8a-9cc5-76e9743327c1",
+   "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+   "IngredientId_nb": "Ra_gem",
+   "Count": 2
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "key": "Benthic_Magus_Staff2",
+  "set": {
+   "Realm": 3
+  }
+ },
+ {
+  "table": "CraftedItem",
+  "insert": {
+   "CraftedItemID": "16228",
+   "CraftedItem_ID": "16228",
+   "Id_nb": "Benthic_Magus_Staff2",
+   "CraftingLevel": 1080,
+   "CraftingSkillType": 12,
+   "MakeTemplated": 0
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "a3c6dff1-048e-5833-b0b9-cbb2371ae314",
+   "CraftedItemId_nb": "Benthic_Magus_Staff2",
+   "IngredientId_nb": "duskwood_exceptional_magus_staff3",
+   "Count": 1
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "26053dd3-0d50-5543-ac31-f1691a4e6470",
+   "CraftedItemId_nb": "Benthic_Magus_Staff2",
+   "IngredientId_nb": "otherworldly_ore",
+   "Count": 20
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "354b3c41-5cc1-5a44-b77a-867009c08548",
+   "CraftedItemId_nb": "Benthic_Magus_Staff2",
+   "IngredientId_nb": "Cauldron_of_Vivifying_Water1",
+   "Count": 1
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "62d9eda4-d624-5ba7-83f2-ad5e226b3d81",
+   "CraftedItemId_nb": "Benthic_Magus_Staff2",
+   "IngredientId_nb": "volatile_cold_arcanium_weapon_tincture3",
+   "Count": 3
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "460abb45-a196-587d-b4c0-585c197ec066",
+   "CraftedItemId_nb": "Benthic_Magus_Staff2",
+   "IngredientId_nb": "perfect_Vapor_Essence_jewel3",
+   "Count": 3
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "fc452be7-b920-5c72-858b-98c5a3dba091",
+   "CraftedItemId_nb": "Benthic_Magus_Staff2",
+   "IngredientId_nb": "duskwood_wooden_boards",
+   "Count": 92
+  }
+ }
+]

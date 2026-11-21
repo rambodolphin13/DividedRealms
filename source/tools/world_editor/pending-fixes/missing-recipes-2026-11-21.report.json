@@ -1,0 +1,7021 @@
+[
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6501,
+  "category": "Legendary Bishops Mace",
+  "name": "Entropic Bishops Mace",
+  "skill": 1099,
+  "level": 51,
+  "model": 38527,
+  "ingredients": [
+   [
+    "arcanium exceptional mace",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6502,
+  "category": "Legendary Bishops Mace",
+  "name": "Somatic Bishops Mace",
+  "skill": 1099,
+  "level": 51,
+  "model": 38528,
+  "ingredients": [
+   [
+    "arcanium exceptional mace",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6503,
+  "category": "Legendary Falchion",
+  "name": "Entropic Falchion",
+  "skill": 1099,
+  "level": 51,
+  "model": 38529,
+  "ingredients": [
+   [
+    "arcanium exceptional long sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6504,
+  "category": "Legendary Falchion",
+  "name": "Somatic Falchion",
+  "skill": 1099,
+  "level": 51,
+  "model": 38530,
+  "ingredients": [
+   [
+    "arcanium exceptional long sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6505,
+  "category": "Legendary Rapier",
+  "name": "Entropic Rapier",
+  "skill": 1099,
+  "level": 51,
+  "model": 38531,
+  "ingredients": [
+   [
+    "arcanium exceptional rapier",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6506,
+  "category": "Legendary Rapier",
+  "name": "Somatic Rapier",
+  "skill": 1099,
+  "level": 51,
+  "model": 38532,
+  "ingredients": [
+   [
+    "arcanium exceptional rapier",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6507,
+  "category": "Legendary Coffin Mace",
+  "name": "Entropic Coffin Mace",
+  "skill": 1099,
+  "level": 51,
+  "model": 38533,
+  "ingredients": [
+   [
+    "arcanium exceptional hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6508,
+  "category": "Legendary Coffin Mace",
+  "name": "Somatic Coffin Mace",
+  "skill": 1099,
+  "level": 51,
+  "model": 38534,
+  "ingredients": [
+   [
+    "arcanium exceptional hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6509,
+  "category": "Legendary Short Sword",
+  "name": "Entropic Short Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38535,
+  "ingredients": [
+   [
+    "arcanium exceptional short sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6510,
+  "category": "Legendary Short Sword",
+  "name": "Somatic Short Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38536,
+  "ingredients": [
+   [
+    "arcanium exceptional short sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6511,
+  "category": "Legendary Stiletto",
+  "name": "Entropic Stiletto",
+  "skill": 1099,
+  "level": 51,
+  "model": 38537,
+  "ingredients": [
+   [
+    "arcanium exceptional stiletto",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6512,
+  "category": "Legendary Stiletto",
+  "name": "Somatic Stiletto",
+  "skill": 1099,
+  "level": 51,
+  "model": 38538,
+  "ingredients": [
+   [
+    "arcanium exceptional stiletto",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6513,
+  "category": "Legendary Great Hammer",
+  "name": "Entropic Great Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38539,
+  "ingredients": [
+   [
+    "arcanium exceptional great hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6514,
+  "category": "Legendary Great Hammer",
+  "name": "Somatic Great Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38540,
+  "ingredients": [
+   [
+    "arcanium exceptional great hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6515,
+  "category": "Legendary Great Sword",
+  "name": "Entropic Great Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38541,
+  "ingredients": [
+   [
+    "arcanium exceptional great sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6516,
+  "category": "Legendary Great Sword",
+  "name": "Somatic Great Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38542,
+  "ingredients": [
+   [
+    "arcanium exceptional great sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6517,
+  "category": "Legendary War Pick",
+  "name": "Entropic War Pick",
+  "skill": 1099,
+  "level": 51,
+  "model": 38543,
+  "ingredients": [
+   [
+    "arcanium exceptional war pick",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6518,
+  "category": "Legendary War Pick",
+  "name": "Somatic War Pick",
+  "skill": 1099,
+  "level": 51,
+  "model": 38544,
+  "ingredients": [
+   [
+    "arcanium exceptional war pick",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6519,
+  "category": "Legendary Lucerne Hammer",
+  "name": "Entropic Lucerne Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38545,
+  "ingredients": [
+   [
+    "arcanium exceptional lucerne hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6520,
+  "category": "Legendary Lucerne Hammer",
+  "name": "Somatic Lucerne Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38546,
+  "ingredients": [
+   [
+    "arcanium exceptional lucerne hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6521,
+  "category": "Legendary Glaive",
+  "name": "Entropic Glaive",
+  "skill": 1099,
+  "level": 51,
+  "model": 38547,
+  "ingredients": [
+   [
+    "arcanium exceptional bardiche",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6522,
+  "category": "Legendary Glaive",
+  "name": "Somatic Glaive",
+  "skill": 1099,
+  "level": 51,
+  "model": 38548,
+  "ingredients": [
+   [
+    "arcanium exceptional bardiche",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6523,
+  "category": "Legendary Military Fork",
+  "name": "Entropic Military Fork",
+  "skill": 1099,
+  "level": 51,
+  "model": 38549,
+  "ingredients": [
+   [
+    "arcanium exceptional partisan",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6524,
+  "category": "Legendary Military Fork",
+  "name": "Somatic Military Fork",
+  "skill": 1099,
+  "level": 51,
+  "model": 38550,
+  "ingredients": [
+   [
+    "arcanium exceptional partisan",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6525,
+  "category": "Legendary Spiked Flail",
+  "name": "Entropic Spiked Flail",
+  "skill": 1099,
+  "level": 51,
+  "model": 38551,
+  "ingredients": [
+   [
+    "arcanium exceptional chain",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6526,
+  "category": "Legendary Spiked Flail",
+  "name": "Somatic Spiked Flail",
+  "skill": 1099,
+  "level": 51,
+  "model": 38552,
+  "ingredients": [
+   [
+    "arcanium exceptional chain",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6527,
+  "category": "Legendary Pick Flail",
+  "name": "Entropic Pick Flail",
+  "skill": 1099,
+  "level": 51,
+  "model": 38553,
+  "ingredients": [
+   [
+    "tempered exceptional whip",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6528,
+  "category": "Legendary Pick Flail",
+  "name": "Somatic Pick Flail",
+  "skill": 1099,
+  "level": 51,
+  "model": 38554,
+  "ingredients": [
+   [
+    "tempered exceptional whip",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6529,
+  "category": "Legendary Fist Wrap",
+  "name": "Entropic Fist Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38672,
+  "ingredients": [
+   [
+    "arcanium exceptional fist wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6530,
+  "category": "Legendary Fist Wrap",
+  "name": "Somatic Fist Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38673,
+  "ingredients": [
+   [
+    "arcanium exceptional fist wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6531,
+  "category": "Legendary Hand Wrap",
+  "name": "Entropic Hand Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38674,
+  "ingredients": [
+   [
+    "arcanium exceptional hand wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 1,
+  "id": 6532,
+  "category": "Legendary Hand Wrap",
+  "name": "Somatic Hand Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38675,
+  "ingredients": [
+   [
+    "arcanium exceptional hand wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2453,
+  "category": "Legendary Magus Staff",
+  "name": "Entropic Magus Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38521,
+  "ingredients": [
+   [
+    "duskwood exceptional magus staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2454,
+  "category": "Legendary Magus Staff",
+  "name": "Somatic Magus Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38522,
+  "ingredients": [
+   [
+    "duskwood exceptional magus staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2455,
+  "category": "Legendary Quarterstaff",
+  "name": "Entropic Quarterstaff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38523,
+  "ingredients": [
+   [
+    "duskwood exceptional quarterstaff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2456,
+  "category": "Legendary Quarterstaff",
+  "name": "Somatic Quarterstaff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38524,
+  "ingredients": [
+   [
+    "duskwood exceptional quarterstaff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2457,
+  "category": "Legendary Mauler Staff",
+  "name": "Entropic Mauler Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38678,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2458,
+  "category": "Legendary Mauler Staff",
+  "name": "Somatic Mauler Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38679,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2459,
+  "category": "Legendary Mauler Shod Staff",
+  "name": "Entropic Mauler Shod Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38676,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler shod staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2460,
+  "category": "Legendary Mauler Shod Staff",
+  "name": "Somatic Mauler Shod Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38677,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler shod staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2461,
+  "category": "Legendary Long Bow",
+  "name": "Entropic Long Bow",
+  "skill": 1099,
+  "level": 51,
+  "model": 38525,
+  "ingredients": [
+   [
+    "duskwood exceptional long bow",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2462,
+  "category": "Legendary Long Bow",
+  "name": "Somatic Long Bow",
+  "skill": 1099,
+  "level": 51,
+  "model": 38526,
+  "ingredients": [
+   [
+    "duskwood exceptional long bow",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2351,
+  "category": "Superior Tinctured Bows",
+  "name": "superior fiery long bow",
+  "skill": 930,
+  "level": 46,
+  "model": 59061,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2354,
+  "category": "Superior Tinctured Bows",
+  "name": "superior fiery short bow",
+  "skill": 930,
+  "level": 46,
+  "model": 59067,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    18
+   ],
+   [
+    "wyvernskin heavy thread",
+    5
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2357,
+  "category": "Superior Tinctured Bows",
+  "name": "superior fiery crossbow",
+  "skill": 930,
+  "level": 46,
+  "model": 59073,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    34
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "netherium metal bars",
+    5
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2352,
+  "category": "Superior Tinctured Bows",
+  "name": "superior icy long bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59062,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2355,
+  "category": "Superior Tinctured Bows",
+  "name": "superior icy short bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59068,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    18
+   ],
+   [
+    "wyvernskin heavy thread",
+    5
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2358,
+  "category": "Superior Tinctured Bows",
+  "name": "superior icy crossbow",
+  "skill": 940,
+  "level": 46,
+  "model": 59074,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    34
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "netherium metal bars",
+    5
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2353,
+  "category": "Superior Tinctured Bows",
+  "name": "superior conductive long bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59063,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2356,
+  "category": "Superior Tinctured Bows",
+  "name": "superior conductive short bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59069,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    18
+   ],
+   [
+    "wyvernskin heavy thread",
+    5
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2359,
+  "category": "Superior Tinctured Bows",
+  "name": "superior conductive crossbow",
+  "skill": 950,
+  "level": 46,
+  "model": 59075,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    34
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "netherium metal bars",
+    5
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2332,
+  "category": "Superior Tinctured Bows",
+  "name": "superior fiery long bow",
+  "skill": 1030,
+  "level": 51,
+  "model": 59001,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2335,
+  "category": "Superior Tinctured Bows",
+  "name": "superior fiery short bow",
+  "skill": 1030,
+  "level": 51,
+  "model": 59007,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    5
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2338,
+  "category": "Superior Tinctured Bows",
+  "name": "superior fiery crossbow",
+  "skill": 1030,
+  "level": 51,
+  "model": 59013,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    34
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "arcanium metal bars",
+    5
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2333,
+  "category": "Superior Tinctured Bows",
+  "name": "superior icy long bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59002,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2336,
+  "category": "Superior Tinctured Bows",
+  "name": "superior icy short bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59008,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    5
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2339,
+  "category": "Superior Tinctured Bows",
+  "name": "superior icy crossbow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59014,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    34
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "arcanium metal bars",
+    5
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2334,
+  "category": "Superior Tinctured Bows",
+  "name": "superior conductive long bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59003,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2337,
+  "category": "Superior Tinctured Bows",
+  "name": "superior conductive short bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59009,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    5
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2340,
+  "category": "Superior Tinctured Bows",
+  "name": "superior conductive crossbow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59015,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    34
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "arcanium metal bars",
+    5
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2360,
+  "category": "Durable Tinctured Bows",
+  "name": "durable fiery long bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59064,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2363,
+  "category": "Durable Tinctured Bows",
+  "name": "durable fiery short bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59070,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    18
+   ],
+   [
+    "wyvernskin heavy thread",
+    5
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2366,
+  "category": "Durable Tinctured Bows",
+  "name": "durable fiery crossbow",
+  "skill": 940,
+  "level": 46,
+  "model": 59076,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    34
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "netherium metal bars",
+    5
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2361,
+  "category": "Durable Tinctured Bows",
+  "name": "durable icy long bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59065,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2364,
+  "category": "Durable Tinctured Bows",
+  "name": "durable icy short bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59071,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    18
+   ],
+   [
+    "wyvernskin heavy thread",
+    5
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2367,
+  "category": "Durable Tinctured Bows",
+  "name": "durable icy crossbow",
+  "skill": 950,
+  "level": 46,
+  "model": 59077,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    34
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "netherium metal bars",
+    5
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2362,
+  "category": "Durable Tinctured Bows",
+  "name": "durable conductive long bow",
+  "skill": 960,
+  "level": 46,
+  "model": 59066,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2365,
+  "category": "Durable Tinctured Bows",
+  "name": "durable conductive short bow",
+  "skill": 960,
+  "level": 46,
+  "model": 59072,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    18
+   ],
+   [
+    "wyvernskin heavy thread",
+    5
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2368,
+  "category": "Durable Tinctured Bows",
+  "name": "durable conductive crossbow",
+  "skill": 960,
+  "level": 46,
+  "model": 59078,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    34
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "netherium metal bars",
+    5
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2342,
+  "category": "Durable Tinctured Bows",
+  "name": "durable fiery long bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59004,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2345,
+  "category": "Durable Tinctured Bows",
+  "name": "durable fiery short bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59010,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    5
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2348,
+  "category": "Durable Tinctured Bows",
+  "name": "durable fiery crossbow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59016,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    34
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "arcanium metal bars",
+    5
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2343,
+  "category": "Durable Tinctured Bows",
+  "name": "durable icy long bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59005,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2346,
+  "category": "Durable Tinctured Bows",
+  "name": "durable icy short bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59011,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    5
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2349,
+  "category": "Durable Tinctured Bows",
+  "name": "durable icy crossbow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59017,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    34
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "arcanium metal bars",
+    5
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2344,
+  "category": "Durable Tinctured Bows",
+  "name": "durable conductive long bow",
+  "skill": 1060,
+  "level": 51,
+  "model": 59006,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2347,
+  "category": "Durable Tinctured Bows",
+  "name": "durable conductive short bow",
+  "skill": 1060,
+  "level": 51,
+  "model": 59012,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    5
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2350,
+  "category": "Durable Tinctured Bows",
+  "name": "durable conductive crossbow",
+  "skill": 1060,
+  "level": 51,
+  "model": 59018,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    34
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "arcanium metal bars",
+    5
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2440,
+  "category": "Harps",
+  "name": "Sigil Harmonious Harp",
+  "skill": 1025,
+  "level": 51,
+  "model": 61128,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Harps",
+  "group": "importable",
+  "why": "product found with its tier word in front",
+  "product": "duskwood_Sigil_Harmonious_Harp",
+  "rows": [
+   [
+    "duskwood_wooden_boards",
+    18
+   ],
+   [
+    "silksteel_heavy_thread",
+    12
+   ],
+   [
+    "tempered_leather_squares",
+    8
+   ],
+   [
+    "Ra_gem",
+    2
+   ]
+  ]
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2441,
+  "category": "Harps",
+  "name": "Sigil Arpeggio Harp",
+  "skill": 1025,
+  "level": 51,
+  "model": 61129,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Harps",
+  "group": "importable",
+  "why": "product found with its tier word in front",
+  "product": "duskwood_Sigil_Arpeggio_Harp",
+  "rows": [
+   [
+    "duskwood_wooden_boards",
+    18
+   ],
+   [
+    "silksteel_heavy_thread",
+    12
+   ],
+   [
+    "tempered_leather_squares",
+    8
+   ],
+   [
+    "Ra_gem",
+    2
+   ]
+  ]
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2443,
+  "category": "Dragonsworn Harps/Weapons",
+  "name": "Harmonious Mandolin",
+  "skill": 1025,
+  "level": 51,
+  "model": 61363,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 1,
+  "trade": 12,
+  "id": 2444,
+  "category": "Dragonsworn Harps/Weapons",
+  "name": "Arpeggio Mandolin",
+  "skill": 1025,
+  "level": 51,
+  "model": 61364,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13301,
+  "category": "Legendary War Hammer",
+  "name": "Entropic War Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38559,
+  "ingredients": [
+   [
+    "arcanium exceptional pick hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13302,
+  "category": "Legendary War Hammer",
+  "name": "Somatic War Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38560,
+  "ingredients": [
+   [
+    "arcanium exceptional pick hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13303,
+  "category": "Legendary Longsword",
+  "name": "Entropic Longsword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38561,
+  "ingredients": [
+   [
+    "arcanium exceptional long sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13304,
+  "category": "Legendary Longsword",
+  "name": "Somatic Long Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38562,
+  "ingredients": [
+   [
+    "arcanium exceptional long sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13305,
+  "category": "Legendary Bladed Axe",
+  "name": "Entropic Double Bladed Axe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38563,
+  "ingredients": [
+   [
+    "arcanium exceptional double bladed axe",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13306,
+  "category": "Legendary Bladed Axe",
+  "name": "Somatic Double Bladed Axe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38564,
+  "ingredients": [
+   [
+    "arcanium exceptional double bladed axe",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13307,
+  "category": "Legendary Great Club",
+  "name": "Entropic Great Club",
+  "skill": 1099,
+  "level": 51,
+  "model": 16234,
+  "ingredients": [
+   [
+    "arcanium exceptional great hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13308,
+  "category": "Legendary Great Club",
+  "name": "Somatic Great Club",
+  "skill": 1099,
+  "level": 51,
+  "model": 38565,
+  "ingredients": [
+   [
+    "arcanium exceptional great hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13309,
+  "category": "Legendary Great Sword",
+  "name": "Entropic Great Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38566,
+  "ingredients": [
+   [
+    "arcanium exceptional great sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13310,
+  "category": "Legendary Great Sword",
+  "name": "Somatic Great Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38567,
+  "ingredients": [
+   [
+    "arcanium exceptional great sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13311,
+  "category": "Legendary Battleaxe",
+  "name": "Entropic Battleaxe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38568,
+  "ingredients": [
+   [
+    "arcanium exceptional battle axe",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13312,
+  "category": "Legendary Battleaxe",
+  "name": "Somatic Battleaxe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38569,
+  "ingredients": [
+   [
+    "arcanium exceptional battle axe",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13313,
+  "category": "Legendary War Axe",
+  "name": "Entropic War Axe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38570,
+  "ingredients": [
+   [
+    "arcanium exceptional hatchet",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13314,
+  "category": "Legendary War Axe",
+  "name": "Somatic War Axe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38571,
+  "ingredients": [
+   [
+    "arcanium exceptional hatchet",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13315,
+  "category": "Legendary Fang Greave",
+  "name": "Entropic Fang Greave",
+  "skill": 1099,
+  "level": 51,
+  "model": 38572,
+  "ingredients": [
+   [
+    "arcanium exceptional fang greave",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13316,
+  "category": "Legendary Fang Greave",
+  "name": "Somatic Fang Greave",
+  "skill": 1099,
+  "level": 51,
+  "model": 38573,
+  "ingredients": [
+   [
+    "arcanium exceptional fang greave",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13317,
+  "category": "Legendary Moon Claw",
+  "name": "Entropic Moon Claw",
+  "skill": 1099,
+  "level": 51,
+  "model": 38574,
+  "ingredients": [
+   [
+    "arcanium exceptional moon claw",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13318,
+  "category": "Legendary Moon Claw",
+  "name": "Somatic Moon Claw",
+  "skill": 1099,
+  "level": 51,
+  "model": 38575,
+  "ingredients": [
+   [
+    "arcanium exceptional moon claw",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13319,
+  "category": "Legendary Hooked Spear",
+  "name": "Entropic Hooked Spear",
+  "skill": 1099,
+  "level": 51,
+  "model": 38576,
+  "ingredients": [
+   [
+    "arcanium exceptional hooked spear",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13320,
+  "category": "Legendary Hooked Spear",
+  "name": "Somatic Hooked Spear",
+  "skill": 1099,
+  "level": 51,
+  "model": 38577,
+  "ingredients": [
+   [
+    "arcanium exceptional hooked spear",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13321,
+  "category": "Legendary Fist Wrap",
+  "name": "Entropic Fist Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38672,
+  "ingredients": [
+   [
+    "arcanium exceptional fist wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13322,
+  "category": "Legendary Fist Wrap",
+  "name": "Somatic Fist Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38673,
+  "ingredients": [
+   [
+    "arcanium exceptional fist wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13323,
+  "category": "Legendary Hand Wrap",
+  "name": "Entropic Hand Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38674,
+  "ingredients": [
+   [
+    "arcanium exceptional hand wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 13324,
+  "category": "Legendary Hand Wrap",
+  "name": "Somatic Hand Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38675,
+  "ingredients": [
+   [
+    "arcanium exceptional hand wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanium metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 10805,
+  "category": "Dragonsworn Small Shields",
+  "name": "Tempered Adroit Buckler",
+  "skill": 1005,
+  "level": 51,
+  "model": 62189,
+  "ingredients": [
+   [
+    "arcanium metal bars",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    4
+   ],
+   [
+    "Ra Gem",
+    1
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 10806,
+  "category": "Dragonsworn Small Shields",
+  "name": "Tempered Pious Buckler",
+  "skill": 1005,
+  "level": 51,
+  "model": 62190,
+  "ingredients": [
+   [
+    "arcanium metal bars",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    4
+   ],
+   [
+    "Ra Gem",
+    1
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 1,
+  "id": 10807,
+  "category": "Dragonsworn Small Shields",
+  "name": "Tempered Mending Buckler",
+  "skill": 1005,
+  "level": 51,
+  "model": 62191,
+  "ingredients": [
+   [
+    "arcanium metal bars",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    4
+   ],
+   [
+    "Ra Gem",
+    1
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9282,
+  "category": "Legendary Composite Bow",
+  "name": "Entropic Composite Bow",
+  "skill": 1099,
+  "level": 51,
+  "model": 38555,
+  "ingredients": [
+   [
+    "duskwood exceptional composite bow",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9283,
+  "category": "Legendary Composite Bow",
+  "name": "Somatic Composite Bow",
+  "skill": 1099,
+  "level": 51,
+  "model": 38556,
+  "ingredients": [
+   [
+    "duskwood exceptional composite bow",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9284,
+  "category": "Legendary Magus Staff",
+  "name": "Entropic Magus Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38557,
+  "ingredients": [
+   [
+    "duskwood exceptional magus staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9285,
+  "category": "Legendary Magus Staff",
+  "name": "Somatic Magus Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38558,
+  "ingredients": [
+   [
+    "duskwood exceptional magus staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9286,
+  "category": "Legendary Mauler Staff",
+  "name": "Entropic Mauler Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38678,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9287,
+  "category": "Legendary Mauler Staff",
+  "name": "Somatic Mauler Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38679,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9288,
+  "category": "Legendary Mauler Shod Staff",
+  "name": "Entropic Mauler Shod Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38676,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler shod staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9289,
+  "category": "Legendary Mauler Shod Staff",
+  "name": "Somatic Mauler Shod Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38677,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler shod staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9206,
+  "category": "Tinctured Composite Bows",
+  "name": "superior fiery composite bow",
+  "skill": 930,
+  "level": 46,
+  "model": 59079,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    37
+   ],
+   [
+    "wyvernskin heavy thread",
+    9
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9207,
+  "category": "Tinctured Composite Bows",
+  "name": "superior icy composite bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59080,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    37
+   ],
+   [
+    "wyvernskin heavy thread",
+    9
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9209,
+  "category": "Tinctured Composite Bows",
+  "name": "durable fiery composite bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59082,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    37
+   ],
+   [
+    "wyvernskin heavy thread",
+    9
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9208,
+  "category": "Tinctured Composite Bows",
+  "name": "superior conductive composite bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59081,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    37
+   ],
+   [
+    "wyvernskin heavy thread",
+    9
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9210,
+  "category": "Tinctured Composite Bows",
+  "name": "durable icy composite bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59083,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    37
+   ],
+   [
+    "wyvernskin heavy thread",
+    9
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9211,
+  "category": "Tinctured Composite Bows",
+  "name": "durable conductive composite bow",
+  "skill": 960,
+  "level": 46,
+  "model": 59084,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    37
+   ],
+   [
+    "wyvernskin heavy thread",
+    9
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9200,
+  "category": "Tinctured Composite Bows",
+  "name": "superior fiery composite bow",
+  "skill": 1030,
+  "level": 51,
+  "model": 59019,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    37
+   ],
+   [
+    "silksteel heavy thread",
+    9
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9201,
+  "category": "Tinctured Composite Bows",
+  "name": "superior icy composite bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59020,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    37
+   ],
+   [
+    "silksteel heavy thread",
+    9
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9203,
+  "category": "Tinctured Composite Bows",
+  "name": "durable fiery composite bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59022,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    37
+   ],
+   [
+    "silksteel heavy thread",
+    9
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9202,
+  "category": "Tinctured Composite Bows",
+  "name": "superior conductive composite bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59021,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    37
+   ],
+   [
+    "silksteel heavy thread",
+    9
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9204,
+  "category": "Tinctured Composite Bows",
+  "name": "durable icy composite bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59023,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    37
+   ],
+   [
+    "silksteel heavy thread",
+    9
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9205,
+  "category": "Tinctured Composite Bows",
+  "name": "durable conductive composite bow",
+  "skill": 1060,
+  "level": 51,
+  "model": 59024,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    37
+   ],
+   [
+    "silksteel heavy thread",
+    9
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 2,
+  "trade": 12,
+  "id": 9279,
+  "category": "Dragonsworn Weapons",
+  "name": "magus staff",
+  "skill": 1000,
+  "level": 51,
+  "model": 62204,
+  "ingredients": [
+   [
+    "arcanium metal bars",
+    9
+   ],
+   [
+    "duskwood wooden boards",
+    32
+   ],
+   [
+    "tempered leather squares",
+    5
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Dragonsworn",
+  "group": "owner call",
+  "why": "product is the realm's unused \"Dragonsworn Staff\"; is that the client's Dragonsworn \"magus staff\"?",
+  "product": "2Dragonsworn_Staff_Mid",
+  "rows": [
+   [
+    "arcanium_metal_bars",
+    9
+   ],
+   [
+    "duskwood_wooden_boards",
+    32
+   ],
+   [
+    "tempered_leather_squares",
+    5
+   ],
+   [
+    "broken_dragonsworn_weapons",
+    1
+   ]
+  ]
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20301,
+  "category": "Legendary Dire Hammer",
+  "name": "Entropic Dire Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38582,
+  "ingredients": [
+   [
+    "arcanite exceptional mace",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20302,
+  "category": "Legendary Dire Hammer",
+  "name": "Somatic Dire Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38583,
+  "ingredients": [
+   [
+    "arcanite exceptional mace",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20303,
+  "category": "Legendary War Adze",
+  "name": "Entropic War Adze",
+  "skill": 1099,
+  "level": 51,
+  "model": 38584,
+  "ingredients": [
+   [
+    "arcanite exceptional rapier",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20304,
+  "category": "Legendary War Adze",
+  "name": "Somatic War Adze",
+  "skill": 1099,
+  "level": 51,
+  "model": 38585,
+  "ingredients": [
+   [
+    "arcanite exceptional rapier",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20305,
+  "category": "Legendary Long Sword",
+  "name": "Entropic Long Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38586,
+  "ingredients": [
+   [
+    "arcanite exceptional long sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20306,
+  "category": "Legendary Long Sword",
+  "name": "Somatic Long Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38587,
+  "ingredients": [
+   [
+    "arcanite exceptional long sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20307,
+  "category": "Legendary Hammer",
+  "name": "Entropic Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38588,
+  "ingredients": [
+   [
+    "arcanite exceptional hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20308,
+  "category": "Legendary Hammer",
+  "name": "Somatic Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38589,
+  "ingredients": [
+   [
+    "arcanite exceptional hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20309,
+  "category": "Legendary Adze",
+  "name": "Entropic Adze",
+  "skill": 1099,
+  "level": 51,
+  "model": 38590,
+  "ingredients": [
+   [
+    "arcanite exceptional stiletto",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20310,
+  "category": "Legendary Adze",
+  "name": "Somatic Adze",
+  "skill": 1099,
+  "level": 51,
+  "model": 38591,
+  "ingredients": [
+   [
+    "arcanite exceptional stiletto",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20311,
+  "category": "Legendary Short Sword",
+  "name": "Entropic Short Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38592,
+  "ingredients": [
+   [
+    "arcanite exceptional short sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20312,
+  "category": "Legendary Short Sword",
+  "name": "Somatic Short Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38593,
+  "ingredients": [
+   [
+    "arcanite exceptional short sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20313,
+  "category": "Legendary Great Hammer",
+  "name": "Entropic Great Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38594,
+  "ingredients": [
+   [
+    "arcanite exceptional great hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20314,
+  "category": "Legendary Great Hammer",
+  "name": "Somatic Great Hammer",
+  "skill": 1099,
+  "level": 51,
+  "model": 38595,
+  "ingredients": [
+   [
+    "arcanite exceptional great hammer",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20315,
+  "category": "Legendary Great Sword",
+  "name": "Entropic Great Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38596,
+  "ingredients": [
+   [
+    "arcanite exceptional great sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20316,
+  "category": "Legendary Great Sword",
+  "name": "Somatic Great Sword",
+  "skill": 1099,
+  "level": 51,
+  "model": 38597,
+  "ingredients": [
+   [
+    "arcanite exceptional great sword",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20317,
+  "category": "Legendary Battle Spear",
+  "name": "Entropic Battle Spear",
+  "skill": 1099,
+  "level": 51,
+  "model": 38598,
+  "ingredients": [
+   [
+    "arcanite exceptional battle spear",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20318,
+  "category": "Legendary Battle Spear",
+  "name": "Somatic Battle Spear",
+  "skill": 1099,
+  "level": 51,
+  "model": 38599,
+  "ingredients": [
+   [
+    "arcanite exceptional battle spear",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20319,
+  "category": "Legendary War Scythe",
+  "name": "Entropic War Scythe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38670,
+  "ingredients": [
+   [
+    "arcanite exceptional war scythe",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20320,
+  "category": "Legendary War Scythe",
+  "name": "Somatic War Scythe",
+  "skill": 1099,
+  "level": 51,
+  "model": 38671,
+  "ingredients": [
+   [
+    "arcanite exceptional war scythe",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20321,
+  "category": "Legendary Fist Wrap",
+  "name": "Entropic Fist Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38672,
+  "ingredients": [
+   [
+    "arcanite exceptional fist wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20322,
+  "category": "Legendary Fist Wrap",
+  "name": "Somatic Fist Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38673,
+  "ingredients": [
+   [
+    "arcanite exceptional fist wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20323,
+  "category": "Legendary Hand Wrap",
+  "name": "Entropic Hand Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38674,
+  "ingredients": [
+   [
+    "arcanite exceptional hand wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 20324,
+  "category": "Legendary Hand Wrap",
+  "name": "Somatic Hand Wrap",
+  "skill": 1099,
+  "level": 51,
+  "model": 38675,
+  "ingredients": [
+   [
+    "arcanite exceptional hand wrap",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect fiery essence jewel",
+    3
+   ],
+   [
+    "arcanite metal bars",
+    40
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 17760,
+  "category": "Dragonsworn Large Shields",
+  "name": "Riddled Regrown Leaf Shield",
+  "skill": 1005,
+  "level": 51,
+  "model": 62284,
+  "ingredients": [
+   [
+    "arcanite metal bars",
+    5
+   ],
+   [
+    "duskwood wooden boards",
+    3
+   ],
+   [
+    "tempered leather squares",
+    1
+   ],
+   [
+    "Ra Gem",
+    3
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 1,
+  "id": 17761,
+  "category": "Dragonsworn Large Shields",
+  "name": "Riddled Protector's Leaf Shield",
+  "skill": 1005,
+  "level": 51,
+  "model": 62285,
+  "ingredients": [
+   [
+    "arcanite metal bars",
+    5
+   ],
+   [
+    "duskwood wooden boards",
+    3
+   ],
+   [
+    "tempered leather squares",
+    1
+   ],
+   [
+    "Ra Gem",
+    3
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Weaponcrafting",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16347,
+  "category": "Legendary Recurve Bow",
+  "name": "Entropic Recurve Bow",
+  "skill": 1099,
+  "level": 51,
+  "model": 38578,
+  "ingredients": [
+   [
+    "duskwood exceptional recurve bow",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wood",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16348,
+  "category": "Legendary Recurve Bow",
+  "name": "Somatic Recurve Bow",
+  "skill": 1099,
+  "level": 51,
+  "model": 38579,
+  "ingredients": [
+   [
+    "duskwood exceptional recurve bow",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wood",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16228,
+  "category": "Legendary Magus Staff",
+  "name": "Benthic Magus Staff",
+  "skill": 1080,
+  "level": 51,
+  "model": 40824,
+  "ingredients": [
+   [
+    "duskwood exceptional magus staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Cauldron of Vivifying Water",
+    1
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wood",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Benthic",
+  "group": "importable",
+  "why": "product row filed under Midgard; Realm set to Hibernia",
+  "product": "Benthic_Magus_Staff2",
+  "rows": [
+   [
+    "duskwood_exceptional_magus_staff3",
+    1
+   ],
+   [
+    "otherworldly_ore",
+    20
+   ],
+   [
+    "Cauldron_of_Vivifying_Water1",
+    1
+   ],
+   [
+    "volatile_cold_arcanium_weapon_tincture3",
+    3
+   ],
+   [
+    "perfect_Vapor_Essence_jewel3",
+    3
+   ],
+   [
+    "duskwood_wooden_boards",
+    92
+   ]
+  ]
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16349,
+  "category": "Legendary Magus Staff",
+  "name": "Entropic Magus Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38580,
+  "ingredients": [
+   [
+    "duskwood exceptional magus staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wood",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16350,
+  "category": "Legendary Magus Staff",
+  "name": "Somatic Magus Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38581,
+  "ingredients": [
+   [
+    "duskwood exceptional magus staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wood",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16351,
+  "category": "Legendary Mauler Staff",
+  "name": "Entropic Mauler Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38678,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16352,
+  "category": "Legendary Mauler Staff",
+  "name": "Somatic Mauler Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38679,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16353,
+  "category": "Legendary Mauler Shod Staff",
+  "name": "Entropic Mauler Shod Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38676,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler shod staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Orb of Entropy",
+    1
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Entropic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16354,
+  "category": "Legendary Mauler Shod Staff",
+  "name": "Somatic Mauler Shod Staff",
+  "skill": 1099,
+  "level": 51,
+  "model": 38677,
+  "ingredients": [
+   [
+    "duskwood exceptional mauler shod staff",
+    1
+   ],
+   [
+    "Otherworldly Ore",
+    20
+   ],
+   [
+    "Pound of Flesh",
+    1
+   ],
+   [
+    "volatile Spirit arcanium weapon tincture",
+    3
+   ],
+   [
+    "perfect vapor essence jewel",
+    3
+   ],
+   [
+    "duskwood wooden boards",
+    92
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Legendary: Somatic",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16251,
+  "category": "Tinctured Recurve Bows",
+  "name": "superior fiery recurve bow",
+  "skill": 930,
+  "level": 46,
+  "model": 59085,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16254,
+  "category": "Tinctured Recurve Bows",
+  "name": "durable fiery recurve bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59088,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16252,
+  "category": "Tinctured Recurve Bows",
+  "name": "superior icy recurve bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59086,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16255,
+  "category": "Tinctured Recurve Bows",
+  "name": "durable icy recurve bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59089,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16253,
+  "category": "Tinctured Recurve Bows",
+  "name": "superior conductive recurve bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59087,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16256,
+  "category": "Tinctured Recurve Bows",
+  "name": "durable conductive recurve bow",
+  "skill": 960,
+  "level": 46,
+  "model": 59090,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    49
+   ],
+   [
+    "wyvernskin heavy thread",
+    15
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16238,
+  "category": "Tinctured Recurve Bows",
+  "name": "superior fiery recurve bow",
+  "skill": 1030,
+  "level": 51,
+  "model": 59025,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16241,
+  "category": "Tinctured Recurve Bows",
+  "name": "durable fiery recurve bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59028,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16239,
+  "category": "Tinctured Recurve Bows",
+  "name": "superior icy recurve bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59026,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16242,
+  "category": "Tinctured Recurve Bows",
+  "name": "durable icy recurve bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59029,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16240,
+  "category": "Tinctured Recurve Bows",
+  "name": "superior conductive recurve bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59027,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16243,
+  "category": "Tinctured Recurve Bows",
+  "name": "durable conductive recurve bow",
+  "skill": 1060,
+  "level": 51,
+  "model": 59030,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    49
+   ],
+   [
+    "silksteel heavy thread",
+    15
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16257,
+  "category": "Tinctured Short Bows",
+  "name": "superior fiery short bow",
+  "skill": 930,
+  "level": 46,
+  "model": 59091,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    22
+   ],
+   [
+    "wyvernskin heavy thread",
+    7
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16258,
+  "category": "Tinctured Short Bows",
+  "name": "superior icy short bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59092,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    22
+   ],
+   [
+    "wyvernskin heavy thread",
+    7
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16260,
+  "category": "Tinctured Short Bows",
+  "name": "durable fiery short bow",
+  "skill": 940,
+  "level": 46,
+  "model": 59094,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    22
+   ],
+   [
+    "wyvernskin heavy thread",
+    7
+   ],
+   [
+    "volatile Fire netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16259,
+  "category": "Tinctured Short Bows",
+  "name": "superior conductive short bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59093,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    22
+   ],
+   [
+    "wyvernskin heavy thread",
+    7
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16261,
+  "category": "Tinctured Short Bows",
+  "name": "durable icy short bow",
+  "skill": 950,
+  "level": 46,
+  "model": 59095,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    22
+   ],
+   [
+    "wyvernskin heavy thread",
+    7
+   ],
+   [
+    "volatile Cold netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16262,
+  "category": "Tinctured Short Bows",
+  "name": "durable conductive short bow",
+  "skill": 960,
+  "level": 46,
+  "model": 59096,
+  "ingredients": [
+   [
+    "dyrwood wooden boards",
+    22
+   ],
+   [
+    "wyvernskin heavy thread",
+    7
+   ],
+   [
+    "volatile Energy netherium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16245,
+  "category": "Tinctured Short Bows",
+  "name": "superior fiery short bow",
+  "skill": 1030,
+  "level": 51,
+  "model": 59031,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    22
+   ],
+   [
+    "silksteel heavy thread",
+    7
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16246,
+  "category": "Tinctured Short Bows",
+  "name": "superior icy short bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59032,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    22
+   ],
+   [
+    "silksteel heavy thread",
+    7
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16248,
+  "category": "Tinctured Short Bows",
+  "name": "durable fiery short bow",
+  "skill": 1040,
+  "level": 51,
+  "model": 59034,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    22
+   ],
+   [
+    "silksteel heavy thread",
+    7
+   ],
+   [
+    "volatile Fire arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16247,
+  "category": "Tinctured Short Bows",
+  "name": "superior conductive short bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59033,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    22
+   ],
+   [
+    "silksteel heavy thread",
+    7
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16249,
+  "category": "Tinctured Short Bows",
+  "name": "durable icy short bow",
+  "skill": 1050,
+  "level": 51,
+  "model": 59035,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    22
+   ],
+   [
+    "silksteel heavy thread",
+    7
+   ],
+   [
+    "volatile Cold arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16250,
+  "category": "Tinctured Short Bows",
+  "name": "durable conductive short bow",
+  "skill": 1060,
+  "level": 51,
+  "model": 59036,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    22
+   ],
+   [
+    "silksteel heavy thread",
+    7
+   ],
+   [
+    "volatile Energy arcanium weapon tincture",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Tinctured bows",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16334,
+  "category": "Harps",
+  "name": "Spell Marked Luinneag Harp",
+  "skill": 1025,
+  "level": 51,
+  "model": 61130,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Harps",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16335,
+  "category": "Harps",
+  "name": "Spell Marked Appoggiatura Harp",
+  "skill": 1025,
+  "level": 51,
+  "model": 61131,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Harps",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16336,
+  "category": "Harps",
+  "name": "Spell Marked Adban Trireach Harp",
+  "skill": 1025,
+  "level": 51,
+  "model": 61132,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Harps",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16338,
+  "category": "Dragonsworn Harps/Weapons",
+  "name": "Luinneag Mandolin",
+  "skill": 1025,
+  "level": 51,
+  "model": 61360,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16339,
+  "category": "Dragonsworn Harps/Weapons",
+  "name": "Appoggiatura Mandolin",
+  "skill": 1025,
+  "level": 51,
+  "model": 61361,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16340,
+  "category": "Dragonsworn Harps/Weapons",
+  "name": "Adban Trireach Mandolin",
+  "skill": 1025,
+  "level": 51,
+  "model": 61362,
+  "ingredients": [
+   [
+    "duskwood wooden boards",
+    18
+   ],
+   [
+    "silksteel heavy thread",
+    12
+   ],
+   [
+    "tempered leather squares",
+    8
+   ],
+   [
+    "Ra gem",
+    2
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Dragonsworn",
+  "group": "needs product",
+  "why": "no product item"
+ },
+ {
+  "realm": 3,
+  "trade": 12,
+  "id": 16343,
+  "category": "Dragonsworn Harps/Weapons",
+  "name": "magus staff",
+  "skill": 1000,
+  "level": 51,
+  "model": 62288,
+  "ingredients": [
+   [
+    "arcanite metal bars",
+    9
+   ],
+   [
+    "duskwood wooden boards",
+    32
+   ],
+   [
+    "tempered leather squares",
+    5
+   ],
+   [
+    "Broken Dragonsworn Weapon",
+    1
+   ]
+  ],
+  "trade_name": "Fletching",
+  "family": "Dragonsworn",
+  "group": "owner call",
+  "why": "product is the realm's unused \"Dragonsworn Staff\"; is that the client's Dragonsworn \"magus staff\"?",
+  "product": "3Dragonsworn_Staff_Hib",
+  "rows": [
+   [
+    "arcanite_metal_bars",
+    9
+   ],
+   [
+    "duskwood_wooden_boards",
+    32
+   ],
+   [
+    "tempered_leather_squares",
+    5
+   ],
+   [
+    "broken_dragonsworn_weapons",
+    1
+   ]
+  ]
+ }
+]

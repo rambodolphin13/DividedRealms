@@ -1,0 +1,96 @@
+[
+ {
+  "table": "CraftedItem",
+  "insert": {
+   "CraftedItemID": "9279",
+   "CraftedItem_ID": "9279",
+   "Id_nb": "2Dragonsworn_Staff_Mid",
+   "CraftingLevel": 1000,
+   "CraftingSkillType": 12,
+   "MakeTemplated": 0
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "2408c352-56e0-547a-80b5-3c03734c21d0",
+   "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+   "IngredientId_nb": "arcanium_metal_bars",
+   "Count": 9
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "226e96b4-1a37-5827-93b0-471ff6eaae22",
+   "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+   "IngredientId_nb": "duskwood_wooden_boards",
+   "Count": 32
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "7f27737f-6d25-5f2f-b8e6-0007cfc260e0",
+   "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+   "IngredientId_nb": "tempered_leather_squares",
+   "Count": 5
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "b36db7b0-3040-5496-8e96-2610c69ebd6c",
+   "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+   "IngredientId_nb": "broken_dragonsworn_weapons",
+   "Count": 1
+  }
+ },
+ {
+  "table": "CraftedItem",
+  "insert": {
+   "CraftedItemID": "16343",
+   "CraftedItem_ID": "16343",
+   "Id_nb": "3Dragonsworn_Staff_Hib",
+   "CraftingLevel": 1000,
+   "CraftingSkillType": 12,
+   "MakeTemplated": 0
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "1d80a1f4-b107-59a7-8ab2-dfea873b4580",
+   "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+   "IngredientId_nb": "arcanite_metal_bars",
+   "Count": 9
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "897fef3a-5fae-57d9-b436-646c8c228c6e",
+   "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+   "IngredientId_nb": "duskwood_wooden_boards",
+   "Count": 32
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "edc2b214-94ff-5efa-a3e6-0db23dd026e7",
+   "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+   "IngredientId_nb": "tempered_leather_squares",
+   "Count": 5
+  }
+ },
+ {
+  "table": "CraftedXItem",
+  "insert": {
+   "CraftedXItem_ID": "3b2b6cd2-8f75-59c7-9d70-ca5f4ced2e04",
+   "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+   "IngredientId_nb": "broken_dragonsworn_weapons",
+   "Count": 1
+  }
+ }
+]

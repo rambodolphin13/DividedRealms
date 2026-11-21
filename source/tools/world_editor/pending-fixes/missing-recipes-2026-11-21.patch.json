@@ -1,0 +1,246 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-21T15:56:29.046177+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "CraftedItem",
+   "key": "2440",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemID": "2440",
+    "Id_nb": "duskwood_Sigil_Harmonious_Harp",
+    "CraftingLevel": 1025,
+    "CraftingSkillType": 12,
+    "MakeTemplated": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedItem_ID": "2440"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "1f678496-3fec-50fa-9466-e646b946adc3",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+    "IngredientId_nb": "duskwood_wooden_boards",
+    "Count": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "1f678496-3fec-50fa-9466-e646b946adc3"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "54ecc2e7-10c1-58f2-a896-180a6eff1f8c",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+    "IngredientId_nb": "silksteel_heavy_thread",
+    "Count": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "54ecc2e7-10c1-58f2-a896-180a6eff1f8c"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "7584d054-9d97-5b21-8853-7314e959f879",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+    "IngredientId_nb": "tempered_leather_squares",
+    "Count": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "7584d054-9d97-5b21-8853-7314e959f879"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "55431190-1472-5431-8821-dc9587f5cc85",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Harmonious_Harp",
+    "IngredientId_nb": "Ra_gem",
+    "Count": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "55431190-1472-5431-8821-dc9587f5cc85"
+   }
+  },
+  {
+   "table": "CraftedItem",
+   "key": "2441",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemID": "2441",
+    "Id_nb": "duskwood_Sigil_Arpeggio_Harp",
+    "CraftingLevel": 1025,
+    "CraftingSkillType": 12,
+    "MakeTemplated": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedItem_ID": "2441"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "de3c74c8-add3-5346-8bba-0acb95b74e4f",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+    "IngredientId_nb": "duskwood_wooden_boards",
+    "Count": 18,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "de3c74c8-add3-5346-8bba-0acb95b74e4f"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "cd91faf8-894e-55fb-b0ef-f785d47c0312",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+    "IngredientId_nb": "silksteel_heavy_thread",
+    "Count": 12,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "cd91faf8-894e-55fb-b0ef-f785d47c0312"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "ce9af5f8-baa2-5c06-ae69-3128e0743547",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+    "IngredientId_nb": "tempered_leather_squares",
+    "Count": 8,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "ce9af5f8-baa2-5c06-ae69-3128e0743547"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "a7070961-347e-5d8a-9cc5-76e9743327c1",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "duskwood_Sigil_Arpeggio_Harp",
+    "IngredientId_nb": "Ra_gem",
+    "Count": 2,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "a7070961-347e-5d8a-9cc5-76e9743327c1"
+   }
+  },
+  {
+   "table": "ItemTemplate",
+   "key": "Benthic_Magus_Staff2",
+   "op": "update",
+   "before": {
+    "Realm": 2
+   },
+   "after": {
+    "Realm": 3
+   }
+  },
+  {
+   "table": "CraftedItem",
+   "key": "16228",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemID": "16228",
+    "Id_nb": "Benthic_Magus_Staff2",
+    "CraftingLevel": 1080,
+    "CraftingSkillType": 12,
+    "MakeTemplated": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedItem_ID": "16228"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "a3c6dff1-048e-5833-b0b9-cbb2371ae314",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "Benthic_Magus_Staff2",
+    "IngredientId_nb": "duskwood_exceptional_magus_staff3",
+    "Count": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "a3c6dff1-048e-5833-b0b9-cbb2371ae314"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "26053dd3-0d50-5543-ac31-f1691a4e6470",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "Benthic_Magus_Staff2",
+    "IngredientId_nb": "otherworldly_ore",
+    "Count": 20,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "26053dd3-0d50-5543-ac31-f1691a4e6470"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "354b3c41-5cc1-5a44-b77a-867009c08548",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "Benthic_Magus_Staff2",
+    "IngredientId_nb": "Cauldron_of_Vivifying_Water1",
+    "Count": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "354b3c41-5cc1-5a44-b77a-867009c08548"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "62d9eda4-d624-5ba7-83f2-ad5e226b3d81",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "Benthic_Magus_Staff2",
+    "IngredientId_nb": "volatile_cold_arcanium_weapon_tincture3",
+    "Count": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "62d9eda4-d624-5ba7-83f2-ad5e226b3d81"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "460abb45-a196-587d-b4c0-585c197ec066",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "Benthic_Magus_Staff2",
+    "IngredientId_nb": "perfect_Vapor_Essence_jewel3",
+    "Count": 3,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "460abb45-a196-587d-b4c0-585c197ec066"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "fc452be7-b920-5c72-858b-98c5a3dba091",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "Benthic_Magus_Staff2",
+    "IngredientId_nb": "duskwood_wooden_boards",
+    "Count": 92,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "fc452be7-b920-5c72-858b-98c5a3dba091"
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

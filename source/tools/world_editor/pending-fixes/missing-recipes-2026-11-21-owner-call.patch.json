@@ -1,0 +1,142 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-21T15:56:31.889243+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "CraftedItem",
+   "key": "9279",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemID": "9279",
+    "Id_nb": "2Dragonsworn_Staff_Mid",
+    "CraftingLevel": 1000,
+    "CraftingSkillType": 12,
+    "MakeTemplated": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedItem_ID": "9279"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "2408c352-56e0-547a-80b5-3c03734c21d0",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+    "IngredientId_nb": "arcanium_metal_bars",
+    "Count": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "2408c352-56e0-547a-80b5-3c03734c21d0"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "226e96b4-1a37-5827-93b0-471ff6eaae22",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+    "IngredientId_nb": "duskwood_wooden_boards",
+    "Count": 32,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "226e96b4-1a37-5827-93b0-471ff6eaae22"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "7f27737f-6d25-5f2f-b8e6-0007cfc260e0",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+    "IngredientId_nb": "tempered_leather_squares",
+    "Count": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "7f27737f-6d25-5f2f-b8e6-0007cfc260e0"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "b36db7b0-3040-5496-8e96-2610c69ebd6c",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "2Dragonsworn_Staff_Mid",
+    "IngredientId_nb": "broken_dragonsworn_weapons",
+    "Count": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "b36db7b0-3040-5496-8e96-2610c69ebd6c"
+   }
+  },
+  {
+   "table": "CraftedItem",
+   "key": "16343",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemID": "16343",
+    "Id_nb": "3Dragonsworn_Staff_Hib",
+    "CraftingLevel": 1000,
+    "CraftingSkillType": 12,
+    "MakeTemplated": 0,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedItem_ID": "16343"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "1d80a1f4-b107-59a7-8ab2-dfea873b4580",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+    "IngredientId_nb": "arcanite_metal_bars",
+    "Count": 9,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "1d80a1f4-b107-59a7-8ab2-dfea873b4580"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "897fef3a-5fae-57d9-b436-646c8c228c6e",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+    "IngredientId_nb": "duskwood_wooden_boards",
+    "Count": 32,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "897fef3a-5fae-57d9-b436-646c8c228c6e"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "edc2b214-94ff-5efa-a3e6-0db23dd026e7",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+    "IngredientId_nb": "tempered_leather_squares",
+    "Count": 5,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "edc2b214-94ff-5efa-a3e6-0db23dd026e7"
+   }
+  },
+  {
+   "table": "CraftedXItem",
+   "key": "3b2b6cd2-8f75-59c7-9d70-ca5f4ced2e04",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "CraftedItemId_nb": "3Dragonsworn_Staff_Hib",
+    "IngredientId_nb": "broken_dragonsworn_weapons",
+    "Count": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "CraftedXItem_ID": "3b2b6cd2-8f75-59c7-9d70-ca5f4ced2e04"
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
