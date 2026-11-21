@@ -1290,6 +1290,15 @@ namespace DOL.AI.Brain
                     Body.StopMoving();
                 return;
             }
+            // DR-395: in a trial fight a caster or healer keeps its spot on the ring round the boss (TrialStandOff)
+            // instead of its slot beside the player, who stands on the boss.
+            if (!ambientWander && InTrialStandOffFight(out _))
+            {
+                _ambientWanderMovement = false;
+                if (!TryTrialStandOff(null) && Body.IsMoving && CompanionFollowPolicy.HasFormationOrder(BotBody))
+                    Body.StopMoving();
+                return;
+            }
             if (!ambientWander && CompanionHealerCombatHold.Holds(BotBody, leader))
             {
                 // Stop a formation walk already under way; other movement is left alone.
@@ -3601,6 +3610,10 @@ namespace DOL.AI.Brain
                     Body.castingComponent?.SpellHandler?.Spell))
                 return;
 
+            // DR-395: a caster in a trial fight takes its spot on the ring round the boss before it casts (TrialStandOff).
+            if (TryTrialStandOff(Body.TargetObject as GameLiving))
+                return;
+
             GameLiving protectionTarget = FindProtectionTarget();
             if (protectionTarget != null)
                 AddToAggroList(protectionTarget, 10000);
@@ -4856,6 +4869,14 @@ namespace DOL.AI.Brain
                         spellsToCast.RemoveAll(spell => spell.Range <= Body.MeleeAttackRange && !(spell.Range <= 0 && spell.Radius > 0));
                     if (PrefersCurrentSpellRange() && spellsToCast.Exists(BotCasterPriority.IsDamage))
                         spellsToCast.RemoveAll(spell => !BotCasterPriority.IsDamage(spell));
+                    // DR-394: short of power for a nuke, a player's caster saves for it instead of spending on a debuff.
+                    else if (BotCasterPriority.SavesPowerForNuke(PrefersCurrentSpellRange(), BotBody.IsPlayerLedGroup,
+                                 Body.TargetObject is GameNPC and not GameBot, OutOfPowerForOffense()))
+                    {
+                        foreach (Spell held in spellsToCast)
+                            BotTesterLog.Skipped(Body, held, "cast: saving power for a damage spell");
+                        return Body.IsCasting;
+                    }
                     bool shamanHybrid = ShamanBotCombatPolicy.CastsBetweenSwings((eCharacterClass)BotBody.CharacterClass.ID);
                     // Two or more monsters in the fight within an area damage spell's reach: that spell, when its total
                     // beats the best single nuke. Area spells that would wake a mez or pull a monster are dropped here.
@@ -4865,7 +4886,9 @@ namespace DOL.AI.Brain
                         ? spellsToCast.OrderBy(ShamanBotCombatPolicy.RotationPriority)
                             .ThenByDescending(spell => spell.Level).First()
                         : BotBody.IsEndgameCompanion
-                        ? TemporaryCompanionBalance.HighestSpell(spellsToCast)
+                        // DR-394: the spell that hits hardest after the target's resists, not the highest level one.
+                        ? BotCasterPriority.HardestHitting(spellsToCast, type => (Body.TargetObject as GameLiving)?.GetResist(type) ?? 0,
+                              BotBody.PowerCost) ?? TemporaryCompanionBalance.HighestSpell(spellsToCast)
                         : spellsToCast[Util.Random(spellsToCast.Count - 1)]);
 
                     if (spellToCast.Uninterruptible || !Body.IsBeingInterrupted)
@@ -6404,8 +6427,8 @@ namespace DOL.AI.Brain
                 }
             }
 
-            // Non-emergency heal
-            if (spellToCast == null && numNeedHealing > 0)
+            // Non-emergency heal (held while this healer saves power to raise a dead member, DR-396)
+            if (spellToCast == null && numNeedHealing > 0 && !BotGroupSupport.SavesPowerForResurrection(BotBody))
             {
                 if (!BotBody.IsCasting || (numEmergency > 0 && !isCastingHeal) ||
                     BotFocusChannelPolicy.ChecksHealsDuringChannel(BotBody.castingComponent))

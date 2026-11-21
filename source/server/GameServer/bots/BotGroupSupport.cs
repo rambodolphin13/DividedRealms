@@ -179,6 +179,79 @@ namespace DOL.GS
             foeFighting && conToCorpse >= ConColor.RED &&
             Vector2.Distance(new(corpse.X, corpse.Y), new(foe.X, foe.Y)) <= HardFoeCorpseRadius;
 
+        /// <summary>
+        /// DR-396: in a player's party the rule above gives way while a living member holds the monster. A companion that
+        /// died on a trial boss lay "under" it for the whole fight (ML 2.10: two dead for the last 12 minutes), though the
+        /// tank still had the boss and the healers were free. With nobody holding it the corpse still waits. Pure.
+        /// </summary>
+        public static bool HardFoeStopsRaise(bool corpseUnderHardFoe, bool playerLedParty, bool foeHeldByLivingMember) =>
+            corpseUnderHardFoe && !(playerLedParty && foeHeldByLivingMember);
+
+        private static bool HeldByLivingMember(GameNPC foe, Group group)
+        {
+            if (group == null || foe?.TargetObject is not GameLiving { IsAlive: true } held)
+                return false;
+            GameLiving owner = held is GameNPC { Brain: DOL.AI.Brain.IControlledBrain pet } and not GameBot ? pet.GetLivingOwner() : held;
+            return owner != null && group.IsInTheGroup(owner);
+        }
+
+        /// <summary>The hard monster that keeps this bot from raising <paramref name="corpse"/> in a fight, or null.</summary>
+        private static GameNPC HardFoeHoldingCorpse(GameBot bot, GameLiving corpse) =>
+            corpse is GameBot && HardFoeOverCorpse(corpse) is GameNPC foe &&
+            HardFoeStopsRaise(true, bot.IsPlayerLedGroup, HeldByLivingMember(foe, bot.Group)) ? foe : null;
+
+        /// <summary>
+        /// DR-396: a resurrection costs about half a healer's power, and companion healers heal without pause, so in a long
+        /// fight none of them ever had it ("not enough power to cast" was 38 of 80 block reports on ML 2.10). While a party
+        /// member lies dead in range and no resurrector can pay, the one closest to the cost stops its ordinary heals (not
+        /// the emergency ones) until it can, as long as another healer keeps healing. Pure.
+        /// </summary>
+        public static bool SavesPowerForResurrection(int shortfall, int smallestShortfallOfOthers, int otherHealers) =>
+            shortfall > 0 && otherHealers > 0 && smallestShortfallOfOthers > 0 && shortfall <= smallestShortfallOfOthers;
+
+        /// <summary>Whether this player-led healer holds its ordinary heals to afford a resurrection (see the pure overload).</summary>
+        public static bool SavesPowerForResurrection(GameBot bot)
+        {
+            Spell spell = bot?.ResurrectionSpell;
+            Group group = bot?.Group;
+            if (spell == null || group == null || !bot.IsPlayerLedGroup || !bot.IsAlive)
+                return false;
+            int range = bot.castingComponent.CalculateSpellRange(spell);
+            GameLiving corpse = null;
+            foreach (GameLiving member in group.GetMembersInTheGroup())
+            {
+                if (member != bot && !member.IsAlive && member.ObjectState == GameObject.eObjectState.Active &&
+                    member.CurrentRegionID == bot.CurrentRegionID && bot.IsWithinRadius(member, range) &&
+                    member.TempProperties.GetProperty<GameLiving>("RESURRECT_CASTER") == null)
+                {
+                    corpse = member;
+                    break;
+                }
+            }
+            if (corpse == null)
+                return false;
+            int shortfall = BotSpellPower.ResurrectCost(bot, corpse) - bot.Mana;
+            if (shortfall <= 0)
+                return false;
+            int others = int.MaxValue, healers = 0;
+            foreach (GameLiving member in group.GetMembersInTheGroup())
+            {
+                if (member is not GameBot other || other == bot || !other.IsAlive || other.CurrentRegionID != bot.CurrentRegionID)
+                    continue;
+                if (other.CanCastHealSpells)
+                    healers++;
+                if (other.ResurrectionSpell == null ||
+                    !other.IsWithinRadius(corpse, other.castingComponent.CalculateSpellRange(other.ResurrectionSpell)))
+                    continue;
+                int theirs = BotSpellPower.ResurrectCost(other, corpse) - other.Mana;
+                // Equal shortfalls: the lower object id saves, so exactly one of them does.
+                if (theirs == shortfall && other.ObjectID < bot.ObjectID)
+                    theirs--;
+                others = Math.Min(others, theirs);
+            }
+            return SavesPowerForResurrection(shortfall, others, healers);
+        }
+
         private static GameNPC HardFoeOverCorpse(GameLiving corpse)
         {
             Vector3 body = new(corpse.X, corpse.Y, corpse.Z);
@@ -270,7 +343,7 @@ namespace DOL.GS
                 if (RecentlyDeclined(corpse.TempProperties.GetProperty<long>(DOL.GS.Spells.ResurrectSpellHandler.RESURRECT_DECLINED_AT_PROPERTY),
                         GameLoop.GameLoopTime)) continue;
                 if (bot.Mana < BotSpellPower.ResurrectCost(bot, corpse)) continue;
-                if (combat && corpse is GameBot && HardFoeOverCorpse(corpse) != null) continue;
+                if (combat && HardFoeHoldingCorpse(bot, corpse) != null) continue;
                 if (state.Resurrection.TryReserve(bot, corpse, GameLoop.GameLoopTime, spell.CastTime,
                     true, combat, combat ? budget + 1 : healers, false, bot.CanCastHealSpells)) return corpse;
             }
@@ -294,7 +367,7 @@ namespace DOL.GS
             if (corpse.TempProperties.GetProperty<GameLiving>("RESURRECT_CASTER") != null) return "another resurrection is already pending on the corpse";
             int cost = BotSpellPower.ResurrectCost(bot, corpse);
             if (bot.Mana < cost) return $"not enough power for the reservation ({bot.Mana}/{cost} of {bot.MaxMana})";
-            if (corpse is GameBot && HardFoeOverCorpse(corpse) is GameNPC foe) return $"the corpse lies under {foe.Name}, still fighting";
+            if (HardFoeHoldingCorpse(bot, corpse) is GameNPC foe) return $"the corpse lies under {foe.Name}, still fighting";
             return "the shared reservation refused (another resurrector holds it, or healers are needed for combat)";
         }
 
