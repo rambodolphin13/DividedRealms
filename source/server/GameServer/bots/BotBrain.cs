@@ -1290,6 +1290,15 @@ namespace DOL.AI.Brain
                     Body.StopMoving();
                 return;
             }
+            // DR-395: in a trial fight a caster or healer keeps its spot on the ring round the boss (TrialStandOff)
+            // instead of its slot beside the player, who stands on the boss.
+            if (!ambientWander && InTrialStandOffFight(out _))
+            {
+                _ambientWanderMovement = false;
+                if (!TryTrialStandOff(null) && Body.IsMoving && CompanionFollowPolicy.HasFormationOrder(BotBody))
+                    Body.StopMoving();
+                return;
+            }
             if (!ambientWander && CompanionHealerCombatHold.Holds(BotBody, leader))
             {
                 // Stop a formation walk already under way; other movement is left alone.
@@ -1418,6 +1427,7 @@ namespace DOL.AI.Brain
         public override void Think()
         {
             if (BotGroupRelease.TryUnstick(BotBody)) return; // Fork: first, whatever below would keep a released bot from its player
+            TraceCompanionFight();
             // Living Server linkdead (bot_living_breaks): the bot stands still and does nothing until it
             // "reconnects" (30-90 s) or is attacked (AutonomousBotSchedule.OnAttacked wakes it).
             if (AutonomousBotSchedule.IsFrozen(BotBody))
@@ -3600,6 +3610,10 @@ namespace DOL.AI.Brain
                     Body.castingComponent?.SpellHandler?.Spell))
                 return;
 
+            // DR-395: a caster in a trial fight takes its spot on the ring round the boss before it casts (TrialStandOff).
+            if (TryTrialStandOff(Body.TargetObject as GameLiving))
+                return;
+
             GameLiving protectionTarget = FindProtectionTarget();
             if (protectionTarget != null)
                 AddToAggroList(protectionTarget, 10000);
@@ -3987,17 +4001,19 @@ namespace DOL.AI.Brain
             if (castRange > 0 && GameLoop.GameLoopTime < _closerSpellApproachUntilTick)
                 castRange = Math.Max(300, castRange * 6 / 10);
             // In range with a wall between (BotLineOfSight): it goes on approaching to get a clear line, as when out of range.
-            if (castRange <= 0 || Body.IsWithinRadius(target, castRange) && !BotLineOfSight.Blocks(Body, target))
+            bool inRange = castRange > 0 && Body.IsWithinRadius(target, castRange);
+            if (castRange <= 0 || inRange && !BotLineOfSight.Blocks(Body, target))
                 return false;
 
-            int desired = Math.Max(160, castRange - 100);
+            int desired = BotLineOfSight.ApproachDistance(castRange, inRange,
+                BotBody.IsPlayerLedGroup && target is GameNPC { Realm: eRealm.None } and not GameBot);
             // Walking into range is an intentional combat action. A resting
             // bot ignores follow orders, so an out-of-range target would
             // otherwise leave it standing still indefinitely.
             BotBody.WakeRecoveryRest();
             Body.StopAttack();
             Body.Follow(target,
-                (short)Math.Clamp(desired, 160, short.MaxValue),
+                (short)Math.Clamp(desired, 100, short.MaxValue),
                 (short)Math.Clamp((int)MAX_AGGRO_LIST_DISTANCE, 200, (int)short.MaxValue));
             return true;
         }
@@ -4068,12 +4084,14 @@ namespace DOL.AI.Brain
             return any;
         }
 
-        private bool OutOfPowerForOffense()
+        /// <summary><paramref name="damageOnly"/>: only its damage spells count (a cheap debuff it can pay for is no nuke, DR-394).</summary>
+        private bool OutOfPowerForOffense(bool damageOnly = false)
         {
             if (Body.Spells == null || BotBody == null)
                 return false;
             return OutOfPower(Body.Spells
                 .Where(spell => spell != null && spell.IsHarmful && spell.Level <= Body.Level &&
+                    (!damageOnly || BotCasterPriority.IsDamage(spell)) &&
                     spell.Target is eSpellTarget.ENEMY or eSpellTarget.AREA or eSpellTarget.CONE &&
                     spell.SpellType is not eSpellType.Charm and not eSpellType.Amnesia and
                         not eSpellType.Confusion and not eSpellType.Taunt &&
@@ -4855,6 +4873,14 @@ namespace DOL.AI.Brain
                         spellsToCast.RemoveAll(spell => spell.Range <= Body.MeleeAttackRange && !(spell.Range <= 0 && spell.Radius > 0));
                     if (PrefersCurrentSpellRange() && spellsToCast.Exists(BotCasterPriority.IsDamage))
                         spellsToCast.RemoveAll(spell => !BotCasterPriority.IsDamage(spell));
+                    // DR-394: short of power for a nuke, a player's caster saves for it instead of spending on a debuff.
+                    else if (BotCasterPriority.SavesPowerForNuke(PrefersCurrentSpellRange(), BotBody.IsPlayerLedGroup,
+                                 Body.TargetObject is GameNPC and not GameBot, OutOfPowerForOffense(damageOnly: true)))
+                    {
+                        foreach (Spell held in spellsToCast)
+                            BotTesterLog.Skipped(Body, held, "cast: saving power for a damage spell");
+                        return Body.IsCasting;
+                    }
                     bool shamanHybrid = ShamanBotCombatPolicy.CastsBetweenSwings((eCharacterClass)BotBody.CharacterClass.ID);
                     // Two or more monsters in the fight within an area damage spell's reach: that spell, when its total
                     // beats the best single nuke. Area spells that would wake a mez or pull a monster are dropped here.
@@ -4864,7 +4890,9 @@ namespace DOL.AI.Brain
                         ? spellsToCast.OrderBy(ShamanBotCombatPolicy.RotationPriority)
                             .ThenByDescending(spell => spell.Level).First()
                         : BotBody.IsEndgameCompanion
-                        ? TemporaryCompanionBalance.HighestSpell(spellsToCast)
+                        // DR-394: the spell that hits hardest after the target's resists, not the highest level one.
+                        ? BotCasterPriority.HardestHitting(spellsToCast, type => (Body.TargetObject as GameLiving)?.GetResist(type) ?? 0,
+                              BotBody.PowerCost) ?? TemporaryCompanionBalance.HighestSpell(spellsToCast)
                         : spellsToCast[Util.Random(spellsToCast.Count - 1)]);
 
                     if (spellToCast.Uninterruptible || !Body.IsBeingInterrupted)
@@ -6403,8 +6431,8 @@ namespace DOL.AI.Brain
                 }
             }
 
-            // Non-emergency heal
-            if (spellToCast == null && numNeedHealing > 0)
+            // Non-emergency heal (held while this healer saves power to raise a dead member, DR-396)
+            if (spellToCast == null && numNeedHealing > 0 && !BotGroupSupport.SavesPowerForResurrection(BotBody))
             {
                 if (!BotBody.IsCasting || (numEmergency > 0 && !isCastingHeal) ||
                     BotFocusChannelPolicy.ChecksHealsDuringChannel(BotBody.castingComponent))
@@ -6568,7 +6596,7 @@ namespace DOL.AI.Brain
             // Read the group once: another bot's turn can disband it between two reads (2026-10-19 soak:
             // a NullReferenceException here removed a Cleric from the world when its RvR task expired).
             Group group = Body.Group;
-            if (group == null || !BotBody.IsAutonomousWorldBot || GameLoop.GameLoopTime < _nextResurrectionBlockReportTick)
+            if (group == null || !(BotBody.IsAutonomousWorldBot || BotBody.IsPlayerCompanion) || GameLoop.GameLoopTime < _nextResurrectionBlockReportTick)
                 return;
             int range = BotBody.castingComponent.CalculateSpellRange(resurrection);
             corpse ??= group.GetMembersInTheGroup().FirstOrDefault(member => member != Body && !member.IsAlive &&
@@ -6576,7 +6604,8 @@ namespace DOL.AI.Brain
                 Body.IsWithinRadius(member, range));
             if (corpse == null)
                 return;
-            _nextResurrectionBlockReportTick = GameLoop.GameLoopTime + 60_000;
+            // A player's companion reports more often: its fights are short and each line is read after a playtest (DR-396).
+            _nextResurrectionBlockReportTick = GameLoop.GameLoopTime + (BotBody.IsAutonomousWorldBot ? 60_000 : 10_000);
             reason ??= BotGroupSupport.DescribeResurrectionBlock(BotBody, resurrection, corpse);
             log.Info($"AUTONOMOUS_RESURRECTION_BLOCKED bot=\"{BotBody.Name}\" class=\"{BotBody.ClassName}\" corpse=\"{corpse.Name}\" " +
                      $"distance={Body.GetDistanceTo(corpse)} spell=\"{resurrection.Name}\" mana={BotBody.Mana}/{BotBody.MaxMana} " +
