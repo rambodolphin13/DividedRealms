@@ -4001,17 +4001,19 @@ namespace DOL.AI.Brain
             if (castRange > 0 && GameLoop.GameLoopTime < _closerSpellApproachUntilTick)
                 castRange = Math.Max(300, castRange * 6 / 10);
             // In range with a wall between (BotLineOfSight): it goes on approaching to get a clear line, as when out of range.
-            if (castRange <= 0 || Body.IsWithinRadius(target, castRange) && !BotLineOfSight.Blocks(Body, target))
+            bool inRange = castRange > 0 && Body.IsWithinRadius(target, castRange);
+            if (castRange <= 0 || inRange && !BotLineOfSight.Blocks(Body, target))
                 return false;
 
-            int desired = Math.Max(160, castRange - 100);
+            int desired = BotLineOfSight.ApproachDistance(castRange, inRange,
+                BotBody.IsPlayerLedGroup && target is GameNPC { Realm: eRealm.None } and not GameBot);
             // Walking into range is an intentional combat action. A resting
             // bot ignores follow orders, so an out-of-range target would
             // otherwise leave it standing still indefinitely.
             BotBody.WakeRecoveryRest();
             Body.StopAttack();
             Body.Follow(target,
-                (short)Math.Clamp(desired, 160, short.MaxValue),
+                (short)Math.Clamp(desired, 100, short.MaxValue),
                 (short)Math.Clamp((int)MAX_AGGRO_LIST_DISTANCE, 200, (int)short.MaxValue));
             return true;
         }

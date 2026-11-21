@@ -20,6 +20,9 @@ namespace DOL.GS
         /// <summary>The ground stopped the spot nearer than this to the boss (a wall, a ledge): not worth the walk.</summary>
         public const int MinimumRadius = 450;
 
+        /// <summary>The ring radii tried in turn until a spot has ground and a line of sight to the boss.</summary>
+        public static readonly int[] Radii = { Radius, 600, MinimumRadius };
+
         /// <summary>Most degrees between two neighbours; 750 out, that is 750 apart.</summary>
         public const double MaximumSpacingDegrees = 60;
 
@@ -95,10 +98,11 @@ namespace DOL.GS
 
         /// <summary>
         /// Whether the companion walks to its spot now: not while casting, not when it is as good as there, and not when
-        /// the monster it is attacking would be out of its spell range from there (it would only walk back). Pure.
+        /// the monster it is attacking would be out of its spell range or out of view from there (it would only walk
+        /// back). Pure.
         /// </summary>
-        public static bool WalksToSpot(bool casting, double distanceToSpot, double spotToAttackTarget, int spellRange) =>
-            !casting && distanceToSpot > ArrivalTolerance && (spellRange <= 0 || spotToAttackTarget <= spellRange - 50);
+        public static bool WalksToSpot(bool casting, double distanceToSpot, double spotToAttackTarget, int spellRange, bool targetInViewFromSpot = true) =>
+            !casting && distanceToSpot > ArrivalTolerance && (spellRange <= 0 || spotToAttackTarget <= spellRange - 50 && targetInViewFromSpot);
 
         /// <summary>The ring is laid out again for a new boss or one that has moved <see cref="ReanchorDistance"/>. Pure.</summary>
         public static bool NeedsNewLayout(bool sameBoss, double bossMovedFromCentre) =>

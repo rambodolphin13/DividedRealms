@@ -99,17 +99,30 @@ namespace DOL.AI.Brain
                 return null;
             Vector2 middle = new(centre.X, centre.Y);
             double approach = TrialStandOff.Bearing(middle, new(run.Starter.X, run.Starter.Y));
-            Vector2 raw = TrialStandOff.Spot(middle, TrialStandOff.BearingDegrees(approach, slot, takers.Count), TrialStandOff.Radius);
-            Vector3 wanted = new(raw.X, raw.Y, centre.Z);
+            double bearing = TrialStandOff.BearingDegrees(approach, slot, takers.Count);
             var nav = PathfindingProvider.Instance;
-            if (!nav.IsAvailable || !nav.HasNavmesh(boss.CurrentZone))
-                return wanted;
-            // Slide along the ground from the boss toward the spot: a wall or a ledge stops it short.
-            if (nav.GetMoveAlongSurface(boss.CurrentZone, centre, wanted, nav.DefaultFilters) is not Vector3 ground ||
-                Vector2.Distance(new(ground.X, ground.Y), middle) < TrialStandOff.MinimumRadius ||
-                !nav.HasLineOfSight(boss.CurrentZone, new(ground.X, ground.Y, ground.Z + 48), new(centre.X, centre.Y, centre.Z + 48), nav.DefaultFilters))
-                return null;
-            return ground;
+            bool mesh = nav.IsAvailable && nav.HasNavmesh(boss.CurrentZone);
+            foreach (int radius in TrialStandOff.Radii)
+            {
+                Vector2 raw = TrialStandOff.Spot(middle, bearing, radius);
+                Vector3 wanted = new(raw.X, raw.Y, centre.Z);
+                if (!mesh)
+                    return wanted;
+                // Slide along the ground from the boss toward the spot: a wall or a ledge stops it short. The spot must
+                // also see the boss, or the caster would only walk back in to cast (BotLineOfSight).
+                if (nav.GetMoveAlongSurface(boss.CurrentZone, centre, wanted, nav.DefaultFilters) is Vector3 ground &&
+                    Vector2.Distance(new(ground.X, ground.Y), middle) >= TrialStandOff.MinimumRadius &&
+                    HasNavmeshSight(boss.CurrentZone, ground, centre))
+                    return ground;
+            }
+            return null;
+        }
+
+        private static bool HasNavmeshSight(Zone zone, Vector3 from, Vector3 to)
+        {
+            var nav = PathfindingProvider.Instance;
+            return !nav.IsAvailable || !nav.HasNavmesh(zone) ||
+                nav.HasLineOfSight(zone, new(from.X, from.Y, from.Z + 48), new(to.X, to.Y, to.Z + 48), nav.DefaultFilters);
         }
 
         /// <summary>
@@ -123,7 +136,13 @@ namespace DOL.AI.Brain
             double toSpot = Vector2.Distance(new(Body.X, Body.Y), new(point.X, point.Y));
             int spellRange = attackTarget != null && PrefersCurrentSpellRange() ? OffensiveApproachRange(attackTarget) : 0;
             double spotToTarget = attackTarget != null ? Vector2.Distance(new(point.X, point.Y), new(attackTarget.X, attackTarget.Y)) : 0;
-            if (!TrialStandOff.WalksToSpot(Body.IsCasting || Body.castingComponent?.HasPendingSkillRequests == true, toSpot, spotToTarget, spellRange))
+            bool casting = Body.IsCasting || Body.castingComponent?.HasPendingSkillRequests == true;
+            if (!TrialStandOff.WalksToSpot(casting, toSpot, spotToTarget, spellRange))
+                return false;
+            // Its target must be in view from the spot too (the boss may have moved since the ring was laid out).
+            if (spellRange > 0 && attackTarget.CurrentZone != null &&
+                !TrialStandOff.WalksToSpot(casting, toSpot, spotToTarget, spellRange,
+                    HasNavmeshSight(attackTarget.CurrentZone, point, new(attackTarget.X, attackTarget.Y, attackTarget.Z))))
                 return false;
             BotBody.WakeRecoveryRest();   // a resting bot ignores movement orders
             Body.StopAttack();

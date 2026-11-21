@@ -83,6 +83,18 @@ namespace DOL.UnitTests
         public void OutOfPowerCasterSavesForItsNuke(bool ranged, bool playerLed, bool monster, bool outOfPower, bool expected) =>
             Assert.That(BotCasterPriority.SavesPowerForNuke(ranged, playerLed, monster, outOfPower), Is.EqualTo(expected));
 
+        [Test]
+        public void ACompanionWithNoLineOfSightWalksInUntilTheMonsterIsInView()
+        {
+            // In range, no line: the old stop distance (range less 100) left it where it stood.
+            Assert.That(BotLineOfSight.ApproachDistance(1500, inRangeWithoutSight: true, companionAgainstMonster: true),
+                Is.LessThan(BotLineOfSight.AlwaysInViewDistance));
+            Assert.That(BotLineOfSight.ApproachDistance(1500, inRangeWithoutSight: false, companionAgainstMonster: true), Is.EqualTo(1400));
+            Assert.That(BotLineOfSight.ApproachDistance(1500, inRangeWithoutSight: true, companionAgainstMonster: false), Is.EqualTo(1400),
+                "gamebots, and fights against players and keeps, are unchanged");
+            Assert.That(BotLineOfSight.ApproachDistance(200, false, false), Is.EqualTo(160));
+        }
+
         // DR-395: stand-off
 
         [Test]
@@ -151,6 +163,10 @@ namespace DOL.UnitTests
             Assert.That(TrialStandOff.WalksToSpot(false, TrialStandOff.ArrivalTolerance, 750, 1400), Is.False, "it is there");
             Assert.That(TrialStandOff.WalksToSpot(false, 600, 1500, 1400), Is.False, "its target would be out of range from the spot");
             Assert.That(TrialStandOff.WalksToSpot(false, 600, 0, 0), Is.True, "a healer has no attack target");
+            Assert.That(TrialStandOff.WalksToSpot(false, 600, 750, 1400, targetInViewFromSpot: false), Is.False,
+                "its target is out of view from the spot");
+            Assert.That(TrialStandOff.Radii, Is.Ordered.Descending);
+            Assert.That(TrialStandOff.Radii[^1], Is.EqualTo(TrialStandOff.MinimumRadius));
         }
 
         [Test]

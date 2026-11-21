@@ -26,6 +26,17 @@ namespace DOL.GS
         public static bool ShouldCheck(bool targetIsPlayer, int distance, bool sameZone) =>
             !targetIsPlayer && sameZone && distance > AlwaysInViewDistance;
 
+        /// <summary>
+        /// How near its target a caster walks. Out of range: just inside its spell range. In range with no line of sight
+        /// (DR-394): a player's companion goes on toward a monster until it is in view (inside
+        /// <see cref="AlwaysInViewDistance"/> at the latest). It used to be told to stop just inside spell range there too,
+        /// which it already was, so it stood still with full power for the whole fight (ML 1.7: a Wizard 209 from Rassa cast
+        /// nothing in 195 s; on 2026-11-14 two Wizards and a Sorcerer did no damage to him in 8 minutes). Gamebots and
+        /// fights against players and keeps keep the old stop distance: walking up to a keep wall helps nobody. Pure.
+        /// </summary>
+        public static int ApproachDistance(int castRange, bool inRangeWithoutSight, bool companionAgainstMonster) =>
+            inRangeWithoutSight && companionAgainstMonster ? AlwaysInViewDistance - 30 : System.Math.Max(160, castRange - 100);
+
         /// <summary>True when a harmful cast from <paramref name="caster"/> at <paramref name="target"/> must not go ahead for want of a line of sight.</summary>
         public static bool Blocks(GameLiving caster, GameObject target)
         {
