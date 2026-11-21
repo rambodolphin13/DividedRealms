@@ -456,7 +456,7 @@ namespace OfflineDaoc.TestClient
             var names = s.Skills().Where(k => (int)k["page"] == 1).Select(k => (string)k["name"]).ToList();
             int armor = Armors.FirstOrDefault(a => names.Any(n => n.StartsWith("Armor") && n.Contains(a.Name, StringComparison.OrdinalIgnoreCase))).Type;
             var lines = s.Skills().Where(k => (int)k["page"] == 0).Select(k => (string)k["name"]).ToList();
-            string[] specs = lines.Where(l => !SupportLines.Contains(l)).Concat(lines.Where(SupportLines.Contains)).Take(3).ToArray();
+            string[] specs = KitRules.KitSpecs(lines, SupportLines);
             int weapon = KitRules.WeaponForSpecs(specs);
             if (weapon == 0)
                 weapon = Weapons.FirstOrDefault(w => names.Any(n => n.StartsWith("Weaponry") && n.Contains(w.Name, StringComparison.OrdinalIgnoreCase))).Type;

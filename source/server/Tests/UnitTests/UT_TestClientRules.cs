@@ -60,5 +60,21 @@ namespace DOL.UnitTests
                 Assert.That(KitRules.WeaponForSpecs(new[] { "Void", "Light", "Mana" }), Is.Zero, "a pure caster has none");
             });
         }
+
+        [Test]
+        public void AKitTrainsOneWeaponLineAndTheClassLine()
+        {
+            var support = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "Parry", "Shields" };
+            Assert.Multiple(() =>
+            {
+                // DR-062: a Champion trained Blades, Blunt and Piercing and left Valor at 1.
+                Assert.That(KitRules.KitSpecs(new[] { "Blades", "Blunt", "Piercing", "Large Weapons", "Valor", "Shields", "Parry" }, support),
+                    Is.EqualTo(new[] { "Blades", "Valor", "Shields" }));
+                Assert.That(KitRules.KitSpecs(new[] { "Mending", "Pacification", "Augmentation" }, support),
+                    Is.EqualTo(new[] { "Mending", "Pacification", "Augmentation" }), "casters are unchanged");
+                Assert.That(KitRules.KitSpecs(new[] { "Sword", "Axe", "Hammer", "Shields", "Parry" }, support),
+                    Is.EqualTo(new[] { "Sword", "Shields", "Parry" }));
+            });
+        }
     }
 }
