@@ -1,0 +1,178 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-21T15:59:27.684089+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "BindPoint",
+   "key": "96566977-e557-46cb-8559-844c0d856054",
+   "op": "update",
+   "before": {
+    "X": 63903,
+    "Y": 43408,
+    "Z": 30372
+   },
+   "after": {
+    "X": 63899,
+    "Y": 43428,
+    "Z": 30373
+   }
+  },
+  {
+   "table": "BindPoint",
+   "key": "9da4c2d7-f0d2-4faa-92b7-f096f9b3c59a",
+   "op": "update",
+   "before": {
+    "X": 63903,
+    "Y": 43408,
+    "Z": 30372
+   },
+   "after": {
+    "X": 63899,
+    "Y": 43428,
+    "Z": 30373
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "30828ece-13e1-4e03-b4b9-b3e29586035f",
+   "op": "update",
+   "before": {
+    "X": 44602,
+    "Y": 57532,
+    "Z": 26019
+   },
+   "after": {
+    "X": 44680,
+    "Y": 57564,
+    "Z": 26017
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "73b1ee21-cb40-4eb4-8556-2428671f0bbb",
+   "op": "update",
+   "before": {
+    "X": 31640,
+    "Y": 18505,
+    "Z": 30273
+   },
+   "after": {
+    "X": 31631,
+    "Y": 18501,
+    "Z": 30276
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "5c6dc823-fc4a-451f-a989-5e38ee0bef0c",
+   "op": "update",
+   "before": {
+    "Y": 68199,
+    "Z": 27981
+   },
+   "after": {
+    "Y": 68233,
+    "Z": 27976
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "74fa9ad2-e68e-45c5-968a-cf8817328ab6",
+   "op": "update",
+   "before": {
+    "X": 58451,
+    "Z": 27952
+   },
+   "after": {
+    "X": 58459,
+    "Z": 27956
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "1010cf31-9a4e-434f-b0f3-2af8b0a6b4e8",
+   "op": "update",
+   "before": {
+    "X": 46110,
+    "Y": 60965,
+    "Z": 21475
+   },
+   "after": {
+    "X": 46122,
+    "Y": 60935,
+    "Z": 21474
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "176cf0d8-2be6-46ae-bcd2-be5ef48f07d3",
+   "op": "update",
+   "before": {
+    "X": 36940,
+    "Y": 28110,
+    "Z": 25897
+   },
+   "after": {
+    "X": 36933,
+    "Y": 28120,
+    "Z": 25898
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "be574d88-abcd-489f-bd58-3c75151c2a9e",
+   "op": "update",
+   "before": {
+    "X": 48796,
+    "Y": 47080,
+    "Z": 27433
+   },
+   "after": {
+    "X": 48822,
+    "Y": 47042,
+    "Z": 27444
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "591fd82e-9d28-4fff-beca-ab69b2bec0c2",
+   "op": "update",
+   "before": {
+    "X": 46451,
+    "Z": 27440
+   },
+   "after": {
+    "X": 46483,
+    "Z": 27444
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "cd1f231b-e468-467d-9618-3dfd33dbc784",
+   "op": "update",
+   "before": {
+    "X": 46450,
+    "Y": 42732,
+    "Z": 27440
+   },
+   "after": {
+    "X": 46483,
+    "Y": 42725,
+    "Z": 27444
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "481284ee-4e96-443e-863f-0cc830bb9c32",
+   "op": "update",
+   "before": {
+    "Z": 27866
+   },
+   "after": {
+    "Z": 27940
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

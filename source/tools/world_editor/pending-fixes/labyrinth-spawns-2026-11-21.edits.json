@@ -1,0 +1,117 @@
+[
+ {
+  "table": "BindPoint",
+  "key": "96566977-e557-46cb-8559-844c0d856054",
+  "set": {
+   "X": 63899,
+   "Y": 43428,
+   "Z": 30373
+  },
+  "why": "bind point beside the Korazh Priest, 16 units outside the walkable floor: (63903, 43408, 30372) -> (63899, 43428, 30373), 20 sideways, +1 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "BindPoint",
+  "key": "9da4c2d7-f0d2-4faa-92b7-f096f9b3c59a",
+  "set": {
+   "X": 63899,
+   "Y": 43428,
+   "Z": 30373
+  },
+  "why": "bind point beside the Korazh Priest, 16 units outside the walkable floor: (63903, 43408, 30372) -> (63899, 43428, 30373), 20 sideways, +1 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "30828ece-13e1-4e03-b4b9-b3e29586035f",
+  "set": {
+   "X": 44680,
+   "Y": 57564,
+   "Z": 26017
+  },
+  "why": "drakoran guard on a cut-off scrap of mesh on the raised floor; main floor at the same height 80 away: (44602, 57532, 26019) -> (44680, 57564, 26017), 84 sideways, -2 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "73b1ee21-cb40-4eb4-8556-2428671f0bbb",
+  "set": {
+   "X": 31631,
+   "Y": 18501,
+   "Z": 30276
+  },
+  "why": "wraith spiderling on a mesh edge: (31640, 18505, 30273) -> (31631, 18501, 30276), 10 sideways, +3 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "5c6dc823-fc4a-451f-a989-5e38ee0bef0c",
+  "set": {
+   "Y": 68233,
+   "Z": 27976
+  },
+  "why": "Spirit Priest of Vartigeth against a wall: (26834, 68199, 27981) -> (26834, 68233, 27976), 34 sideways, -5 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "74fa9ad2-e68e-45c5-968a-cf8817328ab6",
+  "set": {
+   "X": 58459,
+   "Z": 27956
+  },
+  "why": "animated corpse on a mesh edge: (58451, 13277, 27952) -> (58459, 13277, 27956), 8 sideways, +4 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "1010cf31-9a4e-434f-b0f3-2af8b0a6b4e8",
+  "set": {
+   "X": 46122,
+   "Y": 60935,
+   "Z": 21474
+  },
+  "why": "bottom feeder larva on a mesh edge: (46110, 60965, 21475) -> (46122, 60935, 21474), 32 sideways, -1 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "176cf0d8-2be6-46ae-bcd2-be5ef48f07d3",
+  "set": {
+   "X": 36933,
+   "Y": 28120,
+   "Z": 25898
+  },
+  "why": "indentured goblin against a wall: (36940, 28110, 25897) -> (36933, 28120, 25898), 12 sideways, +1 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "be574d88-abcd-489f-bd58-3c75151c2a9e",
+  "set": {
+   "X": 48822,
+   "Y": 47042,
+   "Z": 27444
+  },
+  "why": "minotaur sercuritor against a wall: (48796, 47080, 27433) -> (48822, 47042, 27444), 46 sideways, +11 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "591fd82e-9d28-4fff-beca-ab69b2bec0c2",
+  "set": {
+   "X": 46483,
+   "Z": 27444
+  },
+  "why": "minotaur fireborn against the wall under a gallery: (46451, 42263, 27440) -> (46483, 42263, 27444), 32 sideways, +4 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "cd1f231b-e468-467d-9618-3dfd33dbc784",
+  "set": {
+   "X": 46483,
+   "Y": 42725,
+   "Z": 27444
+  },
+  "why": "minotaur fireborn against the wall under a gallery: (46450, 42732, 27440) -> (46483, 42725, 27444), 34 sideways, +4 up (DR-431, Labyrinth spawns off the navmesh)"
+ },
+ {
+  "table": "Mob",
+  "key": "481284ee-4e96-443e-863f-0cc830bb9c32",
+  "set": {
+   "Z": 27940
+  },
+  "why": "Hannah sunk under the floor Trainer Zobaloo stands on (27944): (30356, 60028, 27866) -> (30356, 60028, 27940), 0 sideways, +74 up (DR-431, Labyrinth spawns off the navmesh)"
+ }
+]
