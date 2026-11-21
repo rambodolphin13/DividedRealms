@@ -811,7 +811,7 @@ namespace DOL.GS.Trials
                                 // Bot playtest 2026-11-14: 300 (212 for a player and seven bots) on top of the fight killed four
                                 // bots in one burst at five minutes. 180.
                                 foreach (GameLiving victim in run.Hostiles(statue, 900))
-                                    victim.TakeDamage(dawar, eDamageType.Energy, (int)(180 * run.DamageScale), 0);
+                                    victim.TrialDamage(dawar, eDamageType.Energy, (int)(180 * run.DamageScale));
                                 run.Set("called", clock + 4);
                             }
                         },
@@ -989,7 +989,7 @@ namespace DOL.GS.Trials
                             if (clock % 6 == 0)
                             {
                                 foreach (GameLiving victim in run.Hostiles(kynthia, 1500))
-                                    victim.TakeDamage(kynthia, eDamageType.Spirit, (int)(220 * run.DamageScale), 0);
+                                    victim.TrialDamage(kynthia, eDamageType.Spirit, (int)(220 * run.DamageScale));
                                 run.Tell("The Guide points, and Kynthia's bolts strike!");
                             }
                             if (clock % 40 == 0)

@@ -342,6 +342,11 @@ namespace DOL.GS.ServerRules
             if (defender is GameNPC { StowedForRide: true } || attacker is GameNPC { StowedForRide: true })
                 return false;
 
+            // DR-398: in a solo trial only the starter and their pets fight the champion; helpers' stuns and debuffs
+            // landed although their damage was refused.
+            if (defender is DOL.GS.Trials.TrialMob { Run: not null } trialMob && !trialMob.Run.MayHurt(attacker))
+                return false;
+
             GamePlayer playerAttacker = attacker as GamePlayer;
             GamePlayer playerDefender = defender as GamePlayer;
 

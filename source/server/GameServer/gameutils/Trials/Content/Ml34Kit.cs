@@ -193,7 +193,7 @@ namespace DOL.GS.Trials
         {
             int scaled = (int)(damage * run.DamageScale);
             foreach (GameLiving target in targets.ToList())
-                target.TakeDamage(source, type, scaled, 0);
+                target.TrialDamage(source, type, scaled);
         }
 
         /// <summary>For a starter who turns into the monster: she leaves while the run lasts and comes back with the next.</summary>
