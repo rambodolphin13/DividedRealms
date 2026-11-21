@@ -83,8 +83,29 @@ namespace DOL.GS.Commands
                     message += $"\nYou have completed {finishedQuests.Count} quests.";
             }
 
+            message += ArtifactLines(ArtifactProgress.For(client.Player).Values
+                .Select(row => (ArtifactCatalog.NameOf(row.ArtifactID), row.EncounterDone, row.Claimed)));
             message += "\nUse the '/journal' command to view your full ongoing and completed quests.";
             DisplayMessage(client, message);
+        }
+
+        /// <summary>
+        /// Artifact encounter credit is not a quest, so nothing listed it: a player could not tell whether a kill had
+        /// counted (DR-504). Waiting ones first, then the collected ones. Pure.
+        /// </summary>
+        public static string ArtifactLines(IEnumerable<(string Name, bool EncounterDone, bool Claimed)> rows)
+        {
+            List<string> waiting = rows.Where(row => row.EncounterDone && !row.Claimed).Select(row => row.Name).OrderBy(name => name).ToList();
+            List<string> collected = rows.Where(row => row.Claimed).Select(row => row.Name).OrderBy(name => name).ToList();
+            string lines = string.Empty;
+
+            if (waiting.Count > 0)
+                lines += $"\nArtifact encounters done, artifact waiting at an Artifact Scholar: {string.Join(", ", waiting)}.";
+
+            if (collected.Count > 0)
+                lines += $"\nArtifacts collected: {string.Join(", ", collected)}.";
+
+            return lines;
         }
     }
 }

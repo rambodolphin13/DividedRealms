@@ -26,7 +26,8 @@ namespace DOL.UnitTests
         [TestCase((ushort) 81, 57216, 64128, 8020, false, TestName = "Above the Delta coast surface is dry")]
         [TestCase((ushort) 74, 30000, 30000, 6000, true, TestName = "Open ocean is water")]
         [TestCase((ushort) 74, 0, 0, 6000, true, TestName = "Ocean zone corner is water")]
-        [TestCase((ushort) 74, 32768, 32768, 8009, true, TestName = "Ocean quarter seam is water just below the surface")]
+        [TestCase((ushort) 74, 32768, 32768, 7969, true, TestName = "Ocean quarter seam is water below the surface band")]
+        [TestCase((ushort) 74, 30000, 30000, 7990, false, TestName = "A swimmer on top of the ocean is not underwater (DR-503)")]
         [TestCase((ushort) 74, 30000, 30000, 8010, false, TestName = "Ocean surface height is not underwater")]
         [TestCase((ushort) 84, 30000, 30000, 6000, false, TestName = "Typhon's Reach lava is not water")]
         public void Underwater(ushort zone, int x, int y, int z, bool expected)
@@ -41,6 +42,20 @@ namespace DOL.UnitTests
         public void OtherZonesKeepTheirWaterLevel(ushort zone)
         {
             Assert.That(ZoneWater.TryIsUnderwater(zone, 30000, 30000, 0, out _), Is.False);
+        }
+
+        [Test]
+        public void QuestListNamesArtifactEncounters()
+        {
+            // DR-504: credit waiting at the Scholar and collected artifacts are listed; an untouched row is not.
+            string lines = DOL.GS.Commands.QuestCommandHandler.ArtifactLines(new[]
+            {
+                ("Shades of Mist", true, false), ("Orion's Belt", true, true), ("Cloudsong", false, false),
+            });
+            Assert.That(lines, Does.Contain("waiting at an Artifact Scholar: Shades of Mist."));
+            Assert.That(lines, Does.Contain("Artifacts collected: Orion's Belt."));
+            Assert.That(lines, Does.Not.Contain("Cloudsong"));
+            Assert.That(DOL.GS.Commands.QuestCommandHandler.ArtifactLines(System.Array.Empty<(string, bool, bool)>()), Is.Empty);
         }
 
         [Test]
