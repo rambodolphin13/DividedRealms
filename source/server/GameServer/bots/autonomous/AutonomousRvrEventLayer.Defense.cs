@@ -153,6 +153,76 @@ namespace DOL.GS
             DefenseScale.Standard => defending ? 48 : 16,
             _ => defending ? 24 : 8,
         });
+        /// <summary>
+        /// DR-492 (Discord 2026-11-18..20: with 3,000 Midgard bots none reached the enemy relic zone during a player's
+        /// relic raid). The player's own realm was recruited (8-96 bots by the size of the player's force) but every
+        /// warband walked in alone from the portal outpost: sandbox 2026-11-21, solo attack on Castle Excalibur, 8
+        /// Midgard bots assigned, 0 within 9,000 units of the keep after 21 minutes; parties of 1-3 died to roamers and
+        /// monsters in Pennine Mountains and started again at Hadrian's Wall. The helpers now gather at their realm's
+        /// portal outpost in that frontier (80% of their number, at most five minutes) and march as one column, as a bot
+        /// siege's army does. Warbands already near the keep still go straight in (AllyGoesStraightIn).
+        /// </summary>
+        public const long PlayerAllyMusterMilliseconds = 5 * 60_000;
+        /// <summary>A helper this close to the attacked keep joins the fight at once, column or not.</summary>
+        public const int AllyDirectRadius = 12_000;
+
+        /// <summary>Helpers gathered before the column marches: 80% of the helpers called (never more than six for a small call).</summary>
+        public static int AllyWaveSize(int helperCap) => DefenseWaveSize(helperCap);
+
+        /// <summary>
+        /// Whether a helper skips the column and goes straight to the keep: it is in the keep's region and within
+        /// <see cref="AllyDirectRadius"/>, or (before the march) nearer the keep than the muster. Pure.
+        /// </summary>
+        public static bool AllyGoesStraightIn(bool inKeepRegion, double toKeep, double toMuster, bool marching) =>
+            inKeepRegion && (toKeep <= AllyDirectRadius || !marching && toKeep < toMuster);
+
+        /// <summary>
+        /// DR-492, second cause (sandbox 2026-11-21, full population): Midgard had 220 level 50s on RvR duty, 128 of them
+        /// in its own siege of Dun nGed and the rest defending Fensalir Faste, and a player's attack on Castle Excalibur
+        /// drew one helper in nine minutes. A warband in its realm's own automatic keep siege may leave it for a player's
+        /// attack on an enemy RELIC keep, as long as that siege keeps the army its muster waits for (64, or 120 for a relic
+        /// siege). Forced sieges, retakes, defenses and ordinary keep attacks by a player never lose warbands this way. Pure.
+        /// </summary>
+        public static bool PlayerRelicRaidDrawsFromSiege(bool playerAttackOnRelicKeep, bool automaticSiegeOfSameRealm,
+            int siegeAttackers, int forceSize, int siegeNeeded) =>
+            playerAttackOnRelicKeep && automaticSiegeOfSameRealm && forceSize > 0 && siegeAttackers - forceSize >= siegeNeeded;
+
+        /// <summary>A player-raised attack whose helpers gather and march as a column that has not reached the keep yet.</summary>
+        private static bool AllyColumn(ActiveEvent active) =>
+            active.DefenseReaction && active.MusterDeadlineTick != 0 && !active.AllyArrived;
+
+        /// <summary>Whether this event's helpers are gathering or marching as a column (tests, dashboard).</summary>
+        public static bool HasAllyColumn(string targetId)
+        {
+            using (AiProfile.Lock(Sync, AiSystem.LockRvrEvents))
+                return Events.TryGetValue(targetId, out var active) && AllyColumn(active);
+        }
+
+        private static void BeginAllyMuster(ActiveEvent active, long nowTick)
+        {
+            active.Marching = false;
+            active.MusterDeadlineTick = nowTick + PlayerAllyMusterMilliseconds;
+            var log = DOL.Logging.LoggerManager.Create(typeof(AutonomousRvrEventLayer));
+            if (log.IsInfoEnabled) log.Info($"RVR_ALLY_MUSTER target={active.TargetId} realm={GlobalConstants.RealmToName(active.AttackerRealm)} " +
+                $"cap={ResponseCap(false, active.DefenseScale)} needed={AllyWaveSize(ResponseCap(false, active.DefenseScale))} " +
+                $"minutes={PlayerAllyMusterMilliseconds / 60_000}");
+        }
+
+        /// <summary>
+        /// A warband of the player's realm joined a player-raised attack: the first one opens the helpers' muster.
+        /// Returns whether a muster began.
+        /// </summary>
+        public static bool NoteAllyJoined(string targetId, eRealm realm, long nowTick)
+        {
+            using (AiProfile.Lock(Sync, AiSystem.LockRvrEvents))
+            {
+                if (!Events.TryGetValue(targetId, out var active) || !active.DefenseReaction || realm != active.AttackerRealm ||
+                    active.MusterDeadlineTick != 0) return false;
+                BeginAllyMuster(active, nowTick);
+                return true;
+            }
+        }
+
         public static bool ResponseReserve(long id) => unchecked((ulong)id * 2654435761UL) % 100 < 30;
 
         public static bool CanRedirectDefense(eRealm previousDefender, eRealm nextDefender,
@@ -324,7 +394,13 @@ namespace DOL.GS
                             m is not GameBot member || member.Level != 50 || BotDutyLeases.IsSpokenForByPlayer(member) ||
                             !member.IsAutonomousWorldBot || !AutonomousObjectiveAssignments.Is(member, eAutonomousObjectiveKind.RvR)))) continue;
                         var previous = Events.Values.FirstOrDefault(e => Participants(e, force.Realm).ContainsKey(force.GroupId));
-                        if (previous != null && (!previous.DefenseReaction || !active.DefenseReaction ||
+                        bool leavesSiege = previous != null && PlayerRelicRaidDrawsFromSiege(
+                            active.DefenseReaction && active.RelicKeep && force.Realm == active.AttackerRealm,
+                            !previous.DefenseReaction && !previous.Forced && !previous.Retake && previous.AttackerRealm == force.Realm &&
+                                previous.Attackers.ContainsKey(force.GroupId),
+                            previous.Attackers.Values.Sum(), previous.Attackers.GetValueOrDefault(force.GroupId), MusterNeeded(previous.RelicKeep)) &&
+                            !candidate.Members.Any(BotSiegeRuntime.Assigned);
+                        if (previous != null && !leavesSiege && (!previous.DefenseReaction || !active.DefenseReaction ||
                             !CanRedirectDefense(previous.DefenderRealm, active.DefenderRealm,
                                 previous.PlayerAccount, active.PlayerAccount, previous.LastPressureTick, active.LastPressureTick))) continue;
                         int cap = active.DefenseReaction ? ResponseCap(force.Realm == active.DefenderRealm, active.DefenseScale) : SiegeRealmCap(active, force.Realm);
@@ -334,15 +410,25 @@ namespace DOL.GS
                             Participants(previous, force.Realm).Remove(force.GroupId);
                             previous.Slots.Remove(force.GroupId);
                             foreach (long id in force.MemberIds) previous.Present.Remove(id);
+                            if (leavesSiege)
+                            {
+                                foreach (long id in force.MemberIds) { previous.Mustered.Remove(id); previous.Travel.Remove(id); }
+                                DOL.Logging.LoggerManager.Create(typeof(AutonomousRvrEventLayer)).Info(
+                                    $"RVR_ALLY_LEFT_SIEGE force={force.GroupId} realm={GlobalConstants.RealmToName(force.Realm)} size={force.MemberCount} " +
+                                    $"from={previous.TargetId} to={active.TargetId} siegeLeft={previous.Attackers.Values.Sum()}");
+                            }
                         }
                         foreach (GameBot bot in candidate.Members)
                         {
                             bot.TempProperties.SetProperty("RvrEventForce", force.GroupId);
                             BotDutyLeases.Claim(bot, eDutyLeaseKind.RvrEvent, force.GroupId, DutyLeaseReason.RvrForce, active.Target.Name);
                         }
-                        // The keep's own realm gathers first and marches in as one wave (allies and third realm do not).
+                        // The keep's own realm gathers first and marches in as one wave (the third realm does not).
                         if (active.DefenseReaction && force.Realm == active.DefenderRealm && !active.DefenseMustering && !active.DefenseMarching)
                             BeginDefenseMuster(active, now, PlayerDefenseMusterMilliseconds);
+                        // The player's own realm gathers at its portal outpost and marches as one column (DR-492).
+                        else if (active.DefenseReaction && force.Realm == active.AttackerRealm)
+                            NoteAllyJoined(active.TargetId, force.Realm, now);
                         // A bot siege's defenders called at the march gather at their muster and man the walls together.
                         else if (!active.DefenseReaction && !active.BattleStarted && SiegeScheduling && force.Realm == active.DefenderRealm &&
                                  !active.DefenseMustering && !active.DefenseMarching)
