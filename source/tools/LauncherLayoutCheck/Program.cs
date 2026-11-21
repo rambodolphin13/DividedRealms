@@ -13,8 +13,13 @@ internal static class Program
         ((Label)type.GetField("_serverState", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(form)!).Text = "STARTING…";
         foreach (string field in new[] { "_albionValue", "_midgardValue", "_hiberniaValue" })
             ((Label)type.GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(form)!).Text = "3,334 ROSTER\n3,334 ONLINE";
-        var cards = Descendants(form).OfType<TableLayoutPanel>().Single(p => p.ColumnCount == 6);
-        cards.Parent.Controls.Remove(cards);
+        // The Home cards (MainForm.BuildCards) are the six-column table that holds the server state; other pages
+        // have six-column tables of their own.
+        Control? holder = (Label)type.GetField("_serverState", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(form)!;
+        while (holder is not null and not TableLayoutPanel { ColumnCount: 6 })
+            holder = holder.Parent;
+        var cards = (TableLayoutPanel)(holder ?? throw new Exception("The server state label is no longer in the six-column Home cards."));
+        cards.Parent!.Controls.Remove(cards);
         cards.Dock = DockStyle.None;
         foreach (int width in new[] { 960, 1100, 1440 })
         {
@@ -23,22 +28,45 @@ internal static class Program
             Layout(cards);
             using var bitmap = new Bitmap(cards.Width, cards.Height);
             cards.DrawToBitmap(bitmap, new Rectangle(Point.Empty, bitmap.Size));
-            foreach (var button in Descendants(cards).OfType<Button>().Where(b => b.Text.StartsWith("+ Lv.")))
-            {
-                if (!button.Parent!.ClientRectangle.Contains(button.Bounds))
-                    throw new Exception($"Clipped button at {width}: {button.Text} {button.Bounds}");
-                Control split = button.Parent;
-                if (!split.Parent!.ClientRectangle.Contains(split.Bounds))
-                    throw new Exception($"Clipped generation row at {width}: {split.Bounds}");
-                var textSize = TextRenderer.MeasureText(button.Text, button.Font);
-                if (textSize.Width > button.Width - 6 || textSize.Height > button.Height - 4)
-                    throw new Exception($"Button text does not fit at {width}: {button.Text} {button.Size}");
-            }
+            if (Descendants(cards).OfType<Button>().Any())
+                throw new Exception("The Home cards hold buttons again: check them here too.");
             bitmap.Save(Path.Combine(AppContext.BaseDirectory, $"launcher-{width}.png"), ImageFormat.Png);
-            Console.WriteLine($"PASS {width}: all nine generation buttons fit; rendered launcher-{width}.png");
+            Console.WriteLine($"PASS {width}: rendered the Home cards as launcher-{width}.png");
         }
-        using var rvrForm = (Form)Activator.CreateInstance(type, true)!;
         var hidden = BindingFlags.Instance | BindingFlags.NonPublic;
+        // The "+ Lv." buttons moved from the Home cards to the Bots page (MainForm.BuildBotsPage): one card per realm
+        // in a fixed-size row, so the window width does not change them.
+        var generate = ((IEnumerable<Button>)type.GetField("_realmGenerateButtons", hidden)!.GetValue(form)!).ToList();
+        int[] levels = (int[])type.GetField("BotStartLevels", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+        string[] expected = [.. Enumerable.Repeat(levels.Select(level => $"+ Lv.{level}"), 3).SelectMany(texts => texts)];
+        if (!generate.Select(b => b.Text).SequenceEqual(expected))
+            throw new Exception($"Expected the buttons {string.Join(", ", expected)} but found {string.Join(", ", generate.Select(b => b.Text))}");
+        // button -> the row of level buttons -> the card's table -> the realm card -> the row of three realm cards
+        Control realms = generate[0].Parent!.Parent!.Parent!.Parent!;
+        if (realms is not TableLayoutPanel { ColumnCount: 3 } || generate.Any(b => b.Parent!.Parent!.Parent!.Parent != realms))
+            throw new Exception("The generation buttons are no longer in the Bots page's row of three realm cards.");
+        Size realmsSize = realms.Size;
+        realms.Parent!.Controls.Remove(realms);
+        realms.Dock = DockStyle.None;
+        realms.Size = realmsSize;
+        realms.CreateControl();
+        Layout(realms);
+        foreach (Button button in generate)
+        {
+            for (Control inner = button; inner != realms; inner = inner.Parent!)
+                if (!inner.Parent!.ClientRectangle.Contains(inner.Bounds))
+                    throw new Exception($"Clipped on the Bots page: {inner.GetType().Name} of {button.Text} {inner.Bounds} in {inner.Parent.ClientRectangle}");
+            var textSize = TextRenderer.MeasureText(button.Text, button.Font);
+            if (textSize.Width > button.Width - 6 || textSize.Height > button.Height - 4)
+                throw new Exception($"Button text does not fit: {button.Text} {button.Size}");
+        }
+        using (var botsBitmap = new Bitmap(realms.Width, realms.Height))
+        {
+            realms.DrawToBitmap(botsBitmap, new Rectangle(Point.Empty, botsBitmap.Size));
+            botsBitmap.Save(Path.Combine(AppContext.BaseDirectory, "bots-realm-cards.png"), ImageFormat.Png);
+        }
+        Console.WriteLine($"PASS: all {generate.Count} generation buttons fit on the Bots page; rendered bots-realm-cards.png");
+        using var rvrForm = (Form)Activator.CreateInstance(type, true)!;
         var snapshotType = type.GetNestedType("RvrWorldSnapshot", BindingFlags.NonPublic)!;
         string json = """
             {"UpdatedUtc":"2026-09-04T15:00:00Z","Running":true,"Objectives":[
