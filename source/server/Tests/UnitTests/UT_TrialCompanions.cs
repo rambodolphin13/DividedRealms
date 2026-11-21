@@ -55,7 +55,9 @@ namespace DOL.UnitTests
         public void DamageOverTimeCountsEveryTick()
         {
             Spell nuke = Spell(1, eSpellType.DirectDamage, 150, eDamageType.Matter, 50);
-            Spell dot = Spell(2, eSpellType.DamageOverTime, 60, eDamageType.Matter, 45, duration: 20_000, frequency: 4_000);
+            // Database units: seconds and tenths of a second (20 s, a tick every 4 s).
+            Spell dot = Spell(2, eSpellType.DamageOverTime, 60, eDamageType.Matter, 45, duration: 20, frequency: 40);
+            Assert.That(dot.Duration / dot.Frequency, Is.EqualTo(5));
             Assert.That(BotCasterPriority.TotalDamage(60, 20_000, 4_000), Is.EqualTo(300));
             Assert.That(BotCasterPriority.HardestHitting(new[] { nuke, dot }, _ => 0, spell => spell.Power), Is.SameAs(dot));
         }
@@ -142,6 +144,15 @@ namespace DOL.UnitTests
             Assert.That(TrialStandOff.Bearing(new(0, 0), new(0, 100)), Is.EqualTo(90).Within(0.001));
             Assert.That(TrialStandOff.Bearing(new(0, 0), new(-100, 0)), Is.EqualTo(180).Within(0.001));
             Assert.That(TrialStandOff.Bearing(new(5, 5), new(5, 5)), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ASpotIsLookedForAllRoundTheBossNearestItsOwnBearingFirst()
+        {
+            Assert.That(TrialStandOff.CandidateBearings(350), Is.EqualTo(new double[] { 350, 20, 320, 50, 290, 80, 260, 110, 230, 140, 200, 170 }));
+            Assert.That(TrialStandOff.ClearOfOthers(new(0, 0), new[] { new Vector2(0, 450), new Vector2(-600, 0) }), Is.True);
+            Assert.That(TrialStandOff.ClearOfOthers(new(0, 0), new[] { new Vector2(0, 450), new Vector2(300, 200) }), Is.False);
+            Assert.That(TrialStandOff.ClearOfOthers(new(0, 0), new Vector2[0]), Is.True);
         }
 
         // playerCompanion, playerLed, alive, fightsAtRange, support, heldByStayOrder

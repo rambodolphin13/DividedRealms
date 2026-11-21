@@ -72,6 +72,40 @@ namespace DOL.GS
             return bearing < 0 ? bearing + 360 : bearing;
         }
 
+        /// <summary>Two companions' spots are at least this far apart: Aithos' fireball reaches 400 from its victim.</summary>
+        public const int MinimumSeparation = 400;
+
+        /// <summary>
+        /// The bearings tried for a spot, nearest the companion's own first: its own, then 30 degrees to either side, 60,
+        /// and so on round to the far side of the boss (twelve in all). Walls, ledges and a blocked line of sight rule
+        /// most of a temple room out, so one bearing alone often had no spot (ML 2.10 sandbox run, 2026-11-21). Pure.
+        /// </summary>
+        public static IEnumerable<double> CandidateBearings(double own)
+        {
+            yield return Normalize(own);
+            for (int step = 30; step < 180; step += 30)
+            {
+                yield return Normalize(own + step);
+                yield return Normalize(own - step);
+            }
+            yield return Normalize(own + 180);
+        }
+
+        private static double Normalize(double degrees)
+        {
+            degrees %= 360;
+            return degrees < 0 ? degrees + 360 : degrees;
+        }
+
+        /// <summary>Whether a spot is clear of the spots other companions already hold. Pure.</summary>
+        public static bool ClearOfOthers(Vector2 spot, IEnumerable<Vector2> taken)
+        {
+            foreach (Vector2 other in taken)
+                if (Vector2.Distance(spot, other) < MinimumSeparation)
+                    return false;
+            return true;
+        }
+
         /// <summary>The point <paramref name="radius"/> from <paramref name="centre"/> on that bearing. Pure.</summary>
         public static Vector2 Spot(Vector2 centre, double bearingDegrees, int radius)
         {

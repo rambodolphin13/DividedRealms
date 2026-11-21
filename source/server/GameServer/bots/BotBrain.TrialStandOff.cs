@@ -99,21 +99,32 @@ namespace DOL.AI.Brain
                 return null;
             Vector2 middle = new(centre.X, centre.Y);
             double approach = TrialStandOff.Bearing(middle, new(run.Starter.X, run.Starter.Y));
-            double bearing = TrialStandOff.BearingDegrees(approach, slot, takers.Count);
+            double own = TrialStandOff.BearingDegrees(approach, slot, takers.Count);
             var nav = PathfindingProvider.Instance;
-            bool mesh = nav.IsAvailable && nav.HasNavmesh(boss.CurrentZone);
+            if (!nav.IsAvailable || !nav.HasNavmesh(boss.CurrentZone))
+            {
+                Vector2 open = TrialStandOff.Spot(middle, own, TrialStandOff.Radius);
+                return new(open.X, open.Y, centre.Z);
+            }
+            // Spots the other companions hold round this boss: a spot on another bearing must not crowd them.
+            List<Vector2> taken = group.GetMembersInTheGroup().OfType<GameBot>()
+                .Where(member => member != Body && member.Brain is BotBrain brain && brain._standOffBoss == boss && brain._standOffSpot != null)
+                .Select(member => ((BotBrain)member.Brain)._standOffSpot)
+                .Where(held => held != null).Select(held => new Vector2(held.Value.X, held.Value.Y)).ToList();
+            // The widest ring first, on whichever bearing has ground and a view of the boss; then the smaller rings.
             foreach (int radius in TrialStandOff.Radii)
             {
-                Vector2 raw = TrialStandOff.Spot(middle, bearing, radius);
-                Vector3 wanted = new(raw.X, raw.Y, centre.Z);
-                if (!mesh)
-                    return wanted;
-                // Slide along the ground from the boss toward the spot: a wall or a ledge stops it short. The spot must
-                // also see the boss, or the caster would only walk back in to cast (BotLineOfSight).
-                if (nav.GetMoveAlongSurface(boss.CurrentZone, centre, wanted, nav.DefaultFilters) is Vector3 ground &&
-                    Vector2.Distance(new(ground.X, ground.Y), middle) >= TrialStandOff.MinimumRadius &&
-                    HasNavmeshSight(boss.CurrentZone, ground, centre))
-                    return ground;
+                foreach (double bearing in TrialStandOff.CandidateBearings(own))
+                {
+                    Vector2 raw = TrialStandOff.Spot(middle, bearing, radius);
+                    // Slide along the ground from the boss toward the spot: a wall or a ledge stops it short. The spot
+                    // must also see the boss, or the caster would only walk back in to cast (BotLineOfSight).
+                    if (nav.GetMoveAlongSurface(boss.CurrentZone, centre, new(raw.X, raw.Y, centre.Z), nav.DefaultFilters) is Vector3 ground &&
+                        Vector2.Distance(new(ground.X, ground.Y), middle) >= TrialStandOff.MinimumRadius &&
+                        TrialStandOff.ClearOfOthers(new(ground.X, ground.Y), taken) &&
+                        HasNavmeshSight(boss.CurrentZone, ground, centre))
+                        return ground;
+                }
             }
             return null;
         }
