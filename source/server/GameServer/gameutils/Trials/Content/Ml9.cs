@@ -164,7 +164,7 @@ namespace DOL.GS.Trials
         internal static void Heal(TrialMob mob, double share) => mob?.ChangeHealth(mob, eHealthChangeType.Spell, (int)(mob.MaxHealth * share));
 
         internal static void Hurt(TrialRun run, GameLiving source, GameLiving target, int damage, eDamageType type) =>
-            target.TakeDamage(source, type, (int)(damage * run.DamageScale), 0);
+            target.TrialDamage(source, type, (int)(damage * run.DamageScale));
 
         internal static void HurtAround(TrialRun run, GameLiving source, GameObject center, int radius, int damage, eDamageType type)
         {
@@ -433,7 +433,7 @@ namespace DOL.GS.Trials
             if (TrialMob.KindOf(source, type) != TrialDamageKind.Spell && Util.Chance(LachlenEvadePercent))
                 return 0;
             if (Util.Chance(10) && Culprit(source) is { IsAlive: true } attacker)
-                attacker.TakeDamage(lachlen, eDamageType.Spirit, (int)(150 * lachlen.Run.DamageScale), 0);
+                attacker.TrialDamage(lachlen, eDamageType.Spirit, (int)(150 * lachlen.Run.DamageScale));
             return damage;
         }
 

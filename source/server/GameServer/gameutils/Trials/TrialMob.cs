@@ -64,7 +64,7 @@ namespace DOL.GS.Trials
             base.TakeDamage(source, damageType, damageAmount, criticalAmount);
 
             if (Spec.Reflect > 0 && source is GameLiving attacker && attacker.IsAlive)
-                attacker.TakeDamage(this, damageType, (int)(damageAmount * Spec.Reflect), 0);
+                attacker.TrialDamage(this, damageType, (int)(damageAmount * Spec.Reflect));
         }
 
         public static TrialDamageKind KindOf(GameObject source, eDamageType damageType)
@@ -105,5 +105,22 @@ namespace DOL.GS.Trials
             Complete();
             return true;
         }
+    }
+
+    /// <summary>
+    /// Damage a trial deals outside a normal attack (fireballs, pulses, spikes, falls). TakeDamage alone writes nothing
+    /// to the combat log, so players watched their health drop with no line saying what hit them (DR-397).
+    /// </summary>
+    public static class TrialHits
+    {
+        public static void TrialDamage(this GameLiving target, GameObject source, eDamageType type, int amount)
+        {
+            if (amount > 0 && target is GamePlayer { IsAlive: true, ObjectState: GameObject.eObjectState.Active } player)
+                player.Out.SendMessage(HitLine(source is GamePlayer ? null : source?.Name, amount, type), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
+            target.TakeDamage(source, type, amount, 0);
+        }
+
+        public static string HitLine(string source, int amount, eDamageType type) =>
+            $"{(string.IsNullOrEmpty(source) ? "The trial" : source)} hits you for {amount} {type.ToString().ToLowerInvariant()} damage!";
     }
 }

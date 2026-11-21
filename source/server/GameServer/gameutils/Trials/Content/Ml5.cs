@@ -543,7 +543,7 @@ namespace DOL.GS.Trials
         }
 
         public static void Strike(TrialRun run, GameLiving source, GameLiving target, int damage, eDamageType type) =>
-            target.TakeDamage(source, type, (int)(damage * run.DamageScale), 0);
+            target.TrialDamage(source, type, (int)(damage * run.DamageScale));
 
         public static void Clear(TrialRun run, string tag)
         {

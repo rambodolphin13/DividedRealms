@@ -238,7 +238,7 @@ namespace DOL.GS.Trials
                 foreach (GameLiving source in sources.ToList())
                 {
                     foreach (GameLiving target in Hostiles(source, pulse.Radius))
-                        target.TakeDamage(source, pulse.DamageType, damage, 0);
+                        target.TrialDamage(source, pulse.DamageType, damage);
                 }
                 if (!string.IsNullOrEmpty(pulse.Message))
                     Tell(pulse.Message);

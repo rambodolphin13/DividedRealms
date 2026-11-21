@@ -132,7 +132,7 @@ namespace DOL.GS.Trials
                 if (!CastsAt(Age(run, caster, now), first, every))
                     continue;
                 foreach (GameLiving victim in run.Hostiles(caster, radius))
-                    victim.TakeDamage(caster, type, (int)(damage * run.DamageScale), 0);
+                    victim.TrialDamage(caster, type, (int)(damage * run.DamageScale));
                 if (message != null)
                     run.Tell(message);
             }
@@ -147,7 +147,7 @@ namespace DOL.GS.Trials
                     continue;
                 List<GameLiving> targets = run.Hostiles(caster, range).ToList();
                 if (targets.Count > 0)
-                    targets[Util.Random(targets.Count - 1)].TakeDamage(caster, type, (int)(damage * run.DamageScale), 0);
+                    targets[Util.Random(targets.Count - 1)].TrialDamage(caster, type, (int)(damage * run.DamageScale));
             }
         }
 
@@ -206,7 +206,7 @@ namespace DOL.GS.Trials
                             if (left > 0)
                                 return;
                             foreach (GameLiving victim in run.Hostiles(run.Starter, 4000).Where(living => OnBridge(living.X, living.Y)).ToList())
-                                victim.TakeDamage(run.Starter, eDamageType.Heat, 120, 0);
+                                victim.TrialDamage(run.Starter, eDamageType.Heat, 120);
                         },
                         // Live: credit once the group stands on the far side. Every living player must be over, the leader too.
                         Done = run => Near(run.Leader, BridgeNorth, 500) && run.Players

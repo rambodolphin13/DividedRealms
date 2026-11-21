@@ -880,7 +880,7 @@ namespace DOL.GS.Trials
                         OnStart = run =>
                         {
                             if (run.Leader.IsAlive)
-                                run.Leader.TakeDamage(run.Starter, eDamageType.Crush, FallDamage(run.Leader.Health, run.Leader.MaxHealth), 0);
+                                run.Leader.TrialDamage(run.Starter, eDamageType.Crush, FallDamage(run.Leader.Health, run.Leader.MaxHealth));
                             Ml12Kit.MoveParty(run, SouthGate);
                         },
                         SurviveSeconds = 2,

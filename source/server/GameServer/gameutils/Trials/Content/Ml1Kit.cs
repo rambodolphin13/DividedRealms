@@ -36,7 +36,7 @@ namespace DOL.GS.Trials
         public static int Scaled(TrialRun run, int damage) => (int)(damage * run.DamageScale);
 
         public static void Strike(TrialRun run, GameLiving source, GameLiving target, int damage, eDamageType type) =>
-            target.TakeDamage(source, type, Scaled(run, damage), 0);
+            target.TrialDamage(source, type, Scaled(run, damage));
 
         /// <summary>Area damage on demand, for blasts that do not fit a fixed <see cref="TrialPulse"/>.</summary>
         public static void Burst(TrialRun run, GameLiving source, GameObject center, int radius, int damage, eDamageType type, Func<GameLiving, bool> spared = null)

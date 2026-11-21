@@ -409,7 +409,7 @@ namespace DOL.GS.Trials
 
             if (seconds % 20 == 0 && RandomTarget(run, boss, 800) is { } prey)
             {
-                prey.TakeDamage(boss, eDamageType.Crush, FlingDamage(prey.MaxHealth), 0);
+                prey.TrialDamage(boss, eDamageType.Crush, FlingDamage(prey.MaxHealth));
                 run.Tell($"Leo flings {prey.Name} into the sky!");
             }
         }
@@ -476,7 +476,7 @@ namespace DOL.GS.Trials
         private static TrialMob One(TrialRun run, string tag) => run.Mobs(tag).FirstOrDefault();
 
         private static void Hurt(TrialRun run, GameLiving source, GameLiving target, int damage, eDamageType type) =>
-            target.TakeDamage(source, type, (int)(damage * run.DamageScale), 0);
+            target.TrialDamage(source, type, (int)(damage * run.DamageScale));
 
         private static void HurtAround(TrialRun run, GameLiving source, GameObject center, int radius, int damage, eDamageType type)
         {
