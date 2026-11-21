@@ -989,9 +989,7 @@ public static partial class AutonomousRvrEventLayer
         // Emain Macha muster through the defenders on the way and failed at the one-hour mark.
         active.ExpiresTick = Math.Max(active.ExpiresTick, nowTick + (active.RelicKeep ? RelicMarchMilliseconds
             : RealmEventPolicy.RecruitmentMilliseconds(0)));
-        RealmEventNotices.Queue(active.TargetId, active.AttackerRealm, active.DefenseReaction
-                ? $"Our warbands march together to join the attack on {Place(active.Target.Name)}!"
-                : $"The army marches on {Place(active.Target.Name)}! Form up at the siege camp.",
+        RealmEventNotices.Queue(active.TargetId, active.AttackerRealm, $"The army marches on {Place(active.Target.Name)}! Form up at the siege camp.",
             "siege_attack", RealmEventNotices.KeepSlots(active.Target.Name, active.DefenderRealm));
         CallDefendersAtMarch(active, nowTick);
         var log = DOL.Logging.LoggerManager.Create(typeof(AutonomousRvrEventLayer));
