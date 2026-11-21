@@ -100,6 +100,7 @@ namespace DOL.GS
             var inventory = new BotInventory(character.ObjectId);
             inventory.LoadFromDatabase(character.ObjectId);
             Inventory = inventory;
+            DrawCompanionEquipmentOnLoad();
             RefreshItemBonuses();
 
             Health = character.Health > 0 ? Math.Min(character.Health, MaxHealth) : MaxHealth;

@@ -4249,7 +4249,7 @@ namespace DOL.AI.Brain
             {
                 if (!SavageBotWeaponPolicy.TryBestActiveSlot(BotBody, out eActiveWeaponSlot savageSlot))
                     return false;
-                if (Body.ActiveWeaponSlot != savageSlot)
+                if (!BotBody.HoldsWeaponSet(savageSlot))
                     Body.SwitchWeapon(savageSlot);
                 return true;
             }
@@ -4281,14 +4281,16 @@ namespace DOL.AI.Brain
 
             if (preferTwoHand)
             {
-                if (Body.ActiveWeaponSlot != eActiveWeaponSlot.TwoHanded)
+                // DR-489: the slot number alone is not enough. A bot can load with its slot already set and nothing in hand, so
+                // switch unless the slot's item is the one in hand.
+                if (!BotBody.HoldsWeaponSet(eActiveWeaponSlot.TwoHanded))
                     Body.SwitchWeapon(eActiveWeaponSlot.TwoHanded);
                 return true;
             }
 
             if (oneHandUsable)
             {
-                if (Body.ActiveWeaponSlot != eActiveWeaponSlot.Standard)
+                if (!BotBody.HoldsWeaponSet(eActiveWeaponSlot.Standard))
                     Body.SwitchWeapon(eActiveWeaponSlot.Standard);
                 return true;
             }

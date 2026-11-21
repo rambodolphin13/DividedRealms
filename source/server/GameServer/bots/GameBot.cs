@@ -5264,6 +5264,27 @@ namespace DOL.GS
             return true;
         }
 
+        /// <summary>
+        /// Puts an account companion's equipped set in its hands when it loads. The inventory load fills the slots but
+        /// draws nothing, so until its first weapon switch a companion showed no weapon, shield or staff and had no
+        /// attack range (Discord 2026-11-20/21, still on DR-dev-0.1l). With no weapon it can swing it still shows what it
+        /// holds: a seer's shield, a caster's staff.
+        /// </summary>
+        private void DrawCompanionEquipmentOnLoad()
+        {
+            if (ReadyCompanionWeapon())
+                return;
+            eActiveWeaponSlot? shown = CompanionShownSet(
+                Inventory.GetItem(eInventorySlot.RightHandWeapon) != null || Inventory.GetItem(eInventorySlot.LeftHandWeapon) != null,
+                Inventory.GetItem(eInventorySlot.TwoHandWeapon) != null);
+            if (shown != null)
+                SwitchWeapon(shown.Value);
+        }
+
+        /// <summary>Which set a companion with no swingable weapon still shows (null: its hands are empty). Pure.</summary>
+        public static eActiveWeaponSlot? CompanionShownSet(bool oneHandSetHeld, bool twoHandHeld) =>
+            oneHandSetHeld ? eActiveWeaponSlot.Standard : twoHandHeld ? eActiveWeaponSlot.TwoHanded : null;
+
         /// <summary>Whether an account companion must run SwitchWeapon to hold its wanted set. Pure.</summary>
         public static bool CompanionWeaponSwitchNeeded(eActiveWeaponSlot active, eActiveWeaponSlot? wanted, bool inHandMatchesSlot) =>
             wanted != null && (wanted != active || !inHandMatchesSlot);
@@ -5516,10 +5537,18 @@ namespace DOL.GS
                 return;
             }
 
+            eActiveWeaponSlot before = ActiveWeaponSlot;
             base.SwitchWeapon(slot);
+            // GameNPC.SwitchWeapon tells the clients only when the slot number changed. A bot that loaded with slot
+            // Standard and empty hands then drew its one-hand set stayed empty-handed on every screen (DR-489).
+            if (before == ActiveWeaponSlot)
+                BroadcastLivingEquipmentUpdate();
             if (Inventory != null)
                 RefreshItemBonuses();
         }
+
+        /// <summary>Whether this set is the active one and its items are the ones in hand.</summary>
+        internal bool HoldsWeaponSet(eActiveWeaponSlot slot) => slot == ActiveWeaponSlot && ActiveSlotMatchesInventory(slot);
 
         private bool ActiveSlotMatchesInventory(eActiveWeaponSlot slot)
         {
