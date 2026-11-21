@@ -176,6 +176,17 @@ namespace DOL.GS
         public static bool AllyGoesStraightIn(bool inKeepRegion, double toKeep, double toMuster, bool marching) =>
             inKeepRegion && (toKeep <= AllyDirectRadius || !marching && toKeep < toMuster);
 
+        /// <summary>
+        /// DR-492, second cause (sandbox 2026-11-21, full population): Midgard had 220 level 50s on RvR duty, 128 of them
+        /// in its own siege of Dun nGed and the rest defending Fensalir Faste, and a player's attack on Castle Excalibur
+        /// drew one helper in nine minutes. A warband in its realm's own automatic keep siege may leave it for a player's
+        /// attack on an enemy RELIC keep, as long as that siege keeps the army its muster waits for (64, or 120 for a relic
+        /// siege). Forced sieges, retakes, defenses and ordinary keep attacks by a player never lose warbands this way. Pure.
+        /// </summary>
+        public static bool PlayerRelicRaidDrawsFromSiege(bool playerAttackOnRelicKeep, bool automaticSiegeOfSameRealm,
+            int siegeAttackers, int forceSize, int siegeNeeded) =>
+            playerAttackOnRelicKeep && automaticSiegeOfSameRealm && forceSize > 0 && siegeAttackers - forceSize >= siegeNeeded;
+
         /// <summary>A player-raised attack whose helpers gather and march as a column that has not reached the keep yet.</summary>
         private static bool AllyColumn(ActiveEvent active) =>
             active.DefenseReaction && active.MusterDeadlineTick != 0 && !active.AllyArrived;
@@ -383,7 +394,13 @@ namespace DOL.GS
                             m is not GameBot member || member.Level != 50 || BotDutyLeases.IsSpokenForByPlayer(member) ||
                             !member.IsAutonomousWorldBot || !AutonomousObjectiveAssignments.Is(member, eAutonomousObjectiveKind.RvR)))) continue;
                         var previous = Events.Values.FirstOrDefault(e => Participants(e, force.Realm).ContainsKey(force.GroupId));
-                        if (previous != null && (!previous.DefenseReaction || !active.DefenseReaction ||
+                        bool leavesSiege = previous != null && PlayerRelicRaidDrawsFromSiege(
+                            active.DefenseReaction && active.RelicKeep && force.Realm == active.AttackerRealm,
+                            !previous.DefenseReaction && !previous.Forced && !previous.Retake && previous.AttackerRealm == force.Realm &&
+                                previous.Attackers.ContainsKey(force.GroupId),
+                            previous.Attackers.Values.Sum(), previous.Attackers.GetValueOrDefault(force.GroupId), MusterNeeded(previous.RelicKeep)) &&
+                            !candidate.Members.Any(BotSiegeRuntime.Assigned);
+                        if (previous != null && !leavesSiege && (!previous.DefenseReaction || !active.DefenseReaction ||
                             !CanRedirectDefense(previous.DefenderRealm, active.DefenderRealm,
                                 previous.PlayerAccount, active.PlayerAccount, previous.LastPressureTick, active.LastPressureTick))) continue;
                         int cap = active.DefenseReaction ? ResponseCap(force.Realm == active.DefenderRealm, active.DefenseScale) : SiegeRealmCap(active, force.Realm);
@@ -393,6 +410,13 @@ namespace DOL.GS
                             Participants(previous, force.Realm).Remove(force.GroupId);
                             previous.Slots.Remove(force.GroupId);
                             foreach (long id in force.MemberIds) previous.Present.Remove(id);
+                            if (leavesSiege)
+                            {
+                                foreach (long id in force.MemberIds) { previous.Mustered.Remove(id); previous.Travel.Remove(id); }
+                                DOL.Logging.LoggerManager.Create(typeof(AutonomousRvrEventLayer)).Info(
+                                    $"RVR_ALLY_LEFT_SIEGE force={force.GroupId} realm={GlobalConstants.RealmToName(force.Realm)} size={force.MemberCount} " +
+                                    $"from={previous.TargetId} to={active.TargetId} siegeLeft={previous.Attackers.Values.Sum()}");
+                            }
                         }
                         foreach (GameBot bot in candidate.Members)
                         {

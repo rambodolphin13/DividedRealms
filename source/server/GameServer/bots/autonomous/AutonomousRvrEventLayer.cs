@@ -1663,8 +1663,9 @@ public static partial class AutonomousRvrEventLayer
             // A player's attack: the helpers march at their deadline with whoever has gathered; the player is already fighting.
             if (active.DefenseReaction)
             {
-                // Nobody at the outpost yet (the helpers are still on their way to it): one more muster, then they go.
-                if (gathered == 0 && !active.MusterExtended)
+                // Under half of the helpers called so far are at the outpost (the rest are still on their way to it):
+                // one more muster, then they go.
+                if (gathered * 2 < active.Attackers.Values.Sum() && !active.MusterExtended)
                 {
                     active.MusterExtended = true;
                     active.MusterDeadlineTick = nowTick + PlayerAllyMusterMilliseconds;

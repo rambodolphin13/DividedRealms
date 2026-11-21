@@ -76,7 +76,7 @@ namespace DOL.GS.Tests
             Assert.That(muster, Is.EqualTo(5 * 60_000));
 
             Assert.That(AutonomousRvrEventLayer.GetRallyOrder(Helpers, eRealm.Albion, now + muster - 1000).HomeMuster, Is.True);
-            // Deadline with nobody at the outpost: one more muster.
+            // Deadline with under half of the helpers at the outpost (here none): one more muster.
             Assert.That(AutonomousRvrEventLayer.GetRallyOrder(Helpers, eRealm.Albion, now + muster + 1000).HomeMuster, Is.True);
             // Second deadline: they go, relic keep or not (no ten-minute relic extensions for a player attack).
             var marching = AutonomousRvrEventLayer.GetRallyOrder(Helpers, eRealm.Albion, now + 2 * muster + 2000);
@@ -132,6 +132,24 @@ namespace DOL.GS.Tests
         public void ColumnMarchesOnceMostOfTheHelpersCalledHaveGathered(int called, int needed)
         {
             Assert.That(AutonomousRvrEventLayer.AllyWaveSize(called), Is.EqualTo(needed));
+        }
+
+        // relic raid by a player, automatic siege of the same realm, siege attackers, warband size, army the siege needs
+        [TestCase(true, true, 128, 8, 64, true, TestName = "RelicRaidDrawsSurplusWarbandFromTheRealmsOwnSiege")]
+        [TestCase(true, true, 72, 8, 64, true, TestName = "RelicRaidDrawsDownToTheArmyTheSiegeNeeds")]
+        [TestCase(true, true, 71, 8, 64, false, TestName = "RelicRaidNeverTakesTheSiegeBelowItsArmy")]
+        [TestCase(true, true, 128, 8, 120, true, TestName = "RelicSiegeKeepsItsLargerArmy")]
+        [TestCase(true, true, 127, 8, 120, false, TestName = "RelicSiegeBelowItsArmyLosesNobody")]
+        [TestCase(false, true, 128, 8, 64, false, TestName = "OrdinaryKeepAttackByAPlayerDrawsNobodyFromASiege")]
+        [TestCase(true, false, 128, 8, 64, false, TestName = "ForcedSiegesRetakesAndDefensesLoseNobody")]
+        [TestCase(true, true, 128, 0, 64, false, TestName = "AForceNotInTheSiegeIsNotDrawn")]
+        public void PlayerRelicRaidMayDrawFromTheRealmsOwnSiege(bool relicRaid, bool automaticSiege, int siegeAttackers,
+            int forceSize, int siegeNeeded, bool expected)
+        {
+            Assert.That(AutonomousRvrEventLayer.MusterNeeded(false), Is.EqualTo(64));
+            Assert.That(AutonomousRvrEventLayer.MusterNeeded(true), Is.EqualTo(120));
+            Assert.That(AutonomousRvrEventLayer.PlayerRelicRaidDrawsFromSiege(relicRaid, automaticSiege, siegeAttackers, forceSize, siegeNeeded),
+                Is.EqualTo(expected));
         }
 
         [Test]
