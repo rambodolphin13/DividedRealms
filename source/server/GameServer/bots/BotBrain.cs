@@ -1418,6 +1418,7 @@ namespace DOL.AI.Brain
         public override void Think()
         {
             if (BotGroupRelease.TryUnstick(BotBody)) return; // Fork: first, whatever below would keep a released bot from its player
+            TraceCompanionFight();
             // Living Server linkdead (bot_living_breaks): the bot stands still and does nothing until it
             // "reconnects" (30-90 s) or is attacked (AutonomousBotSchedule.OnAttacked wakes it).
             if (AutonomousBotSchedule.IsFrozen(BotBody))
@@ -6568,7 +6569,7 @@ namespace DOL.AI.Brain
             // Read the group once: another bot's turn can disband it between two reads (2026-10-19 soak:
             // a NullReferenceException here removed a Cleric from the world when its RvR task expired).
             Group group = Body.Group;
-            if (group == null || !BotBody.IsAutonomousWorldBot || GameLoop.GameLoopTime < _nextResurrectionBlockReportTick)
+            if (group == null || !(BotBody.IsAutonomousWorldBot || BotBody.IsPlayerCompanion) || GameLoop.GameLoopTime < _nextResurrectionBlockReportTick)
                 return;
             int range = BotBody.castingComponent.CalculateSpellRange(resurrection);
             corpse ??= group.GetMembersInTheGroup().FirstOrDefault(member => member != Body && !member.IsAlive &&
@@ -6576,7 +6577,8 @@ namespace DOL.AI.Brain
                 Body.IsWithinRadius(member, range));
             if (corpse == null)
                 return;
-            _nextResurrectionBlockReportTick = GameLoop.GameLoopTime + 60_000;
+            // A player's companion reports more often: its fights are short and each line is read after a playtest (DR-396).
+            _nextResurrectionBlockReportTick = GameLoop.GameLoopTime + (BotBody.IsAutonomousWorldBot ? 60_000 : 10_000);
             reason ??= BotGroupSupport.DescribeResurrectionBlock(BotBody, resurrection, corpse);
             log.Info($"AUTONOMOUS_RESURRECTION_BLOCKED bot=\"{BotBody.Name}\" class=\"{BotBody.ClassName}\" corpse=\"{corpse.Name}\" " +
                      $"distance={Body.GetDistanceTo(corpse)} spell=\"{resurrection.Name}\" mana={BotBody.Mana}/{BotBody.MaxMana} " +
