@@ -2080,7 +2080,7 @@ namespace DOL.GS
                 _rvrIntent = committedPlan.Intent;
                 bot.TempProperties.SetProperty("RvrWarbandIntent", (int)_rvrIntent);
             }
-            var rally = AutonomousRvrEventLayer.GetRallyOrder(forceId, bot.Realm, GameLoop.GameLoopTime);
+            var rally = SiegeRallyOrder(bot, forceId);
             // A marching army's siege operators set up rams, catapults and trebuchets as soon as they reach
             // the keep instead of waiting at rally posts for the battle to be declared. Siege jobs ran only
             // after the battle started, and no bot had ever deployed a siege weapon (logs since 2026-10-02).
@@ -2216,7 +2216,7 @@ namespace DOL.GS
                 }
             }
 
-            rally = AutonomousRvrEventLayer.GetRallyOrder(forceId, bot.Realm, GameLoop.GameLoopTime);
+            rally = SiegeRallyOrder(bot, forceId);
             if (rally != null) return HandleSiegeRally(bot, forceId, rally);
 
             // The ram owns its normal decay after release; the controller never
