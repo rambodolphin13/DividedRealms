@@ -138,8 +138,19 @@ namespace DOL.GS
         public static bool WalksToSpot(bool casting, double distanceToSpot, double spotToAttackTarget, int spellRange, bool targetInViewFromSpot = true) =>
             !casting && distanceToSpot > ArrivalTolerance && (spellRange <= 0 || spotToAttackTarget <= spellRange - 50 && targetInViewFromSpot);
 
-        /// <summary>The ring is laid out again for a new boss or one that has moved <see cref="ReanchorDistance"/>. Pure.</summary>
-        public static bool NeedsNewLayout(bool sameBoss, double bossMovedFromCentre) =>
-            !sameBoss || bossMovedFromCentre > ReanchorDistance;
+        /// <summary>A companion without a spot looks again once the boss has moved this far.</summary>
+        public const int RetryDistance = 150;
+
+        /// <summary>
+        /// The ring is laid out again for a new boss, for one that has moved <see cref="ReanchorDistance"/>, and for a
+        /// companion whose spot the boss has come within <see cref="MinimumRadius"/> of (a tank drags a boss about: on
+        /// the 2026-11-21 sandbox run Runihura moved 400 and stood 190 from a Wizard's spot). A boss that is after this
+        /// very companion does not move its spot: it would only be chased from spot to spot. Without a spot it looks
+        /// again when the boss has moved <see cref="RetryDistance"/>. Pure.
+        /// </summary>
+        public static bool NeedsNewLayout(bool sameBoss, double bossMovedFromCentre, bool hasSpot = true,
+            double spotToBoss = double.MaxValue, bool bossIsAfterMe = false) =>
+            !sameBoss || bossMovedFromCentre > ReanchorDistance ||
+            (hasSpot ? spotToBoss < MinimumRadius && !bossIsAfterMe : bossMovedFromCentre > RetryDistance);
     }
 }

@@ -186,6 +186,12 @@ namespace DOL.UnitTests
             Assert.That(TrialStandOff.NeedsNewLayout(true, 120), Is.False);
             Assert.That(TrialStandOff.NeedsNewLayout(true, TrialStandOff.ReanchorDistance + 1), Is.True);
             Assert.That(TrialStandOff.NeedsNewLayout(false, 0), Is.True);
+            Assert.That(TrialStandOff.NeedsNewLayout(true, 400, hasSpot: true, spotToBoss: 190), Is.True, "the boss was dragged onto its spot");
+            Assert.That(TrialStandOff.NeedsNewLayout(true, 400, hasSpot: true, spotToBoss: 190, bossIsAfterMe: true), Is.False,
+                "a boss chasing this companion would chase it from spot to spot");
+            Assert.That(TrialStandOff.NeedsNewLayout(true, 400, hasSpot: true, spotToBoss: 460), Is.False);
+            Assert.That(TrialStandOff.NeedsNewLayout(true, 160, hasSpot: false), Is.True, "no spot yet: look again where the boss is now");
+            Assert.That(TrialStandOff.NeedsNewLayout(true, 100, hasSpot: false), Is.False);
             Assert.That(TrialStandOff.LeaderFights(false, false), Is.False, "out of combat the companions follow again");
             Assert.That(TrialStandOff.LeaderFights(true, false), Is.True);
         }

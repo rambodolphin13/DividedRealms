@@ -73,7 +73,10 @@ namespace DOL.AI.Brain
             }
             TrialMob boss = mobs[index];
             Vector3 at = new(boss.X, boss.Y, boss.Z);
-            if (!TrialStandOff.NeedsNewLayout(boss == _standOffBoss, Vector2.Distance(new(at.X, at.Y), new(_standOffCentre.X, _standOffCentre.Y))))
+            if (!TrialStandOff.NeedsNewLayout(boss == _standOffBoss, Vector2.Distance(new(at.X, at.Y), new(_standOffCentre.X, _standOffCentre.Y)),
+                    _standOffSpot != null,
+                    _standOffSpot is Vector3 held ? Vector2.Distance(new(held.X, held.Y), new(at.X, at.Y)) : double.MaxValue,
+                    boss.TargetObject == Body))
                 return;
             _standOffBoss = boss;
             _standOffCentre = at;
