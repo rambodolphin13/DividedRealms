@@ -5255,7 +5255,10 @@ namespace DOL.GS
         {
             bool standard = BotWeaponStats.FitsConfiguredSlot(this, Inventory.GetItem(eInventorySlot.RightHandWeapon), eInventorySlot.RightHandWeapon);
             bool twoHanded = BotWeaponStats.FitsConfiguredSlot(this, Inventory.GetItem(eInventorySlot.TwoHandWeapon), eInventorySlot.TwoHandWeapon);
-            eActiveWeaponSlot? wanted = CompanionWeaponSet(ActiveWeaponSlot, standard, twoHanded);
+            eActiveWeaponSlot? wanted = CompanionWeaponSet(ActiveWeaponSlot, standard, twoHanded,
+                standard && twoHanded ? CompanionPrefersTwoHand() : null);
+            if (wanted == null)
+                LogCompanionWithoutWeapon();
             // DR-489: a companion loads with its slot already Standard but nothing in hand, so a matching slot alone
             // is not enough: switch whenever the item in hand is not the one in that slot.
             if (!CompanionWeaponSwitchNeeded(ActiveWeaponSlot, wanted, wanted != null && ActiveSlotMatchesInventory(wanted.Value)))
@@ -5289,13 +5292,71 @@ namespace DOL.GS
         public static bool CompanionWeaponSwitchNeeded(eActiveWeaponSlot active, eActiveWeaponSlot? wanted, bool inHandMatchesSlot) =>
             wanted != null && (wanted != active || !inHandMatchesSlot);
 
-        /// <summary>Which weapon set an account companion uses (null: none it can swing). Pure.</summary>
-        public static eActiveWeaponSlot? CompanionWeaponSet(eActiveWeaponSlot active, bool standardUsable, bool twoHandedUsable) =>
-            active == eActiveWeaponSlot.Standard && standardUsable || active == eActiveWeaponSlot.TwoHanded && twoHandedUsable
+        /// <summary>
+        /// Which weapon set an account companion uses (null: none it can swing). With both sets usable and
+        /// <paramref name="preferTwoHand"/> given, the better-trained one wins (DR-525); otherwise the active set if usable,
+        /// else the one-hand set, else the two-hand set. Pure.
+        /// </summary>
+        public static eActiveWeaponSlot? CompanionWeaponSet(eActiveWeaponSlot active, bool standardUsable, bool twoHandedUsable,
+            bool? preferTwoHand = null) =>
+            standardUsable && twoHandedUsable && preferTwoHand != null
+                ? preferTwoHand.Value ? eActiveWeaponSlot.TwoHanded : eActiveWeaponSlot.Standard
+                : active == eActiveWeaponSlot.Standard && standardUsable || active == eActiveWeaponSlot.TwoHanded && twoHandedUsable
                 ? active
                 : standardUsable ? eActiveWeaponSlot.Standard
                 : twoHandedUsable ? eActiveWeaponSlot.TwoHanded
                 : null;
+
+        /// <summary>
+        /// DR-525 (Discord 2026-11-22, Ailidh): a companion trained in two-handed weapons fought with the one-hander it also
+        /// held, because its build plan or the slot it loaded in decided, not what the character trained. It now uses
+        /// the set whose weapon line it has trained higher; a tie keeps the plan's choice.
+        /// </summary>
+        public static bool CompanionPrefersTwoHand(int oneHandSkill, int twoHandSkill, bool planIs2H) =>
+            twoHandSkill > oneHandSkill || twoHandSkill == oneHandSkill && planIs2H;
+
+        internal bool CompanionPrefersTwoHand() => CompanionPrefersTwoHand(
+            WeaponLineLevel(Inventory?.GetItem(eInventorySlot.RightHandWeapon)),
+            WeaponLineLevel(Inventory?.GetItem(eInventorySlot.TwoHandWeapon)),
+            BotSpec?.Is2H == true);
+
+        private int WeaponLineLevel(DbInventoryItem item)
+        {
+            if (item == null)
+                return 0;
+            string line = SkillBase.ObjectTypeToSpec((eObjectType)item.Object_Type);
+            return string.IsNullOrEmpty(line) ? 0 : GetBaseSpecLevel(line);
+        }
+
+        private long _nextNoWeaponLogTick;
+
+        /// <summary>
+        /// DR-525: a companion holding a weapon it will not swing says which check refused it, at most once a minute, so
+        /// the next report carries the reason (empty one-hand slot plus a two-hander: "won't attack").
+        /// </summary>
+        private void LogCompanionWithoutWeapon()
+        {
+            if (!log.IsWarnEnabled || GameLoop.GameLoopTime < _nextNoWeaponLogTick || Inventory == null)
+                return;
+            // A caster or healer with empty hands is normal: only a held weapon that is refused is worth a line.
+            if (Inventory.GetItem(eInventorySlot.RightHandWeapon) == null && Inventory.GetItem(eInventorySlot.TwoHandWeapon) == null)
+                return;
+            _nextNoWeaponLogTick = GameLoop.GameLoopTime + 60_000;
+            string Describe(eInventorySlot slot)
+            {
+                DbInventoryItem item = Inventory.GetItem(slot);
+                if (item == null)
+                    return "empty";
+                return $"\"{item.Name}\" type={item.Object_Type} itemType={item.Item_Type} hand={item.Hand} " +
+                       $"lvlReq={item.LevelRequirement} cond={item.Condition} dps={item.Template?.DPS_AF} " +
+                       $"trained={BotWeaponStats.HasConfiguredWeaponProficiency(this, item.Template)} " +
+                       $"stats={BotWeaponStats.HasFunctionalMeleeStats(item)} canUse={BotWeaponStats.CanUseMelee(this, item)} " +
+                       $"fits={BotWeaponStats.FitsConfiguredSlot(this, item, slot)}";
+            }
+            log.Warn($"ACCOUNT_COMPANION_NO_WEAPON companion=\"{Name}\" class={CharacterClass?.Name} level={Level} " +
+                     $"plan={BotSpec?.SpecType} right={Describe(eInventorySlot.RightHandWeapon)} " +
+                     $"twoHand={Describe(eInventorySlot.TwoHandWeapon)}");
+        }
 
         private bool TryEquipBestSavageWeapon(eInventorySlot target)
         {

@@ -4298,6 +4298,8 @@ namespace DOL.AI.Brain
                 else if (twoHandHeals && !oneHandHeals) twoHandUsable = false;
             }
             bool preferTwoHand = PreferTwoHandedSlot(twoHandUsable, oneHandUsable,
+                // DR-525: an account companion holding both sets uses the one it trained higher, not its plan's.
+                BotBody.IsAccountCompanion ? BotBody.CompanionPrefersTwoHand() :
                 BotBody.BotSpec?.Is2H == true ||
                 // An account companion holds what its player gave it: a Healer handed a hammer and shield keeps them out
                 // instead of drawing the two-hander also in its slots because its class is a caster (DR-500).

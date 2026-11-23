@@ -69,6 +69,9 @@ public sealed class LauncherUpdater
         Installed = ReleaseFolder.Detect(GameFolder, out string why);
         NotUpdatable = why;
         Settings = UpdateSettings.Load(UpdatesFolder);
+        // DR-524: say in the log why, so a player's report carries the reason.
+        if (Installed == null)
+            Log.Write("This folder doesn't update itself: " + why + ".");
     }
 
     public string GameFolder { get; }

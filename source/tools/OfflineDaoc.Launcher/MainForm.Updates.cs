@@ -38,7 +38,8 @@ internal sealed partial class MainForm
         var text = XpRateDescription(installed != null
             ? $"You have Divided Realms {installed.Version.Tag}. Looks for a newer release on GitHub and installs it here: your " +
               "characters, world and settings are kept."
-            : "Updates install only into a folder unpacked from a Divided Realms release download, and this folder isn't one.");
+            : "Updates install only into a folder unpacked from a Divided Realms release download. This one doesn't update: " +
+              Updater.NotUpdatable + ".");
         if (installed == null)
             _helpTip.SetToolTip(text, "Why: " + Updater.NotUpdatable + ".");
         text.Dock = DockStyle.None;

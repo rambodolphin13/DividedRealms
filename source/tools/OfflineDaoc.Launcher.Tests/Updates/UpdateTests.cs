@@ -267,6 +267,30 @@ public class ReleaseFolderTests
     }
 
     [Test]
+    public void ARefusalSaysWhichCheckFailedAndAdvisesMovingOutOfOneDrive()
+    {
+        // DR-524: a real release on a OneDrive Desktop was refused with only "this folder isn't one".
+        string synced = GameFolder(Path.Combine(_dir, "OneDrive", "Desktop"), "DR-dev-0.1m", stamp: true);
+        // Both version files locked, as a sync client can hold them (a package has both).
+        string edition = Path.Combine(synced, ReleaseFolder.EditionFile);
+        if (!File.Exists(edition))
+            File.WriteAllText(edition, "Divided Realms DR-dev-0.1m\r\n");
+        using (new FileStream(Path.Combine(synced, ReleaseFolder.StampFile), FileMode.Open, FileAccess.Read, FileShare.None))
+        using (new FileStream(edition, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            Assert.That(ReleaseFolder.Detect(synced, out string why), Is.Null);
+            Assert.That(why, Does.Contain(ReleaseFolder.StampFile).And.Contain("couldn't be read").And.Contain("move the game folder"));
+        }
+        Assert.That(ReleaseFolder.Detect(synced, out _), Is.Not.Null, "readable again, it is a release");
+
+        File.Delete(Path.Combine(synced, ReleaseFolder.ManifestFile));
+        Assert.That(ReleaseFolder.Detect(synced, out string noManifest), Is.Null);
+        Assert.That(noManifest, Does.Contain(ReleaseFolder.ManifestFile).And.Contain("OneDrive"));
+
+        Assert.That(ReleaseFolder.CloudHint(@"C:\Divided Realms"), Is.Empty);
+    }
+
+    [Test]
     public void AFolderThatIsntAReleaseMakesNoRequestEvenWhenAsked()
     {
         string dev = Path.Combine(_dir, "modern-client-test");

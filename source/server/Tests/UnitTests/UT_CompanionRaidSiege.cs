@@ -75,6 +75,23 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void AccountCompanionsHoldingBothSetsUseTheOneTheyTrainedHigher()
+        {
+            // DR-525: loaded with the one-hand set active, a two-hand-trained companion still swung its one-hander.
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.Standard, true, true, preferTwoHand: true), Is.EqualTo(eActiveWeaponSlot.TwoHanded));
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.TwoHanded, true, true, preferTwoHand: false), Is.EqualTo(eActiveWeaponSlot.Standard));
+            // Only one set usable: that one, whatever is preferred.
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.Standard, false, true, preferTwoHand: false), Is.EqualTo(eActiveWeaponSlot.TwoHanded));
+            Assert.That(GameBot.CompanionWeaponSet(eActiveWeaponSlot.Standard, true, false, preferTwoHand: true), Is.EqualTo(eActiveWeaponSlot.Standard));
+
+            Assert.That(GameBot.CompanionPrefersTwoHand(oneHandSkill: 1, twoHandSkill: 50, planIs2H: false), Is.True);
+            Assert.That(GameBot.CompanionPrefersTwoHand(oneHandSkill: 44, twoHandSkill: 10, planIs2H: true), Is.False);
+            // Same line (a Midgard sword in each hand): the plan decides.
+            Assert.That(GameBot.CompanionPrefersTwoHand(39, 39, planIs2H: true), Is.True);
+            Assert.That(GameBot.CompanionPrefersTwoHand(39, 39, planIs2H: false), Is.False);
+        }
+
+        [Test]
         public void TheRaidTakesTheDoorThePlayerStandsAtAndTargets()
         {
             // DR-491: the player's targeted door leads the squads when it stands, is the enemy's and the player is at it.
