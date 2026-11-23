@@ -88,6 +88,8 @@ public static partial class AutonomousRvrEventLayer
         // march together once enough are there (or at the muster deadline).
         public bool Marching = true;
         public long MusterDeadlineTick;
+        /// <summary>A player's attack: the helpers' column has reached the keep (AllyColumn), so the rest go straight in.</summary>
+        public bool AllyArrived;
         public bool MusterExtended;
         public int MusterExtensions;
         public readonly Dictionary<long, (string Force, long Tick, GameBot Bot, Vector3 Position)> Mustered = new();
@@ -787,7 +789,7 @@ public static partial class AutonomousRvrEventLayer
     }
 
     public sealed record RallyOrder(string TargetId, eRealm Attacker, eRealm Defender, int[] Slots, long RemainingMilliseconds,
-        bool HomeMuster = false);
+        bool HomeMuster = false, bool AllyColumn = false);
 
     // Quicker rallies (owner 2026-10-07: relic rallies took over an hour): 12 minutes to gather, one 5-minute extension.
     public const long HomeMusterMilliseconds = 12 * 60_000;
@@ -814,8 +816,17 @@ public static partial class AutonomousRvrEventLayer
     public static void ReportArmyArrived(string targetId, long nowTick)
     {
         using (AiProfile.Lock(Sync, AiSystem.LockRvrEvents))
+        {
             if (Events.TryGetValue(targetId, out var active) && !active.BattleStarted && MarchedArmy(active))
                 StartBattle(active, nowTick, "the marching army reached the keep and attacks at once; defenders and third-realm reinforcements may respond");
+            else if (active != null && AllyColumn(active) && active.Marching)
+            {
+                active.AllyArrived = true;
+                var log = DOL.Logging.LoggerManager.Create(typeof(AutonomousRvrEventLayer));
+                if (log.IsInfoEnabled) log.Info($"RVR_ALLY_COLUMN_ARRIVED target={active.TargetId} realm={GlobalConstants.RealmToName(active.AttackerRealm)} " +
+                    $"marched={active.MarchedAttackers} assigned={active.Attackers.Values.Sum()} minutes={(nowTick - active.CreatedTick) / 60_000d:0.#}");
+            }
+        }
     }
 
     /// <summary>An army that mustered at home and has been given the march order (the start threshold already met).</summary>
@@ -1113,7 +1124,8 @@ public static partial class AutonomousRvrEventLayer
     {
         using (AiProfile.Lock(Sync, AiSystem.LockRvrEvents))
         {
-            if (!Events.TryGetValue(targetId, out var active) || active.BattleStarted || !active.Marching || active.Mustered.Count == 0)
+            if (!Events.TryGetValue(targetId, out var active) || active.BattleStarted && !AllyColumn(active) || !active.Marching ||
+                active.Mustered.Count == 0)
                 return null;
             long now = GameLoop.GameLoopTime;
             if (IsLiveArmyMember(active, active.MarchLeader))
@@ -1193,7 +1205,7 @@ public static partial class AutonomousRvrEventLayer
     public static GameBot[] ArmyMembers(string targetId)
     {
         using (AiProfile.Lock(Sync, AiSystem.LockRvrEvents))
-            return Events.TryGetValue(targetId, out var active) && !active.BattleStarted
+            return Events.TryGetValue(targetId, out var active) && (!active.BattleStarted || AllyColumn(active))
                 ? active.Mustered.Values.Select(entry => entry.Bot).Where(bot => IsLiveArmyMember(active, bot)).Distinct().ToArray()
                 : [];
     }
@@ -1224,8 +1236,10 @@ public static partial class AutonomousRvrEventLayer
             if (inPosition) active.Mustered[botId] = (forceId, nowTick, bot, position);
             else active.Mustered.Remove(botId);
             int assigned = active.Attackers.Values.Sum();
-            if (MusterAttendance(active, nowTick) >= (active.Retake ? DefenseWaveSize(assigned) : MarchThreshold(active.RelicKeep, assigned)))
-                GiveMarchOrder(active, nowTick, "enough attackers mustered at the border keep");
+            if (MusterAttendance(active, nowTick) >= (active.DefenseReaction ? AllyWaveSize(ResponseCap(false, active.DefenseScale))
+                    : active.Retake ? DefenseWaveSize(assigned) : MarchThreshold(active.RelicKeep, assigned)))
+                GiveMarchOrder(active, nowTick, active.DefenseReaction ? "the helpers have gathered at the portal outpost"
+                    : "enough attackers mustered at the border keep");
         }
     }
 
@@ -1268,7 +1282,8 @@ public static partial class AutonomousRvrEventLayer
             // 240 Midgard defenders came in a few at a time and 109 died before forming a line). Its defenders get
             // muster orders although the battle is already on; allied helpers and the third realm stay chaotic.
             var active = Events.Values.FirstOrDefault(entry => (!entry.BattleStarted ||
-                    entry.DefenseReaction && realm == entry.DefenderRealm && entry.DefenseMustering && !entry.DefenseMarching) &&
+                    entry.DefenseReaction && realm == entry.DefenderRealm && entry.DefenseMustering && !entry.DefenseMarching ||
+                    AllyColumn(entry) && realm == entry.AttackerRealm) &&
                 Participants(entry, realm).ContainsKey(forceId));
             if (active == null) return null;
             var participants = Participants(active, realm);
@@ -1284,7 +1299,8 @@ public static partial class AutonomousRvrEventLayer
             }
             return new(active.TargetId, active.AttackerRealm, active.DefenderRealm, slots, active.ExpiresTick - nowTick,
                 !active.Marching && realm == active.AttackerRealm ||
-                (SiegeScheduling || active.DefenseReaction) && realm == active.DefenderRealm && active.DefenseMustering && !active.DefenseMarching);
+                (SiegeScheduling || active.DefenseReaction) && realm == active.DefenderRealm && active.DefenseMustering && !active.DefenseMarching,
+                AllyColumn(active) && realm == active.AttackerRealm);
         }
     }
 
@@ -1644,6 +1660,20 @@ public static partial class AutonomousRvrEventLayer
             // road (medallions, frontier teleporter); too few to ever start the battle. A thin muster waits
             // once more, ten minutes, for the army that is genuinely on its way.
             int gathered = active.Mustered.Count;
+            // A player's attack: the helpers march at their deadline with whoever has gathered; the player is already fighting.
+            if (active.DefenseReaction)
+            {
+                // Under half of the helpers called so far are at the outpost (the rest are still on their way to it):
+                // one more muster, then they go.
+                if (gathered * 2 < active.Attackers.Values.Sum() && !active.MusterExtended)
+                {
+                    active.MusterExtended = true;
+                    active.MusterDeadlineTick = nowTick + PlayerAllyMusterMilliseconds;
+                    continue;
+                }
+                GiveMarchOrder(active, nowTick, "helper muster deadline reached; marching with the helpers gathered");
+                continue;
+            }
             bool mayExtend = active.RelicKeep ? active.MusterExtensions < RelicMusterExtensions : !active.MusterExtended;
             if (!active.Retake && mayExtend && gathered < RealmEventPolicy.DynamicStartThreshold(active.RelicKeep, true))
             {

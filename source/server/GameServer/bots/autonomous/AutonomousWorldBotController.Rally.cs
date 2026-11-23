@@ -91,6 +91,26 @@ public sealed partial class AutonomousWorldBotController
         return AutonomousRvrStaging.TryGetBorderKeepNear(bot.Realm, target.Region, new(target.X, target.Y), out muster);
     }
 
+    /// <summary>
+    /// This turn's rally order. A helper of a player's attack (DR-492: they gather at the portal outpost and march as
+    /// one column) that is already near the keep has no order and goes straight into the fight; when the column's
+    /// leader gets that close, the column has arrived.
+    /// </summary>
+    private AutonomousRvrEventLayer.RallyOrder SiegeRallyOrder(GameBot bot, string forceId)
+    {
+        var order = AutonomousRvrEventLayer.GetRallyOrder(forceId, bot.Realm, GameLoop.GameLoopTime);
+        if (order?.AllyColumn != true || _rvrDestination == null) return order;
+        bool inKeepRegion = bot.CurrentRegionID == _rvrDestination.RegionId;
+        double toKeep = inKeepRegion ? Distance(bot.X, bot.Y, _rvrDestination.X, _rvrDestination.Y) : double.PositiveInfinity;
+        double toMuster = AutonomousRvrStaging.TryGetSiegeMuster(bot.Realm, _rvrDestination.RegionId, out var muster) &&
+                          muster.RegionId == bot.CurrentRegionID
+            ? Vector2.Distance(new(bot.X, bot.Y), new(muster.Position.X, muster.Position.Y)) : double.PositiveInfinity;
+        if (!AutonomousRvrEventLayer.AllyGoesStraightIn(inKeepRegion, toKeep, toMuster, !order.HomeMuster)) return order;
+        if (!order.HomeMuster && AutonomousRvrEventLayer.MarchLeader(order.TargetId) == bot)
+            AutonomousRvrEventLayer.ReportArmyArrived(order.TargetId, GameLoop.GameLoopTime);
+        return null;
+    }
+
     private bool HandleSiegeRally(GameBot bot, string forceId, AutonomousRvrEventLayer.RallyOrder order)
     {
         // The muster is the realm's portal outpost inside the target's frontier, so roamers already
