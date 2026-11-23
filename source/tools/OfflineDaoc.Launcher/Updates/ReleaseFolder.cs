@@ -47,36 +47,57 @@ public static class ReleaseFolder
     public static InstalledRelease? Detect(string gameFolder, out string why)
     {
         string game = Path.GetFullPath(gameFolder).TrimEnd('\\', '/');
+        string? unreadable = null;
         string? Read(string name)
         {
             string path = Path.Combine(game, name);
             try { return File.Exists(path) ? File.ReadAllText(path) : null; }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                unreadable ??= name + " (" + e.Message.TrimEnd('.') + ")";
+                return null;
+            }
         }
         ReleaseVersion? version = ReadVersion(Read, out string source);
         if (version == null)
         {
-            why = "this folder isn't a Divided Realms release package (it has no " + StampFile + " or " + EditionFile + " naming a DR-dev release)";
+            // DR-524: a real release folder synced by OneDrive could fail here, and the player only saw "isn't one".
+            why = unreadable != null
+                ? "this folder's " + unreadable + " couldn't be read" + CloudHint(game)
+                : "this folder isn't a Divided Realms release package (it has no " + StampFile + " or " + EditionFile +
+                  " naming a DR-dev release)" + CloudHint(game);
             return null;
         }
         if (!File.Exists(Path.Combine(game, ManifestFile)))
         {
-            why = "this folder has no " + ManifestFile + ", so it isn't an unpacked release package";
+            why = "this folder has no " + ManifestFile + ", so it isn't an unpacked release package" + CloudHint(game);
             return null;
         }
         if (!File.Exists(Path.Combine(game, "runtime", "OfflineDAoC.exe")))
         {
-            why = "this folder has no runtime\\OfflineDAoC.exe";
+            why = "this folder has no runtime\\OfflineDAoC.exe" + CloudHint(game);
             return null;
         }
         if (InsideGitCheckout(game) is { } repo)
         {
-            why = "this folder is inside a Git checkout (" + repo + "): a developer's folder never updates itself";
+            why = "this folder is inside a Git checkout (" + repo + "): a developer's folder never updates itself. " +
+                  "Move the game folder somewhere outside it, such as C:\\Divided Realms";
             return null;
         }
         why = "";
         return new InstalledRelease(version, game, source);
     }
+
+    /// <summary>
+    /// Advice added to a refusal when the folder is under OneDrive (or another synced folder Windows names that way): files
+    /// there can be online-only or locked while syncing. Moving the folder out fixed it for a player (Discord 2026-11-22).
+    /// Pure.
+    /// </summary>
+    public static string CloudHint(string folder) =>
+        folder.Contains("OneDrive", StringComparison.OrdinalIgnoreCase) || folder.Contains("Dropbox", StringComparison.OrdinalIgnoreCase)
+            ? ". This folder is synced by OneDrive or Dropbox, which can keep files online-only or locked: move the game folder " +
+              "out of it, for example to C:\\Divided Realms"
+            : "";
 
     /// <summary>The Git checkout a folder is in (a ".git" folder or file in it or above it), or null.</summary>
     public static string? InsideGitCheckout(string folder)
