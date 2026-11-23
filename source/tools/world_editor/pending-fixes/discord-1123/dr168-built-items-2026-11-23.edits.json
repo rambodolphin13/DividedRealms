@@ -1,0 +1,2125 @@
+[
+ {
+  "table": "Spell",
+  "insert": {
+   "SpellID": 92128,
+   "ClientEffect": 4060,
+   "Icon": 0,
+   "Name": "ProcDirectDamageBody47",
+   "Description": "Damages the target.",
+   "Target": "Enemy",
+   "Range": 1500,
+   "Power": 0,
+   "CastTime": 0.0,
+   "Damage": 95.0,
+   "DamageType": 10,
+   "Type": "DirectDamage",
+   "Duration": 0,
+   "Frequency": 0,
+   "Pulse": 0,
+   "PulsePower": 0,
+   "Radius": 0,
+   "RecastDelay": 0,
+   "ResurrectHealth": 0,
+   "ResurrectMana": 0,
+   "Value": 0.0,
+   "Concentration": 0,
+   "LifeDrainReturn": 0,
+   "AmnesiaChance": 0,
+   "Message1": null,
+   "Message2": null,
+   "Message3": null,
+   "Message4": null,
+   "InstrumentRequirement": 0,
+   "SpellGroup": 0,
+   "EffectGroup": 0,
+   "SubSpellID": 0,
+   "MoveCast": 0,
+   "Uninterruptible": 0,
+   "IsFocus": 0,
+   "SharedTimerGroup": 0,
+   "IsPrimary": 0,
+   "IsSecondary": 0,
+   "AllowBolt": 0,
+   "PackageID": "atlas-crafted-procs",
+   "TooltipId": 52127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Bishops_Mace",
+  "key": "Entropic_Bishops_Mace_dr168_r1",
+  "set": {
+   "Name": "Entropic Bishops Mace",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Bishops_Mace",
+  "key": "Somatic_Bishops_Mace_dr168_r1",
+  "set": {
+   "Name": "Somatic Bishops Mace",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Falchion",
+  "key": "Entropic_Falchion_dr168_r1",
+  "set": {
+   "Name": "Entropic Falchion",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Falchion",
+  "key": "Somatic_Falchion_dr168_r1",
+  "set": {
+   "Name": "Somatic Falchion",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Rapier",
+  "key": "Entropic_Rapier_dr168_r1",
+  "set": {
+   "Name": "Entropic Rapier",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Rapier",
+  "key": "Somatic_Rapier_dr168_r1",
+  "set": {
+   "Name": "Somatic Rapier",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Coffin_Mace",
+  "key": "Entropic_Coffin_Mace_dr168_r1",
+  "set": {
+   "Name": "Entropic Coffin Mace",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Coffin_Mace",
+  "key": "Somatic_Coffin_Mace_dr168_r1",
+  "set": {
+   "Name": "Somatic Coffin Mace",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Short_Sword",
+  "key": "Entropic_Short_Sword_dr168_r1",
+  "set": {
+   "Name": "Entropic Short Sword",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Short_Sword",
+  "key": "Somatic_Short_Sword_dr168_r1",
+  "set": {
+   "Name": "Somatic Short Sword",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Stiletto",
+  "key": "Entropic_Stiletto_dr168_r1",
+  "set": {
+   "Name": "Entropic Stiletto",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Stiletto",
+  "key": "Somatic_Stiletto_dr168_r1",
+  "set": {
+   "Name": "Somatic Stiletto",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Hammer",
+  "key": "Entropic_Great_Hammer_dr168_r1",
+  "set": {
+   "Name": "Entropic Great Hammer",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Hammer",
+  "key": "Somatic_Great_Hammer_dr168_r1",
+  "set": {
+   "Name": "Somatic Great Hammer",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_great_sword",
+  "key": "Entropic_Great_Sword_dr168_r1",
+  "set": {
+   "Name": "Entropic Great Sword",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_great_sword",
+  "key": "Somatic_Great_Sword_dr168_r1",
+  "set": {
+   "Name": "Somatic Great Sword",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_War_Pick",
+  "key": "Entropic_War_Pick_dr168_r1",
+  "set": {
+   "Name": "Entropic War Pick",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_War_Pick",
+  "key": "Somatic_War_Pick_dr168_r1",
+  "set": {
+   "Name": "Somatic War Pick",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Lucerne_Hammer",
+  "key": "Entropic_Lucerne_Hammer_dr168_r1",
+  "set": {
+   "Name": "Entropic Lucerne Hammer",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Lucerne_Hammer",
+  "key": "Somatic_Lucerne_Hammer_dr168_r1",
+  "set": {
+   "Name": "Somatic Lucerne Hammer",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_glaive",
+  "key": "Entropic_Glaive_dr168_r1",
+  "set": {
+   "Name": "Entropic Glaive",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_glaive",
+  "key": "Somatic_Glaive_dr168_r1",
+  "set": {
+   "Name": "Somatic Glaive",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Military_Fork",
+  "key": "Entropic_Military_Fork_dr168_r1",
+  "set": {
+   "Name": "Entropic Military Fork",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Military_Fork",
+  "key": "Somatic_Military_Fork_dr168_r1",
+  "set": {
+   "Name": "Somatic Military Fork",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_spiked_flail",
+  "key": "Entropic_Spiked_Flail_dr168_r1",
+  "set": {
+   "Name": "Entropic Spiked Flail",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_spiked_flail",
+  "key": "Somatic_Spiked_Flail_dr168_r1",
+  "set": {
+   "Name": "Somatic Spiked Flail",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Pick_Flail",
+  "key": "Entropic_Pick_Flail_dr168_r1",
+  "set": {
+   "Name": "Entropic Pick Flail",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Pick_Flail",
+  "key": "Somatic_Pick_Flail_dr168_r1",
+  "set": {
+   "Name": "Somatic Pick Flail",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fist_wrap",
+  "key": "Entropic_Fist_Wrap_dr168_r1",
+  "set": {
+   "Name": "Entropic Fist Wrap",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fist_wrap",
+  "key": "Somatic_Fist_Wrap_dr168_r1",
+  "set": {
+   "Name": "Somatic Fist Wrap",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hand_wrap",
+  "key": "Entropic_Hand_Wrap_dr168_r1",
+  "set": {
+   "Name": "Entropic Hand Wrap",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hand_wrap",
+  "key": "Somatic_Hand_Wrap_dr168_r1",
+  "set": {
+   "Name": "Somatic Hand Wrap",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_magus_staff",
+  "key": "Entropic_Magus_Staff_dr168_r1",
+  "set": {
+   "Name": "Entropic Magus Staff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_magus_staff",
+  "key": "Somatic_Magus_Staff_dr168_r1",
+  "set": {
+   "Name": "Somatic Magus Staff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Quarterstaff",
+  "key": "Entropic_Quarterstaff_dr168_r1",
+  "set": {
+   "Name": "Entropic Quarterstaff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Quarterstaff",
+  "key": "Somatic_Quarterstaff_dr168_r1",
+  "set": {
+   "Name": "Somatic Quarterstaff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Mauler_Staff",
+  "key": "Entropic_Mauler_Staff_dr168_r1",
+  "set": {
+   "Name": "Entropic Mauler Staff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Mauler_Staff",
+  "key": "Somatic_Mauler_Staff_dr168_r1",
+  "set": {
+   "Name": "Somatic Mauler Staff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Mauler_Shod_Staff",
+  "key": "Entropic_Mauler_Shod_Staff_dr168_r1",
+  "set": {
+   "Name": "Entropic Mauler Shod Staff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Mauler_Shod_Staff",
+  "key": "Somatic_Mauler_Shod_Staff_dr168_r1",
+  "set": {
+   "Name": "Somatic Mauler Shod Staff",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_long_bow",
+  "key": "Entropic_Long_Bow_dr168_r1",
+  "set": {
+   "Name": "Entropic Long Bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_long_bow",
+  "key": "Somatic_Long_Bow_dr168_r1",
+  "set": {
+   "Name": "Somatic Long Bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_long_bow",
+  "key": "superior_fiery_long_bow_dr168_r1",
+  "set": {
+   "Name": "superior fiery long bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_short_bow",
+  "key": "superior_fiery_short_bow_dr168_r1",
+  "set": {
+   "Name": "superior fiery short bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_crossbow",
+  "key": "superior_fiery_crossbow_dr168_r1",
+  "set": {
+   "Name": "superior fiery crossbow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_long_bow",
+  "key": "superior_icy_long_bow_dr168_r1",
+  "set": {
+   "Name": "superior icy long bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_short_bow",
+  "key": "superior_icy_short_bow_dr168_r1",
+  "set": {
+   "Name": "superior icy short bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_crossbow",
+  "key": "superior_icy_crossbow_dr168_r1",
+  "set": {
+   "Name": "superior icy crossbow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_long_bow",
+  "key": "superior_conductive_long_bow_dr168_r1",
+  "set": {
+   "Name": "superior conductive long bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_short_bow",
+  "key": "superior_conductive_short_bow_dr168_r1",
+  "set": {
+   "Name": "superior conductive short bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_crossbow",
+  "key": "superior_conductive_crossbow_dr168_r1",
+  "set": {
+   "Name": "superior conductive crossbow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_long_bow",
+  "key": "superior_fiery_long_bow_dr168_r12",
+  "set": {
+   "Name": "superior fiery long bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_short_bow",
+  "key": "superior_fiery_short_bow_dr168_r12",
+  "set": {
+   "Name": "superior fiery short bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_crossbow",
+  "key": "superior_fiery_crossbow_dr168_r12",
+  "set": {
+   "Name": "superior fiery crossbow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_long_bow",
+  "key": "superior_icy_long_bow_dr168_r12",
+  "set": {
+   "Name": "superior icy long bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_short_bow",
+  "key": "superior_icy_short_bow_dr168_r12",
+  "set": {
+   "Name": "superior icy short bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_crossbow",
+  "key": "superior_icy_crossbow_dr168_r12",
+  "set": {
+   "Name": "superior icy crossbow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_long_bow",
+  "key": "superior_conductive_long_bow_dr168_r12",
+  "set": {
+   "Name": "superior conductive long bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_short_bow",
+  "key": "superior_conductive_short_bow_dr168_r12",
+  "set": {
+   "Name": "superior conductive short bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_crossbow",
+  "key": "superior_conductive_crossbow_dr168_r12",
+  "set": {
+   "Name": "superior conductive crossbow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_long_bow",
+  "key": "durable_fiery_long_bow_dr168_r1",
+  "set": {
+   "Name": "durable fiery long bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_short_bow",
+  "key": "durable_fiery_short_bow_dr168_r1",
+  "set": {
+   "Name": "durable fiery short bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_crossbow",
+  "key": "durable_fiery_crossbow_dr168_r1",
+  "set": {
+   "Name": "durable fiery crossbow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_long_bow",
+  "key": "durable_icy_long_bow_dr168_r1",
+  "set": {
+   "Name": "durable icy long bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_short_bow",
+  "key": "durable_icy_short_bow_dr168_r1",
+  "set": {
+   "Name": "durable icy short bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_crossbow",
+  "key": "durable_icy_crossbow_dr168_r1",
+  "set": {
+   "Name": "durable icy crossbow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_long_bow",
+  "key": "durable_conductive_long_bow_dr168_r1",
+  "set": {
+   "Name": "durable conductive long bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_short_bow",
+  "key": "durable_conductive_short_bow_dr168_r1",
+  "set": {
+   "Name": "durable conductive short bow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_crossbow",
+  "key": "durable_conductive_crossbow_dr168_r1",
+  "set": {
+   "Name": "durable conductive crossbow",
+   "Realm": 1,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_long_bow",
+  "key": "durable_fiery_long_bow_dr168_r12",
+  "set": {
+   "Name": "durable fiery long bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_short_bow",
+  "key": "durable_fiery_short_bow_dr168_r12",
+  "set": {
+   "Name": "durable fiery short bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_crossbow",
+  "key": "durable_fiery_crossbow_dr168_r12",
+  "set": {
+   "Name": "durable fiery crossbow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_long_bow",
+  "key": "durable_icy_long_bow_dr168_r12",
+  "set": {
+   "Name": "durable icy long bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_short_bow",
+  "key": "durable_icy_short_bow_dr168_r12",
+  "set": {
+   "Name": "durable icy short bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_crossbow",
+  "key": "durable_icy_crossbow_dr168_r12",
+  "set": {
+   "Name": "durable icy crossbow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_long_bow",
+  "key": "durable_conductive_long_bow_dr168_r12",
+  "set": {
+   "Name": "durable conductive long bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_short_bow",
+  "key": "durable_conductive_short_bow_dr168_r12",
+  "set": {
+   "Name": "durable conductive short bow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_crossbow",
+  "key": "durable_conductive_crossbow_dr168_r12",
+  "set": {
+   "Name": "durable conductive crossbow",
+   "Realm": 1,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_Sigil_Harmonious_Harp",
+  "key": "Harmonious_Mandolin_dr168_r1",
+  "set": {
+   "Name": "Harmonious Mandolin",
+   "Realm": 1,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_Sigil_Arpeggio_Harp",
+  "key": "Arpeggio_Mandolin_dr168_r1",
+  "set": {
+   "Name": "Arpeggio Mandolin",
+   "Realm": 1,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_War_Hammer",
+  "key": "Entropic_War_Hammer_dr168_r2",
+  "set": {
+   "Name": "Entropic War Hammer",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_War_Hammer",
+  "key": "Somatic_War_Hammer_dr168_r2",
+  "set": {
+   "Name": "Somatic War Hammer",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Longsword",
+  "key": "Entropic_Longsword_dr168_r2",
+  "set": {
+   "Name": "Entropic Longsword",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_double_bladed_axe",
+  "key": "Entropic_Double_Bladed_Axe_dr168_r2",
+  "set": {
+   "Name": "Entropic Double Bladed Axe",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_double_bladed_axe",
+  "key": "Somatic_Double_Bladed_Axe_dr168_r2",
+  "set": {
+   "Name": "Somatic Double Bladed Axe",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_great_club",
+  "key": "Entropic_Great_Club_dr168_r2",
+  "set": {
+   "Name": "Entropic Great Club",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_great_club",
+  "key": "Somatic_Great_Club_dr168_r2",
+  "set": {
+   "Name": "Somatic Great Club",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Sword3",
+  "key": "Entropic_Great_Sword_dr168_r2",
+  "set": {
+   "Name": "Entropic Great Sword",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Sword3",
+  "key": "Somatic_Great_Sword_dr168_r2",
+  "set": {
+   "Name": "Somatic Great Sword",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_battleaxe",
+  "key": "Entropic_Battleaxe_dr168_r2",
+  "set": {
+   "Name": "Entropic Battleaxe",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_battleaxe",
+  "key": "Somatic_Battleaxe_dr168_r2",
+  "set": {
+   "Name": "Somatic Battleaxe",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_war_axe",
+  "key": "Entropic_War_Axe_dr168_r2",
+  "set": {
+   "Name": "Entropic War Axe",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_war_axe",
+  "key": "Somatic_War_Axe_dr168_r2",
+  "set": {
+   "Name": "Somatic War Axe",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fang_greave",
+  "key": "Entropic_Fang_Greave_dr168_r2",
+  "set": {
+   "Name": "Entropic Fang Greave",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fang_greave",
+  "key": "Somatic_Fang_Greave_dr168_r2",
+  "set": {
+   "Name": "Somatic Fang Greave",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_moon_claw",
+  "key": "Entropic_Moon_Claw_dr168_r2",
+  "set": {
+   "Name": "Entropic Moon Claw",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_moon_claw",
+  "key": "Somatic_Moon_Claw_dr168_r2",
+  "set": {
+   "Name": "Somatic Moon Claw",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hooked_spear",
+  "key": "Entropic_Hooked_Spear_dr168_r2",
+  "set": {
+   "Name": "Entropic Hooked Spear",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hooked_spear",
+  "key": "Somatic_Hooked_Spear_dr168_r2",
+  "set": {
+   "Name": "Somatic Hooked Spear",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fist_wrap_mid",
+  "key": "Entropic_Fist_Wrap_dr168_r2",
+  "set": {
+   "Name": "Entropic Fist Wrap",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fist_wrap_mid",
+  "key": "Somatic_Fist_Wrap_dr168_r2",
+  "set": {
+   "Name": "Somatic Fist Wrap",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hand_wrap_mid",
+  "key": "Entropic_Hand_Wrap_dr168_r2",
+  "set": {
+   "Name": "Entropic Hand Wrap",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hand_wrap_mid",
+  "key": "Somatic_Hand_Wrap_dr168_r2",
+  "set": {
+   "Name": "Somatic Hand Wrap",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "mid_sigil_rune_tempered_adroit_buckler",
+  "key": "Tempered_Adroit_Buckler_dr168_r2",
+  "set": {
+   "Name": "Tempered Adroit Buckler",
+   "Realm": 2,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "mid_sigil_rune_tempered_pious_buckler",
+  "key": "Tempered_Pious_Buckler_dr168_r2",
+  "set": {
+   "Name": "Tempered Pious Buckler",
+   "Realm": 2,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "mid_sigil_rune_tempered_mending_buckler",
+  "key": "Tempered_Mending_Buckler_dr168_r2",
+  "set": {
+   "Name": "Tempered Mending Buckler",
+   "Realm": 2,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_composite_bow",
+  "key": "Entropic_Composite_Bow_dr168_r2",
+  "set": {
+   "Name": "Entropic Composite Bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_composite_bow",
+  "key": "Somatic_Composite_Bow_dr168_r2",
+  "set": {
+   "Name": "Somatic Composite Bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Magus_Staff3",
+  "key": "Entropic_Magus_Staff_dr168_r2",
+  "set": {
+   "Name": "Entropic Magus Staff",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Magus_Staff3",
+  "key": "Somatic_Magus_Staff_dr168_r2",
+  "set": {
+   "Name": "Somatic Magus Staff",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_mauler_staff_mid",
+  "key": "Entropic_Mauler_Staff_dr168_r2",
+  "set": {
+   "Name": "Entropic Mauler Staff",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_mauler_staff_mid",
+  "key": "Somatic_Mauler_Staff_dr168_r2",
+  "set": {
+   "Name": "Somatic Mauler Staff",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Mauler_Shod_Staff",
+  "key": "Entropic_Mauler_Shod_Staff_dr168_r2",
+  "set": {
+   "Name": "Entropic Mauler Shod Staff",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Mauler_Shod_Staff",
+  "key": "Somatic_Mauler_Shod_Staff_dr168_r2",
+  "set": {
+   "Name": "Somatic Mauler Shod Staff",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_composite_bow2",
+  "key": "superior_fiery_composite_bow_dr168_r2",
+  "set": {
+   "Name": "superior fiery composite bow",
+   "Realm": 2,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_composite_bow2",
+  "key": "superior_icy_composite_bow_dr168_r2",
+  "set": {
+   "Name": "superior icy composite bow",
+   "Realm": 2,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_composite_bow2",
+  "key": "durable_fiery_composite_bow_dr168_r2",
+  "set": {
+   "Name": "durable fiery composite bow",
+   "Realm": 2,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_composite_bow2",
+  "key": "superior_conductive_composite_bow_dr168_r2",
+  "set": {
+   "Name": "superior conductive composite bow",
+   "Realm": 2,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_composite_bow2",
+  "key": "durable_icy_composite_bow_dr168_r2",
+  "set": {
+   "Name": "durable icy composite bow",
+   "Realm": 2,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_composite_bow2",
+  "key": "durable_conductive_composite_bow_dr168_r2",
+  "set": {
+   "Name": "durable conductive composite bow",
+   "Realm": 2,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_composite_bow2",
+  "key": "superior_fiery_composite_bow_dr168_r22",
+  "set": {
+   "Name": "superior fiery composite bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_composite_bow2",
+  "key": "superior_icy_composite_bow_dr168_r22",
+  "set": {
+   "Name": "superior icy composite bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_composite_bow2",
+  "key": "durable_fiery_composite_bow_dr168_r22",
+  "set": {
+   "Name": "durable fiery composite bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_composite_bow2",
+  "key": "superior_conductive_composite_bow_dr168_r22",
+  "set": {
+   "Name": "superior conductive composite bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_composite_bow2",
+  "key": "durable_icy_composite_bow_dr168_r22",
+  "set": {
+   "Name": "durable icy composite bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_composite_bow2",
+  "key": "durable_conductive_composite_bow_dr168_r22",
+  "set": {
+   "Name": "durable conductive composite bow",
+   "Realm": 2,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_dire_hammer",
+  "key": "Entropic_Dire_Hammer_dr168_r3",
+  "set": {
+   "Name": "Entropic Dire Hammer",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_dire_hammer",
+  "key": "Somatic_Dire_Hammer_dr168_r3",
+  "set": {
+   "Name": "Somatic Dire Hammer",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_War_Adze",
+  "key": "Entropic_War_Adze_dr168_r3",
+  "set": {
+   "Name": "Entropic War Adze",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_War_Adze",
+  "key": "Somatic_War_Adze_dr168_r3",
+  "set": {
+   "Name": "Somatic War Adze",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Long_Sword",
+  "key": "Entropic_Long_Sword_dr168_r3",
+  "set": {
+   "Name": "Entropic Long Sword",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Long_Sword",
+  "key": "Somatic_Long_Sword_dr168_r3",
+  "set": {
+   "Name": "Somatic Long Sword",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Hammer",
+  "key": "Entropic_Hammer_dr168_r3",
+  "set": {
+   "Name": "Entropic Hammer",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Hammer",
+  "key": "Somatic_Hammer_dr168_r3",
+  "set": {
+   "Name": "Somatic Hammer",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Adze",
+  "key": "Entropic_Adze_dr168_r3",
+  "set": {
+   "Name": "Entropic Adze",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Adze",
+  "key": "Somatic_Adze_dr168_r3",
+  "set": {
+   "Name": "Somatic Adze",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Short_Sword2",
+  "key": "Entropic_Short_Sword_dr168_r3",
+  "set": {
+   "Name": "Entropic Short Sword",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Short_Sword2",
+  "key": "Somatic_Short_Sword_dr168_r3",
+  "set": {
+   "Name": "Somatic Short Sword",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Hammer2",
+  "key": "Entropic_Great_Hammer_dr168_r3",
+  "set": {
+   "Name": "Entropic Great Hammer",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Hammer2",
+  "key": "Somatic_Great_Hammer_dr168_r3",
+  "set": {
+   "Name": "Somatic Great Hammer",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Sword2",
+  "key": "Entropic_Great_Sword_dr168_r3",
+  "set": {
+   "Name": "Entropic Great Sword",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Great_Sword2",
+  "key": "Somatic_Great_Sword_dr168_r3",
+  "set": {
+   "Name": "Somatic Great Sword",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_battle_spear",
+  "key": "Entropic_Battle_Spear_dr168_r3",
+  "set": {
+   "Name": "Entropic Battle Spear",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_battle_spear",
+  "key": "Somatic_Battle_Spear_dr168_r3",
+  "set": {
+   "Name": "Somatic Battle Spear",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_war_scythe",
+  "key": "Entropic_War_Scythe_dr168_r3",
+  "set": {
+   "Name": "Entropic War Scythe",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_war_scythe",
+  "key": "Somatic_War_Scythe_dr168_r3",
+  "set": {
+   "Name": "Somatic War Scythe",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fist_wrap_hib",
+  "key": "Entropic_Fist_Wrap_dr168_r3",
+  "set": {
+   "Name": "Entropic Fist Wrap",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_fist_wrap_hib",
+  "key": "Somatic_Fist_Wrap_dr168_r3",
+  "set": {
+   "Name": "Somatic Fist Wrap",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hand_wrap_hib",
+  "key": "Entropic_Hand_Wrap_dr168_r3",
+  "set": {
+   "Name": "Entropic Hand Wrap",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_hand_wrap_hib",
+  "key": "Somatic_Hand_Wrap_dr168_r3",
+  "set": {
+   "Name": "Somatic Hand Wrap",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Hib_Sigil_Spell_Riddled_regrown_leaf_heater_shield",
+  "key": "Riddled_Regrown_Leaf_Shield_dr168_r3",
+  "set": {
+   "Name": "Riddled Regrown Leaf Shield",
+   "Realm": 3,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Hib_Sigil_Spell_Riddled_protectors_leaf_heater_shield",
+  "key": "Riddled_Protector_s_Leaf_Shield_dr168_r3",
+  "set": {
+   "Name": "Riddled Protector's Leaf Shield",
+   "Realm": 3,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_recurve_bow",
+  "key": "Entropic_Recurve_Bow_dr168_r3",
+  "set": {
+   "Name": "Entropic Recurve Bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_recurve_bow",
+  "key": "Somatic_Recurve_Bow_dr168_r3",
+  "set": {
+   "Name": "Somatic Recurve Bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Magus_Staff2",
+  "key": "Entropic_Magus_Staff_dr168_r3",
+  "set": {
+   "Name": "Entropic Magus Staff",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "Lithic_Magus_Staff2",
+  "key": "Somatic_Magus_Staff_dr168_r3",
+  "set": {
+   "Name": "Somatic Magus Staff",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_mauler_staff_hib",
+  "key": "Entropic_Mauler_Staff_dr168_r3",
+  "set": {
+   "Name": "Entropic Mauler Staff",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_mauler_staff_hib",
+  "key": "Somatic_Mauler_Staff_dr168_r3",
+  "set": {
+   "Name": "Somatic Mauler Staff",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_mauler_shod_staff_hib",
+  "key": "Entropic_Mauler_Shod_Staff_dr168_r3",
+  "set": {
+   "Name": "Entropic Mauler Shod Staff",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92127
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "lithic_mauler_shod_staff_hib",
+  "key": "Somatic_Mauler_Shod_Staff_dr168_r3",
+  "set": {
+   "Name": "Somatic Mauler Shod Staff",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92128
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_recurve_bow3",
+  "key": "superior_fiery_recurve_bow_dr168_r3",
+  "set": {
+   "Name": "superior fiery recurve bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_recurve_bow3",
+  "key": "durable_fiery_recurve_bow_dr168_r3",
+  "set": {
+   "Name": "durable fiery recurve bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_recurve_bow3",
+  "key": "superior_icy_recurve_bow_dr168_r3",
+  "set": {
+   "Name": "superior icy recurve bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_recurve_bow3",
+  "key": "durable_icy_recurve_bow_dr168_r3",
+  "set": {
+   "Name": "durable icy recurve bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_recurve_bow3",
+  "key": "superior_conductive_recurve_bow_dr168_r3",
+  "set": {
+   "Name": "superior conductive recurve bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_recurve_bow3",
+  "key": "durable_conductive_recurve_bow_dr168_r3",
+  "set": {
+   "Name": "durable conductive recurve bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_recurve_bow3",
+  "key": "superior_fiery_recurve_bow_dr168_r32",
+  "set": {
+   "Name": "superior fiery recurve bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_recurve_bow3",
+  "key": "durable_fiery_recurve_bow_dr168_r32",
+  "set": {
+   "Name": "durable fiery recurve bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_recurve_bow3",
+  "key": "superior_icy_recurve_bow_dr168_r32",
+  "set": {
+   "Name": "superior icy recurve bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_recurve_bow3",
+  "key": "durable_icy_recurve_bow_dr168_r32",
+  "set": {
+   "Name": "durable icy recurve bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_recurve_bow3",
+  "key": "superior_conductive_recurve_bow_dr168_r32",
+  "set": {
+   "Name": "superior conductive recurve bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_recurve_bow3",
+  "key": "durable_conductive_recurve_bow_dr168_r32",
+  "set": {
+   "Name": "durable conductive recurve bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_short_bow3",
+  "key": "superior_fiery_short_bow_dr168_r3",
+  "set": {
+   "Name": "superior fiery short bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_short_bow3",
+  "key": "superior_icy_short_bow_dr168_r3",
+  "set": {
+   "Name": "superior icy short bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_short_bow3",
+  "key": "durable_fiery_short_bow_dr168_r3",
+  "set": {
+   "Name": "durable fiery short bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92120
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_exceptional_short_bow3",
+  "key": "superior_conductive_short_bow_dr168_r3",
+  "set": {
+   "Name": "superior conductive short bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_short_bow3",
+  "key": "durable_icy_short_bow_dr168_r3",
+  "set": {
+   "Name": "durable icy short bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92121
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "dyrwood_fortified_short_bow3",
+  "key": "durable_conductive_short_bow_dr168_r3",
+  "set": {
+   "Name": "durable conductive short bow",
+   "Realm": 3,
+   "Level": 46,
+   "ProcSpellID": 92122
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_short_bow3",
+  "key": "superior_fiery_short_bow_dr168_r32",
+  "set": {
+   "Name": "superior fiery short bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_short_bow3",
+  "key": "superior_icy_short_bow_dr168_r32",
+  "set": {
+   "Name": "superior icy short bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_short_bow3",
+  "key": "durable_fiery_short_bow_dr168_r32",
+  "set": {
+   "Name": "durable fiery short bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92124
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_exceptional_short_bow3",
+  "key": "superior_conductive_short_bow_dr168_r32",
+  "set": {
+   "Name": "superior conductive short bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_short_bow3",
+  "key": "durable_icy_short_bow_dr168_r32",
+  "set": {
+   "Name": "durable icy short bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 92125
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_fortified_short_bow3",
+  "key": "durable_conductive_short_bow_dr168_r32",
+  "set": {
+   "Name": "durable conductive short bow",
+   "Realm": 3,
+   "Level": 51,
+   "ProcSpellID": 31137
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_harp3",
+  "key": "Spell_Marked_Luinneag_Harp_dr168_r3",
+  "set": {
+   "Name": "Spell Marked Luinneag Harp",
+   "Realm": 3,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_harp3",
+  "key": "Spell_Marked_Appoggiatura_Harp_dr168_r3",
+  "set": {
+   "Name": "Spell Marked Appoggiatura Harp",
+   "Realm": 3,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_harp3",
+  "key": "Spell_Marked_Adban_Trireach_Harp_dr168_r3",
+  "set": {
+   "Name": "Spell Marked Adban Trireach Harp",
+   "Realm": 3,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_harp3",
+  "key": "Luinneag_Mandolin_dr168_r3",
+  "set": {
+   "Name": "Luinneag Mandolin",
+   "Realm": 3,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_harp3",
+  "key": "Appoggiatura_Mandolin_dr168_r3",
+  "set": {
+   "Name": "Appoggiatura Mandolin",
+   "Realm": 3,
+   "Level": 51
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "duskwood_harp3",
+  "key": "Adban_Trireach_Mandolin_dr168_r3",
+  "set": {
+   "Name": "Adban Trireach Mandolin",
+   "Realm": 3,
+   "Level": 51
+  }
+ }
+]
