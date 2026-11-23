@@ -1,0 +1,63 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T15:29:49.242234+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "Mob",
+   "key": "cc038e67-afcf-4c74-a7c6-e8e89936844e",
+   "op": "update",
+   "before": {
+    "Guild": "Merchant"
+   },
+   "after": {
+    "Guild": ""
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "14acfcfe-ea82-4a31-bebd-7c94d5b00e29",
+   "op": "update",
+   "before": {
+    "Guild": "Merchant"
+   },
+   "after": {
+    "Guild": ""
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "100016629",
+   "op": "update",
+   "before": {
+    "Guild": "Merchant"
+   },
+   "after": {
+    "Guild": ""
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "c135bcfe-8e9e-4f62-b4f0-3c2657551f50",
+   "op": "update",
+   "before": {
+    "Guild": "Merchant"
+   },
+   "after": {
+    "Guild": ""
+   }
+  },
+  {
+   "table": "NpcTemplate",
+   "key": "98395368",
+   "op": "update",
+   "before": {
+    "GuildName": "Merchant"
+   },
+   "after": {
+    "GuildName": ""
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

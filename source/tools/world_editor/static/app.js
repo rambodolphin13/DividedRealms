@@ -741,9 +741,14 @@ function dataEntities() {
   const added=[...S.pending.values()].filter(c=>c.table===S.table&&c.op==='insert').map(c=>({table:c.table,key:c.key,values:c.after,isNew:true}));
   return [...added,...S.rows.map(r=>rowEntity(S.table,r))].filter((e,i,all)=>all.findIndex(o=>String(o.key)===String(e.key))===i&&e.key!==undefined&&(e.isNew||e.values[key]!==undefined));
 }
+// Rules a table follows that its rows do not show (DR-528: Teleport rows added here never appeared at a porter).
+const tableNotes={
+  Teleport:'Porter menus are fixed text. A new destination only shows when its Type is Travel and its Realm is the porter's own realm: it is listed under [anywhere else] at that realm's porters. Teleport rows are read when the server starts, so restart the server after saving.'
+};
 function renderRows() {
   if(!S.table||!S.config)return;const cols=gridColumns(S.table);
   $('dataTitle').textContent=S.table;
+  const note=tableNotes[S.table]||'';$('dataNote').textContent=note;$('dataNote').classList.toggle('hidden',!note);
   $('dataCount').textContent=S.rowTotal?`Rows ${S.offset+1}–${S.offset+S.rows.length} of ${S.rowTotal.toLocaleString()}`:'No matching rows';
   $('dataPrev').disabled=S.offset===0;$('dataNext').disabled=S.offset+S.rows.length>=S.rowTotal;
   const head=document.createElement('tr');for(const c of cols){const th=document.createElement('th');th.textContent=c;head.append(th);}$('dataHead').replaceChildren(head);
