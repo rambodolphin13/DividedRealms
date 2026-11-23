@@ -663,8 +663,15 @@ namespace DOL.GS
             }
 
             target.Class = ClassId;
-            target.Level = Level;
-            target.Experience = Experience;
+            // DR-509: a character stored above the companion cap (a GM /player level 255 alt) loads clamped to 50 with
+            // its specs clamped too. Writing that back cost the character its level, and at its next login the
+            // over-spent specs were all reset to 1. Such a save keeps the stored level, experience and higher specs.
+            bool storedAboveCompanion = AccountCompanionRules.StoredAboveCompanion(previousLevel, Level);
+            if (!storedAboveCompanion)
+            {
+                target.Level = Level;
+                target.Experience = Experience;
+            }
             // Only ever raised: a character's RvR progress is never taken away by a companion save.
             target.RealmPoints = Math.Max(target.RealmPoints, CompanionRealmPoints);
             target.RealmLevel = Math.Max(target.RealmLevel, RealmLevel);
@@ -678,9 +685,11 @@ namespace DOL.GS
             }
             target.ChampionLevel = Math.Max(target.ChampionLevel, CompanionChampionLevel);
             target.ChampionExperience = Math.Max(target.ChampionExperience, CompanionChampionExperience);
-            target.IsLevelSecondStage = CompanionSecondStage;
+            if (!storedAboveCompanion)
+                target.IsLevelSecondStage = CompanionSecondStage;
             target.SerializedSpecs = AccountCompanionRules.MergeSerializedSpecs(target.SerializedSpecs,
-                GetSpecList().Where(spec => spec.Trainable && spec.AllowSave).Select(spec => (spec.KeyName, spec.Level)));
+                GetSpecList().Where(spec => spec.Trainable && spec.AllowSave).Select(spec => (spec.KeyName, spec.Level)),
+                raiseOnly: storedAboveCompanion);
 
             if (IsAlive && CurrentRegion != null && !CurrentRegion.IsInstance)
             {
