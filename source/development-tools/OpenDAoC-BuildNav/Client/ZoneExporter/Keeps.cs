@@ -60,11 +60,17 @@ namespace CEM.Client.ZoneExporter
                                 Matrix4.CreateTranslation(new Vector3(piece.x, piece.y, piece.z));
                 int fixtureId = 800000 + piece.keep * 100 + piece.component; // unique per component, apart from client fixture ids
                 AddModelToObj(model, world, ["collide", "collidee", "collision"], true, fixtureId: fixtureId, openDoorLeaves: true);
-                ExtractDoor(model, world, fixtureId);
+                ExtractDoor(model, world, fixtureId, KeepDoorPadding);
                 added++;
             }
             Log.Normal("Zone {0}: added {1} keep component(s) from {2}", Zone.ID, added, Program.Arguments.KeepsFile);
         }
+
+        /// <summary>
+        /// Door areas on keep pieces are widened by this much each side: with none, 40 of 369 New Frontiers keep doors
+        /// (posterns, inner main-keep doors) had no Door-flagged floor within DoorMgr's search box (2026-11-23 probe).
+        /// </summary>
+        private const float KeepDoorPadding = 96f;
 
         /// <summary>Heading direction of keep pieces; +1 like fixtures. KEEP_HEADING_SIGN=-1 flips it (placement check).</summary>
         private static float KeepHeadingSign =>
