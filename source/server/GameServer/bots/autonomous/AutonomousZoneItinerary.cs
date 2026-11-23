@@ -278,7 +278,9 @@ namespace DOL.GS
             // A first border that failed in the seam pass for the same zone chain fails the same way
             // in the full pass (same start, goal, crossings and chain): it is skipped there.
             var failed = new HashSet<string>();
+            _goalOffItsGround = false;
             if (topology.SeamEdges != null && TryRoutes(topology, from, to, start, goal, nav, allowed, true, failed, out step)) return true;
+            if (_goalOffItsGround) { step = default; return false; } // DR-091: see TryRoutes
             return TryRoutes(topology, from, to, start, goal, nav, allowed, false, failed, out step);
         }
 
@@ -305,8 +307,16 @@ namespace DOL.GS
                 else if (grounded.Length >= 2 && grounded.Length <= 32 && TryGetSharedEdge(from, grounded[1], out Edge first))
                 {
                     string chain = string.Join(">", grounded.Select(z => z.ID));
+                    _goalOffItsGround = false;
                     if (nav.HasNavmesh(first.To) && TryEdgeStep(topology, first, grounded, start, goal, nav, out step)) return true;
                     failed.Add(chain);
+                    // DR-091: the goal zone is next and its ground does not reach the goal; any other chain starts by
+                    // turning back across a border.
+                    if (grounded.Length == 2 && _goalOffItsGround)
+                    {
+                        _probeTrace?.Add("  goal is off the ground every crossing reaches: no fallback chain");
+                        return false;
+                    }
                 }
             }
             var excluded = new HashSet<Edge>();
@@ -434,6 +444,7 @@ namespace DOL.GS
                 }
             }
             int preferred = candidates.Count;
+            int listedGoalMisses = 0, listedGoalReaches = 0;
             if (Resolve(edge.At(coordinate, start.Z), out var direct)) candidates.Add(direct);
             candidates.AddRange(Samples(topology, edge, start.Z, nav));
             _probeTrace?.Add($" edge {edge.From.ID}>{edge.To.ID} start={start} seams={preferred} candidates={candidates.Count}");
@@ -477,8 +488,10 @@ namespace DOL.GS
                     !HasCompleteCorridor(nav, edge.To, candidate.Outside, goal, listed))
                 {
                     _probeTrace?.Add($"  {edge.From.ID}>{edge.To.ID} {(listed ? "seam" : "sample")} {candidate.Outside} no corridor to goal");
+                    if (listed) listedGoalMisses++;
                     continue;
                 }
+                if (listed && Contains(edge.To, goal)) listedGoalReaches++;
                 // Passing through: the far side must also reach a crossing of the next zone on
                 // the way. With every client wall in the meshes a geometrically valid border
                 // sample can sit on a walled-off mountain shelf (Bri Leith and Camelot Hills
@@ -496,8 +509,21 @@ namespace DOL.GS
                 step = candidate;
                 return true;
             }
+            // DR-091: every listed (real-ground) crossing into the goal's zone that the bot can reach ends on ground that
+            // does not reach the goal: the goal itself is off that ground (a roof above an NPC, a muster point inside
+            // keep walls), not the crossing.
+            if (listedGoalMisses > 0 && listedGoalReaches == 0)
+                _goalOffItsGround = true;
             return false;
         }
+
+        /// <summary>
+        /// Set by <see cref="TryEdgeStep"/> when the final leg failed only because no crossing's far side reaches the goal.
+        /// Read by the route search: falling back to another zone chain then only walks the bot back across the border it
+        /// just crossed, and the next zone sends it forward again (DR-091: 60 cycles in 13 h on one rooftop goal above
+        /// the East Svealand armor merchant). Failing at once hands the goal to the normal goal-snap recovery.
+        /// </summary>
+        [ThreadStatic] private static bool _goalOffItsGround;
 
         private static bool Resolve(Edge edge, IPathfindingMgr nav, AutonomousZoneBoundaryRouting.Step raw,
             out AutonomousZoneBoundaryRouting.Step resolved) =>
