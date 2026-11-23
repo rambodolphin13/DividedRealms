@@ -149,9 +149,9 @@ namespace DOL.GS
             if (z == 0 && sameRegion && zone != null)
             {
                 // A walkthrough's point has no height: take the ground under it.
+                // DR-091: the floor with a way out, not a roof that happens to be nearest the bot's height.
                 IPathfindingMgr nav = PathfindingProvider.Instance;
-                if (nav.IsAvailable && nav.HasNavmesh(zone) &&
-                    nav.GetClosestPoint(zone, new Vector3(goal.X, goal.Y, bot.Z), 300, 300, 8_000, nav.DefaultFilters) is Vector3 floor)
+                if (AutonomousNavigationSurface.WalkableFloorUnder(nav, zone, goal.X, goal.Y, bot.Z) is Vector3 floor)
                     z = (int)floor.Z;
                 else
                     z = bot.Z;

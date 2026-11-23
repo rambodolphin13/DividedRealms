@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Text.Json;
 
@@ -211,6 +212,13 @@ public static class AutonomousZoneRoads
         if (zone == null || !Data.Value.TryGetValue(zone.ID, out ZoneRoads roads)) return null;
         List<int> near = Nearby(roads, point);
         return near.Count == 0 ? null : roads.Areas[near[0]];
+    }
+
+    /// <summary>Up to <paramref name="count"/> road anchors of one area near a point (its cell and the eight around it), nearest first.</summary>
+    public static IReadOnlyList<Vector3> AnchorsNear(Zone zone, Vector3 point, int area, int count)
+    {
+        if (zone == null || !Data.Value.TryGetValue(zone.ID, out ZoneRoads roads)) return Array.Empty<Vector3>();
+        return Nearby(roads, point).Where(i => roads.Areas[i] == area).Take(count).Select(i => roads.Anchors[i]).ToList();
     }
 
     /// <summary>Anchors in the point's cell and the eight around it, nearest first (height counts double).</summary>
