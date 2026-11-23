@@ -1,0 +1,1515 @@
+[
+ {
+  "recipe": 6501,
+  "name": "Entropic Bishops Mace",
+  "realm": 1,
+  "item": "Entropic_Bishops_Mace_dr168_r1",
+  "from": "Lithic_Bishops_Mace",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6502,
+  "name": "Somatic Bishops Mace",
+  "realm": 1,
+  "item": "Somatic_Bishops_Mace_dr168_r1",
+  "from": "Lithic_Bishops_Mace",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6503,
+  "name": "Entropic Falchion",
+  "realm": 1,
+  "item": "Entropic_Falchion_dr168_r1",
+  "from": "Lithic_Falchion",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6504,
+  "name": "Somatic Falchion",
+  "realm": 1,
+  "item": "Somatic_Falchion_dr168_r1",
+  "from": "Lithic_Falchion",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6505,
+  "name": "Entropic Rapier",
+  "realm": 1,
+  "item": "Entropic_Rapier_dr168_r1",
+  "from": "Lithic_Rapier",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6506,
+  "name": "Somatic Rapier",
+  "realm": 1,
+  "item": "Somatic_Rapier_dr168_r1",
+  "from": "Lithic_Rapier",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6507,
+  "name": "Entropic Coffin Mace",
+  "realm": 1,
+  "item": "Entropic_Coffin_Mace_dr168_r1",
+  "from": "Lithic_Coffin_Mace",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6508,
+  "name": "Somatic Coffin Mace",
+  "realm": 1,
+  "item": "Somatic_Coffin_Mace_dr168_r1",
+  "from": "Lithic_Coffin_Mace",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6509,
+  "name": "Entropic Short Sword",
+  "realm": 1,
+  "item": "Entropic_Short_Sword_dr168_r1",
+  "from": "Lithic_Short_Sword",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6510,
+  "name": "Somatic Short Sword",
+  "realm": 1,
+  "item": "Somatic_Short_Sword_dr168_r1",
+  "from": "Lithic_Short_Sword",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6511,
+  "name": "Entropic Stiletto",
+  "realm": 1,
+  "item": "Entropic_Stiletto_dr168_r1",
+  "from": "Lithic_Stiletto",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6512,
+  "name": "Somatic Stiletto",
+  "realm": 1,
+  "item": "Somatic_Stiletto_dr168_r1",
+  "from": "Lithic_Stiletto",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6513,
+  "name": "Entropic Great Hammer",
+  "realm": 1,
+  "item": "Entropic_Great_Hammer_dr168_r1",
+  "from": "Lithic_Great_Hammer",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6514,
+  "name": "Somatic Great Hammer",
+  "realm": 1,
+  "item": "Somatic_Great_Hammer_dr168_r1",
+  "from": "Lithic_Great_Hammer",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6515,
+  "name": "Entropic Great Sword",
+  "realm": 1,
+  "item": "Entropic_Great_Sword_dr168_r1",
+  "from": "lithic_great_sword",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6516,
+  "name": "Somatic Great Sword",
+  "realm": 1,
+  "item": "Somatic_Great_Sword_dr168_r1",
+  "from": "lithic_great_sword",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6517,
+  "name": "Entropic War Pick",
+  "realm": 1,
+  "item": "Entropic_War_Pick_dr168_r1",
+  "from": "Lithic_War_Pick",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6518,
+  "name": "Somatic War Pick",
+  "realm": 1,
+  "item": "Somatic_War_Pick_dr168_r1",
+  "from": "Lithic_War_Pick",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6519,
+  "name": "Entropic Lucerne Hammer",
+  "realm": 1,
+  "item": "Entropic_Lucerne_Hammer_dr168_r1",
+  "from": "Lithic_Lucerne_Hammer",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6520,
+  "name": "Somatic Lucerne Hammer",
+  "realm": 1,
+  "item": "Somatic_Lucerne_Hammer_dr168_r1",
+  "from": "Lithic_Lucerne_Hammer",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6521,
+  "name": "Entropic Glaive",
+  "realm": 1,
+  "item": "Entropic_Glaive_dr168_r1",
+  "from": "lithic_glaive",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6522,
+  "name": "Somatic Glaive",
+  "realm": 1,
+  "item": "Somatic_Glaive_dr168_r1",
+  "from": "lithic_glaive",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6523,
+  "name": "Entropic Military Fork",
+  "realm": 1,
+  "item": "Entropic_Military_Fork_dr168_r1",
+  "from": "Lithic_Military_Fork",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6524,
+  "name": "Somatic Military Fork",
+  "realm": 1,
+  "item": "Somatic_Military_Fork_dr168_r1",
+  "from": "Lithic_Military_Fork",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6525,
+  "name": "Entropic Spiked Flail",
+  "realm": 1,
+  "item": "Entropic_Spiked_Flail_dr168_r1",
+  "from": "lithic_spiked_flail",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6526,
+  "name": "Somatic Spiked Flail",
+  "realm": 1,
+  "item": "Somatic_Spiked_Flail_dr168_r1",
+  "from": "lithic_spiked_flail",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6527,
+  "name": "Entropic Pick Flail",
+  "realm": 1,
+  "item": "Entropic_Pick_Flail_dr168_r1",
+  "from": "Lithic_Pick_Flail",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6528,
+  "name": "Somatic Pick Flail",
+  "realm": 1,
+  "item": "Somatic_Pick_Flail_dr168_r1",
+  "from": "Lithic_Pick_Flail",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6529,
+  "name": "Entropic Fist Wrap",
+  "realm": 1,
+  "item": "Entropic_Fist_Wrap_dr168_r1",
+  "from": "lithic_fist_wrap",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6530,
+  "name": "Somatic Fist Wrap",
+  "realm": 1,
+  "item": "Somatic_Fist_Wrap_dr168_r1",
+  "from": "lithic_fist_wrap",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 6531,
+  "name": "Entropic Hand Wrap",
+  "realm": 1,
+  "item": "Entropic_Hand_Wrap_dr168_r1",
+  "from": "lithic_hand_wrap",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 6532,
+  "name": "Somatic Hand Wrap",
+  "realm": 1,
+  "item": "Somatic_Hand_Wrap_dr168_r1",
+  "from": "lithic_hand_wrap",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 2453,
+  "name": "Entropic Magus Staff",
+  "realm": 1,
+  "item": "Entropic_Magus_Staff_dr168_r1",
+  "from": "lithic_magus_staff",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 2454,
+  "name": "Somatic Magus Staff",
+  "realm": 1,
+  "item": "Somatic_Magus_Staff_dr168_r1",
+  "from": "lithic_magus_staff",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 2455,
+  "name": "Entropic Quarterstaff",
+  "realm": 1,
+  "item": "Entropic_Quarterstaff_dr168_r1",
+  "from": "Lithic_Quarterstaff",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 2456,
+  "name": "Somatic Quarterstaff",
+  "realm": 1,
+  "item": "Somatic_Quarterstaff_dr168_r1",
+  "from": "Lithic_Quarterstaff",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 2457,
+  "name": "Entropic Mauler Staff",
+  "realm": 1,
+  "item": "Entropic_Mauler_Staff_dr168_r1",
+  "from": "Lithic_Mauler_Staff",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 2458,
+  "name": "Somatic Mauler Staff",
+  "realm": 1,
+  "item": "Somatic_Mauler_Staff_dr168_r1",
+  "from": "Lithic_Mauler_Staff",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 2459,
+  "name": "Entropic Mauler Shod Staff",
+  "realm": 1,
+  "item": "Entropic_Mauler_Shod_Staff_dr168_r1",
+  "from": "Lithic_Mauler_Shod_Staff",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 2460,
+  "name": "Somatic Mauler Shod Staff",
+  "realm": 1,
+  "item": "Somatic_Mauler_Shod_Staff_dr168_r1",
+  "from": "Lithic_Mauler_Shod_Staff",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 2461,
+  "name": "Entropic Long Bow",
+  "realm": 1,
+  "item": "Entropic_Long_Bow_dr168_r1",
+  "from": "lithic_long_bow",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 2462,
+  "name": "Somatic Long Bow",
+  "realm": 1,
+  "item": "Somatic_Long_Bow_dr168_r1",
+  "from": "lithic_long_bow",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 2351,
+  "name": "superior fiery long bow",
+  "realm": 1,
+  "item": "superior_fiery_long_bow_dr168_r1",
+  "from": "dyrwood_exceptional_long_bow",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 2354,
+  "name": "superior fiery short bow",
+  "realm": 1,
+  "item": "superior_fiery_short_bow_dr168_r1",
+  "from": "dyrwood_exceptional_short_bow",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 2357,
+  "name": "superior fiery crossbow",
+  "realm": 1,
+  "item": "superior_fiery_crossbow_dr168_r1",
+  "from": "dyrwood_exceptional_crossbow",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 2352,
+  "name": "superior icy long bow",
+  "realm": 1,
+  "item": "superior_icy_long_bow_dr168_r1",
+  "from": "dyrwood_exceptional_long_bow",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 2355,
+  "name": "superior icy short bow",
+  "realm": 1,
+  "item": "superior_icy_short_bow_dr168_r1",
+  "from": "dyrwood_exceptional_short_bow",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 2358,
+  "name": "superior icy crossbow",
+  "realm": 1,
+  "item": "superior_icy_crossbow_dr168_r1",
+  "from": "dyrwood_exceptional_crossbow",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 2353,
+  "name": "superior conductive long bow",
+  "realm": 1,
+  "item": "superior_conductive_long_bow_dr168_r1",
+  "from": "dyrwood_exceptional_long_bow",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 2356,
+  "name": "superior conductive short bow",
+  "realm": 1,
+  "item": "superior_conductive_short_bow_dr168_r1",
+  "from": "dyrwood_exceptional_short_bow",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 2359,
+  "name": "superior conductive crossbow",
+  "realm": 1,
+  "item": "superior_conductive_crossbow_dr168_r1",
+  "from": "dyrwood_exceptional_crossbow",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 2332,
+  "name": "superior fiery long bow",
+  "realm": 1,
+  "item": "superior_fiery_long_bow_dr168_r12",
+  "from": "duskwood_exceptional_long_bow",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 2335,
+  "name": "superior fiery short bow",
+  "realm": 1,
+  "item": "superior_fiery_short_bow_dr168_r12",
+  "from": "duskwood_exceptional_short_bow",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 2338,
+  "name": "superior fiery crossbow",
+  "realm": 1,
+  "item": "superior_fiery_crossbow_dr168_r12",
+  "from": "duskwood_exceptional_crossbow",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 2333,
+  "name": "superior icy long bow",
+  "realm": 1,
+  "item": "superior_icy_long_bow_dr168_r12",
+  "from": "duskwood_exceptional_long_bow",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 2336,
+  "name": "superior icy short bow",
+  "realm": 1,
+  "item": "superior_icy_short_bow_dr168_r12",
+  "from": "duskwood_exceptional_short_bow",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 2339,
+  "name": "superior icy crossbow",
+  "realm": 1,
+  "item": "superior_icy_crossbow_dr168_r12",
+  "from": "duskwood_exceptional_crossbow",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 2334,
+  "name": "superior conductive long bow",
+  "realm": 1,
+  "item": "superior_conductive_long_bow_dr168_r12",
+  "from": "duskwood_exceptional_long_bow",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 2337,
+  "name": "superior conductive short bow",
+  "realm": 1,
+  "item": "superior_conductive_short_bow_dr168_r12",
+  "from": "duskwood_exceptional_short_bow",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 2340,
+  "name": "superior conductive crossbow",
+  "realm": 1,
+  "item": "superior_conductive_crossbow_dr168_r12",
+  "from": "duskwood_exceptional_crossbow",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 2360,
+  "name": "durable fiery long bow",
+  "realm": 1,
+  "item": "durable_fiery_long_bow_dr168_r1",
+  "from": "dyrwood_fortified_long_bow",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 2363,
+  "name": "durable fiery short bow",
+  "realm": 1,
+  "item": "durable_fiery_short_bow_dr168_r1",
+  "from": "dyrwood_fortified_short_bow",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 2366,
+  "name": "durable fiery crossbow",
+  "realm": 1,
+  "item": "durable_fiery_crossbow_dr168_r1",
+  "from": "dyrwood_fortified_crossbow",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 2361,
+  "name": "durable icy long bow",
+  "realm": 1,
+  "item": "durable_icy_long_bow_dr168_r1",
+  "from": "dyrwood_fortified_long_bow",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 2364,
+  "name": "durable icy short bow",
+  "realm": 1,
+  "item": "durable_icy_short_bow_dr168_r1",
+  "from": "dyrwood_fortified_short_bow",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 2367,
+  "name": "durable icy crossbow",
+  "realm": 1,
+  "item": "durable_icy_crossbow_dr168_r1",
+  "from": "dyrwood_fortified_crossbow",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 2362,
+  "name": "durable conductive long bow",
+  "realm": 1,
+  "item": "durable_conductive_long_bow_dr168_r1",
+  "from": "dyrwood_fortified_long_bow",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 2365,
+  "name": "durable conductive short bow",
+  "realm": 1,
+  "item": "durable_conductive_short_bow_dr168_r1",
+  "from": "dyrwood_fortified_short_bow",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 2368,
+  "name": "durable conductive crossbow",
+  "realm": 1,
+  "item": "durable_conductive_crossbow_dr168_r1",
+  "from": "dyrwood_fortified_crossbow",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 2342,
+  "name": "durable fiery long bow",
+  "realm": 1,
+  "item": "durable_fiery_long_bow_dr168_r12",
+  "from": "duskwood_fortified_long_bow",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 2345,
+  "name": "durable fiery short bow",
+  "realm": 1,
+  "item": "durable_fiery_short_bow_dr168_r12",
+  "from": "duskwood_fortified_short_bow",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 2348,
+  "name": "durable fiery crossbow",
+  "realm": 1,
+  "item": "durable_fiery_crossbow_dr168_r12",
+  "from": "duskwood_fortified_crossbow",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 2343,
+  "name": "durable icy long bow",
+  "realm": 1,
+  "item": "durable_icy_long_bow_dr168_r12",
+  "from": "duskwood_fortified_long_bow",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 2346,
+  "name": "durable icy short bow",
+  "realm": 1,
+  "item": "durable_icy_short_bow_dr168_r12",
+  "from": "duskwood_fortified_short_bow",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 2349,
+  "name": "durable icy crossbow",
+  "realm": 1,
+  "item": "durable_icy_crossbow_dr168_r12",
+  "from": "duskwood_fortified_crossbow",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 2344,
+  "name": "durable conductive long bow",
+  "realm": 1,
+  "item": "durable_conductive_long_bow_dr168_r12",
+  "from": "duskwood_fortified_long_bow",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 2347,
+  "name": "durable conductive short bow",
+  "realm": 1,
+  "item": "durable_conductive_short_bow_dr168_r12",
+  "from": "duskwood_fortified_short_bow",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 2350,
+  "name": "durable conductive crossbow",
+  "realm": 1,
+  "item": "durable_conductive_crossbow_dr168_r12",
+  "from": "duskwood_fortified_crossbow",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 2443,
+  "name": "Harmonious Mandolin",
+  "realm": 1,
+  "item": "Harmonious_Mandolin_dr168_r1",
+  "from": "duskwood_Sigil_Harmonious_Harp"
+ },
+ {
+  "recipe": 2444,
+  "name": "Arpeggio Mandolin",
+  "realm": 1,
+  "item": "Arpeggio_Mandolin_dr168_r1",
+  "from": "duskwood_Sigil_Arpeggio_Harp"
+ },
+ {
+  "recipe": 13301,
+  "name": "Entropic War Hammer",
+  "realm": 2,
+  "item": "Entropic_War_Hammer_dr168_r2",
+  "from": "Lithic_War_Hammer",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13302,
+  "name": "Somatic War Hammer",
+  "realm": 2,
+  "item": "Somatic_War_Hammer_dr168_r2",
+  "from": "Lithic_War_Hammer",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13303,
+  "name": "Entropic Longsword",
+  "realm": 2,
+  "item": "Entropic_Longsword_dr168_r2",
+  "from": "Lithic_Longsword",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13304,
+  "name": "Somatic Long Sword",
+  "realm": 2,
+  "skipped": "no Legendary sibling for Long Sword"
+ },
+ {
+  "recipe": 13305,
+  "name": "Entropic Double Bladed Axe",
+  "realm": 2,
+  "item": "Entropic_Double_Bladed_Axe_dr168_r2",
+  "from": "lithic_double_bladed_axe",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13306,
+  "name": "Somatic Double Bladed Axe",
+  "realm": 2,
+  "item": "Somatic_Double_Bladed_Axe_dr168_r2",
+  "from": "lithic_double_bladed_axe",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13307,
+  "name": "Entropic Great Club",
+  "realm": 2,
+  "item": "Entropic_Great_Club_dr168_r2",
+  "from": "lithic_great_club",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13308,
+  "name": "Somatic Great Club",
+  "realm": 2,
+  "item": "Somatic_Great_Club_dr168_r2",
+  "from": "lithic_great_club",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13309,
+  "name": "Entropic Great Sword",
+  "realm": 2,
+  "item": "Entropic_Great_Sword_dr168_r2",
+  "from": "Lithic_Great_Sword3",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13310,
+  "name": "Somatic Great Sword",
+  "realm": 2,
+  "item": "Somatic_Great_Sword_dr168_r2",
+  "from": "Lithic_Great_Sword3",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13311,
+  "name": "Entropic Battleaxe",
+  "realm": 2,
+  "item": "Entropic_Battleaxe_dr168_r2",
+  "from": "lithic_battleaxe",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13312,
+  "name": "Somatic Battleaxe",
+  "realm": 2,
+  "item": "Somatic_Battleaxe_dr168_r2",
+  "from": "lithic_battleaxe",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13313,
+  "name": "Entropic War Axe",
+  "realm": 2,
+  "item": "Entropic_War_Axe_dr168_r2",
+  "from": "lithic_war_axe",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13314,
+  "name": "Somatic War Axe",
+  "realm": 2,
+  "item": "Somatic_War_Axe_dr168_r2",
+  "from": "lithic_war_axe",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13315,
+  "name": "Entropic Fang Greave",
+  "realm": 2,
+  "item": "Entropic_Fang_Greave_dr168_r2",
+  "from": "lithic_fang_greave",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13316,
+  "name": "Somatic Fang Greave",
+  "realm": 2,
+  "item": "Somatic_Fang_Greave_dr168_r2",
+  "from": "lithic_fang_greave",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13317,
+  "name": "Entropic Moon Claw",
+  "realm": 2,
+  "item": "Entropic_Moon_Claw_dr168_r2",
+  "from": "lithic_moon_claw",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13318,
+  "name": "Somatic Moon Claw",
+  "realm": 2,
+  "item": "Somatic_Moon_Claw_dr168_r2",
+  "from": "lithic_moon_claw",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13319,
+  "name": "Entropic Hooked Spear",
+  "realm": 2,
+  "item": "Entropic_Hooked_Spear_dr168_r2",
+  "from": "lithic_hooked_spear",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13320,
+  "name": "Somatic Hooked Spear",
+  "realm": 2,
+  "item": "Somatic_Hooked_Spear_dr168_r2",
+  "from": "lithic_hooked_spear",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13321,
+  "name": "Entropic Fist Wrap",
+  "realm": 2,
+  "item": "Entropic_Fist_Wrap_dr168_r2",
+  "from": "lithic_fist_wrap_mid",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13322,
+  "name": "Somatic Fist Wrap",
+  "realm": 2,
+  "item": "Somatic_Fist_Wrap_dr168_r2",
+  "from": "lithic_fist_wrap_mid",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 13323,
+  "name": "Entropic Hand Wrap",
+  "realm": 2,
+  "item": "Entropic_Hand_Wrap_dr168_r2",
+  "from": "lithic_hand_wrap_mid",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 13324,
+  "name": "Somatic Hand Wrap",
+  "realm": 2,
+  "item": "Somatic_Hand_Wrap_dr168_r2",
+  "from": "lithic_hand_wrap_mid",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 10805,
+  "name": "Tempered Adroit Buckler",
+  "realm": 2,
+  "item": "Tempered_Adroit_Buckler_dr168_r2",
+  "from": "mid_sigil_rune_tempered_adroit_buckler"
+ },
+ {
+  "recipe": 10806,
+  "name": "Tempered Pious Buckler",
+  "realm": 2,
+  "item": "Tempered_Pious_Buckler_dr168_r2",
+  "from": "mid_sigil_rune_tempered_pious_buckler"
+ },
+ {
+  "recipe": 10807,
+  "name": "Tempered Mending Buckler",
+  "realm": 2,
+  "item": "Tempered_Mending_Buckler_dr168_r2",
+  "from": "mid_sigil_rune_tempered_mending_buckler"
+ },
+ {
+  "recipe": 9282,
+  "name": "Entropic Composite Bow",
+  "realm": 2,
+  "item": "Entropic_Composite_Bow_dr168_r2",
+  "from": "lithic_composite_bow",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 9283,
+  "name": "Somatic Composite Bow",
+  "realm": 2,
+  "item": "Somatic_Composite_Bow_dr168_r2",
+  "from": "lithic_composite_bow",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 9284,
+  "name": "Entropic Magus Staff",
+  "realm": 2,
+  "item": "Entropic_Magus_Staff_dr168_r2",
+  "from": "Lithic_Magus_Staff3",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 9285,
+  "name": "Somatic Magus Staff",
+  "realm": 2,
+  "item": "Somatic_Magus_Staff_dr168_r2",
+  "from": "Lithic_Magus_Staff3",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 9286,
+  "name": "Entropic Mauler Staff",
+  "realm": 2,
+  "item": "Entropic_Mauler_Staff_dr168_r2",
+  "from": "lithic_mauler_staff_mid",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 9287,
+  "name": "Somatic Mauler Staff",
+  "realm": 2,
+  "item": "Somatic_Mauler_Staff_dr168_r2",
+  "from": "lithic_mauler_staff_mid",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 9288,
+  "name": "Entropic Mauler Shod Staff",
+  "realm": 2,
+  "item": "Entropic_Mauler_Shod_Staff_dr168_r2",
+  "from": "Lithic_Mauler_Shod_Staff",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 9289,
+  "name": "Somatic Mauler Shod Staff",
+  "realm": 2,
+  "item": "Somatic_Mauler_Shod_Staff_dr168_r2",
+  "from": "Lithic_Mauler_Shod_Staff",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 9206,
+  "name": "superior fiery composite bow",
+  "realm": 2,
+  "item": "superior_fiery_composite_bow_dr168_r2",
+  "from": "dyrwood_exceptional_composite_bow2",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 9207,
+  "name": "superior icy composite bow",
+  "realm": 2,
+  "item": "superior_icy_composite_bow_dr168_r2",
+  "from": "dyrwood_exceptional_composite_bow2",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 9209,
+  "name": "durable fiery composite bow",
+  "realm": 2,
+  "item": "durable_fiery_composite_bow_dr168_r2",
+  "from": "dyrwood_fortified_composite_bow2",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 9208,
+  "name": "superior conductive composite bow",
+  "realm": 2,
+  "item": "superior_conductive_composite_bow_dr168_r2",
+  "from": "dyrwood_exceptional_composite_bow2",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 9210,
+  "name": "durable icy composite bow",
+  "realm": 2,
+  "item": "durable_icy_composite_bow_dr168_r2",
+  "from": "dyrwood_fortified_composite_bow2",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 9211,
+  "name": "durable conductive composite bow",
+  "realm": 2,
+  "item": "durable_conductive_composite_bow_dr168_r2",
+  "from": "dyrwood_fortified_composite_bow2",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 9200,
+  "name": "superior fiery composite bow",
+  "realm": 2,
+  "item": "superior_fiery_composite_bow_dr168_r22",
+  "from": "duskwood_exceptional_composite_bow2",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 9201,
+  "name": "superior icy composite bow",
+  "realm": 2,
+  "item": "superior_icy_composite_bow_dr168_r22",
+  "from": "duskwood_exceptional_composite_bow2",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 9203,
+  "name": "durable fiery composite bow",
+  "realm": 2,
+  "item": "durable_fiery_composite_bow_dr168_r22",
+  "from": "duskwood_fortified_composite_bow2",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 9202,
+  "name": "superior conductive composite bow",
+  "realm": 2,
+  "item": "superior_conductive_composite_bow_dr168_r22",
+  "from": "duskwood_exceptional_composite_bow2",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 9204,
+  "name": "durable icy composite bow",
+  "realm": 2,
+  "item": "durable_icy_composite_bow_dr168_r22",
+  "from": "duskwood_fortified_composite_bow2",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 9205,
+  "name": "durable conductive composite bow",
+  "realm": 2,
+  "item": "durable_conductive_composite_bow_dr168_r22",
+  "from": "duskwood_fortified_composite_bow2",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 20301,
+  "name": "Entropic Dire Hammer",
+  "realm": 3,
+  "item": "Entropic_Dire_Hammer_dr168_r3",
+  "from": "lithic_dire_hammer",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20302,
+  "name": "Somatic Dire Hammer",
+  "realm": 3,
+  "item": "Somatic_Dire_Hammer_dr168_r3",
+  "from": "lithic_dire_hammer",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20303,
+  "name": "Entropic War Adze",
+  "realm": 3,
+  "item": "Entropic_War_Adze_dr168_r3",
+  "from": "Lithic_War_Adze",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20304,
+  "name": "Somatic War Adze",
+  "realm": 3,
+  "item": "Somatic_War_Adze_dr168_r3",
+  "from": "Lithic_War_Adze",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20305,
+  "name": "Entropic Long Sword",
+  "realm": 3,
+  "item": "Entropic_Long_Sword_dr168_r3",
+  "from": "Lithic_Long_Sword",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20306,
+  "name": "Somatic Long Sword",
+  "realm": 3,
+  "item": "Somatic_Long_Sword_dr168_r3",
+  "from": "Lithic_Long_Sword",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20307,
+  "name": "Entropic Hammer",
+  "realm": 3,
+  "item": "Entropic_Hammer_dr168_r3",
+  "from": "Lithic_Hammer",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20308,
+  "name": "Somatic Hammer",
+  "realm": 3,
+  "item": "Somatic_Hammer_dr168_r3",
+  "from": "Lithic_Hammer",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20309,
+  "name": "Entropic Adze",
+  "realm": 3,
+  "item": "Entropic_Adze_dr168_r3",
+  "from": "Lithic_Adze",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20310,
+  "name": "Somatic Adze",
+  "realm": 3,
+  "item": "Somatic_Adze_dr168_r3",
+  "from": "Lithic_Adze",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20311,
+  "name": "Entropic Short Sword",
+  "realm": 3,
+  "item": "Entropic_Short_Sword_dr168_r3",
+  "from": "Lithic_Short_Sword2",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20312,
+  "name": "Somatic Short Sword",
+  "realm": 3,
+  "item": "Somatic_Short_Sword_dr168_r3",
+  "from": "Lithic_Short_Sword2",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20313,
+  "name": "Entropic Great Hammer",
+  "realm": 3,
+  "item": "Entropic_Great_Hammer_dr168_r3",
+  "from": "Lithic_Great_Hammer2",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20314,
+  "name": "Somatic Great Hammer",
+  "realm": 3,
+  "item": "Somatic_Great_Hammer_dr168_r3",
+  "from": "Lithic_Great_Hammer2",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20315,
+  "name": "Entropic Great Sword",
+  "realm": 3,
+  "item": "Entropic_Great_Sword_dr168_r3",
+  "from": "Lithic_Great_Sword2",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20316,
+  "name": "Somatic Great Sword",
+  "realm": 3,
+  "item": "Somatic_Great_Sword_dr168_r3",
+  "from": "Lithic_Great_Sword2",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20317,
+  "name": "Entropic Battle Spear",
+  "realm": 3,
+  "item": "Entropic_Battle_Spear_dr168_r3",
+  "from": "lithic_battle_spear",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20318,
+  "name": "Somatic Battle Spear",
+  "realm": 3,
+  "item": "Somatic_Battle_Spear_dr168_r3",
+  "from": "lithic_battle_spear",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20319,
+  "name": "Entropic War Scythe",
+  "realm": 3,
+  "item": "Entropic_War_Scythe_dr168_r3",
+  "from": "lithic_war_scythe",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20320,
+  "name": "Somatic War Scythe",
+  "realm": 3,
+  "item": "Somatic_War_Scythe_dr168_r3",
+  "from": "lithic_war_scythe",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20321,
+  "name": "Entropic Fist Wrap",
+  "realm": 3,
+  "item": "Entropic_Fist_Wrap_dr168_r3",
+  "from": "lithic_fist_wrap_hib",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20322,
+  "name": "Somatic Fist Wrap",
+  "realm": 3,
+  "item": "Somatic_Fist_Wrap_dr168_r3",
+  "from": "lithic_fist_wrap_hib",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 20323,
+  "name": "Entropic Hand Wrap",
+  "realm": 3,
+  "item": "Entropic_Hand_Wrap_dr168_r3",
+  "from": "lithic_hand_wrap_hib",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 20324,
+  "name": "Somatic Hand Wrap",
+  "realm": 3,
+  "item": "Somatic_Hand_Wrap_dr168_r3",
+  "from": "lithic_hand_wrap_hib",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 17760,
+  "name": "Riddled Regrown Leaf Shield",
+  "realm": 3,
+  "item": "Riddled_Regrown_Leaf_Shield_dr168_r3",
+  "from": "Hib_Sigil_Spell_Riddled_regrown_leaf_heater_shield"
+ },
+ {
+  "recipe": 17761,
+  "name": "Riddled Protector's Leaf Shield",
+  "realm": 3,
+  "item": "Riddled_Protector_s_Leaf_Shield_dr168_r3",
+  "from": "Hib_Sigil_Spell_Riddled_protectors_leaf_heater_shield"
+ },
+ {
+  "recipe": 16347,
+  "name": "Entropic Recurve Bow",
+  "realm": 3,
+  "item": "Entropic_Recurve_Bow_dr168_r3",
+  "from": "lithic_recurve_bow",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 16348,
+  "name": "Somatic Recurve Bow",
+  "realm": 3,
+  "item": "Somatic_Recurve_Bow_dr168_r3",
+  "from": "lithic_recurve_bow",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 16349,
+  "name": "Entropic Magus Staff",
+  "realm": 3,
+  "item": "Entropic_Magus_Staff_dr168_r3",
+  "from": "Lithic_Magus_Staff2",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 16350,
+  "name": "Somatic Magus Staff",
+  "realm": 3,
+  "item": "Somatic_Magus_Staff_dr168_r3",
+  "from": "Lithic_Magus_Staff2",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 16351,
+  "name": "Entropic Mauler Staff",
+  "realm": 3,
+  "item": "Entropic_Mauler_Staff_dr168_r3",
+  "from": "lithic_mauler_staff_hib",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 16352,
+  "name": "Somatic Mauler Staff",
+  "realm": 3,
+  "item": "Somatic_Mauler_Staff_dr168_r3",
+  "from": "lithic_mauler_staff_hib",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 16353,
+  "name": "Entropic Mauler Shod Staff",
+  "realm": 3,
+  "item": "Entropic_Mauler_Shod_Staff_dr168_r3",
+  "from": "lithic_mauler_shod_staff_hib",
+  "ProcSpellID": 92127
+ },
+ {
+  "recipe": 16354,
+  "name": "Somatic Mauler Shod Staff",
+  "realm": 3,
+  "item": "Somatic_Mauler_Shod_Staff_dr168_r3",
+  "from": "lithic_mauler_shod_staff_hib",
+  "ProcSpellID": 92128
+ },
+ {
+  "recipe": 16251,
+  "name": "superior fiery recurve bow",
+  "realm": 3,
+  "item": "superior_fiery_recurve_bow_dr168_r3",
+  "from": "dyrwood_exceptional_recurve_bow3",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 16254,
+  "name": "durable fiery recurve bow",
+  "realm": 3,
+  "item": "durable_fiery_recurve_bow_dr168_r3",
+  "from": "dyrwood_fortified_recurve_bow3",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 16252,
+  "name": "superior icy recurve bow",
+  "realm": 3,
+  "item": "superior_icy_recurve_bow_dr168_r3",
+  "from": "dyrwood_exceptional_recurve_bow3",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 16255,
+  "name": "durable icy recurve bow",
+  "realm": 3,
+  "item": "durable_icy_recurve_bow_dr168_r3",
+  "from": "dyrwood_fortified_recurve_bow3",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 16253,
+  "name": "superior conductive recurve bow",
+  "realm": 3,
+  "item": "superior_conductive_recurve_bow_dr168_r3",
+  "from": "dyrwood_exceptional_recurve_bow3",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 16256,
+  "name": "durable conductive recurve bow",
+  "realm": 3,
+  "item": "durable_conductive_recurve_bow_dr168_r3",
+  "from": "dyrwood_fortified_recurve_bow3",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 16238,
+  "name": "superior fiery recurve bow",
+  "realm": 3,
+  "item": "superior_fiery_recurve_bow_dr168_r32",
+  "from": "duskwood_exceptional_recurve_bow3",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 16241,
+  "name": "durable fiery recurve bow",
+  "realm": 3,
+  "item": "durable_fiery_recurve_bow_dr168_r32",
+  "from": "duskwood_fortified_recurve_bow3",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 16239,
+  "name": "superior icy recurve bow",
+  "realm": 3,
+  "item": "superior_icy_recurve_bow_dr168_r32",
+  "from": "duskwood_exceptional_recurve_bow3",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 16242,
+  "name": "durable icy recurve bow",
+  "realm": 3,
+  "item": "durable_icy_recurve_bow_dr168_r32",
+  "from": "duskwood_fortified_recurve_bow3",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 16240,
+  "name": "superior conductive recurve bow",
+  "realm": 3,
+  "item": "superior_conductive_recurve_bow_dr168_r32",
+  "from": "duskwood_exceptional_recurve_bow3",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 16243,
+  "name": "durable conductive recurve bow",
+  "realm": 3,
+  "item": "durable_conductive_recurve_bow_dr168_r32",
+  "from": "duskwood_fortified_recurve_bow3",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 16257,
+  "name": "superior fiery short bow",
+  "realm": 3,
+  "item": "superior_fiery_short_bow_dr168_r3",
+  "from": "dyrwood_exceptional_short_bow3",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 16258,
+  "name": "superior icy short bow",
+  "realm": 3,
+  "item": "superior_icy_short_bow_dr168_r3",
+  "from": "dyrwood_exceptional_short_bow3",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 16260,
+  "name": "durable fiery short bow",
+  "realm": 3,
+  "item": "durable_fiery_short_bow_dr168_r3",
+  "from": "dyrwood_fortified_short_bow3",
+  "ProcSpellID": 92120
+ },
+ {
+  "recipe": 16259,
+  "name": "superior conductive short bow",
+  "realm": 3,
+  "item": "superior_conductive_short_bow_dr168_r3",
+  "from": "dyrwood_exceptional_short_bow3",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 16261,
+  "name": "durable icy short bow",
+  "realm": 3,
+  "item": "durable_icy_short_bow_dr168_r3",
+  "from": "dyrwood_fortified_short_bow3",
+  "ProcSpellID": 92121
+ },
+ {
+  "recipe": 16262,
+  "name": "durable conductive short bow",
+  "realm": 3,
+  "item": "durable_conductive_short_bow_dr168_r3",
+  "from": "dyrwood_fortified_short_bow3",
+  "ProcSpellID": 92122
+ },
+ {
+  "recipe": 16245,
+  "name": "superior fiery short bow",
+  "realm": 3,
+  "item": "superior_fiery_short_bow_dr168_r32",
+  "from": "duskwood_exceptional_short_bow3",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 16246,
+  "name": "superior icy short bow",
+  "realm": 3,
+  "item": "superior_icy_short_bow_dr168_r32",
+  "from": "duskwood_exceptional_short_bow3",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 16248,
+  "name": "durable fiery short bow",
+  "realm": 3,
+  "item": "durable_fiery_short_bow_dr168_r32",
+  "from": "duskwood_fortified_short_bow3",
+  "ProcSpellID": 92124
+ },
+ {
+  "recipe": 16247,
+  "name": "superior conductive short bow",
+  "realm": 3,
+  "item": "superior_conductive_short_bow_dr168_r32",
+  "from": "duskwood_exceptional_short_bow3",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 16249,
+  "name": "durable icy short bow",
+  "realm": 3,
+  "item": "durable_icy_short_bow_dr168_r32",
+  "from": "duskwood_fortified_short_bow3",
+  "ProcSpellID": 92125
+ },
+ {
+  "recipe": 16250,
+  "name": "durable conductive short bow",
+  "realm": 3,
+  "item": "durable_conductive_short_bow_dr168_r32",
+  "from": "duskwood_fortified_short_bow3",
+  "ProcSpellID": 31137
+ },
+ {
+  "recipe": 16334,
+  "name": "Spell Marked Luinneag Harp",
+  "realm": 3,
+  "item": "Spell_Marked_Luinneag_Harp_dr168_r3",
+  "from": "duskwood_harp3"
+ },
+ {
+  "recipe": 16335,
+  "name": "Spell Marked Appoggiatura Harp",
+  "realm": 3,
+  "item": "Spell_Marked_Appoggiatura_Harp_dr168_r3",
+  "from": "duskwood_harp3"
+ },
+ {
+  "recipe": 16336,
+  "name": "Spell Marked Adban Trireach Harp",
+  "realm": 3,
+  "item": "Spell_Marked_Adban_Trireach_Harp_dr168_r3",
+  "from": "duskwood_harp3"
+ },
+ {
+  "recipe": 16338,
+  "name": "Luinneag Mandolin",
+  "realm": 3,
+  "item": "Luinneag_Mandolin_dr168_r3",
+  "from": "duskwood_harp3"
+ },
+ {
+  "recipe": 16339,
+  "name": "Appoggiatura Mandolin",
+  "realm": 3,
+  "item": "Appoggiatura_Mandolin_dr168_r3",
+  "from": "duskwood_harp3"
+ },
+ {
+  "recipe": 16340,
+  "name": "Adban Trireach Mandolin",
+  "realm": 3,
+  "item": "Adban_Trireach_Mandolin_dr168_r3",
+  "from": "duskwood_harp3"
+ }
+]

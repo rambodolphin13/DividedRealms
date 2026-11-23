@@ -1,0 +1,21 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T21:27:31.693785+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "LineXSpell",
+   "key": "item_effects_92128",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "LineName": "Item Effects",
+    "SpellID": 92128,
+    "Level": 1,
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "LineXSpell_ID": "item_effects_92128"
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
