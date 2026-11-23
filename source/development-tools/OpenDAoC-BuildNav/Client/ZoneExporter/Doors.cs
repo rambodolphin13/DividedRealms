@@ -22,7 +22,9 @@ namespace CEM.Client.ZoneExporter
     /// </summary>
     private static readonly Regex[] DoorLeafRegex = [new(@"^doors?(\s*[lr]?\s*\d*|_\d+(_collidee)?|_coll(idee)?|panel|\s+\d+)?(:\d+)?$")];
 
-    private void ExtractDoor(NiFile model, Matrix4 worldMatrix, int fixtureid)
+    /// <param name="padding">Extra width around each door's area (keep pieces, DR-035: the server's door point for a postern
+    /// or an inner keep door lies 50-130 units off the leaf, outside DoorMgr's 64-unit search box).</param>
+    private void ExtractDoor(NiFile model, Matrix4 worldMatrix, int fixtureid, float padding = 0f)
     {
       // take everything that is under a doorX node and use it for the hull...
       if (model == null) return;
@@ -116,8 +118,8 @@ namespace CEM.Client.ZoneExporter
 
 
         // Make sure we have a min of 20f for doors on width/height
-        box.Size.Width = Math.Max(20f, box.Size.Width);
-        box.Size.Height = Math.Max(20f, box.Size.Height);
+        box.Size.Width = Math.Max(20f, box.Size.Width) + 2 * padding;
+        box.Size.Height = Math.Max(20f, box.Size.Height) + 2 * padding;
 
         // Make sure the door touches the ground...
         hullMinZ -= 16.0f;
