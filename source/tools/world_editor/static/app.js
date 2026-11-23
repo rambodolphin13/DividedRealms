@@ -743,7 +743,7 @@ function dataEntities() {
 }
 // Rules a table follows that its rows do not show (DR-528: Teleport rows added here never appeared at a porter).
 const tableNotes={
-  Teleport:'Porter menus are fixed text. A new destination only shows when its Type is Travel and its Realm is the porter's own realm: it is listed under [anywhere else] at that realm's porters. Teleport rows are read when the server starts, so restart the server after saving.'
+  Teleport:"Porter menus are fixed text. A new destination only shows when its Type is Travel and its Realm is the players' realm: their porters list it under [anywhere else], grouped by its region, with TeleportID as the name they click (it must be filled and not already used for that realm). Teleport rows are read when the server starts, so restart the server after saving."
 };
 function renderRows() {
   if(!S.table||!S.config)return;const cols=gridColumns(S.table);
