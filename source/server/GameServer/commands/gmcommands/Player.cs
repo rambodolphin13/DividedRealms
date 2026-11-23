@@ -270,8 +270,12 @@ namespace DOL.GS.Commands
 						if (player.Champion == false)
 						{
 							player.Champion = true;
+							// DR-511: refresh the client like the King does, or the champion bar stays off until a relog.
+							player.Out.SendUpdatePlayer();
+							player.Out.SendUpdatePoints();
 							player.SaveIntoDatabase();
 							client.Out.SendMessage(player.Name + " is now on the path of the Champion!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+							player.Out.SendMessage("Champion training has begun. Realm points from PvP/RvR now advance your Champion Levels.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 							player.Out.SendMessage(client.Player.Name + "(PrivLevel: " + client.Account.PrivLevel + ") has started you on the path of the Champion!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 						}
 						else

@@ -1,0 +1,227 @@
+[
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_mauler_satago_war_staff",
+  "key": "MaulerSatagoWarStaff",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-AlbChampWeapons-MaulerSatagoWarStaff",
+  "insert": {
+   "MerchantItem_ID": "dr508-AlbChampWeapons-MaulerSatagoWarStaff",
+   "ItemListID": "AlbChampWeapons",
+   "ItemTemplateID": "MaulerSatagoWarStaff",
+   "PageNumber": 1,
+   "SlotPosition": 17
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_mauler_dextera_fist_wrap",
+  "key": "MaulerDexteraFistWrap",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-AlbChampWeapons-MaulerDexteraFistWrap",
+  "insert": {
+   "MerchantItem_ID": "dr508-AlbChampWeapons-MaulerDexteraFistWrap",
+   "ItemListID": "AlbChampWeapons",
+   "ItemTemplateID": "MaulerDexteraFistWrap",
+   "PageNumber": 1,
+   "SlotPosition": 18
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_mauler_laevus_fist_wrap",
+  "key": "MaulerLaevusFistWrap",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-AlbChampWeapons-MaulerLaevusFistWrap",
+  "insert": {
+   "MerchantItem_ID": "dr508-AlbChampWeapons-MaulerLaevusFistWrap",
+   "ItemListID": "AlbChampWeapons",
+   "ItemTemplateID": "MaulerLaevusFistWrap",
+   "PageNumber": 1,
+   "SlotPosition": 19
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_mauler_thurisaz_war_staff",
+  "key": "MaulerThurisazWarStaff",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-MidChampWeapons-MaulerThurisazWarStaff",
+  "insert": {
+   "MerchantItem_ID": "dr508-MidChampWeapons-MaulerThurisazWarStaff",
+   "ItemListID": "MidChampWeapons",
+   "ItemTemplateID": "MaulerThurisazWarStaff",
+   "PageNumber": 2,
+   "SlotPosition": 0
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_thurisaz_mauler_fist_wrap",
+  "key": "ThurisazMaulerFistWrap",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-MidChampWeapons-ThurisazMaulerFistWrap",
+  "insert": {
+   "MerchantItem_ID": "dr508-MidChampWeapons-ThurisazMaulerFistWrap",
+   "ItemListID": "MidChampWeapons",
+   "ItemTemplateID": "ThurisazMaulerFistWrap",
+   "PageNumber": 2,
+   "SlotPosition": 1
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_thurisaz_mauler_hand_wrap",
+  "key": "ThurisazMaulerHandWrap",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-MidChampWeapons-ThurisazMaulerHandWrap",
+  "insert": {
+   "MerchantItem_ID": "dr508-MidChampWeapons-ThurisazMaulerHandWrap",
+   "ItemListID": "MidChampWeapons",
+   "ItemTemplateID": "ThurisazMaulerHandWrap",
+   "PageNumber": 2,
+   "SlotPosition": 2
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_mauler_draiocht_war_staff",
+  "key": "MaulerDraiochtWarStaff",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-HibChampWeapons-MaulerDraiochtWarStaff",
+  "insert": {
+   "MerchantItem_ID": "dr508-HibChampWeapons-MaulerDraiochtWarStaff",
+   "ItemListID": "HibChampWeapons",
+   "ItemTemplateID": "MaulerDraiochtWarStaff",
+   "PageNumber": 1,
+   "SlotPosition": 13
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_mauler_dochar_fist_wrap",
+  "key": "MaulerDocharFistWrap",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-HibChampWeapons-MaulerDocharFistWrap",
+  "insert": {
+   "MerchantItem_ID": "dr508-HibChampWeapons-MaulerDocharFistWrap",
+   "ItemListID": "HibChampWeapons",
+   "ItemTemplateID": "MaulerDocharFistWrap",
+   "PageNumber": 1,
+   "SlotPosition": 14
+  }
+ },
+ {
+  "table": "ItemTemplate",
+  "copy": "champion_mauler_fuar_fist_wrap",
+  "key": "MaulerFuarFistWrap",
+  "set": {
+   "Level": 51,
+   "Price": 2500,
+   "IsDropable": 1,
+   "CanDropAsLoot": 1,
+   "IsIndestructible": 0,
+   "PackageID": "DR_ChampMerchant",
+   "Description": ""
+  }
+ },
+ {
+  "table": "MerchantItem",
+  "key": "dr508-HibChampWeapons-MaulerFuarFistWrap",
+  "insert": {
+   "MerchantItem_ID": "dr508-HibChampWeapons-MaulerFuarFistWrap",
+   "ItemListID": "HibChampWeapons",
+   "ItemTemplateID": "MaulerFuarFistWrap",
+   "PageNumber": 1,
+   "SlotPosition": 15
+  }
+ }
+]

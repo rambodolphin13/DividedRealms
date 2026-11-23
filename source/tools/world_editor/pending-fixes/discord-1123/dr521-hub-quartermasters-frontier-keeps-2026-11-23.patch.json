@@ -1,0 +1,517 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T13:08:22.150406+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "Mob",
+   "key": "add4a82a-7adb-57fc-a63e-0c532c5047be",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 36090,
+    "Y": 31285,
+    "Z": 8006,
+    "Heading": 566
+   },
+   "after": {
+    "Region": 1,
+    "X": 583684,
+    "Y": 488410,
+    "Z": 2181,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "c05e2b6f-be3b-530d-9d4e-43bb8b98a84e",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 35960,
+    "Y": 31105,
+    "Z": 8044,
+    "Heading": 0
+   },
+   "after": {
+    "Region": 1,
+    "X": 584204,
+    "Y": 488410,
+    "Z": 2184,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "ca2b3fa1-c43b-5ff0-833d-f345079e4231",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 35878,
+    "Y": 31179,
+    "Z": 8002,
+    "Heading": 3859
+   },
+   "after": {
+    "Region": 1,
+    "X": 583684,
+    "Y": 488570,
+    "Z": 2176,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "91edabc8-595a-58e4-9b26-52418db960e3",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 36070,
+    "Y": 31662,
+    "Z": 8059,
+    "Heading": 1793
+   },
+   "after": {
+    "Region": 1,
+    "X": 584204,
+    "Y": 488570,
+    "Z": 2182,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "de3d170c-f29e-5a83-91d2-6c9df542b484",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 36070,
+    "Y": 31127,
+    "Z": 8004,
+    "Heading": 254
+   },
+   "after": {
+    "Region": 1,
+    "X": 583684,
+    "Y": 488730,
+    "Z": 2173,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "2352f972-051f-507e-8fde-a3b3abc93471",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 35882,
+    "Y": 31317,
+    "Z": 8014,
+    "Heading": 3584
+   },
+   "after": {
+    "Region": 1,
+    "X": 584204,
+    "Y": 488730,
+    "Z": 2177,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "77fd3fdf-8861-5289-ad67-76b517436459",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 36165,
+    "Y": 31189,
+    "Z": 8006,
+    "Heading": 510
+   },
+   "after": {
+    "Region": 1,
+    "X": 583684,
+    "Y": 488890,
+    "Z": 2174,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "03c55374-6719-5123-a0de-327ebd433e61",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 36227,
+    "Y": 31284,
+    "Z": 8006,
+    "Heading": 767
+   },
+   "after": {
+    "Region": 1,
+    "X": 584204,
+    "Y": 488890,
+    "Z": 2172,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "b59c0f10-1a06-5824-9ac5-e9328c216168",
+   "op": "update",
+   "before": {
+    "Region": 10,
+    "X": 36070,
+    "Y": 31395,
+    "Z": 8005,
+    "Heading": 1024
+   },
+   "after": {
+    "Region": 1,
+    "X": 583684,
+    "Y": 489050,
+    "Z": 2167,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "44965e64-08ed-5497-9274-5270d0a271a6",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 29698,
+    "Y": 34060,
+    "Z": 8007,
+    "Heading": 2602
+   },
+   "after": {
+    "Region": 100,
+    "X": 764820,
+    "Y": 675280,
+    "Z": 5722,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "c15d07c1-4ffa-56c8-b888-414428baa30e",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 29900,
+    "Y": 34075,
+    "Z": 8007,
+    "Heading": 1936
+   },
+   "after": {
+    "Region": 100,
+    "X": 765340,
+    "Y": 675280,
+    "Z": 5738,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "9e29f3fe-4030-5d0c-aa2b-c0a76b782889",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 30001,
+    "Y": 33798,
+    "Z": 8014,
+    "Heading": 566
+   },
+   "after": {
+    "Region": 100,
+    "X": 764820,
+    "Y": 675440,
+    "Z": 5705,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "c0b78bce-bdf6-5f57-88dc-c7f4e728dad6",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 30101,
+    "Y": 33908,
+    "Z": 8008
+   },
+   "after": {
+    "Region": 100,
+    "X": 765340,
+    "Y": 675440,
+    "Z": 5728
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "eb81456e-39ec-55be-952a-0b15a1c0800a",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 30074,
+    "Y": 34014,
+    "Z": 8007,
+    "Heading": 1338
+   },
+   "after": {
+    "Region": 100,
+    "X": 764820,
+    "Y": 675600,
+    "Z": 5695,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "6b33df76-fcc6-5f98-9405-49b223725270",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 29789,
+    "Y": 34123,
+    "Z": 8007,
+    "Heading": 2286
+   },
+   "after": {
+    "Region": 100,
+    "X": 765340,
+    "Y": 675600,
+    "Z": 5719,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "586fcf53-81c7-5cfe-832d-3fe672177eb6",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 29647,
+    "Y": 33852,
+    "Z": 8009,
+    "Heading": 3232
+   },
+   "after": {
+    "Region": 100,
+    "X": 764820,
+    "Y": 675760,
+    "Z": 5679,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "96c2246a-75c0-50b8-8ab6-5cd47bbd6d69",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 29698,
+    "Y": 33755,
+    "Z": 8036,
+    "Heading": 3544
+   },
+   "after": {
+    "Region": 100,
+    "X": 765340,
+    "Y": 675760,
+    "Z": 5712,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "74a7ae79-8c77-54c4-a333-37d03c3891f2",
+   "op": "update",
+   "before": {
+    "Region": 101,
+    "X": 29793,
+    "Y": 33985,
+    "Z": 8007,
+    "Heading": 2564
+   },
+   "after": {
+    "Region": 100,
+    "X": 764820,
+    "Y": 676080,
+    "Z": 5686,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "4b5cc398-fcf6-5102-898b-79bb342a2410",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 27762,
+    "Y": 33446,
+    "Z": 7023,
+    "Heading": 77
+   },
+   "after": {
+    "Region": 200,
+    "X": 334540,
+    "Y": 422360,
+    "Z": 5214,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "6b98096c-04c7-58cf-8c01-8290d1293f9a",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 28025,
+    "Y": 33675,
+    "Z": 7023
+   },
+   "after": {
+    "Region": 200,
+    "X": 335060,
+    "Y": 422360,
+    "Z": 5226
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "9976042a-85ad-53ef-89d9-0477d86e73de",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 27529,
+    "Y": 33469,
+    "Z": 6973,
+    "Heading": 3584
+   },
+   "after": {
+    "Region": 200,
+    "X": 334540,
+    "Y": 422520,
+    "Z": 5218,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "0d3b7133-eff0-53af-8f11-031de7be9cdf",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 28066,
+    "Y": 33561,
+    "Z": 7023,
+    "Heading": 808
+   },
+   "after": {
+    "Region": 200,
+    "X": 335060,
+    "Y": 422520,
+    "Z": 5234,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "b6750a75-c87a-5781-bf2c-34e226811f29",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 28093,
+    "Y": 33456,
+    "Z": 7023,
+    "Heading": 666
+   },
+   "after": {
+    "Region": 200,
+    "X": 334540,
+    "Y": 422680,
+    "Z": 5215,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "1aa512cb-cb71-5adc-abc7-6f16129a4ced",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 28185,
+    "Y": 33458,
+    "Z": 7023,
+    "Heading": 731
+   },
+   "after": {
+    "Region": 200,
+    "X": 335060,
+    "Y": 422680,
+    "Z": 5236,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "bab4599b-f8ce-501e-b12b-ff57a2c5764f",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 28222,
+    "Y": 33563,
+    "Z": 7023,
+    "Heading": 877
+   },
+   "after": {
+    "Region": 200,
+    "X": 334540,
+    "Y": 422840,
+    "Z": 5202,
+    "Heading": 3072
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "98e8f513-eba6-5f6d-a31d-2a8df6263332",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 28324,
+    "Y": 33564,
+    "Z": 7023,
+    "Heading": 903
+   },
+   "after": {
+    "Region": 200,
+    "X": 335060,
+    "Y": 422840,
+    "Z": 5235,
+    "Heading": 1024
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "7ec445fc-4bed-5b53-9910-f41a90556fec",
+   "op": "update",
+   "before": {
+    "Region": 201,
+    "X": 27735,
+    "Y": 33565,
+    "Z": 7023,
+    "Heading": 0
+   },
+   "after": {
+    "Region": 200,
+    "X": 334540,
+    "Y": 423000,
+    "Z": 5193,
+    "Heading": 3072
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

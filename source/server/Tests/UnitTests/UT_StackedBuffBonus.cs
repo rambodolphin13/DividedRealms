@@ -71,6 +71,9 @@ namespace DOL.UnitTests
             public override int MaxMana => 1000;
             public override int MaxEndurance => 100;
             public override int GetModified(eProperty p) => p == eProperty.SpellRange ? 100 : 0;
+            // DR-518: bots get spec effectiveness like players; spec 26 on a level 50 spec chant is exactly x1.0
+            // (0.75 + 25 * 0.5 / 50), the companion value these tests were written around.
+            public override int GetModifiedSpecLevel(string keyName) => 26;
             public override void StartHealthRegeneration() { }
             public override void StartPowerRegeneration() { }
             public override void StartEnduranceRegeneration() { }
@@ -319,8 +322,8 @@ namespace DOL.UnitTests
 
         // #190, the older gap on the same path: a chain of renewed children keeps the bonus its FIRST child added
         // (Spell.Value * first.Effectiveness), but its LAST child took off Spell.Value * last.Effectiveness. A
-        // GamePlayer's spec scales a spec buff (0.75 to 1.25, SingleStatBuff.CalculateBuffDebuffEffectiveness); an
-        // NPC or a GameBot casts it at 1.0. So the owner's own Crusader's Protection and a companion's handing over
+        // GamePlayer's or GameBot's spec scales a spec buff (0.75 to 1.25, SingleStatBuff.CalculateBuffDebuffEffectiveness;
+        // the test companion has spec 26, so x1.0). So the owner's own Crusader's Protection and a companion's handing over
         // left armor factor off by the difference until a relog. Here the owner (Chants 50 on a level 50 chant:
         // x1.24, 122 AF) and a companion (x1.0, 99 AF) both chant 1037 on the owner.
         [TestCase(true, false, TestName = "AfChantHandOver_OwnerFirst_CompanionRenewsLater")]

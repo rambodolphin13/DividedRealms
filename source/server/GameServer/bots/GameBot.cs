@@ -5192,10 +5192,12 @@ namespace DOL.GS
             if (Inventory == null || CharacterClass == null || BotSpec == null)
                 return false;
 
-            if (CharacterClass.ID == (int)eCharacterClass.Savage)
-                return EnsureSavageWeaponReady();
+            // DR-516: an account companion keeps the weapons its player equipped (DR-391), Savages included; the
+            // gamebot Savage rules below put a companion's left-hand hand-to-hand weapon in its backpack.
             if (IsAccountCompanion)
                 return ReadyCompanionWeapon();
+            if (CharacterClass.ID == (int)eCharacterClass.Savage)
+                return EnsureSavageWeaponReady();
 
             eInventorySlot target = PrimaryWeaponUsesTwoHands
                 ? eInventorySlot.TwoHandWeapon : eInventorySlot.RightHandWeapon;
@@ -5507,9 +5509,12 @@ namespace DOL.GS
             }
         }
 
+        // DR-516: an account companion Savage swings the left-hand hand-to-hand weapon its player equipped, whatever
+        // build plan it was given.
         public override DbInventoryItem ActiveLeftWeapon =>
             CharacterClass?.ID == (int)eCharacterClass.Savage &&
-            (BotSpec?.WeaponOneType != eObjectType.HandToHand ||
+            (BotSpec?.WeaponOneType != eObjectType.HandToHand &&
+             !(IsAccountCompanion && base.ActiveLeftWeapon?.Object_Type == (int)eObjectType.HandToHand) ||
              !BotWeaponStats.FitsConfiguredSlot(this, base.ActiveLeftWeapon, eInventorySlot.LeftHandWeapon))
                 ? null : base.ActiveLeftWeapon;
 

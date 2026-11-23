@@ -26,7 +26,8 @@ namespace DOL.GS.Spells
             if (Caster is not GamePlayer player)
                 return false;
 
-            if ((((player.CurrentZone != null && player.CurrentZone.IsRvR) || (player.CurrentRegion != null && player.CurrentRegion.IsInstance)) && GameServer.Instance.Configuration.ServerType != EGameServerType.GST_PvE) ||
+            // DR-514: a GM (PrivLevel above 1) may recall from anywhere, also in combat; moving still interrupts the cast.
+            if (!IsGm(player) && (((player.CurrentZone != null && player.CurrentZone.IsRvR) || (player.CurrentRegion != null && player.CurrentRegion.IsInstance)) && GameServer.Instance.Configuration.ServerType != EGameServerType.GST_PvE) ||
                 (player.CurrentRegion.ID == 497 && player.Client.Account.PrivLevel == 1)) // Jail.
             {
                 // Actual live message is: You can't use that item!
@@ -40,7 +41,7 @@ namespace DOL.GS.Spells
                 return false;
             }
 
-            if (player.InCombat || GameRelic.IsPlayerCarryingRelic(player))
+            if (player.InCombat && !IsGm(player) || GameRelic.IsPlayerCarryingRelic(player))
             {
                 SendInCombatMessage(player);
                 return false;
@@ -54,7 +55,7 @@ namespace DOL.GS.Spells
             if (Caster is not GamePlayer player)
                 return false;
 
-            if (player.InCombat || GameRelic.IsPlayerCarryingRelic(player))
+            if (player.InCombat && !IsGm(player) || GameRelic.IsPlayerCarryingRelic(player))
             {
                 SendInCombatMessage(player);
                 return false;
@@ -104,6 +105,8 @@ namespace DOL.GS.Spells
                 return list;
             }
         }
+
+        private static bool IsGm(GamePlayer player) => player.Client?.Account?.PrivLevel > 1;
 
         private static void SendInCombatMessage(GamePlayer player)
         {
