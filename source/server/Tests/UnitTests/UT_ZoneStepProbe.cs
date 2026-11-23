@@ -62,6 +62,52 @@ namespace DOL.UnitTests
         }
 
         /// <summary>
+        /// DR-091: the floor a heightless quest point resolves to (AutonomousNavigationSurface.WalkableFloorUnder), against
+        /// the old nearest-floor choice. OFFLINE_DAOC_FLOOR_POINTS = "x,y,nearZ;...", zones and root as above.
+        /// </summary>
+        [Test]
+        public void ProbeWalkableFloors()
+        {
+            string root = Environment.GetEnvironmentVariable("OFFLINE_DAOC_NAV_ROOT");
+            string output = Environment.GetEnvironmentVariable("OFFLINE_DAOC_PROOF_OUT");
+            string zoneSpec = Environment.GetEnvironmentVariable("OFFLINE_DAOC_ZONES");
+            string points = Environment.GetEnvironmentVariable("OFFLINE_DAOC_FLOOR_POINTS");
+            Assume.That(root != null && output != null && zoneSpec != null && points != null);
+            string previous = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = root;
+            var nav = PathfindingProvider.LocalPathfindingMgr;
+            var lines = new List<string>();
+            var zones = zoneSpec.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(item =>
+            {
+                int[] v = item.Split(':').Select(int.Parse).ToArray();
+                return new Zone(null, (ushort)v[0], $"zone{v[0]}", v[1], v[2], v[3], v[4], (ushort)v[0], false, 0, false, 0, 0, 0, 0, 0);
+            }).ToList();
+            try
+            {
+                foreach (Zone zone in zones) LocalPathfindingMgr.LoadNavMesh(zone);
+                foreach (string item in points.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    float[] v = item.Split(',').Select(float.Parse).ToArray();
+                    Zone zone = zones.FirstOrDefault(z => v[0] >= z.XOffset && v[0] < z.XOffset + z.Width && v[1] >= z.YOffset && v[1] < z.YOffset + z.Height);
+                    Vector3? old = nav.GetClosestPoint(zone, new Vector3(v[0], v[1], v[2]), 300, 300, 8_000, nav.DefaultFilters);
+                    Vector3? chosen = AutonomousNavigationSurface.WalkableFloorUnder(nav, zone, v[0], v[1], v[2],
+                        ushort.Parse(Environment.GetEnvironmentVariable("OFFLINE_DAOC_REGION") ?? "0"));
+                    ushort probeRegion = ushort.Parse(Environment.GetEnvironmentVariable("OFFLINE_DAOC_REGION") ?? "0");
+                    lines.Add($"{item} zone {zone?.ID}: nearest {old} (area {(old is Vector3 o ? AutonomousZoneRoads.AreaAt(zone, o) : null)}) -> walkable {chosen} " +
+                              $"(area {(chosen is Vector3 c ? AutonomousZoneRoads.AreaAt(zone, c) : null)}); main area {AutonomousZoneSeams.MainArea(probeRegion, zone.ID)}; " +
+                              $"roads {AutonomousZoneRoads.FilePath} covers {AutonomousZoneRoads.Covers(zone)}");
+                }
+            }
+            finally
+            {
+                foreach (Zone zone in zones) LocalPathfindingMgr.UnloadNavMesh(zone);
+                Environment.CurrentDirectory = previous;
+            }
+            File.WriteAllLines(output, lines);
+            TestContext.Progress.WriteLine(lines.FirstOrDefault() ?? "no points");
+        }
+
+        /// <summary>
         /// Whole trips: each start-goal pair is planned crossing by crossing, as a bot walks it (each step's far
         /// side is the next start), until the goal's zone is reached or a step fails (at most 16 crossings). In the
     /// goal's zone the server's corridor check must reach the goal itself.

@@ -38,6 +38,46 @@ public static class AutonomousNavigationSurface
     // Repair stale imported/interpolated Z, not horizontal path obstruction.
     // A wide nearest-poly search can select a table, another floor, or the far
     // side of a wall. Keep XY effectively fixed and retain bounded vertical range.
+    /// <summary>
+    /// The floor to stand on at a point given without a height (a quest walkthrough or search area). The floor nearest the
+    /// bot's own height was used before, which picked a roof above the spot whenever the bot came from higher ground: the
+    /// Looking Ahead search beside the East Svealand armor merchant (ground 4567) became the roof at 4834-4900, no route
+    /// reached it, and bots cycled across the zone border for minutes (DR-091, 60 cycles in 13 h). Every distinct floor
+    /// under the point within 2,000 units of nearZ is found. The nearest one on the zone's main ground (road graph area
+    /// = the seam file's main area) wins; without area data the nearest with a way out (HasLocalExit); else the nearest
+    /// floor as before. The roof there is itself a 512-unit surface with a way out, so only the area tells them apart.
+    /// </summary>
+    public static Vector3? WalkableFloorUnder(IPathfindingMgr nav, Zone zone, float x, float y, float nearZ, ushort regionId = 0)
+    {
+        if (zone == null || !nav.IsAvailable || !nav.HasNavmesh(zone)) return null;
+        Vector3? nearest = nav.GetClosestPoint(zone, new Vector3(x, y, nearZ), 300, 300, 8_000, nav.DefaultFilters);
+        var floors = new List<Vector3>();
+        if (nearest is Vector3 n) floors.Add(n);
+        for (float dz = -2000; dz <= 2000; dz += 250)
+        {
+            if (nav.GetClosestPoint(zone, new Vector3(x, y, nearZ + dz), 300, 300, 160, nav.DefaultFilters) is not Vector3 f) continue;
+            if (floors.All(known => Math.Abs(known.Z - f.Z) > 48 || Vector2.Distance(new(known.X, known.Y), new(f.X, f.Y)) > 96))
+                floors.Add(f);
+            if (floors.Count >= 5) break;
+        }
+        if (floors.Count <= 1) return nearest;
+        var byHeight = floors.OrderBy(f => Math.Abs(f.Z - nearZ)).ToList();
+        ushort region = regionId != 0 ? regionId : zone.ZoneRegion?.ID ?? 0;
+        if (AutonomousZoneSeams.MainArea(region, zone.ID) is int main)
+        {
+            // A floor on the main ground: a real corridor runs to it from a nearby main-area road anchor. (The anchor's
+            // area alone cannot tell: the roof and the street below share the same nearest anchor.)
+            IReadOnlyList<Vector3> anchors = AutonomousZoneRoads.AnchorsNear(zone, byHeight[0], main, 3);
+            foreach (Vector3 floor in byHeight)
+                if (anchors.Any(anchor => AutonomousZoneItinerary.HasCompleteCorridor(nav, zone, anchor, floor)))
+                    return floor;
+        }
+        foreach (Vector3 floor in byHeight)
+            if (AutonomousRendezvousNavigation.HasLocalExit(nav, zone, floor))
+                return floor;
+        return nearest;
+    }
+
     public static bool TryFloor(IPathfindingMgr nav, Zone zone, Vector3 position, out Vector3 floor)
     {
         floor = position;
