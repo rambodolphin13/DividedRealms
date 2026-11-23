@@ -107,7 +107,11 @@ namespace DOL.GS.Trials
         public void Tell(string message)
         {
             foreach (GamePlayer player in PartyPlayers.Where(player => player.ObjectState == GameObject.eObjectState.Active))
+            {
                 player.Out.SendMessage(message, eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+                // DR-529: trial (dungeon) lines also stay in the chat window.
+                player.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            }
         }
 
         public TrialMob Spawn(TrialMobSpec spec)

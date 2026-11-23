@@ -313,6 +313,8 @@ namespace DOL.GS
                             ? $"Your attack on {alarm.Keep.Name} has raised the alarm! {rally}"
                             : $"{GlobalConstants.RealmToName(alarm.Keep.Realm)} answers your growing army at {alarm.Keep.Name}! {rally}";
                         DefenseWarnings[pair.Key] = new(alarm.Player, text, now + 15_000, now);
+                        // DR-529: the centre line fades after a few seconds; keep one copy in the chat window.
+                        alarm.Player.Out.SendMessage(text, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                         if (DefenseHornSound > 0) alarm.Player.Out.SendSoundEffect((ushort)DefenseHornSound, 0, 0, 0, 0, 0);
                         DOL.Logging.LoggerManager.Create(typeof(AutonomousRvrEventLayer)).Info(
                             $"PLAYER_KEEP_DEFENSE_SIZED event={pair.Key} keep=\"{alarm.Keep.Name}\" force={alarm.ForceSize} scale={active.DefenseScale} " +

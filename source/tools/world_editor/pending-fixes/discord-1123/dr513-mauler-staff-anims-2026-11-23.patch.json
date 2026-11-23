@@ -1,0 +1,294 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T13:02:27.749173+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "Style",
+   "key": 1864,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 70
+   },
+   "after": {
+    "TwoHandAnimation": 495
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1865,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 70
+   },
+   "after": {
+    "TwoHandAnimation": 495
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1867,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 496
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1868,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 496
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1870,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 71
+   },
+   "after": {
+    "TwoHandAnimation": 497
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1871,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 71
+   },
+   "after": {
+    "TwoHandAnimation": 497
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1876,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 499
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1877,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 499
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1879,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 72
+   },
+   "after": {
+    "TwoHandAnimation": 500
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1880,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 72
+   },
+   "after": {
+    "TwoHandAnimation": 500
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1885,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 70
+   },
+   "after": {
+    "TwoHandAnimation": 502
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1886,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 70
+   },
+   "after": {
+    "TwoHandAnimation": 502
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1891,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 72
+   },
+   "after": {
+    "TwoHandAnimation": 504
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1892,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 72
+   },
+   "after": {
+    "TwoHandAnimation": 504
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1894,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 505
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1895,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 505
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1897,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 506
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1898,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 506
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1900,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 507
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1901,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 507
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1903,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 508
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1904,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 508
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1906,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 509
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1907,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 509
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1909,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 510
+   }
+  },
+  {
+   "table": "Style",
+   "key": 1910,
+   "op": "update",
+   "before": {
+    "TwoHandAnimation": 73
+   },
+   "after": {
+    "TwoHandAnimation": 510
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

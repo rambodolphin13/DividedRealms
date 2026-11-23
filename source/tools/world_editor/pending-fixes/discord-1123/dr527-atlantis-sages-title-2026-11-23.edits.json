@@ -1,0 +1,7 @@
+[
+  {"table": "Mob", "where": {"Name": "Sage Cothric", "Region": 130}, "set": {"Guild": ""}},
+  {"table": "Mob", "where": {"Name": "Sage Kenna", "Region": 130}, "set": {"Guild": ""}},
+  {"table": "Mob", "where": {"Name": "Sage Mugain", "Region": 130}, "set": {"Guild": ""}},
+  {"table": "Mob", "where": {"Name": "Sage Vzran", "Region": 130}, "set": {"Guild": ""}},
+  {"table": "NpcTemplate", "where": {"TemplateId": 60165538}, "set": {"GuildName": ""}}
+]

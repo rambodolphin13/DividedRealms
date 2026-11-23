@@ -30,19 +30,24 @@ namespace DOL.GS
 
             try
             {
-                GameLiving owner = context.Owner;
-
-                if (owner == null || mob.CurrentRegionID != DarknessFallsRegion || mob.Realm != eRealm.None ||
-                    mob.Level < ServerProperties.Properties.LOOTGENERATOR_DF_WEAPON_MIN_LEVEL || owner.GetConLevel(mob) <= -3)
+                if (context.Owner == null || mob.CurrentRegionID != DarknessFallsRegion || mob.Realm != eRealm.None ||
+                    mob.Level < ServerProperties.Properties.LOOTGENERATOR_DF_WEAPON_MIN_LEVEL)
                     return loot;
 
-                if (!Util.Chance(DropChance(mob) / 100.0))
-                    return loot;
+                // DR-510: every loot participant (the player and grouped account companions) rolls for itself,
+                // with its own con and a weapon for its own class, like the personal ROG rolls.
+                double chance = DropChance(mob) / 100.0;
 
-                DbItemTemplate weapon = PickWeapon(owner.Realm, ClassIdOf(owner));
+                foreach (GameLiving member in context.Participants)
+                {
+                    if (member.GetConLevel(mob) <= -3 || !Util.Chance(chance))
+                        continue;
 
-                if (weapon != null)
-                    loot.AddFixed(weapon, 1);
+                    DbItemTemplate weapon = PickWeapon(member.Realm, ClassIdOf(member));
+
+                    if (weapon != null)
+                        loot.AddFixed(weapon, 1, member);
+                }
             }
             catch
             {

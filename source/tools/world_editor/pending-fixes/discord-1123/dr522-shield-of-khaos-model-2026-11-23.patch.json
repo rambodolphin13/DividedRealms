@@ -1,0 +1,19 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T13:03:27.008875+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "ItemTemplate",
+   "key": "Shield_Of_Khaos",
+   "op": "update",
+   "before": {
+    "Model": 1664
+   },
+   "after": {
+    "Model": 1665
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

@@ -4123,7 +4123,10 @@ namespace DOL.AI.Brain
                 if (other == null || other == spell || !other.IsHarmful || other.Level > casterLevel ||
                     !BotCasterPriority.IsDamage(other))
                     continue;
-                best = Math.Max(best, other.Level);
+                // DR-519: the "under half the best level" rule compares spells of the same shape only. A Darkness 50 /
+                // Suppression 20 Spiritmaster dropped its level 20 area nuke next to a level 50 single-target nuke.
+                if ((other.Radius > 0) == (spell.Radius > 0) && other.IsPBAoE == spell.IsPBAoE)
+                    best = Math.Max(best, other.Level);
                 if (chain)
                 {
                     if (other.SpellType == eSpellType.WarlockChainDot && other.Level > spell.Level &&
@@ -4298,6 +4301,8 @@ namespace DOL.AI.Brain
                 else if (twoHandHeals && !oneHandHeals) twoHandUsable = false;
             }
             bool preferTwoHand = PreferTwoHandedSlot(twoHandUsable, oneHandUsable,
+                // DR-525: an account companion holding both sets uses the one it trained higher, not its plan's.
+                BotBody.IsAccountCompanion ? BotBody.CompanionPrefersTwoHand() :
                 BotBody.BotSpec?.Is2H == true ||
                 // An account companion holds what its player gave it: a Healer handed a hammer and shield keeps them out
                 // instead of drawing the two-hander also in its slots because its class is a caster (DR-500).

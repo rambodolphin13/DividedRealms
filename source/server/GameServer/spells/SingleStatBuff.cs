@@ -22,6 +22,8 @@ namespace DOL.GS.Spells
         {
             double effectiveness;
             GamePlayer playerCaster = Caster as GamePlayer;
+            // DR-518: player-like bots (companions, gamebots) get the same spec effectiveness as players.
+            IGamePlayer specCaster = Caster as IGamePlayer;
 
             if (SpellLine.KeyName is GlobalSpellsLines.Potions_Effects or GlobalSpellsLines.Item_Effects or GlobalSpellsLines.Combat_Styles_Effect or GlobalSpellsLines.Realm_Spells || Spell.Level <= 0)
                 effectiveness = 1.0;
@@ -32,6 +34,8 @@ namespace DOL.GS.Spells
 
                 if (playerCaster != null)
                     effectiveness = CalculateEffectivenessFromSpec(playerCaster.GetModifiedSpecLevel(m_spellLine.Spec), Spell.Level);
+                else if (specCaster != null)
+                    effectiveness = CalculateEffectivenessFromSpec(specCaster.GetModifiedSpecLevel(m_spellLine.Spec), Spell.Level);
                 else
                     effectiveness = 1.0; // NPC (necromancer pet excluded).
             }

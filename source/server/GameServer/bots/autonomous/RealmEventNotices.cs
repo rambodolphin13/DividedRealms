@@ -62,7 +62,7 @@ namespace DOL.GS
             }
         }
 
-        // Realm-wide one-line announcements at the top of the screen (no sound, not in the chat box),
+        // Realm-wide one-line announcements at the top of the screen, also copied to the chat box (DR-529),
         // for the moment a siege begins. Sent from Pulse, never while an event lock is held.
         private static readonly Dictionary<(string, eRealm), (string Text, AnnouncementKind Kind, int Sound)> PendingScreen = new();
 
@@ -100,6 +100,8 @@ namespace DOL.GS
                     foreach (GamePlayer player in players)
                     {
                         player.Out.SendMessage(notice.Value.Text, PacketHandler.eChatType.CT_ScreenCenter, PacketHandler.eChatLoc.CL_SystemWindow);
+                        // DR-529: the centre line fades after a few seconds; keep a copy in the chat window.
+                        player.Out.SendMessage(notice.Value.Text, PacketHandler.eChatType.CT_Important, PacketHandler.eChatLoc.CL_SystemWindow);
                         if (notice.Value.Sound > 0)
                             player.Out.SendSoundEffect((ushort)notice.Value.Sound, 0, 0, 0, 0, 0);
                     }
