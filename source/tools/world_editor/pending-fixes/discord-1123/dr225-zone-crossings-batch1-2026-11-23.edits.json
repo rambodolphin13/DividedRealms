@@ -1,0 +1,182 @@
+[
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-80-1",
+   "Id": 80,
+   "Realm": 1,
+   "SourceRegion": 1,
+   "SourceX": 506438,
+   "SourceY": 308952,
+   "SourceZ": 7023,
+   "TargetRegion": 249,
+   "TargetX": 31211,
+   "TargetY": 27924,
+   "TargetZ": 22893,
+   "TargetHeading": 3072,
+   "ClassType": "DOL.GS.ServerRules.DFEnterJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-106-0",
+   "Id": 106,
+   "Realm": 0,
+   "SourceRegion": 61,
+   "SourceX": 29912,
+   "SourceY": 28493,
+   "SourceZ": 13603,
+   "TargetRegion": 51,
+   "TargetX": 386877,
+   "TargetY": 479749,
+   "TargetZ": 3668,
+   "TargetHeading": 180,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-642-2",
+   "Id": 642,
+   "Realm": 2,
+   "SourceRegion": 100,
+   "SourceX": 659762,
+   "SourceY": 740953,
+   "SourceZ": 6000,
+   "TargetRegion": 334,
+   "TargetX": 23184,
+   "TargetY": 39937,
+   "TargetZ": 4662,
+   "TargetHeading": 2218,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-643-2",
+   "Id": 643,
+   "Realm": 2,
+   "SourceRegion": 334,
+   "SourceX": 22896,
+   "SourceY": 40437,
+   "SourceZ": 0,
+   "TargetRegion": 100,
+   "TargetX": 659762,
+   "TargetY": 741965,
+   "TargetZ": 5979,
+   "TargetHeading": 3800,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-648-2",
+   "Id": 648,
+   "Realm": 2,
+   "SourceRegion": 100,
+   "SourceX": 758727,
+   "SourceY": 699623,
+   "SourceZ": 6483,
+   "TargetRegion": 334,
+   "TargetX": 55650,
+   "TargetY": 49875,
+   "TargetZ": 5472,
+   "TargetHeading": 432,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-649-2",
+   "Id": 649,
+   "Realm": 2,
+   "SourceRegion": 334,
+   "SourceX": 56262,
+   "SourceY": 48720,
+   "SourceZ": 4450,
+   "TargetRegion": 100,
+   "TargetX": 759111,
+   "TargetY": 700099,
+   "TargetZ": 6363,
+   "TargetHeading": 3629,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-644-1",
+   "Id": 644,
+   "Realm": 1,
+   "SourceRegion": 1,
+   "SourceX": 488451,
+   "SourceY": 414886,
+   "SourceZ": 8903,
+   "TargetRegion": 330,
+   "TargetX": 23454,
+   "TargetY": 38658,
+   "TargetZ": 4718,
+   "TargetHeading": 2366,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-645-1",
+   "Id": 645,
+   "Realm": 1,
+   "SourceRegion": 330,
+   "SourceX": 23388,
+   "SourceY": 38973,
+   "SourceZ": 4742,
+   "TargetRegion": 1,
+   "TargetX": 488252,
+   "TargetY": 414276,
+   "TargetZ": 8784,
+   "TargetHeading": 2082,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-658-1",
+   "Id": 658,
+   "Realm": 1,
+   "SourceRegion": 1,
+   "SourceX": 488633,
+   "SourceY": 378443,
+   "SourceZ": 6227,
+   "TargetRegion": 330,
+   "TargetX": 54811,
+   "TargetY": 48463,
+   "TargetZ": 4260,
+   "TargetHeading": 261,
+   "ClassType": ""
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr225-659-1",
+   "Id": 659,
+   "Realm": 1,
+   "SourceRegion": 330,
+   "SourceX": 54929,
+   "SourceY": 47982,
+   "SourceZ": 4200,
+   "TargetRegion": 1,
+   "TargetX": 488697,
+   "TargetY": 378902,
+   "TargetZ": 6231,
+   "TargetHeading": 11,
+   "ClassType": ""
+  }
+ }
+]

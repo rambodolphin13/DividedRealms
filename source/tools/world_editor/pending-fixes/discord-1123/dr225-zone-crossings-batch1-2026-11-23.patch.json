@@ -1,0 +1,228 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T17:17:29.467825+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "ZonePoint",
+   "key": "dr225-80-1",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 80,
+    "TargetX": 31211,
+    "TargetY": 27924,
+    "TargetZ": 22893,
+    "TargetRegion": 249,
+    "TargetHeading": 3072,
+    "SourceX": 506438,
+    "SourceY": 308952,
+    "SourceZ": 7023,
+    "SourceRegion": 1,
+    "Realm": 1,
+    "ClassType": "DOL.GS.ServerRules.DFEnterJumpPoint",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-80-1"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-106-0",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 106,
+    "TargetX": 386877,
+    "TargetY": 479749,
+    "TargetZ": 3668,
+    "TargetRegion": 51,
+    "TargetHeading": 180,
+    "SourceX": 29912,
+    "SourceY": 28493,
+    "SourceZ": 13603,
+    "SourceRegion": 61,
+    "Realm": 0,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-106-0"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-642-2",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 642,
+    "TargetX": 23184,
+    "TargetY": 39937,
+    "TargetZ": 4662,
+    "TargetRegion": 334,
+    "TargetHeading": 2218,
+    "SourceX": 659762,
+    "SourceY": 740953,
+    "SourceZ": 6000,
+    "SourceRegion": 100,
+    "Realm": 2,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-642-2"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-643-2",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 643,
+    "TargetX": 659762,
+    "TargetY": 741965,
+    "TargetZ": 5979,
+    "TargetRegion": 100,
+    "TargetHeading": 3800,
+    "SourceX": 22896,
+    "SourceY": 40437,
+    "SourceZ": 0,
+    "SourceRegion": 334,
+    "Realm": 2,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-643-2"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-648-2",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 648,
+    "TargetX": 55650,
+    "TargetY": 49875,
+    "TargetZ": 5472,
+    "TargetRegion": 334,
+    "TargetHeading": 432,
+    "SourceX": 758727,
+    "SourceY": 699623,
+    "SourceZ": 6483,
+    "SourceRegion": 100,
+    "Realm": 2,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-648-2"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-649-2",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 649,
+    "TargetX": 759111,
+    "TargetY": 700099,
+    "TargetZ": 6363,
+    "TargetRegion": 100,
+    "TargetHeading": 3629,
+    "SourceX": 56262,
+    "SourceY": 48720,
+    "SourceZ": 4450,
+    "SourceRegion": 334,
+    "Realm": 2,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-649-2"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-644-1",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 644,
+    "TargetX": 23454,
+    "TargetY": 38658,
+    "TargetZ": 4718,
+    "TargetRegion": 330,
+    "TargetHeading": 2366,
+    "SourceX": 488451,
+    "SourceY": 414886,
+    "SourceZ": 8903,
+    "SourceRegion": 1,
+    "Realm": 1,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-644-1"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-645-1",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 645,
+    "TargetX": 488252,
+    "TargetY": 414276,
+    "TargetZ": 8784,
+    "TargetRegion": 1,
+    "TargetHeading": 2082,
+    "SourceX": 23388,
+    "SourceY": 38973,
+    "SourceZ": 4742,
+    "SourceRegion": 330,
+    "Realm": 1,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-645-1"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-658-1",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 658,
+    "TargetX": 54811,
+    "TargetY": 48463,
+    "TargetZ": 4260,
+    "TargetRegion": 330,
+    "TargetHeading": 261,
+    "SourceX": 488633,
+    "SourceY": 378443,
+    "SourceZ": 6227,
+    "SourceRegion": 1,
+    "Realm": 1,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-658-1"
+   }
+  },
+  {
+   "table": "ZonePoint",
+   "key": "dr225-659-1",
+   "op": "insert",
+   "before": {},
+   "after": {
+    "Id": 659,
+    "TargetX": 488697,
+    "TargetY": 378902,
+    "TargetZ": 6231,
+    "TargetRegion": 1,
+    "TargetHeading": 11,
+    "SourceX": 54929,
+    "SourceY": 47982,
+    "SourceZ": 4200,
+    "SourceRegion": 330,
+    "Realm": 1,
+    "ClassType": "",
+    "LastTimeRowUpdated": "2000-01-01 00:00:00",
+    "ZonePoint_ID": "dr225-659-1"
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
