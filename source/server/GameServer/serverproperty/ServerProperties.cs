@@ -791,6 +791,12 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("world", "enable_zone_bonuses", "Are Zone Bonuses Enabled? (DR-197: the Zones table holds live's fixed bonuses: classic and Shrouded Isles +50% XP and +100% coin, RvR areas +100% XP and coin, Darkness Falls +150% XP and coin and +50% RP)", true)]
 		public static bool ENABLE_ZONE_BONUSES;
 
+		[ServerProperty("world", "enable_rest_experience", "Rest experience (live 1.94, DR-196): characters gather bonus experience while logged out for an hour or more, paid on kills up to the kill's base experience; /rested shows it.", true)]
+		public static bool ENABLE_REST_EXPERIENCE;
+
+		[ServerProperty("world", "rest_experience_away_factor", "Share of the full rest experience rate a character gets when it logged out outside a capital city (live: capitals are 'Restful Nodes', elsewhere a lower, unstated rate). 0.5 = half.", 0.5)]
+		public static double REST_EXPERIENCE_AWAY_FACTOR;
+
 		[ServerProperty("world", "zone_bonus_rotation", "Atlas-style rotating bonus zones (one PvE zone per realm every 2 h, one realm's frontier every 45 min). It rewrites the Zones table's bonuses and clears them at shutdown, so it replaces live's fixed zone bonuses. Off by default (DR-197).", false)]
 		public static bool ZONE_BONUS_ROTATION;
 

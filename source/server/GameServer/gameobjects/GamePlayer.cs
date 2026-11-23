@@ -4510,12 +4510,23 @@ namespace DOL.GS
 
                 baseXp = (long) (baseXp * LevelRangeXpRates.PlayerRate(Level, CurrentRegion.IsRvR || CurrentZone.IsRvR));
 
+                // DR-196: rest experience pays the kill's base experience again (at the server's experience rate, before
+                // zone, group, buff or item bonuses), up to the pool.
+                long restBonus = arguments.XPSource is eXPSource.NPC or eXPSource.Player
+                    ? RestExperience.TakeKillBonus(this, baseXp) : 0;
+
                 long xpBonus = GetModified(eProperty.XpPoints);
 
                 if (xpBonus != 0)
                     baseXp += baseXp * xpBonus / 100;
 
                 expTotal += baseXp;
+
+                if (restBonus > 0)
+                {
+                    expTotal += restBonus;
+                    Out.SendMessage($"You gain an additional {restBonus:N0} experience points from rest experience.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                }
             }
 
             // Get Champion Experience too
@@ -10848,6 +10859,7 @@ namespace DOL.GS
                 GameServer.Database.SaveObject(DBCharacter);
                 Inventory.SaveIntoDatabase(InternalID);
                 LootBadLuckStore.Save(this); // random item bad luck kept across logins (loot-rules SaveBadLuck)
+                RestExperience.Save(this); // DR-196 rest experience pool
 
                 DbCoreCharacter cachedCharacter = null;
 
