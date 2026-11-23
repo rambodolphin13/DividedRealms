@@ -1,0 +1,2015 @@
+[
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 0
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 1
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 2
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 3
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 4
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 6
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 7
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 8
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 9
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 10
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 11
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 12
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 14
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 15
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 19
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 20
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 21
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 22
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 23
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 24
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 50
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 51
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 52
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 53
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 54
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 55
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 56
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 57
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 60
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 61
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 62
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 65
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 66
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 67
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 68
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 69
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 92
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 93
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 98
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 100
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 101
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 102
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 103
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 104
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 105
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 106
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 107
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 108
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 109
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 111
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 112
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 113
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 115
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 116
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 125
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 126
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 127
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 128
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 129
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 149
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 150
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 151
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 152
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 153
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 154
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 155
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 156
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 157
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 158
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 160
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 161
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 163
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 164
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 165
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 166
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 167
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 168
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 169
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 170
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 171
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 172
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 173
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 174
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 175
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 176
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 177
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 178
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 180
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 181
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 182
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 183
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 184
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 185
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 186
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 187
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 188
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 190
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 191
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 196
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 200
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 201
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 202
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 203
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 204
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 205
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 206
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 207
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 208
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 210
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 211
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 212
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 214
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 216
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 220
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 221
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 222
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 223
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 224
+  },
+  "set": {
+   "Experience": 50,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 227
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 228
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 229
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 233
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 234
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 235
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 236
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 237
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 238
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 239
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 240
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 241
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 242
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 244
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 245
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 246
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 247
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 248
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 249
+  },
+  "set": {
+   "Experience": 150,
+   "Realmpoints": 50,
+   "Bountypoints": 0,
+   "Coin": 150
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 250
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 251
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 252
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 253
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 254
+  },
+  "set": {
+   "Experience": 100,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 100
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 276
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 277
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 296
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 297
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 298
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 326
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 335
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 340
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 352
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 356
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 376
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 377
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 379
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 382
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 383
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 386
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 387
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 388
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 390
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 395
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 396
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 397
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 415
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 443
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "Zones",
+  "where": {
+   "ZoneID": 489
+  },
+  "set": {
+   "Experience": 0,
+   "Realmpoints": 0,
+   "Bountypoints": 0,
+   "Coin": 0
+  }
+ },
+ {
+  "table": "ServerProperty",
+  "where": {
+   "Key": "enable_zone_bonuses"
+  },
+  "set": {
+   "Value": "True"
+  }
+ }
+]

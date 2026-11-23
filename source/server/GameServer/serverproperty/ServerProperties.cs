@@ -788,8 +788,11 @@ namespace DOL.GS.ServerProperties
 		/// <summary>
 		/// Should we enable Zone Bonuses?
 		/// </summary>
-		[ServerProperty("world", "enable_zone_bonuses", "Are Zone Bonuses Enabled?", false)]
+		[ServerProperty("world", "enable_zone_bonuses", "Are Zone Bonuses Enabled? (DR-197: the Zones table holds live's fixed bonuses: classic and Shrouded Isles +50% XP and +100% coin, RvR areas +100% XP and coin, Darkness Falls +150% XP and coin and +50% RP)", true)]
 		public static bool ENABLE_ZONE_BONUSES;
+
+		[ServerProperty("world", "zone_bonus_rotation", "Atlas-style rotating bonus zones (one PvE zone per realm every 2 h, one realm's frontier every 45 min). It rewrites the Zones table's bonuses and clears them at shutdown, so it replaces live's fixed zone bonuses. Off by default (DR-197).", false)]
+		public static bool ZONE_BONUS_ROTATION;
 
 		/// <summary>
 		/// List of ZoneId where personnal mount is allowed
