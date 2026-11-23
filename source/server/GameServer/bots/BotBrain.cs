@@ -4123,7 +4123,10 @@ namespace DOL.AI.Brain
                 if (other == null || other == spell || !other.IsHarmful || other.Level > casterLevel ||
                     !BotCasterPriority.IsDamage(other))
                     continue;
-                best = Math.Max(best, other.Level);
+                // DR-519: the "under half the best level" rule compares spells of the same shape only. A Darkness 50 /
+                // Suppression 20 Spiritmaster dropped its level 20 area nuke next to a level 50 single-target nuke.
+                if ((other.Radius > 0) == (spell.Radius > 0) && other.IsPBAoE == spell.IsPBAoE)
+                    best = Math.Max(best, other.Level);
                 if (chain)
                 {
                     if (other.SpellType == eSpellType.WarlockChainDot && other.Level > spell.Level &&

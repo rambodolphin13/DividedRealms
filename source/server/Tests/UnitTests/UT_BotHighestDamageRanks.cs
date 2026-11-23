@@ -56,6 +56,22 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void AnAreaNukeFromALowSecondLineStaysNextToAHighSingleTargetNuke()
+        {
+            // DR-519: Spiritmaster with Darkness 50 and Suppression 20.
+            Spell obsidianStrike = Make("DirectDamage", 50);
+            Spell soulBlast = Make("DirectDamage", 20, cast: 2.5, radius: 300);
+            Spell spiritBlast = Make("DirectDamageWithDebuff", 17, cast: 2.8);
+            Spell[] known = { obsidianStrike, soulBlast, spiritBlast };
+            Assert.Multiple(() =>
+            {
+                Assert.That(BotBrain.IsOutclassedDamageSpell(soulBlast, known, 50), Is.False, "the only area nuke stays");
+                Assert.That(BotBrain.IsOutclassedDamageSpell(spiritBlast, known, 50), Is.True,
+                    "a level 17 single-target nuke is still weak next to a level 50 one");
+            });
+        }
+
+        [Test]
         public void LowLevelBotsKeepTheirFirstSpells()
         {
             Spell first = Make("DirectDamage", 1);
