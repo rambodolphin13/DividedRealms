@@ -184,6 +184,26 @@ namespace DOL.UnitTests
         }
 
         [Test]
+        public void MergeSerializedSpecs_RaiseOnlyKeepsHigherStoredLines()
+        {
+            // DR-509: a level 255 alt's 250-point lines survive a companion save at the cap of 50.
+            string merged = AccountCompanionRules.MergeSerializedSpecs("Sword|250;Shields|2;Parry|30",
+                new[] { ("Sword", 50), ("Shields", 7), ("Parry", 30) }, raiseOnly: true);
+            Assert.That(merged, Is.EqualTo("Sword|250;Shields|7;Parry|30"));
+        }
+
+        [Test]
+        public void StoredAboveCompanion_OnlyForCharactersAboveTheCap()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(AccountCompanionRules.StoredAboveCompanion(255, 50), Is.True, "GM level 255 alt");
+                Assert.That(AccountCompanionRules.StoredAboveCompanion(50, 50), Is.False);
+                Assert.That(AccountCompanionRules.StoredAboveCompanion(40, 42), Is.False, "a companion that levelled saves its level");
+            });
+        }
+
+        [Test]
         public void Check_RefusesInTheRightOrder()
         {
             Assert.That(AccountCompanionRules.Check(true, 2, 2, true, true, false, false), Is.EqualTo(AccountCompanionRules.SummonRefusal.Yourself));

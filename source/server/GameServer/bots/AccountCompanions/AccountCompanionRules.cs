@@ -212,11 +212,17 @@ namespace DOL.GS
             return experience >= 1 + current + (next - current) / 2;
         }
 
+        /// <summary>DR-509: the stored character is above the level its companion loaded at (it was clamped to MaxLevel).</summary>
+        public static bool StoredAboveCompanion(int storedLevel, int companionLevel) =>
+            storedLevel > MaxLevel && storedLevel > companionLevel;
+
         /// <summary>
         /// Replaces the levels of the given lines inside a player's SerializedSpecs string and
         /// keeps every other entry and the original order.
         /// </summary>
-        public static string MergeSerializedSpecs(string existing, IEnumerable<(string Key, int Level)> trained)
+        /// <param name="raiseOnly">DR-509: keep a stored line level that is higher than the companion's (a character stored
+        /// above the companion cap).</param>
+        public static string MergeSerializedSpecs(string existing, IEnumerable<(string Key, int Level)> trained, bool raiseOnly = false)
         {
             var updates = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach ((string key, int level) in trained ?? Enumerable.Empty<(string, int)>())
@@ -232,7 +238,11 @@ namespace DOL.GS
                     continue;
                 if (!written.Add(parts[0]))
                     continue;
-                entries.Add(updates.TryGetValue(parts[0], out int level) ? $"{parts[0]}|{level}" : entry);
+                if (updates.TryGetValue(parts[0], out int level) &&
+                    !(raiseOnly && int.TryParse(parts[1], out int stored) && stored > level))
+                    entries.Add($"{parts[0]}|{level}");
+                else
+                    entries.Add(entry);
             }
 
             foreach ((string key, int level) in updates)
