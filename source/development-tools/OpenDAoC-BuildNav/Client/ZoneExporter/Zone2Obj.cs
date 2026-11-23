@@ -156,6 +156,9 @@ namespace CEM.Client.ZoneExporter
             // add all the nifs!
             ExportNifs();
 
+            // server-placed keep components (New Frontiers keeps and towers), when a placement file is given
+            ExportKeeps();
+
             // add zone boundaries
             ExportBounds();
         }

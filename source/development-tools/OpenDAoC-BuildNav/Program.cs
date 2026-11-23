@@ -177,6 +177,9 @@ namespace CEM
             [Argument("ladder-audit", Description = "Also export original world-space climb triangles for offline collision diagnosis")]
             public bool ExportLadderAudit { get; set; }
 
+            [Argument("keeps", Description = "Server keep components to add to outdoor zones (json from tools/export_keep_components.py)")]
+            public string KeepsFile { get; set; }
+
             [Argument("normal-priority", Description = "Run at normal priority")]
             public bool NormalPriority { get; set; }
 
