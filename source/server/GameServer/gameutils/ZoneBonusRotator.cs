@@ -76,6 +76,10 @@ namespace DOL.GS.Scripts
         [GameServerStartedEvent]
         public static void OnServerStart(DOLEvent e, object sender, EventArgs arguments)
         {
+            // DR-197: live's zone bonuses are fixed per zone (Zones table); the rotation would overwrite them.
+            if (!ServerProperties.Properties.ZONE_BONUS_ROTATION)
+                return;
+            _rotating = true;
             Initialize();
             GameEventMgr.AddHandler(GamePlayerEvent.GameEntered, new DOLEventHandler(PlayerEntered));
             _playerEnteredAdded = true;
@@ -85,6 +89,10 @@ namespace DOL.GS.Scripts
         [GameServerStoppedEvent]
         public static void OnServerStopped(DOLEvent e, object sender, EventArgs arguments)
         {
+            // Only a rotation that ran clears its zones: clearing would zero the fixed live bonuses (DR-197).
+            if (!_rotating)
+                return;
+            _rotating = false;
             // Should be changed to keep data saved in DB for restart
             ClearPvEZones();
             ClearRvRZones();
@@ -99,6 +107,7 @@ namespace DOL.GS.Scripts
         }
 
         private static bool _playerEnteredAdded;
+        private static bool _rotating;
 
         public static void Initialize()
         {

@@ -1,0 +1,2096 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T16:50:10.731483+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "Zones",
+   "key": 0,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 1,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 2,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 3,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 4,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 6,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 7,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 8,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 9,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 10,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 11,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 12,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 14,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 15,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 19,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 20,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 21,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 22,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 23,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 24,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 50,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 51,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 52,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 53,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 54,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 55,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 56,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 57,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 60,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 61,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 62,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 65,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 66,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 67,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 68,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 69,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 92,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 93,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 98,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 100,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 101,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 102,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 103,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 104,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 105,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 106,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 107,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 108,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 109,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 111,
+   "op": "update",
+   "before": {
+    "Experience": 100,
+    "Realmpoints": 20,
+    "Bountypoints": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Realmpoints": 0,
+    "Bountypoints": 0,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 112,
+   "op": "update",
+   "before": {
+    "Experience": 100,
+    "Realmpoints": 20,
+    "Bountypoints": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Realmpoints": 0,
+    "Bountypoints": 0,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 113,
+   "op": "update",
+   "before": {
+    "Experience": 100,
+    "Realmpoints": 20,
+    "Bountypoints": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Realmpoints": 0,
+    "Bountypoints": 0,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 115,
+   "op": "update",
+   "before": {
+    "Experience": 100,
+    "Realmpoints": 20,
+    "Bountypoints": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Realmpoints": 0,
+    "Bountypoints": 0,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 116,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 125,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 126,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 127,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 128,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 129,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 149,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 150,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 151,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 152,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 153,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 154,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 155,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 156,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 157,
+   "op": "update",
+   "before": {
+    "Experience": 50
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 158,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 160,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 161,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 163,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 164,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 165,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 166,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 167,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 168,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 169,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 170,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 171,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 172,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 173,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 174,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 175,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 176,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 177,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 178,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 180,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 181,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 182,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 183,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 184,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 185,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 186,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 187,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 188,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 190,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 191,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 196,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 200,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 201,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 202,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 203,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 204,
+   "op": "update",
+   "before": {
+    "Coin": 0
+   },
+   "after": {
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 205,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 206,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 207,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 208,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 210,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 211,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 212,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 214,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 216,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 220,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 221,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 222,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 223,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 224,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 50,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 227,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 228,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 229,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 233,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 234,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 235,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 236,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 237,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 238,
+   "op": "update",
+   "before": {
+    "Experience": 50,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 239,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 240,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 241,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 242,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 244,
+   "op": "update",
+   "before": {
+    "Experience": 25,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 245,
+   "op": "update",
+   "before": {
+    "Experience": 50,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 246,
+   "op": "update",
+   "before": {
+    "Experience": 50
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 247,
+   "op": "update",
+   "before": {
+    "Experience": 50
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 248,
+   "op": "update",
+   "before": {
+    "Experience": 50,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 249,
+   "op": "update",
+   "before": {
+    "Experience": 75,
+    "Realmpoints": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 150,
+    "Realmpoints": 50,
+    "Coin": 150
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 250,
+   "op": "update",
+   "before": {
+    "Experience": 50,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 251,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 252,
+   "op": "update",
+   "before": {
+    "Experience": 50,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 253,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 254,
+   "op": "update",
+   "before": {
+    "Experience": 0,
+    "Coin": 0
+   },
+   "after": {
+    "Experience": 100,
+    "Coin": 100
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 276,
+   "op": "update",
+   "before": {
+    "Experience": 50
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 277,
+   "op": "update",
+   "before": {
+    "Experience": 50
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 296,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 297,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 298,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 326,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 335,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 340,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 352,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 356,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 376,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 377,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 379,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 382,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 383,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 386,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 387,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 388,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 390,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 395,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 396,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 397,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 415,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 443,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "Zones",
+   "key": 489,
+   "op": "update",
+   "before": {
+    "Experience": 25
+   },
+   "after": {
+    "Experience": 0
+   }
+  },
+  {
+   "table": "ServerProperty",
+   "key": "enable_zone_bonuses",
+   "op": "update",
+   "before": {
+    "Value": "False"
+   },
+   "after": {
+    "Value": "True"
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}

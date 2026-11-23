@@ -55,6 +55,7 @@ namespace DOL.GS
 				moneyCount = (long)(moneyCount * coinMultiplier);
 			if (MasterLevelRules.HasPassive(looter as GameLiving, "Spymaster", 1))
 				moneyCount = moneyCount * 3 / 2;
+			moneyCount = WithZoneCoinBonus(moneyCount, mob.CurrentZone?.BonusCoin ?? 0, ServerProperties.Properties.ENABLE_ZONE_BONUSES);
 
 			DbItemTemplate money = new DbItemTemplate();
 			money.Model = 488;
@@ -66,5 +67,12 @@ namespace DOL.GS
 			loot.AddFixed(money, 1);
 			return loot;
 		}
+
+		/// <summary>
+		/// DR-197: the zone's coin bonus in percent (live 1.87: +100% in classic, Shrouded Isles and RvR zones; 1.116:
+		/// +150% in Darkness Falls). The zone table held it but nothing applied it. Pure.
+		/// </summary>
+		public static long WithZoneCoinBonus(long money, int bonusPercent, bool zoneBonusesOn) =>
+			zoneBonusesOn && bonusPercent > 0 ? money + money * bonusPercent / 100 : money;
 	}
 }
