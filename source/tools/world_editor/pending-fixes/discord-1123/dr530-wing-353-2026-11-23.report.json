@@ -1,0 +1,216 @@
+{
+ "zone": "Den of Bones",
+ "floor_points": 460,
+ "spots": 81,
+ "spawns": 22,
+ "bosses": [
+  "Griz",
+  "Yure"
+ ],
+ "unplaced": [],
+ "deepest_walk": 19768,
+ "spawn_list": [
+  {
+   "name": "Cave Crawler",
+   "at": [
+    30528,
+    31680,
+    16258
+   ],
+   "walk": 328
+  },
+  {
+   "name": "Cave Crawler",
+   "at": [
+    32064,
+    32064,
+    16015
+   ],
+   "walk": 1436
+  },
+  {
+   "name": "Cave Crawler",
+   "at": [
+    32512,
+    33323,
+    15798
+   ],
+   "walk": 2989
+  },
+  {
+   "name": "Cave Crawler",
+   "at": [
+    31411,
+    32581,
+    15680
+   ],
+   "walk": 3810
+  },
+  {
+   "name": "Small Cave Mauler",
+   "at": [
+    30528,
+    33024,
+    15715
+   ],
+   "walk": 4320
+  },
+  {
+   "name": "Small Cave Mauler",
+   "at": [
+    33408,
+    33984,
+    15740
+   ],
+   "walk": 4735
+  },
+  {
+   "name": "Small Cave Mauler",
+   "at": [
+    33216,
+    34560,
+    15754
+   ],
+   "walk": 5321
+  },
+  {
+   "name": "Small Cave Mauler",
+   "at": [
+    32448,
+    35520,
+    15764
+   ],
+   "walk": 6772
+  },
+  {
+   "name": "Cave Bear",
+   "at": [
+    32240,
+    35147,
+    15747
+   ],
+   "walk": 7399
+  },
+  {
+   "name": "Cave Bear",
+   "at": [
+    31273,
+    35707,
+    15747
+   ],
+   "walk": 7958
+  },
+  {
+   "name": "Cave Bear",
+   "at": [
+    30910,
+    36081,
+    15752
+   ],
+   "walk": 8479
+  },
+  {
+   "name": "Cave Bear",
+   "at": [
+    34024,
+    37642,
+    15744
+   ],
+   "walk": 9087
+  },
+  {
+   "name": "Cave Mauler",
+   "at": [
+    35136,
+    37632,
+    15752
+   ],
+   "walk": 10631
+  },
+  {
+   "name": "Cave Mauler",
+   "at": [
+    35064,
+    39672,
+    15488
+   ],
+   "walk": 12375
+  },
+  {
+   "name": "Cave Mauler",
+   "at": [
+    36261,
+    40562,
+    15493
+   ],
+   "walk": 13931
+  },
+  {
+   "name": "Cave Mauler",
+   "at": [
+    37056,
+    40512,
+    15500
+   ],
+   "walk": 14712
+  },
+  {
+   "name": "Vendo Guard",
+   "at": [
+    37632,
+    40704,
+    15492
+   ],
+   "walk": 15372
+  },
+  {
+   "name": "Vendo Guard",
+   "at": [
+    37824,
+    41088,
+    15496
+   ],
+   "walk": 15808
+  },
+  {
+   "name": "Vendo Guard",
+   "at": [
+    38208,
+    40896,
+    15487
+   ],
+   "walk": 16104
+  },
+  {
+   "name": "Vendo Guard",
+   "at": [
+    37555,
+    43141,
+    15500
+   ],
+   "walk": 17810
+  },
+  {
+   "name": "Griz",
+   "boss": true,
+   "level": 25,
+   "at": [
+    36425,
+    43342,
+    15491
+   ],
+   "walk": 19260
+  },
+  {
+   "name": "Yure",
+   "boss": true,
+   "level": 25,
+   "at": [
+    36380,
+    43771,
+    15769
+   ],
+   "walk": 19768
+  }
+ ]
+}

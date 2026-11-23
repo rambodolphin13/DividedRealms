@@ -1,0 +1,326 @@
+{
+ "zone": "Lios's Eternal Rest",
+ "floor_points": 540,
+ "spots": 95,
+ "spawns": 34,
+ "bosses": [
+  "Lios",
+  "Legs"
+ ],
+ "unplaced": [
+  "Pincher"
+ ],
+ "deepest_walk": 13818,
+ "spawn_list": [
+  {
+   "name": "Corpse Crawler Youngling",
+   "at": [
+    31044,
+    31414,
+    16579
+   ],
+   "walk": 315
+  },
+  {
+   "name": "Corpse Crawler Youngling",
+   "at": [
+    31463,
+    31324,
+    16576
+   ],
+   "walk": 493
+  },
+  {
+   "name": "Corpse Crawler Youngling",
+   "at": [
+    32832,
+    31488,
+    16314
+   ],
+   "walk": 1872
+  },
+  {
+   "name": "Corpse Crawler Youngling",
+   "at": [
+    32640,
+    32064,
+    16287
+   ],
+   "walk": 2911
+  },
+  {
+   "name": "Cave Crab",
+   "at": [
+    32256,
+    32832,
+    16325
+   ],
+   "walk": 3733
+  },
+  {
+   "name": "Cave Crab",
+   "at": [
+    33272,
+    32595,
+    16323
+   ],
+   "walk": 3992
+  },
+  {
+   "name": "Cave Crab",
+   "at": [
+    31680,
+    32064,
+    16310
+   ],
+   "walk": 4462
+  },
+  {
+   "name": "Cave Crab",
+   "at": [
+    33984,
+    33024,
+    16069
+   ],
+   "walk": 4852
+  },
+  {
+   "name": "Cursed Spirit",
+   "at": [
+    33600,
+    33216,
+    16064
+   ],
+   "walk": 5141
+  },
+  {
+   "name": "Cursed Spirit",
+   "at": [
+    30619,
+    33120,
+    16339
+   ],
+   "walk": 5292
+  },
+  {
+   "name": "Cursed Spirit",
+   "at": [
+    32596,
+    33270,
+    16070
+   ],
+   "walk": 6143
+  },
+  {
+   "name": "Cursed Spirit",
+   "at": [
+    32832,
+    33984,
+    16067
+   ],
+   "walk": 7022
+  },
+  {
+   "name": "Tomb Sentry",
+   "at": [
+    31957,
+    34266,
+    16076
+   ],
+   "walk": 7445
+  },
+  {
+   "name": "Tomb Sentry",
+   "at": [
+    31550,
+    34107,
+    16064
+   ],
+   "walk": 7867
+  },
+  {
+   "name": "Tomb Sentry",
+   "at": [
+    31095,
+    34176,
+    16070
+   ],
+   "walk": 8290
+  },
+  {
+   "name": "Tomb Sentry",
+   "at": [
+    32540,
+    35628,
+    16064
+   ],
+   "walk": 8771
+  },
+  {
+   "name": "Trapped Thrall",
+   "at": [
+    30336,
+    34556,
+    16064
+   ],
+   "walk": 9198
+  },
+  {
+   "name": "Trapped Thrall",
+   "at": [
+    34660,
+    34537,
+    15299
+   ],
+   "walk": 9287
+  },
+  {
+   "name": "Trapped Thrall",
+   "at": [
+    35019,
+    33884,
+    15302
+   ],
+   "walk": 9560
+  },
+  {
+   "name": "Trapped Thrall",
+   "at": [
+    34752,
+    33408,
+    15263
+   ],
+   "walk": 9868
+  },
+  {
+   "name": "Dungeon Crab",
+   "at": [
+    34560,
+    35136,
+    15299
+   ],
+   "walk": 10026
+  },
+  {
+   "name": "Dungeon Crab",
+   "at": [
+    35111,
+    33158,
+    15347
+   ],
+   "walk": 10195
+  },
+  {
+   "name": "Dungeon Crab",
+   "at": [
+    32366,
+    36864,
+    16079
+   ],
+   "walk": 10335
+  },
+  {
+   "name": "Dungeon Crab",
+   "at": [
+    35803,
+    33510,
+    15302
+   ],
+   "walk": 10543
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    33794,
+    34752,
+    15302
+   ],
+   "walk": 10641
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    36288,
+    34176,
+    15302
+   ],
+   "walk": 10779
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    36266,
+    33658,
+    15310
+   ],
+   "walk": 11073
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    34368,
+    36096,
+    15299
+   ],
+   "walk": 11341
+  },
+  {
+   "name": "Dungeon Chitin",
+   "at": [
+    30846,
+    36179,
+    16352
+   ],
+   "walk": 11601
+  },
+  {
+   "name": "Dungeon Chitin",
+   "at": [
+    29952,
+    36096,
+    16578
+   ],
+   "walk": 12444
+  },
+  {
+   "name": "Dungeon Chitin",
+   "at": [
+    29410,
+    36146,
+    16569
+   ],
+   "walk": 12901
+  },
+  {
+   "name": "Dungeon Chitin",
+   "at": [
+    29115,
+    36454,
+    16576
+   ],
+   "walk": 13281
+  },
+  {
+   "name": "Lios",
+   "boss": true,
+   "level": 27,
+   "at": [
+    28800,
+    35520,
+    16468
+   ],
+   "walk": 13796
+  },
+  {
+   "name": "Legs",
+   "boss": true,
+   "level": 26,
+   "at": [
+    28608,
+    36288,
+    16449
+   ],
+   "walk": 13818
+  }
+ ]
+}

@@ -1,0 +1,530 @@
+{
+ "zone": "The Lost Wing",
+ "floor_points": 546,
+ "spots": 86,
+ "spawns": 57,
+ "bosses": [
+  "Nitaleg"
+ ],
+ "unplaced": [
+  "Piece of Nitaleg"
+ ],
+ "deepest_walk": 22446,
+ "spawn_list": [
+  {
+   "name": "Decaying Tomb Raider",
+   "at": [
+    18240,
+    30912,
+    15232
+   ],
+   "walk": 365
+  },
+  {
+   "name": "Decaying Tomb Raider",
+   "at": [
+    18624,
+    30720,
+    15216
+   ],
+   "walk": 801
+  },
+  {
+   "name": "Decaying Tomb Raider",
+   "at": [
+    19115,
+    30300,
+    14992
+   ],
+   "walk": 1671
+  },
+  {
+   "name": "Decaying Tomb Raider",
+   "at": [
+    19099,
+    31296,
+    14992
+   ],
+   "walk": 1806
+  },
+  {
+   "name": "Glowing Goo",
+   "at": [
+    19584,
+    31488,
+    14992
+   ],
+   "walk": 2257
+  },
+  {
+   "name": "Glowing Goo",
+   "at": [
+    19776,
+    29760,
+    14992
+   ],
+   "walk": 2532
+  },
+  {
+   "name": "Glowing Goo",
+   "at": [
+    20352,
+    29760,
+    14992
+   ],
+   "walk": 3099
+  },
+  {
+   "name": "Glowing Goo",
+   "at": [
+    20385,
+    31836,
+    14992
+   ],
+   "walk": 3141
+  },
+  {
+   "name": "Undead Retainer",
+   "at": [
+    20736,
+    29952,
+    14992
+   ],
+   "walk": 3526
+  },
+  {
+   "name": "Undead Retainer",
+   "at": [
+    20928,
+    31590,
+    14992
+   ],
+   "walk": 3684
+  },
+  {
+   "name": "Undead Retainer",
+   "at": [
+    21312,
+    31388,
+    14992
+   ],
+   "walk": 4086
+  },
+  {
+   "name": "Undead Retainer",
+   "at": [
+    21696,
+    29952,
+    14992
+   ],
+   "walk": 4473
+  },
+  {
+   "name": "Reanimated Foe",
+   "at": [
+    21696,
+    30912,
+    14992
+   ],
+   "walk": 4931
+  },
+  {
+   "name": "Reanimated Foe",
+   "at": [
+    22080,
+    30620,
+    14992
+   ],
+   "walk": 5344
+  },
+  {
+   "name": "Reanimated Foe",
+   "at": [
+    22478,
+    30809,
+    15039
+   ],
+   "walk": 5761
+  },
+  {
+   "name": "Reanimated Foe",
+   "at": [
+    20928,
+    30720,
+    14752
+   ],
+   "walk": 5847
+  },
+  {
+   "name": "Redbone Skeleton",
+   "at": [
+    20510,
+    30803,
+    14752
+   ],
+   "walk": 6258
+  },
+  {
+   "name": "Redbone Skeleton",
+   "at": [
+    22939,
+    31062,
+    15232
+   ],
+   "walk": 6528
+  },
+  {
+   "name": "Redbone Skeleton",
+   "at": [
+    23707,
+    31488,
+    15232
+   ],
+   "walk": 7455
+  },
+  {
+   "name": "Redbone Skeleton",
+   "at": [
+    23424,
+    31872,
+    15238
+   ],
+   "walk": 7984
+  },
+  {
+   "name": "Repentant Follower",
+   "at": [
+    23232,
+    32064,
+    15738
+   ],
+   "walk": 9341
+  },
+  {
+   "name": "Repentant Follower",
+   "at": [
+    24000,
+    31488,
+    15954
+   ],
+   "walk": 10238
+  },
+  {
+   "name": "Repentant Follower",
+   "at": [
+    24000,
+    30528,
+    15760
+   ],
+   "walk": 11167
+  },
+  {
+   "name": "Repentant Follower",
+   "at": [
+    24384,
+    30336,
+    15760
+   ],
+   "walk": 11581
+  },
+  {
+   "name": "Tunneler",
+   "at": [
+    24768,
+    30528,
+    15760
+   ],
+   "walk": 11912
+  },
+  {
+   "name": "Tunneler",
+   "at": [
+    24960,
+    30144,
+    15763
+   ],
+   "walk": 12274
+  },
+  {
+   "name": "Tunneler",
+   "at": [
+    25344,
+    30336,
+    15729
+   ],
+   "walk": 12504
+  },
+  {
+   "name": "Tunneler",
+   "at": [
+    25152,
+    29760,
+    15760
+   ],
+   "walk": 12705
+  },
+  {
+   "name": "Cave Hound",
+   "at": [
+    25536,
+    31132,
+    15760
+   ],
+   "walk": 12995
+  },
+  {
+   "name": "Cave Hound",
+   "at": [
+    26112,
+    31132,
+    15760
+   ],
+   "walk": 13571
+  },
+  {
+   "name": "Cave Hound",
+   "at": [
+    26304,
+    29760,
+    15760
+   ],
+   "walk": 13774
+  },
+  {
+   "name": "Cave Hound",
+   "at": [
+    26496,
+    30144,
+    15760
+   ],
+   "walk": 14253
+  },
+  {
+   "name": "Diseased Rat",
+   "at": [
+    26304,
+    30528,
+    15760
+   ],
+   "walk": 14573
+  },
+  {
+   "name": "Diseased Rat",
+   "at": [
+    27072,
+    30144,
+    15745
+   ],
+   "walk": 15143
+  },
+  {
+   "name": "Diseased Rat",
+   "at": [
+    27264,
+    30720,
+    15744
+   ],
+   "walk": 15229
+  },
+  {
+   "name": "Diseased Rat",
+   "at": [
+    27755,
+    30736,
+    15744
+   ],
+   "walk": 15698
+  },
+  {
+   "name": "Grave Goblin Shaman",
+   "at": [
+    28032,
+    30371,
+    15760
+   ],
+   "walk": 15963
+  },
+  {
+   "name": "Grave Goblin Shaman",
+   "at": [
+    28608,
+    30912,
+    16000
+   ],
+   "walk": 16767
+  },
+  {
+   "name": "Grave Goblin Shaman",
+   "at": [
+    28992,
+    31104,
+    16003
+   ],
+   "walk": 17183
+  },
+  {
+   "name": "Grave Goblin Shaman",
+   "at": [
+    29568,
+    31680,
+    16240
+   ],
+   "walk": 18062
+  },
+  {
+   "name": "Marrow Leech",
+   "at": [
+    29952,
+    31872,
+    16240
+   ],
+   "walk": 18481
+  },
+  {
+   "name": "Marrow Leech",
+   "at": [
+    30235,
+    31142,
+    16240
+   ],
+   "walk": 19242
+  },
+  {
+   "name": "Marrow Leech",
+   "at": [
+    30912,
+    31680,
+    16006
+   ],
+   "walk": 19399
+  },
+  {
+   "name": "Marrow Leech",
+   "at": [
+    31488,
+    31680,
+    16000
+   ],
+   "walk": 19969
+  },
+  {
+   "name": "Decayed Barbarian",
+   "at": [
+    31680,
+    32064,
+    16000
+   ],
+   "walk": 20301
+  },
+  {
+   "name": "Decayed Barbarian",
+   "at": [
+    30144,
+    29760,
+    16483
+   ],
+   "walk": 20711
+  },
+  {
+   "name": "Decayed Barbarian",
+   "at": [
+    32219,
+    31897,
+    16000
+   ],
+   "walk": 20735
+  },
+  {
+   "name": "Decayed Barbarian",
+   "at": [
+    29636,
+    29820,
+    16464
+   ],
+   "walk": 21065
+  },
+  {
+   "name": "Grave Goblin",
+   "at": [
+    30336,
+    29376,
+    16475
+   ],
+   "walk": 21067
+  },
+  {
+   "name": "Grave Goblin",
+   "at": [
+    29760,
+    29376,
+    16465
+   ],
+   "walk": 21223
+  },
+  {
+   "name": "Grave Goblin",
+   "at": [
+    30720,
+    29184,
+    16464
+   ],
+   "walk": 21324
+  },
+  {
+   "name": "Grave Goblin",
+   "at": [
+    30528,
+    28800,
+    16474
+   ],
+   "walk": 21638
+  },
+  {
+   "name": "Saxonbone Skeleton",
+   "at": [
+    31296,
+    29184,
+    16480
+   ],
+   "walk": 21641
+  },
+  {
+   "name": "Saxonbone Skeleton",
+   "at": [
+    29760,
+    28800,
+    16464
+   ],
+   "walk": 21723
+  },
+  {
+   "name": "Saxonbone Skeleton",
+   "at": [
+    31104,
+    28800,
+    16482
+   ],
+   "walk": 21887
+  },
+  {
+   "name": "Saxonbone Skeleton",
+   "at": [
+    30912,
+    28416,
+    16464
+   ],
+   "walk": 22134
+  },
+  {
+   "name": "Nitaleg",
+   "boss": true,
+   "level": 45,
+   "at": [
+    30436,
+    27993,
+    16480
+   ],
+   "walk": 22446
+  }
+ ]
+}

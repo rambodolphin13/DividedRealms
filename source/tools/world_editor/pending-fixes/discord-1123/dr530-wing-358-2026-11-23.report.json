@@ -1,0 +1,324 @@
+{
+ "zone": "The Burrow",
+ "floor_points": 804,
+ "spots": 135,
+ "spawns": 34,
+ "bosses": [
+  "Advisor Kel",
+  "Arachne"
+ ],
+ "unplaced": [],
+ "deepest_walk": 13522,
+ "spawn_list": [
+  {
+   "name": "Young Frenetic Wolfspider",
+   "at": [
+    29859,
+    26860,
+    15243
+   ],
+   "walk": 312
+  },
+  {
+   "name": "Young Frenetic Wolfspider",
+   "at": [
+    31296,
+    27072,
+    15138
+   ],
+   "walk": 1340
+  },
+  {
+   "name": "Young Frenetic Wolfspider",
+   "at": [
+    31993,
+    27352,
+    14999
+   ],
+   "walk": 2284
+  },
+  {
+   "name": "Young Frenetic Wolfspider",
+   "at": [
+    32448,
+    28032,
+    14980
+   ],
+   "walk": 2946
+  },
+  {
+   "name": "Werewolf Grimnought",
+   "at": [
+    33400,
+    28144,
+    14988
+   ],
+   "walk": 3844
+  },
+  {
+   "name": "Werewolf Grimnought",
+   "at": [
+    33798,
+    28415,
+    14990
+   ],
+   "walk": 4360
+  },
+  {
+   "name": "Werewolf Grimnought",
+   "at": [
+    33984,
+    27456,
+    14991
+   ],
+   "walk": 4601
+  },
+  {
+   "name": "Werewolf Grimnought",
+   "at": [
+    34176,
+    26880,
+    14980
+   ],
+   "walk": 5194
+  },
+  {
+   "name": "Frenetic Wolfspider",
+   "at": [
+    31872,
+    30720,
+    14927
+   ],
+   "walk": 5448
+  },
+  {
+   "name": "Frenetic Wolfspider",
+   "at": [
+    31296,
+    30720,
+    14952
+   ],
+   "walk": 5713
+  },
+  {
+   "name": "Frenetic Wolfspider",
+   "at": [
+    31769,
+    31138,
+    15073
+   ],
+   "walk": 5998
+  },
+  {
+   "name": "Frenetic Wolfspider",
+   "at": [
+    30528,
+    30336,
+    14988
+   ],
+   "walk": 6333
+  },
+  {
+   "name": "Werewolf Noble",
+   "at": [
+    30528,
+    29760,
+    14978
+   ],
+   "walk": 6839
+  },
+  {
+   "name": "Werewolf Noble",
+   "at": [
+    30144,
+    29568,
+    15036
+   ],
+   "walk": 7187
+  },
+  {
+   "name": "Werewolf Noble",
+   "at": [
+    30336,
+    29184,
+    15075
+   ],
+   "walk": 7492
+  },
+  {
+   "name": "Werewolf Noble",
+   "at": [
+    29446,
+    29916,
+    15003
+   ],
+   "walk": 7628
+  },
+  {
+   "name": "Werewolf Scavenger",
+   "at": [
+    29929,
+    28928,
+    14990
+   ],
+   "walk": 7866
+  },
+  {
+   "name": "Werewolf Scavenger",
+   "at": [
+    29692,
+    29376,
+    15015
+   ],
+   "walk": 8087
+  },
+  {
+   "name": "Werewolf Scavenger",
+   "at": [
+    28608,
+    30336,
+    15241
+   ],
+   "walk": 8359
+  },
+  {
+   "name": "Werewolf Scavenger",
+   "at": [
+    32832,
+    32064,
+    16012
+   ],
+   "walk": 8749
+  },
+  {
+   "name": "Werewolf Advisor",
+   "at": [
+    27840,
+    29952,
+    15243
+   ],
+   "walk": 9207
+  },
+  {
+   "name": "Werewolf Advisor",
+   "at": [
+    33216,
+    32832,
+    16012
+   ],
+   "walk": 9382
+  },
+  {
+   "name": "Werewolf Advisor",
+   "at": [
+    28992,
+    32832,
+    15236
+   ],
+   "walk": 9725
+  },
+  {
+   "name": "Werewolf Advisor",
+   "at": [
+    27072,
+    30336,
+    15091
+   ],
+   "walk": 9975
+  },
+  {
+   "name": "Werewolf Royal Guard",
+   "at": [
+    27072,
+    29376,
+    15105
+   ],
+   "walk": 10292
+  },
+  {
+   "name": "Werewolf Royal Guard",
+   "at": [
+    31356,
+    32258,
+    16011
+   ],
+   "walk": 10429
+  },
+  {
+   "name": "Werewolf Royal Guard",
+   "at": [
+    26304,
+    29760,
+    15092
+   ],
+   "walk": 10750
+  },
+  {
+   "name": "Werewolf Royal Guard",
+   "at": [
+    25920,
+    29952,
+    15235
+   ],
+   "walk": 11094
+  },
+  {
+   "name": "Werewolf Prowler",
+   "at": [
+    31488,
+    33792,
+    16088
+   ],
+   "walk": 11657
+  },
+  {
+   "name": "Werewolf Prowler",
+   "at": [
+    33292,
+    34276,
+    16004
+   ],
+   "walk": 11969
+  },
+  {
+   "name": "Werewolf Prowler",
+   "at": [
+    31296,
+    34560,
+    16002
+   ],
+   "walk": 12308
+  },
+  {
+   "name": "Werewolf Prowler",
+   "at": [
+    31104,
+    34944,
+    15917
+   ],
+   "walk": 12692
+  },
+  {
+   "name": "Advisor Kel",
+   "boss": true,
+   "level": 49,
+   "at": [
+    31296,
+    35328,
+    15921
+   ],
+   "walk": 13077
+  },
+  {
+   "name": "Arachne",
+   "boss": true,
+   "level": 44,
+   "at": [
+    31379,
+    35269,
+    16203
+   ],
+   "walk": 13522
+  }
+ ]
+}

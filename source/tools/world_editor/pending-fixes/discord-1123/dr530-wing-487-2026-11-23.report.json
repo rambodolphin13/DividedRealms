@@ -1,0 +1,528 @@
+{
+ "zone": "The Pit of Despair",
+ "floor_points": 831,
+ "spots": 124,
+ "spawns": 57,
+ "bosses": [
+  "Unseelie Underviewer"
+ ],
+ "unplaced": [],
+ "deepest_walk": 25697,
+ "spawn_list": [
+  {
+   "name": "Gemclicker",
+   "at": [
+    32101,
+    31096,
+    15021
+   ],
+   "walk": 447
+  },
+  {
+   "name": "Gemclicker",
+   "at": [
+    32235,
+    32061,
+    14763
+   ],
+   "walk": 1073
+  },
+  {
+   "name": "Gemclicker",
+   "at": [
+    32064,
+    32832,
+    14705
+   ],
+   "walk": 1841
+  },
+  {
+   "name": "Gemclicker",
+   "at": [
+    31445,
+    32744,
+    14791
+   ],
+   "walk": 2029
+  },
+  {
+   "name": "Glow Worm",
+   "at": [
+    31872,
+    33216,
+    14723
+   ],
+   "walk": 2263
+  },
+  {
+   "name": "Glow Worm",
+   "at": [
+    32640,
+    33024,
+    14880
+   ],
+   "walk": 2477
+  },
+  {
+   "name": "Glow Worm",
+   "at": [
+    30528,
+    33125,
+    14493
+   ],
+   "walk": 3126
+  },
+  {
+   "name": "Glow Worm",
+   "at": [
+    29952,
+    33408,
+    14248
+   ],
+   "walk": 3914
+  },
+  {
+   "name": "Rockbiter",
+   "at": [
+    30241,
+    33848,
+    14215
+   ],
+   "walk": 4462
+  },
+  {
+   "name": "Rockbiter",
+   "at": [
+    29952,
+    34944,
+    14209
+   ],
+   "walk": 5423
+  },
+  {
+   "name": "Rockbiter",
+   "at": [
+    30053,
+    35520,
+    14237
+   ],
+   "walk": 5996
+  },
+  {
+   "name": "Rockbiter",
+   "at": [
+    29952,
+    36096,
+    14203
+   ],
+   "walk": 6573
+  },
+  {
+   "name": "Undead Drudger",
+   "at": [
+    29851,
+    36584,
+    14160
+   ],
+   "walk": 7068
+  },
+  {
+   "name": "Undead Drudger",
+   "at": [
+    30297,
+    36775,
+    14026
+   ],
+   "walk": 7472
+  },
+  {
+   "name": "Undead Drudger",
+   "at": [
+    30720,
+    36864,
+    13947
+   ],
+   "walk": 7910
+  },
+  {
+   "name": "Undead Drudger",
+   "at": [
+    31137,
+    36735,
+    13981
+   ],
+   "walk": 8326
+  },
+  {
+   "name": "Unseelie Mango",
+   "at": [
+    31492,
+    36978,
+    13996
+   ],
+   "walk": 8685
+  },
+  {
+   "name": "Unseelie Mango",
+   "at": [
+    28224,
+    37440,
+    14196
+   ],
+   "walk": 9012
+  },
+  {
+   "name": "Unseelie Mango",
+   "at": [
+    27072,
+    36480,
+    14174
+   ],
+   "walk": 9190
+  },
+  {
+   "name": "Unseelie Mango",
+   "at": [
+    31902,
+    37248,
+    14192
+   ],
+   "walk": 9375
+  },
+  {
+   "name": "Enthralled Silvier",
+   "at": [
+    28224,
+    38016,
+    14214
+   ],
+   "walk": 9586
+  },
+  {
+   "name": "Enthralled Silvier",
+   "at": [
+    28032,
+    38400,
+    14198
+   ],
+   "walk": 9991
+  },
+  {
+   "name": "Enthralled Silvier",
+   "at": [
+    32673,
+    37749,
+    14327
+   ],
+   "walk": 10420
+  },
+  {
+   "name": "Enthralled Silvier",
+   "at": [
+    33024,
+    37989,
+    14452
+   ],
+   "walk": 10811
+  },
+  {
+   "name": "Gemclicker Horder",
+   "at": [
+    33470,
+    37659,
+    14522
+   ],
+   "walk": 11275
+  },
+  {
+   "name": "Gemclicker Horder",
+   "at": [
+    33792,
+    38400,
+    14460
+   ],
+   "walk": 11714
+  },
+  {
+   "name": "Gemclicker Horder",
+   "at": [
+    34176,
+    38208,
+    14595
+   ],
+   "walk": 12080
+  },
+  {
+   "name": "Gemclicker Horder",
+   "at": [
+    33792,
+    38016,
+    14698
+   ],
+   "walk": 12203
+  },
+  {
+   "name": "Shaft Rat",
+   "at": [
+    33984,
+    37632,
+    14723
+   ],
+   "walk": 12520
+  },
+  {
+   "name": "Shaft Rat",
+   "at": [
+    33984,
+    39360,
+    14404
+   ],
+   "walk": 12697
+  },
+  {
+   "name": "Shaft Rat",
+   "at": [
+    34209,
+    37248,
+    14726
+   ],
+   "walk": 12934
+  },
+  {
+   "name": "Shaft Rat",
+   "at": [
+    31488,
+    40896,
+    13940
+   ],
+   "walk": 13158
+  },
+  {
+   "name": "Silvermine Knocker",
+   "at": [
+    31607,
+    41299,
+    13981
+   ],
+   "walk": 13566
+  },
+  {
+   "name": "Silvermine Knocker",
+   "at": [
+    35136,
+    39744,
+    14195
+   ],
+   "walk": 13925
+  },
+  {
+   "name": "Silvermine Knocker",
+   "at": [
+    31104,
+    42432,
+    13955
+   ],
+   "walk": 14804
+  },
+  {
+   "name": "Silvermine Knocker",
+   "at": [
+    31499,
+    42751,
+    13955
+   ],
+   "walk": 15014
+  },
+  {
+   "name": "Trammer",
+   "at": [
+    32064,
+    43392,
+    13827
+   ],
+   "walk": 15846
+  },
+  {
+   "name": "Trammer",
+   "at": [
+    30912,
+    43392,
+    13703
+   ],
+   "walk": 15983
+  },
+  {
+   "name": "Trammer",
+   "at": [
+    30336,
+    42816,
+    13700
+   ],
+   "walk": 16399
+  },
+  {
+   "name": "Trammer",
+   "at": [
+    30336,
+    43584,
+    13730
+   ],
+   "walk": 16562
+  },
+  {
+   "name": "Gem-Dusted Skeleton",
+   "at": [
+    29952,
+    43200,
+    13757
+   ],
+   "walk": 16829
+  },
+  {
+   "name": "Gem-Dusted Skeleton",
+   "at": [
+    30915,
+    44174,
+    13991
+   ],
+   "walk": 17784
+  },
+  {
+   "name": "Gem-Dusted Skeleton",
+   "at": [
+    31488,
+    44928,
+    14213
+   ],
+   "walk": 18776
+  },
+  {
+   "name": "Gem-Dusted Skeleton",
+   "at": [
+    31872,
+    45211,
+    14237
+   ],
+   "walk": 19279
+  },
+  {
+   "name": "Collared Gemgetter",
+   "at": [
+    32257,
+    45464,
+    14090
+   ],
+   "walk": 19756
+  },
+  {
+   "name": "Collared Gemgetter",
+   "at": [
+    32673,
+    45205,
+    13987
+   ],
+   "walk": 20162
+  },
+  {
+   "name": "Collared Gemgetter",
+   "at": [
+    30336,
+    45888,
+    14178
+   ],
+   "walk": 20570
+  },
+  {
+   "name": "Collared Gemgetter",
+   "at": [
+    30492,
+    46282,
+    14191
+   ],
+   "walk": 20985
+  },
+  {
+   "name": "Tunnel Imp",
+   "at": [
+    30144,
+    46656,
+    14211
+   ],
+   "walk": 21347
+  },
+  {
+   "name": "Tunnel Imp",
+   "at": [
+    33216,
+    46656,
+    14287
+   ],
+   "walk": 21906
+  },
+  {
+   "name": "Tunnel Imp",
+   "at": [
+    33408,
+    47040,
+    14460
+   ],
+   "walk": 22347
+  },
+  {
+   "name": "Tunnel Imp",
+   "at": [
+    33694,
+    47349,
+    14503
+   ],
+   "walk": 22746
+  },
+  {
+   "name": "Spirit of Miner Klin",
+   "at": [
+    34443,
+    47183,
+    14275
+   ],
+   "walk": 22928
+  },
+  {
+   "name": "Spirit of Miner Klin",
+   "at": [
+    34885,
+    47055,
+    14359
+   ],
+   "walk": 23336
+  },
+  {
+   "name": "Spirit of Miner Klin",
+   "at": [
+    34944,
+    48000,
+    14375
+   ],
+   "walk": 24021
+  },
+  {
+   "name": "Spirit of Miner Klin",
+   "at": [
+    35038,
+    48696,
+    14253
+   ],
+   "walk": 24787
+  },
+  {
+   "name": "Unseelie Underviewer",
+   "boss": true,
+   "level": 38,
+   "at": [
+    34667,
+    49688,
+    14074
+   ],
+   "walk": 25697
+  }
+ ]
+}

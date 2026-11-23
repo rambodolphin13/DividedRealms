@@ -81,15 +81,46 @@ def source_row(name):
     return base
 
 
-regular, bosses, missing = [], [], []
+def related_row(name):
+    """A listed monster with no world row of its own: the world monster whose name is a word-run inside it
+    ("Young Draugr Hound" -> "draugr hound"), longest first."""
+    words = name.lower().replace("'s", "").split()
+    for size in range(len(words) - 1, 0, -1):
+        for start in range(len(words) - size + 1):
+            part = ' '.join(words[start:start + size])
+            if len(part) < 5: continue
+            row = source_row(part)
+            if row:
+                return row
+    return None
+
+
+regular, unsourced, missing = [], [], []
 for name, lo, hi, kind in listed:
     row = source_row(name)
     if row:
         regular.append((name, lo, hi, row))
-    elif name[0].isupper() and len(name.split()) >= 1:
-        bosses.append((name, lo, hi))
+        continue
+    row = related_row(name)
+    if row:
+        row = dict(row, NPCTemplateID=0, Name=name)  # its own name, the related monster's look; level set below
+        regular.append((name, lo, hi, row))
     else:
-        missing.append(name)
+        unsourced.append((name, lo, hi))
+# Bosses (at most two): unsourced names that read as a named character first (one word, "X the Y", a title, a
+# possessive), then the higher listed level. The rest stay unplaced and are reported.
+TITLES = {'overseer', 'advisor', 'beastmaster', 'gladiator', 'tesserarius', 'high', 'lord', 'lady', 'king', 'queen',
+          'captain', 'warden', 'chief', 'chieftain'}
+
+
+def named(n):
+    w = n.split()
+    return len(w) == 1 or ' the ' in n.lower() or w[0].lower() in TITLES or "'s " in n
+
+
+ranked = sorted(unsourced, key=lambda u: (not named(u[0]), -u[1]))
+bosses = [u for u in ranked[:2] if named(u[0])] or ranked[:1]
+missing = [u[0] for u in unsourced if u not in bosses]
 need = len(regular) * per_monster
 boss_spots = spots[-len(bosses):] if bosses else []
 field = spots[:len(spots) - len(boss_spots)]
@@ -113,7 +144,7 @@ def mob(row, name, level, x, y, z, size=None, template=None):
 for i, (d, f) in enumerate(field):
     band = min(len(regular) - 1, int(i * len(regular) / max(1, len(field))))
     name, lo, hi, row = regular[band]
-    level = 0 if row.get('NPCTemplateID', 0) > 0 and row.get('Level', 0) == 0 else random.randint(lo, max(lo, hi))
+    level = 0 if (row.get('NPCTemplateID') or 0) > 0 and row.get('Level', 0) == 0 else random.randint(lo, max(lo, hi))
     edits.append({"table": "Mob", "insert": mob(row, name, level, *f)})
     report.append({"name": name, "at": [int(v) for v in f], "walk": int(d)})
 strongest = max(regular, key=lambda r: r[2])[3] if regular else None

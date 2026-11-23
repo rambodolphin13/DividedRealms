@@ -1,0 +1,206 @@
+{
+ "zone": "The Betrayer's Den",
+ "floor_points": 417,
+ "spots": 70,
+ "spawns": 21,
+ "bosses": [
+  "Argil The Corrupt"
+ ],
+ "unplaced": [
+  "Reincarnation of Argil"
+ ],
+ "deepest_walk": 12957,
+ "spawn_list": [
+  {
+   "name": "Keltoi Banisher",
+   "at": [
+    32931,
+    37059,
+    15776
+   ],
+   "walk": 342
+  },
+  {
+   "name": "Keltoi Banisher",
+   "at": [
+    33024,
+    35328,
+    15747
+   ],
+   "walk": 1933
+  },
+  {
+   "name": "Keltoi Banisher",
+   "at": [
+    32448,
+    35136,
+    15738
+   ],
+   "walk": 2505
+  },
+  {
+   "name": "Keltoi Banisher",
+   "at": [
+    31872,
+    35136,
+    15757
+   ],
+   "walk": 3081
+  },
+  {
+   "name": "Keltoi Familiar",
+   "at": [
+    33024,
+    33600,
+    15756
+   ],
+   "walk": 3667
+  },
+  {
+   "name": "Keltoi Familiar",
+   "at": [
+    30912,
+    35136,
+    15975
+   ],
+   "walk": 4063
+  },
+  {
+   "name": "Keltoi Familiar",
+   "at": [
+    32832,
+    33024,
+    15716
+   ],
+   "walk": 4277
+  },
+  {
+   "name": "Keltoi Familiar",
+   "at": [
+    33600,
+    33024,
+    15754
+   ],
+   "walk": 4561
+  },
+  {
+   "name": "Keltoi Ritualist",
+   "at": [
+    35904,
+    35136,
+    15716
+   ],
+   "walk": 4810
+  },
+  {
+   "name": "Keltoi Ritualist",
+   "at": [
+    30720,
+    36096,
+    16016
+   ],
+   "walk": 5014
+  },
+  {
+   "name": "Keltoi Ritualist",
+   "at": [
+    33792,
+    32448,
+    15737
+   ],
+   "walk": 5252
+  },
+  {
+   "name": "Keltoi Ritualist",
+   "at": [
+    31104,
+    36288,
+    16003
+   ],
+   "walk": 5369
+  },
+  {
+   "name": "Keltoi Spiritualist",
+   "at": [
+    29881,
+    36025,
+    16007
+   ],
+   "walk": 5897
+  },
+  {
+   "name": "Keltoi Spiritualist",
+   "at": [
+    29434,
+    36147,
+    16003
+   ],
+   "walk": 6365
+  },
+  {
+   "name": "Keltoi Spiritualist",
+   "at": [
+    31296,
+    31488,
+    16025
+   ],
+   "walk": 7393
+  },
+  {
+   "name": "Keltoi Spiritualist",
+   "at": [
+    31872,
+    30720,
+    16005
+   ],
+   "walk": 8694
+  },
+  {
+   "name": "Muryan Emmisary",
+   "at": [
+    31289,
+    30299,
+    16007
+   ],
+   "walk": 9683
+  },
+  {
+   "name": "Muryan Emmisary",
+   "at": [
+    33562,
+    30268,
+    16004
+   ],
+   "walk": 10565
+  },
+  {
+   "name": "Muryan Emmisary",
+   "at": [
+    30508,
+    29273,
+    16000
+   ],
+   "walk": 11335
+  },
+  {
+   "name": "Muryan Emmisary",
+   "at": [
+    34560,
+    29568,
+    16003
+   ],
+   "walk": 11789
+  },
+  {
+   "name": "Argil The Corrupt",
+   "boss": true,
+   "level": 30,
+   "at": [
+    29375,
+    28799,
+    16256
+   ],
+   "walk": 12957
+  }
+ ]
+}

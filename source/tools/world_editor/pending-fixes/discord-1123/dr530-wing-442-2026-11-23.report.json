@@ -1,0 +1,244 @@
+{
+ "zone": "The Steward's Crypt",
+ "floor_points": 511,
+ "spots": 79,
+ "spawns": 25,
+ "bosses": [
+  "Muire Head Butler"
+ ],
+ "unplaced": [
+  "Servant Guard",
+  "Mirror Wraith",
+  "Muire Head Maid"
+ ],
+ "deepest_walk": 12536,
+ "spawn_list": [
+  {
+   "name": "Crypt Spider",
+   "at": [
+    32739,
+    31680,
+    15040
+   ],
+   "walk": 340
+  },
+  {
+   "name": "Crypt Spider",
+   "at": [
+    31296,
+    31296,
+    14800
+   ],
+   "walk": 2010
+  },
+  {
+   "name": "Crypt Spider",
+   "at": [
+    31296,
+    30528,
+    14800
+   ],
+   "walk": 2523
+  },
+  {
+   "name": "Crypt Spider",
+   "at": [
+    31680,
+    30336,
+    14848
+   ],
+   "walk": 2831
+  },
+  {
+   "name": "Tomb Creeper",
+   "at": [
+    30336,
+    31488,
+    15027
+   ],
+   "walk": 2989
+  },
+  {
+   "name": "Tomb Creeper",
+   "at": [
+    30144,
+    31104,
+    15027
+   ],
+   "walk": 3147
+  },
+  {
+   "name": "Tomb Creeper",
+   "at": [
+    29833,
+    31488,
+    15026
+   ],
+   "walk": 3482
+  },
+  {
+   "name": "Tomb Creeper",
+   "at": [
+    31296,
+    33216,
+    14800
+   ],
+   "walk": 3797
+  },
+  {
+   "name": "Death Worm",
+   "at": [
+    28992,
+    31680,
+    15040
+   ],
+   "walk": 4543
+  },
+  {
+   "name": "Death Worm",
+   "at": [
+    31296,
+    34368,
+    14800
+   ],
+   "walk": 4947
+  },
+  {
+   "name": "Death Worm",
+   "at": [
+    30374,
+    33891,
+    14800
+   ],
+   "walk": 5065
+  },
+  {
+   "name": "Death Worm",
+   "at": [
+    27840,
+    32064,
+    14800
+   ],
+   "walk": 5943
+  },
+  {
+   "name": "Hellhag",
+   "at": [
+    26841,
+    31897,
+    14800
+   ],
+   "walk": 6965
+  },
+  {
+   "name": "Hellhag",
+   "at": [
+    25680,
+    31726,
+    14800
+   ],
+   "walk": 8194
+  },
+  {
+   "name": "Hellhag",
+   "at": [
+    25536,
+    31296,
+    14800
+   ],
+   "walk": 8688
+  },
+  {
+   "name": "Hellhag",
+   "at": [
+    24384,
+    32064,
+    14800
+   ],
+   "walk": 9392
+  },
+  {
+   "name": "Muire Lady-in-Waiting",
+   "at": [
+    25728,
+    29760,
+    15040
+   ],
+   "walk": 10332
+  },
+  {
+   "name": "Muire Lady-in-Waiting",
+   "at": [
+    25536,
+    29376,
+    15040
+   ],
+   "walk": 10627
+  },
+  {
+   "name": "Muire Lady-in-Waiting",
+   "at": [
+    26112,
+    30044,
+    15087
+   ],
+   "walk": 10865
+  },
+  {
+   "name": "Muire Lady-in-Waiting",
+   "at": [
+    26496,
+    29760,
+    15040
+   ],
+   "walk": 11088
+  },
+  {
+   "name": "Mummy Hag",
+   "at": [
+    23040,
+    32448,
+    15040
+   ],
+   "walk": 11354
+  },
+  {
+   "name": "Mummy Hag",
+   "at": [
+    22656,
+    32640,
+    15040
+   ],
+   "walk": 11636
+  },
+  {
+   "name": "Mummy Hag",
+   "at": [
+    22656,
+    33600,
+    15024
+   ],
+   "walk": 11984
+  },
+  {
+   "name": "Mummy Hag",
+   "at": [
+    22428,
+    31948,
+    15040
+   ],
+   "walk": 12141
+  },
+  {
+   "name": "Muire Head Butler",
+   "boss": true,
+   "level": 14,
+   "at": [
+    23011,
+    31296,
+    15040
+   ],
+   "walk": 12536
+  }
+ ]
+}

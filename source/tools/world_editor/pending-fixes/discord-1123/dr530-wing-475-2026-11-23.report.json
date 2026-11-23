@@ -1,0 +1,299 @@
+{
+ "zone": "Rise of the Spraggons",
+ "floor_points": 648,
+ "spots": 100,
+ "spawns": 32,
+ "bosses": [],
+ "unplaced": [],
+ "deepest_walk": 16014,
+ "spawn_list": [
+  {
+   "name": "Earth Sprite",
+   "at": [
+    32640,
+    31872,
+    16255
+   ],
+   "walk": 434
+  },
+  {
+   "name": "Earth Sprite",
+   "at": [
+    33216,
+    31104,
+    16221
+   ],
+   "walk": 1574
+  },
+  {
+   "name": "Earth Sprite",
+   "at": [
+    33408,
+    30144,
+    16110
+   ],
+   "walk": 2551
+  },
+  {
+   "name": "Earth Sprite",
+   "at": [
+    32256,
+    29952,
+    16030
+   ],
+   "walk": 3564
+  },
+  {
+   "name": "Rock Sprite",
+   "at": [
+    31680,
+    30528,
+    16004
+   ],
+   "walk": 4286
+  },
+  {
+   "name": "Rock Sprite",
+   "at": [
+    31296,
+    30720,
+    15990
+   ],
+   "walk": 4691
+  },
+  {
+   "name": "Rock Sprite",
+   "at": [
+    31107,
+    31105,
+    16031
+   ],
+   "walk": 5100
+  },
+  {
+   "name": "Rock Sprite",
+   "at": [
+    30746,
+    29701,
+    16162
+   ],
+   "walk": 5736
+  },
+  {
+   "name": "Root Worm",
+   "at": [
+    32203,
+    32434,
+    16291
+   ],
+   "walk": 6793
+  },
+  {
+   "name": "Root Worm",
+   "at": [
+    31683,
+    33038,
+    16287
+   ],
+   "walk": 7495
+  },
+  {
+   "name": "Root Worm",
+   "at": [
+    32640,
+    33024,
+    16330
+   ],
+   "walk": 7890
+  },
+  {
+   "name": "Root Worm",
+   "at": [
+    30808,
+    32986,
+    16539
+   ],
+   "walk": 8120
+  },
+  {
+   "name": "Pit Spraggon",
+   "at": [
+    30720,
+    33408,
+    16506
+   ],
+   "walk": 8547
+  },
+  {
+   "name": "Pit Spraggon",
+   "at": [
+    32064,
+    34560,
+    16246
+   ],
+   "walk": 8902
+  },
+  {
+   "name": "Pit Spraggon",
+   "at": [
+    33408,
+    33984,
+    16474
+   ],
+   "walk": 9131
+  },
+  {
+   "name": "Pit Spraggon",
+   "at": [
+    30720,
+    34176,
+    16506
+   ],
+   "walk": 9312
+  },
+  {
+   "name": "Spraggon Cutter",
+   "at": [
+    31131,
+    34277,
+    16540
+   ],
+   "walk": 9571
+  },
+  {
+   "name": "Spraggon Cutter",
+   "at": [
+    31488,
+    33984,
+    16510
+   ],
+   "walk": 9898
+  },
+  {
+   "name": "Spraggon Cutter",
+   "at": [
+    32256,
+    35712,
+    16259
+   ],
+   "walk": 10089
+  },
+  {
+   "name": "Spraggon Cutter",
+   "at": [
+    31680,
+    35904,
+    16259
+   ],
+   "walk": 10326
+  },
+  {
+   "name": "Spraggon Runner",
+   "at": [
+    32629,
+    35916,
+    16259
+   ],
+   "walk": 10485
+  },
+  {
+   "name": "Spraggon Runner",
+   "at": [
+    33792,
+    34944,
+    16424
+   ],
+   "walk": 10668
+  },
+  {
+   "name": "Spraggon Runner",
+   "at": [
+    31680,
+    36480,
+    16131
+   ],
+   "walk": 10974
+  },
+  {
+   "name": "Spraggon Runner",
+   "at": [
+    33792,
+    35520,
+    16510
+   ],
+   "walk": 11218
+  },
+  {
+   "name": "Spraggon Springer",
+   "at": [
+    33897,
+    35932,
+    16536
+   ],
+   "walk": 11658
+  },
+  {
+   "name": "Spraggon Springer",
+   "at": [
+    30912,
+    35520,
+    16044
+   ],
+   "walk": 11958
+  },
+  {
+   "name": "Spraggon Springer",
+   "at": [
+    34107,
+    36322,
+    16534
+   ],
+   "walk": 12131
+  },
+  {
+   "name": "Spraggon Springer",
+   "at": [
+    33216,
+    36096,
+    16513
+   ],
+   "walk": 12312
+  },
+  {
+   "name": "Spraggon Emissary",
+   "at": [
+    33024,
+    36480,
+    16532
+   ],
+   "walk": 12574
+  },
+  {
+   "name": "Spraggon Emissary",
+   "at": [
+    31680,
+    37632,
+    16276
+   ],
+   "walk": 13313
+  },
+  {
+   "name": "Spraggon Emissary",
+   "at": [
+    32634,
+    38023,
+    16277
+   ],
+   "walk": 14423
+  },
+  {
+   "name": "Spraggon Emissary",
+   "at": [
+    33216,
+    37632,
+    16276
+   ],
+   "walk": 14820
+  }
+ ]
+}

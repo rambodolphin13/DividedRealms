@@ -1,0 +1,279 @@
+{
+ "zone": "Nisse's Retreat",
+ "floor_points": 548,
+ "spots": 96,
+ "spawns": 29,
+ "bosses": [
+  "Overseer Lith"
+ ],
+ "unplaced": [
+  "Tomte Guard",
+  "Tomte Warlord"
+ ],
+ "deepest_walk": 15240,
+ "spawn_list": [
+  {
+   "name": "Tomte Lookout",
+   "at": [
+    31915,
+    31517,
+    16276
+   ],
+   "walk": 323
+  },
+  {
+   "name": "Tomte Lookout",
+   "at": [
+    32640,
+    32256,
+    16018
+   ],
+   "walk": 1302
+  },
+  {
+   "name": "Tomte Lookout",
+   "at": [
+    33216,
+    32832,
+    16012
+   ],
+   "walk": 2056
+  },
+  {
+   "name": "Tomte Lookout",
+   "at": [
+    33599,
+    33023,
+    16021
+   ],
+   "walk": 2484
+  },
+  {
+   "name": "Tomte Jager",
+   "at": [
+    33189,
+    33829,
+    16026
+   ],
+   "walk": 2809
+  },
+  {
+   "name": "Tomte Jager",
+   "at": [
+    33451,
+    34164,
+    16003
+   ],
+   "walk": 3245
+  },
+  {
+   "name": "Tomte Jager",
+   "at": [
+    33984,
+    34176,
+    16018
+   ],
+   "walk": 3675
+  },
+  {
+   "name": "Tomte Jager",
+   "at": [
+    34176,
+    33600,
+    16029
+   ],
+   "walk": 3828
+  },
+  {
+   "name": "Tomte Witch Doctor",
+   "at": [
+    34456,
+    33636,
+    16235
+   ],
+   "walk": 4332
+  },
+  {
+   "name": "Tomte Witch Doctor",
+   "at": [
+    33984,
+    35328,
+    15875
+   ],
+   "walk": 4561
+  },
+  {
+   "name": "Tomte Witch Doctor",
+   "at": [
+    34176,
+    35712,
+    15761
+   ],
+   "walk": 4976
+  },
+  {
+   "name": "Tomte Witch Doctor",
+   "at": [
+    33403,
+    35328,
+    15764
+   ],
+   "walk": 5564
+  },
+  {
+   "name": "Tomte Elder",
+   "at": [
+    33024,
+    35712,
+    15747
+   ],
+   "walk": 5806
+  },
+  {
+   "name": "Tomte Elder",
+   "at": [
+    32640,
+    35520,
+    15757
+   ],
+   "walk": 6196
+  },
+  {
+   "name": "Tomte Elder",
+   "at": [
+    28992,
+    34560,
+    16008
+   ],
+   "walk": 6838
+  },
+  {
+   "name": "Tomte Elder",
+   "at": [
+    28645,
+    34251,
+    16003
+   ],
+   "walk": 7182
+  },
+  {
+   "name": "Tomte Zealot",
+   "at": [
+    28800,
+    33216,
+    16004
+   ],
+   "walk": 7788
+  },
+  {
+   "name": "Tomte Zealot",
+   "at": [
+    28032,
+    35333,
+    16012
+   ],
+   "walk": 8106
+  },
+  {
+   "name": "Tomte Zealot",
+   "at": [
+    27648,
+    33600,
+    16018
+   ],
+   "walk": 8606
+  },
+  {
+   "name": "Tomte Zealot",
+   "at": [
+    28235,
+    32162,
+    16067
+   ],
+   "walk": 9066
+  },
+  {
+   "name": "Tomte Caitiff",
+   "at": [
+    27456,
+    33024,
+    15879
+   ],
+   "walk": 9480
+  },
+  {
+   "name": "Tomte Caitiff",
+   "at": [
+    27648,
+    31488,
+    16004
+   ],
+   "walk": 9892
+  },
+  {
+   "name": "Tomte Caitiff",
+   "at": [
+    26885,
+    32373,
+    15923
+   ],
+   "walk": 10039
+  },
+  {
+   "name": "Tomte Caitiff",
+   "at": [
+    26722,
+    31525,
+    16026
+   ],
+   "walk": 11124
+  },
+  {
+   "name": "Tomte Seer",
+   "at": [
+    25920,
+    31488,
+    16032
+   ],
+   "walk": 11928
+  },
+  {
+   "name": "Tomte Seer",
+   "at": [
+    25536,
+    31680,
+    16030
+   ],
+   "walk": 12321
+  },
+  {
+   "name": "Tomte Seer",
+   "at": [
+    25728,
+    30336,
+    16011
+   ],
+   "walk": 12765
+  },
+  {
+   "name": "Tomte Seer",
+   "at": [
+    24576,
+    30720,
+    15763
+   ],
+   "walk": 14084
+  },
+  {
+   "name": "Overseer Lith",
+   "boss": true,
+   "level": 22,
+   "at": [
+    23424,
+    30336,
+    15761
+   ],
+   "walk": 15240
+  }
+ ]
+}

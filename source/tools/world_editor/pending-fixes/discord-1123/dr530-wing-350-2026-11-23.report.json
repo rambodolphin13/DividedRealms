@@ -1,0 +1,312 @@
+{
+ "zone": "Liche's Unrest",
+ "floor_points": 416,
+ "spots": 74,
+ "spawns": 33,
+ "bosses": [
+  "Enok"
+ ],
+ "unplaced": [],
+ "deepest_walk": 17991,
+ "spawn_list": [
+  {
+   "name": "Young Draugr Hound",
+   "at": [
+    29376,
+    33216,
+    16514
+   ],
+   "walk": 331
+  },
+  {
+   "name": "Young Draugr Hound",
+   "at": [
+    29301,
+    32731,
+    16529
+   ],
+   "walk": 825
+  },
+  {
+   "name": "Young Draugr Hound",
+   "at": [
+    28992,
+    32064,
+    16514
+   ],
+   "walk": 1608
+  },
+  {
+   "name": "Young Draugr Hound",
+   "at": [
+    29952,
+    32064,
+    16393
+   ],
+   "walk": 1962
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    28914,
+    31564,
+    16514
+   ],
+   "walk": 2154
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    30336,
+    31872,
+    16258
+   ],
+   "walk": 2407
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    30528,
+    31488,
+    16263
+   ],
+   "walk": 2834
+  },
+  {
+   "name": "Corpse Crawler",
+   "at": [
+    28032,
+    31296,
+    16385
+   ],
+   "walk": 2877
+  },
+  {
+   "name": "Draugr Warrior",
+   "at": [
+    27456,
+    32064,
+    16391
+   ],
+   "walk": 3220
+  },
+  {
+   "name": "Draugr Warrior",
+   "at": [
+    31301,
+    31916,
+    16111
+   ],
+   "walk": 3576
+  },
+  {
+   "name": "Draugr Warrior",
+   "at": [
+    32245,
+    32256,
+    16002
+   ],
+   "walk": 4602
+  },
+  {
+   "name": "Draugr Warrior",
+   "at": [
+    32581,
+    31612,
+    15692
+   ],
+   "walk": 5109
+  },
+  {
+   "name": "Dishonored Hagbui",
+   "at": [
+    33024,
+    31488,
+    15627
+   ],
+   "walk": 5551
+  },
+  {
+   "name": "Dishonored Hagbui",
+   "at": [
+    33024,
+    32832,
+    16005
+   ],
+   "walk": 5675
+  },
+  {
+   "name": "Dishonored Hagbui",
+   "at": [
+    33408,
+    31680,
+    15779
+   ],
+   "walk": 5920
+  },
+  {
+   "name": "Dishonored Hagbui",
+   "at": [
+    32011,
+    32448,
+    15682
+   ],
+   "walk": 6214
+  },
+  {
+   "name": "Draugr Hound",
+   "at": [
+    33600,
+    32640,
+    15644
+   ],
+   "walk": 6626
+  },
+  {
+   "name": "Draugr Hound",
+   "at": [
+    34363,
+    33206,
+    16001
+   ],
+   "walk": 7087
+  },
+  {
+   "name": "Draugr Hound",
+   "at": [
+    35136,
+    32832,
+    16003
+   ],
+   "walk": 7842
+  },
+  {
+   "name": "Draugr Hound",
+   "at": [
+    34944,
+    31872,
+    15965
+   ],
+   "walk": 8519
+  },
+  {
+   "name": "Poisonous Cave Spider",
+   "at": [
+    35074,
+    31449,
+    16031
+   ],
+   "walk": 8952
+  },
+  {
+   "name": "Poisonous Cave Spider",
+   "at": [
+    36315,
+    33379,
+    15778
+   ],
+   "walk": 9251
+  },
+  {
+   "name": "Poisonous Cave Spider",
+   "at": [
+    36811,
+    33395,
+    15500
+   ],
+   "walk": 10441
+  },
+  {
+   "name": "Poisonous Cave Spider",
+   "at": [
+    37034,
+    32700,
+    15495
+   ],
+   "walk": 11575
+  },
+  {
+   "name": "Vengeful Ghoul",
+   "at": [
+    37416,
+    32297,
+    15477
+   ],
+   "walk": 12257
+  },
+  {
+   "name": "Vengeful Ghoul",
+   "at": [
+    37440,
+    33984,
+    15501
+   ],
+   "walk": 12982
+  },
+  {
+   "name": "Vengeful Ghoul",
+   "at": [
+    37927,
+    34843,
+    15489
+   ],
+   "walk": 13968
+  },
+  {
+   "name": "Vengeful Ghoul",
+   "at": [
+    36987,
+    34665,
+    15487
+   ],
+   "walk": 14649
+  },
+  {
+   "name": "Draugr Hound Herder",
+   "at": [
+    36288,
+    35136,
+    15488
+   ],
+   "walk": 15454
+  },
+  {
+   "name": "Draugr Hound Herder",
+   "at": [
+    36672,
+    35328,
+    15502
+   ],
+   "walk": 15959
+  },
+  {
+   "name": "Draugr Hound Herder",
+   "at": [
+    36690,
+    35999,
+    15551
+   ],
+   "walk": 16909
+  },
+  {
+   "name": "Draugr Hound Herder",
+   "at": [
+    36911,
+    36364,
+    15490
+   ],
+   "walk": 17215
+  },
+  {
+   "name": "Enok",
+   "boss": true,
+   "level": 32,
+   "at": [
+    38459,
+    35532,
+    15586
+   ],
+   "walk": 17991
+  }
+ ]
+}
