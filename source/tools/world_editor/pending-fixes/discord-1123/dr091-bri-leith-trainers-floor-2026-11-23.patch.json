@@ -1,0 +1,75 @@
+{
+ "format": "offline-daoc-world-editor-2",
+ "created": "2026-11-23T20:01:30.952272+00:00",
+ "clientWorld": "a4e2c57490d7f89c0c47af0ed9de1583ddcd5ca8847a814f6baa5017dc97e47d",
+ "changes": [
+  {
+   "table": "Mob",
+   "key": "05c51f29-69c6-4f2c-b29a-fd096e949941",
+   "op": "update",
+   "before": {
+    "Y": 487466,
+    "Z": 2610
+   },
+   "after": {
+    "Y": 487404,
+    "Z": 2656
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "599cc449-7e45-4b53-828f-dc3cde6e12ed",
+   "op": "update",
+   "before": {
+    "Y": 487469,
+    "Z": 2617
+   },
+   "after": {
+    "Y": 487404,
+    "Z": 2656
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "6cbeaccb-9ed0-488a-b642-f1599093a278",
+   "op": "update",
+   "before": {
+    "X": 420112,
+    "Y": 487435,
+    "Z": 2460
+   },
+   "after": {
+    "X": 420110,
+    "Y": 487465,
+    "Z": 2656
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "d6b93a4a-0e8d-4e02-99d0-a58cc5a1f258",
+   "op": "update",
+   "before": {
+    "X": 421595,
+    "Y": 487696,
+    "Z": 2460
+   },
+   "after": {
+    "X": 421695,
+    "Y": 487590,
+    "Z": 2656
+   }
+  },
+  {
+   "table": "Mob",
+   "key": "3105050b-e10d-45ee-b285-5ffed44ebe8f",
+   "op": "update",
+   "before": {
+    "Z": 2207
+   },
+   "after": {
+    "Z": 2656
+   }
+  }
+ ],
+ "note": "Server-sent NPC/object positions need no client binary patch. Geometry edits require matching client assets and rebuilt navigation."
+}
