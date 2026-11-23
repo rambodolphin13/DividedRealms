@@ -1,0 +1,672 @@
+{
+ "zone": "The Arena",
+ "floor_points": 490,
+ "spots": 83,
+ "spawns": 73,
+ "bosses": [
+  "Gladiator Og"
+ ],
+ "unplaced": [],
+ "deepest_walk": 22274,
+ "spawn_list": [
+  {
+   "name": "The Spirit of Tertius",
+   "at": [
+    48576,
+    31510,
+    16839
+   ],
+   "walk": 302
+  },
+  {
+   "name": "The Spirit of Tertius",
+   "at": [
+    48015,
+    31541,
+    16755
+   ],
+   "walk": 878
+  },
+  {
+   "name": "The Spirit of Tertius",
+   "at": [
+    47639,
+    31811,
+    16755
+   ],
+   "walk": 1286
+  },
+  {
+   "name": "The Spirit of Tertius",
+   "at": [
+    47639,
+    31532,
+    16243
+   ],
+   "walk": 1867
+  },
+  {
+   "name": "Centurio Pilus Posterior",
+   "at": [
+    47232,
+    31680,
+    16243
+   ],
+   "walk": 2275
+  },
+  {
+   "name": "Centurio Pilus Posterior",
+   "at": [
+    46910,
+    31366,
+    16243
+   ],
+   "walk": 2660
+  },
+  {
+   "name": "Centurio Pilus Posterior",
+   "at": [
+    46823,
+    31872,
+    16243
+   ],
+   "walk": 2877
+  },
+  {
+   "name": "Centurio Pilus Posterior",
+   "at": [
+    46272,
+    31766,
+    16243
+   ],
+   "walk": 3265
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    45696,
+    32064,
+    16243
+   ],
+   "walk": 3879
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    45361,
+    31731,
+    16243
+   ],
+   "walk": 4177
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    45809,
+    31104,
+    16243
+   ],
+   "walk": 4275
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    45809,
+    32640,
+    16243
+   ],
+   "walk": 4302
+  },
+  {
+   "name": "Centurio Crotus Praetorii",
+   "at": [
+    45504,
+    32992,
+    16243
+   ],
+   "walk": 4709
+  },
+  {
+   "name": "Centurio Crotus Praetorii",
+   "at": [
+    45696,
+    30528,
+    16132
+   ],
+   "walk": 4859
+  },
+  {
+   "name": "Centurio Crotus Praetorii",
+   "at": [
+    45025,
+    32796,
+    16243
+   ],
+   "walk": 5103
+  },
+  {
+   "name": "Centurio Crotus Praetorii",
+   "at": [
+    46107,
+    30308,
+    16003
+   ],
+   "walk": 5312
+  },
+  {
+   "name": "Centurio Olivarius Praetorii",
+   "at": [
+    44928,
+    33216,
+    16243
+   ],
+   "walk": 5375
+  },
+  {
+   "name": "Centurio Olivarius Praetorii",
+   "at": [
+    44561,
+    32947,
+    16249
+   ],
+   "walk": 5661
+  },
+  {
+   "name": "Centurio Olivarius Praetorii",
+   "at": [
+    46142,
+    29827,
+    16003
+   ],
+   "walk": 5786
+  },
+  {
+   "name": "Centurio Olivarius Praetorii",
+   "at": [
+    44160,
+    33216,
+    16243
+   ],
+   "walk": 6017
+  },
+  {
+   "name": "Centurio Primus Ordines",
+   "at": [
+    43761,
+    32976,
+    16265
+   ],
+   "walk": 6537
+  },
+  {
+   "name": "Centurio Primus Ordines",
+   "at": [
+    43703,
+    32534,
+    16371
+   ],
+   "walk": 7034
+  },
+  {
+   "name": "Centurio Primus Ordines",
+   "at": [
+    43200,
+    32256,
+    16374
+   ],
+   "walk": 7597
+  },
+  {
+   "name": "Centurio Primus Ordines",
+   "at": [
+    42816,
+    32534,
+    16483
+   ],
+   "walk": 7659
+  },
+  {
+   "name": "Centurio Taras Praetorii",
+   "at": [
+    42240,
+    32640,
+    16448
+   ],
+   "walk": 8228
+  },
+  {
+   "name": "Centurio Taras Praetorii",
+   "at": [
+    42048,
+    32256,
+    16480
+   ],
+   "walk": 8514
+  },
+  {
+   "name": "Centurio Taras Praetorii",
+   "at": [
+    42048,
+    33024,
+    16482
+   ],
+   "walk": 8519
+  },
+  {
+   "name": "Centurio Taras Praetorii",
+   "at": [
+    41472,
+    32640,
+    16483
+   ],
+   "walk": 8994
+  },
+  {
+   "name": "Optio",
+   "at": [
+    41088,
+    32832,
+    16481
+   ],
+   "walk": 9434
+  },
+  {
+   "name": "Optio",
+   "at": [
+    40512,
+    33024,
+    16246
+   ],
+   "walk": 10200
+  },
+  {
+   "name": "Optio",
+   "at": [
+    40410,
+    33449,
+    16275
+   ],
+   "walk": 10425
+  },
+  {
+   "name": "Optio",
+   "at": [
+    40128,
+    32832,
+    16229
+   ],
+   "walk": 10627
+  },
+  {
+   "name": "Praetor",
+   "at": [
+    39936,
+    33216,
+    16239
+   ],
+   "walk": 10762
+  },
+  {
+   "name": "Praetor",
+   "at": [
+    39360,
+    33049,
+    16243
+   ],
+   "walk": 11344
+  },
+  {
+   "name": "Praetor",
+   "at": [
+    38784,
+    33049,
+    16243
+   ],
+   "walk": 11919
+  },
+  {
+   "name": "Praetor",
+   "at": [
+    38400,
+    32739,
+    16393
+   ],
+   "walk": 12524
+  },
+  {
+   "name": "Dux",
+   "at": [
+    37440,
+    32732,
+    16483
+   ],
+   "walk": 13502
+  },
+  {
+   "name": "Dux",
+   "at": [
+    37632,
+    32256,
+    16483
+   ],
+   "walk": 13668
+  },
+  {
+   "name": "Dux",
+   "at": [
+    37056,
+    32448,
+    16483
+   ],
+   "walk": 13974
+  },
+  {
+   "name": "Dux",
+   "at": [
+    38208,
+    32256,
+    16243
+   ],
+   "walk": 14245
+  },
+  {
+   "name": "Praefectus",
+   "at": [
+    36672,
+    32640,
+    16483
+   ],
+   "walk": 14270
+  },
+  {
+   "name": "Praefectus",
+   "at": [
+    37056,
+    31872,
+    16483
+   ],
+   "walk": 14317
+  },
+  {
+   "name": "Praefectus",
+   "at": [
+    36672,
+    32153,
+    16483
+   ],
+   "walk": 14438
+  },
+  {
+   "name": "Praefectus",
+   "at": [
+    36672,
+    31680,
+    16483
+   ],
+   "walk": 14681
+  },
+  {
+   "name": "Princep",
+   "at": [
+    37440,
+    31680,
+    16483
+   ],
+   "walk": 14754
+  },
+  {
+   "name": "Princep",
+   "at": [
+    37056,
+    31395,
+    16483
+   ],
+   "walk": 14793
+  },
+  {
+   "name": "Princep",
+   "at": [
+    38784,
+    32256,
+    16243
+   ],
+   "walk": 14803
+  },
+  {
+   "name": "Princep",
+   "at": [
+    36288,
+    31872,
+    16483
+   ],
+   "walk": 15065
+  },
+  {
+   "name": "Tribune",
+   "at": [
+    35904,
+    32256,
+    16483
+   ],
+   "walk": 15149
+  },
+  {
+   "name": "Tribune",
+   "at": [
+    37824,
+    31488,
+    16483
+   ],
+   "walk": 15214
+  },
+  {
+   "name": "Tribune",
+   "at": [
+    39262,
+    32355,
+    16243
+   ],
+   "walk": 15287
+  },
+  {
+   "name": "Tribune",
+   "at": [
+    35520,
+    33024,
+    16483
+   ],
+   "walk": 16200
+  },
+  {
+   "name": "Evocatus Augusti",
+   "at": [
+    35038,
+    33123,
+    16483
+   ],
+   "walk": 16538
+  },
+  {
+   "name": "Evocatus Augusti",
+   "at": [
+    34560,
+    33024,
+    16483
+   ],
+   "walk": 16961
+  },
+  {
+   "name": "Evocatus Augusti",
+   "at": [
+    35520,
+    33792,
+    16453
+   ],
+   "walk": 16968
+  },
+  {
+   "name": "Evocatus Augusti",
+   "at": [
+    35328,
+    34176,
+    16453
+   ],
+   "walk": 17363
+  },
+  {
+   "name": "Legatio",
+   "at": [
+    34176,
+    32832,
+    16334
+   ],
+   "walk": 17401
+  },
+  {
+   "name": "Legatio",
+   "at": [
+    34869,
+    33884,
+    16531
+   ],
+   "walk": 17495
+  },
+  {
+   "name": "Legatio",
+   "at": [
+    35520,
+    34752,
+    16483
+   ],
+   "walk": 17928
+  },
+  {
+   "name": "Legatio",
+   "at": [
+    34276,
+    32281,
+    16060
+   ],
+   "walk": 17976
+  },
+  {
+   "name": "Praetorian Guard",
+   "at": [
+    33984,
+    31900,
+    16003
+   ],
+   "walk": 18409
+  },
+  {
+   "name": "Praetorian Guard",
+   "at": [
+    33408,
+    32064,
+    16003
+   ],
+   "walk": 18884
+  },
+  {
+   "name": "Praetorian Guard",
+   "at": [
+    33508,
+    31488,
+    16003
+   ],
+   "walk": 19257
+  },
+  {
+   "name": "Praetorian Guard",
+   "at": [
+    32938,
+    32137,
+    16000
+   ],
+   "walk": 19359
+  },
+  {
+   "name": "Singular",
+   "at": [
+    33306,
+    31059,
+    16003
+   ],
+   "walk": 19748
+  },
+  {
+   "name": "Singular",
+   "at": [
+    33408,
+    30528,
+    16004
+   ],
+   "walk": 20217
+  },
+  {
+   "name": "Singular",
+   "at": [
+    31872,
+    31900,
+    16205
+   ],
+   "walk": 20478
+  },
+  {
+   "name": "Singular",
+   "at": [
+    31514,
+    32256,
+    16243
+   ],
+   "walk": 20885
+  },
+  {
+   "name": "Eques",
+   "at": [
+    33202,
+    29951,
+    15846
+   ],
+   "walk": 20927
+  },
+  {
+   "name": "Eques",
+   "at": [
+    33610,
+    29760,
+    15843
+   ],
+   "walk": 21135
+  },
+  {
+   "name": "Eques",
+   "at": [
+    31514,
+    32729,
+    16243
+   ],
+   "walk": 21306
+  },
+  {
+   "name": "Eques",
+   "at": [
+    33204,
+    29376,
+    15843
+   ],
+   "walk": 21478
+  },
+  {
+   "name": "Gladiator Og",
+   "boss": true,
+   "level": 39,
+   "at": [
+    33610,
+    28608,
+    15843
+   ],
+   "walk": 22274
+  }
+ ]
+}

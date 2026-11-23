@@ -1,0 +1,324 @@
+{
+ "zone": "The Lost Burrow",
+ "floor_points": 442,
+ "spots": 78,
+ "spawns": 34,
+ "bosses": [
+  "Glug",
+  "Trug"
+ ],
+ "unplaced": [],
+ "deepest_walk": 19619,
+ "spawn_list": [
+  {
+   "name": "Vendo Guard",
+   "at": [
+    30806,
+    31590,
+    16257
+   ],
+   "walk": 314
+  },
+  {
+   "name": "Vendo Guard",
+   "at": [
+    31296,
+    31680,
+    16178
+   ],
+   "walk": 599
+  },
+  {
+   "name": "Vendo Guard",
+   "at": [
+    32150,
+    31315,
+    16056
+   ],
+   "walk": 1556
+  },
+  {
+   "name": "Vendo Guard",
+   "at": [
+    33469,
+    31309,
+    16101
+   ],
+   "walk": 2840
+  },
+  {
+   "name": "Vendo Reaver",
+   "at": [
+    33334,
+    32560,
+    16002
+   ],
+   "walk": 3269
+  },
+  {
+   "name": "Vendo Reaver",
+   "at": [
+    33792,
+    32640,
+    15999
+   ],
+   "walk": 3772
+  },
+  {
+   "name": "Vendo Reaver",
+   "at": [
+    34574,
+    32822,
+    16003
+   ],
+   "walk": 4891
+  },
+  {
+   "name": "Vendo Reaver",
+   "at": [
+    35050,
+    32925,
+    15998
+   ],
+   "walk": 5450
+  },
+  {
+   "name": "Albino Cave Mauler",
+   "at": [
+    35446,
+    31641,
+    16002
+   ],
+   "walk": 6314
+  },
+  {
+   "name": "Albino Cave Mauler",
+   "at": [
+    35904,
+    31680,
+    16002
+   ],
+   "walk": 6819
+  },
+  {
+   "name": "Albino Cave Mauler",
+   "at": [
+    36435,
+    31681,
+    16010
+   ],
+   "walk": 7546
+  },
+  {
+   "name": "Albino Cave Mauler",
+   "at": [
+    36864,
+    31296,
+    16008
+   ],
+   "walk": 8614
+  },
+  {
+   "name": "Vendo Yowler",
+   "at": [
+    37440,
+    31104,
+    16005
+   ],
+   "walk": 9224
+  },
+  {
+   "name": "Vendo Yowler",
+   "at": [
+    38400,
+    31488,
+    16002
+   ],
+   "walk": 10151
+  },
+  {
+   "name": "Vendo Yowler",
+   "at": [
+    38976,
+    31296,
+    16002
+   ],
+   "walk": 10710
+  },
+  {
+   "name": "Vendo Yowler",
+   "at": [
+    38784,
+    30528,
+    15850
+   ],
+   "walk": 10969
+  },
+  {
+   "name": "Cave Ogre",
+   "at": [
+    39360,
+    31488,
+    16004
+   ],
+   "walk": 11099
+  },
+  {
+   "name": "Cave Ogre",
+   "at": [
+    39360,
+    30528,
+    15842
+   ],
+   "walk": 11352
+  },
+  {
+   "name": "Cave Ogre",
+   "at": [
+    39552,
+    29568,
+    15825
+   ],
+   "walk": 12324
+  },
+  {
+   "name": "Cave Ogre",
+   "at": [
+    39360,
+    29184,
+    15783
+   ],
+   "walk": 12716
+  },
+  {
+   "name": "Cave Viper",
+   "at": [
+    38400,
+    29184,
+    15754
+   ],
+   "walk": 13297
+  },
+  {
+   "name": "Cave Viper",
+   "at": [
+    38080,
+    29504,
+    15973
+   ],
+   "walk": 13513
+  },
+  {
+   "name": "Cave Viper",
+   "at": [
+    38294,
+    28771,
+    15659
+   ],
+   "walk": 13861
+  },
+  {
+   "name": "Cave Viper",
+   "at": [
+    39552,
+    28622,
+    16076
+   ],
+   "walk": 13984
+  },
+  {
+   "name": "Svendo",
+   "at": [
+    37692,
+    28598,
+    15797
+   ],
+   "walk": 14307
+  },
+  {
+   "name": "Svendo",
+   "at": [
+    38400,
+    28032,
+    15991
+   ],
+   "walk": 14631
+  },
+  {
+   "name": "Svendo",
+   "at": [
+    37987,
+    28137,
+    16014
+   ],
+   "walk": 15054
+  },
+  {
+   "name": "Svendo",
+   "at": [
+    40896,
+    27840,
+    15923
+   ],
+   "walk": 15372
+  },
+  {
+   "name": "Vendo Savager",
+   "at": [
+    41281,
+    28048,
+    15941
+   ],
+   "walk": 15891
+  },
+  {
+   "name": "Vendo Savager",
+   "at": [
+    41664,
+    28224,
+    15919
+   ],
+   "walk": 16289
+  },
+  {
+   "name": "Vendo Savager",
+   "at": [
+    42432,
+    27648,
+    15932
+   ],
+   "walk": 17168
+  },
+  {
+   "name": "Vendo Savager",
+   "at": [
+    42854,
+    27235,
+    15938
+   ],
+   "walk": 17884
+  },
+  {
+   "name": "Glug",
+   "boss": true,
+   "level": 35,
+   "at": [
+    43584,
+    28224,
+    15923
+   ],
+   "walk": 19216
+  },
+  {
+   "name": "Trug",
+   "boss": true,
+   "level": 35,
+   "at": [
+    43968,
+    28032,
+    15923
+   ],
+   "walk": 19619
+  }
+ ]
+}

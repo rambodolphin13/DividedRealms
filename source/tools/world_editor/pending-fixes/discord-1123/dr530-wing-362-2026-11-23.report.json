@@ -1,0 +1,422 @@
+{
+ "zone": "The Master's Lair",
+ "floor_points": 910,
+ "spots": 148,
+ "spawns": 45,
+ "bosses": [
+  "Ond's Master"
+ ],
+ "unplaced": [
+  "Falling Rocks"
+ ],
+ "deepest_walk": 22701,
+ "spawn_list": [
+  {
+   "name": "Ekyps Gunstling",
+   "at": [
+    30528,
+    32064,
+    16054
+   ],
+   "walk": 370
+  },
+  {
+   "name": "Ekyps Gunstling",
+   "at": [
+    31104,
+    31680,
+    16064
+   ],
+   "walk": 1302
+  },
+  {
+   "name": "Ekyps Gunstling",
+   "at": [
+    31872,
+    31296,
+    16078
+   ],
+   "walk": 2097
+  },
+  {
+   "name": "Ekyps Gunstling",
+   "at": [
+    32256,
+    31104,
+    16078
+   ],
+   "walk": 2520
+  },
+  {
+   "name": "Fell Cat",
+   "at": [
+    32064,
+    32640,
+    16052
+   ],
+   "walk": 2793
+  },
+  {
+   "name": "Fell Cat",
+   "at": [
+    32255,
+    33973,
+    16067
+   ],
+   "walk": 4090
+  },
+  {
+   "name": "Fell Cat",
+   "at": [
+    32636,
+    34941,
+    16076
+   ],
+   "walk": 5191
+  },
+  {
+   "name": "Fell Cat",
+   "at": [
+    32448,
+    36096,
+    16064
+   ],
+   "walk": 6323
+  },
+  {
+   "name": "Cave Trow",
+   "at": [
+    32640,
+    36672,
+    16089
+   ],
+   "walk": 6912
+  },
+  {
+   "name": "Cave Trow",
+   "at": [
+    31488,
+    36480,
+    16060
+   ],
+   "walk": 7422
+  },
+  {
+   "name": "Cave Trow",
+   "at": [
+    31104,
+    36288,
+    16052
+   ],
+   "walk": 7785
+  },
+  {
+   "name": "Cave Trow",
+   "at": [
+    33024,
+    37632,
+    16080
+   ],
+   "walk": 8173
+  },
+  {
+   "name": "Cursed Thulian",
+   "at": [
+    33024,
+    38208,
+    16051
+   ],
+   "walk": 8593
+  },
+  {
+   "name": "Cursed Thulian",
+   "at": [
+    34752,
+    36672,
+    16050
+   ],
+   "walk": 8858
+  },
+  {
+   "name": "Cursed Thulian",
+   "at": [
+    32640,
+    38400,
+    16054
+   ],
+   "walk": 8962
+  },
+  {
+   "name": "Cursed Thulian",
+   "at": [
+    33647,
+    38754,
+    16052
+   ],
+   "walk": 9362
+  },
+  {
+   "name": "Deeplurk Dissembler",
+   "at": [
+    32384,
+    38776,
+    16081
+   ],
+   "walk": 9483
+  },
+  {
+   "name": "Deeplurk Dissembler",
+   "at": [
+    33666,
+    37643,
+    16063
+   ],
+   "walk": 9671
+  },
+  {
+   "name": "Deeplurk Dissembler",
+   "at": [
+    30153,
+    35827,
+    15154
+   ],
+   "walk": 9939
+  },
+  {
+   "name": "Deeplurk Dissembler",
+   "at": [
+    30720,
+    36864,
+    15023
+   ],
+   "walk": 10153
+  },
+  {
+   "name": "Deeplurk Feeder",
+   "at": [
+    32382,
+    39554,
+    16063
+   ],
+   "walk": 10262
+  },
+  {
+   "name": "Deeplurk Feeder",
+   "at": [
+    30336,
+    37080,
+    15166
+   ],
+   "walk": 10517
+  },
+  {
+   "name": "Deeplurk Feeder",
+   "at": [
+    31251,
+    37153,
+    15099
+   ],
+   "walk": 10663
+  },
+  {
+   "name": "Deeplurk Feeder",
+   "at": [
+    30528,
+    37632,
+    15056
+   ],
+   "walk": 10951
+  },
+  {
+   "name": "Deeplurk Manslayer",
+   "at": [
+    34771,
+    34852,
+    16254
+   ],
+   "walk": 11074
+  },
+  {
+   "name": "Deeplurk Manslayer",
+   "at": [
+    30720,
+    38016,
+    15115
+   ],
+   "walk": 11316
+  },
+  {
+   "name": "Deeplurk Manslayer",
+   "at": [
+    35203,
+    39188,
+    16107
+   ],
+   "walk": 11374
+  },
+  {
+   "name": "Deeplurk Manslayer",
+   "at": [
+    35520,
+    35136,
+    16001
+   ],
+   "walk": 11650
+  },
+  {
+   "name": "Undead Troll Warrior",
+   "at": [
+    31370,
+    38590,
+    15051
+   ],
+   "walk": 12060
+  },
+  {
+   "name": "Undead Troll Warrior",
+   "at": [
+    35239,
+    35574,
+    15640
+   ],
+   "walk": 12433
+  },
+  {
+   "name": "Undead Troll Warrior",
+   "at": [
+    34944,
+    40320,
+    16056
+   ],
+   "walk": 12613
+  },
+  {
+   "name": "Undead Troll Warrior",
+   "at": [
+    35328,
+    35136,
+    15502
+   ],
+   "walk": 12998
+  },
+  {
+   "name": "Djupt Usling",
+   "at": [
+    30720,
+    39552,
+    15034
+   ],
+   "walk": 13364
+  },
+  {
+   "name": "Djupt Usling",
+   "at": [
+    34752,
+    37248,
+    15546
+   ],
+   "walk": 13980
+  },
+  {
+   "name": "Djupt Usling",
+   "at": [
+    35516,
+    37280,
+    15556
+   ],
+   "walk": 14571
+  },
+  {
+   "name": "Djupt Usling",
+   "at": [
+    36485,
+    37567,
+    15560
+   ],
+   "walk": 15563
+  },
+  {
+   "name": "Djupt Odjur",
+   "at": [
+    37088,
+    36523,
+    15553
+   ],
+   "walk": 16563
+  },
+  {
+   "name": "Djupt Odjur",
+   "at": [
+    37824,
+    38784,
+    15685
+   ],
+   "walk": 17678
+  },
+  {
+   "name": "Djupt Odjur",
+   "at": [
+    37632,
+    38976,
+    16000
+   ],
+   "walk": 18220
+  },
+  {
+   "name": "Djupt Odjur",
+   "at": [
+    37824,
+    38592,
+    16047
+   ],
+   "walk": 18663
+  },
+  {
+   "name": "Djupt Vivunder",
+   "at": [
+    37056,
+    39552,
+    16244
+   ],
+   "walk": 18868
+  },
+  {
+   "name": "Djupt Vivunder",
+   "at": [
+    38253,
+    38759,
+    16073
+   ],
+   "walk": 19144
+  },
+  {
+   "name": "Djupt Vivunder",
+   "at": [
+    37632,
+    37777,
+    16091
+   ],
+   "walk": 19967
+  },
+  {
+   "name": "Djupt Vivunder",
+   "at": [
+    38784,
+    37248,
+    16065
+   ],
+   "walk": 21285
+  },
+  {
+   "name": "Ond's Master",
+   "boss": true,
+   "level": 55,
+   "at": [
+    39744,
+    36672,
+    16087
+   ],
+   "walk": 22701
+  }
+ ]
+}

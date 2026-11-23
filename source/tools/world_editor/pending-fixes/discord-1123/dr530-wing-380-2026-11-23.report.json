@@ -1,0 +1,432 @@
+{
+ "zone": "Lair of Doom",
+ "floor_points": 518,
+ "spots": 85,
+ "spawns": 46,
+ "bosses": [
+  "Tesserarius Rica",
+  "Plebian"
+ ],
+ "unplaced": [],
+ "deepest_walk": 22084,
+ "spawn_list": [
+  {
+   "name": "Crypt Snake",
+   "at": [
+    32640,
+    31974,
+    16132
+   ],
+   "walk": 301
+  },
+  {
+   "name": "Crypt Snake",
+   "at": [
+    32737,
+    31532,
+    16025
+   ],
+   "walk": 470
+  },
+  {
+   "name": "Crypt Snake",
+   "at": [
+    32640,
+    30610,
+    15836
+   ],
+   "walk": 1415
+  },
+  {
+   "name": "Crypt Snake",
+   "at": [
+    32910,
+    29760,
+    15806
+   ],
+   "walk": 2327
+  },
+  {
+   "name": "Immunis",
+   "at": [
+    32640,
+    29376,
+    15763
+   ],
+   "walk": 2645
+  },
+  {
+   "name": "Immunis",
+   "at": [
+    33024,
+    28608,
+    15763
+   ],
+   "walk": 3605
+  },
+  {
+   "name": "Immunis",
+   "at": [
+    33216,
+    28992,
+    15804
+   ],
+   "walk": 3887
+  },
+  {
+   "name": "Immunis",
+   "at": [
+    33451,
+    28399,
+    15804
+   ],
+   "walk": 4088
+  },
+  {
+   "name": "Legionarius",
+   "at": [
+    32448,
+    28022,
+    15507
+   ],
+   "walk": 4423
+  },
+  {
+   "name": "Legionarius",
+   "at": [
+    31872,
+    27840,
+    15508
+   ],
+   "walk": 4492
+  },
+  {
+   "name": "Legionarius",
+   "at": [
+    31680,
+    27456,
+    15523
+   ],
+   "walk": 4923
+  },
+  {
+   "name": "Legionarius",
+   "at": [
+    32256,
+    26880,
+    15523
+   ],
+   "walk": 5395
+  },
+  {
+   "name": "Manipularis",
+   "at": [
+    31488,
+    26982,
+    15523
+   ],
+   "walk": 5841
+  },
+  {
+   "name": "Manipularis",
+   "at": [
+    32222,
+    26304,
+    15523
+   ],
+   "walk": 5955
+  },
+  {
+   "name": "Manipularis",
+   "at": [
+    30912,
+    26880,
+    15523
+   ],
+   "walk": 6417
+  },
+  {
+   "name": "Manipularis",
+   "at": [
+    31872,
+    25756,
+    15651
+   ],
+   "walk": 6540
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    30528,
+    27154,
+    15568
+   ],
+   "walk": 6865
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    30528,
+    26607,
+    15568
+   ],
+   "walk": 6882
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    30144,
+    26880,
+    15523
+   ],
+   "walk": 7198
+  },
+  {
+   "name": "Vigilis",
+   "at": [
+    30720,
+    25920,
+    15760
+   ],
+   "walk": 7443
+  },
+  {
+   "name": "Blind Boogey",
+   "at": [
+    33408,
+    24576,
+    15494
+   ],
+   "walk": 8621
+  },
+  {
+   "name": "Blind Boogey",
+   "at": [
+    32832,
+    24384,
+    15523
+   ],
+   "walk": 9085
+  },
+  {
+   "name": "Blind Boogey",
+   "at": [
+    33408,
+    23424,
+    15520
+   ],
+   "walk": 9770
+  },
+  {
+   "name": "Blind Boogey",
+   "at": [
+    33792,
+    23040,
+    15520
+   ],
+   "walk": 10405
+  },
+  {
+   "name": "Centurio Manipularis",
+   "at": [
+    34250,
+    23349,
+    15520
+   ],
+   "walk": 10984
+  },
+  {
+   "name": "Centurio Manipularis",
+   "at": [
+    34500,
+    22530,
+    15520
+   ],
+   "walk": 11344
+  },
+  {
+   "name": "Centurio Manipularis",
+   "at": [
+    32148,
+    23169,
+    15725
+   ],
+   "walk": 11622
+  },
+  {
+   "name": "Centurio Manipularis",
+   "at": [
+    32286,
+    22623,
+    15980
+   ],
+   "walk": 12262
+  },
+  {
+   "name": "Cohorstalis",
+   "at": [
+    32545,
+    22848,
+    16192
+   ],
+   "walk": 12814
+  },
+  {
+   "name": "Cohorstalis",
+   "at": [
+    33024,
+    22848,
+    16288
+   ],
+   "walk": 13546
+  },
+  {
+   "name": "Cohorstalis",
+   "at": [
+    33224,
+    21868,
+    16288
+   ],
+   "walk": 14587
+  },
+  {
+   "name": "Cohorstalis",
+   "at": [
+    33024,
+    21312,
+    16291
+   ],
+   "walk": 15069
+  },
+  {
+   "name": "Actarius",
+   "at": [
+    33024,
+    20736,
+    16246
+   ],
+   "walk": 15645
+  },
+  {
+   "name": "Actarius",
+   "at": [
+    33216,
+    19776,
+    16048
+   ],
+   "walk": 16645
+  },
+  {
+   "name": "Actarius",
+   "at": [
+    33216,
+    19094,
+    16129
+   ],
+   "walk": 17338
+  },
+  {
+   "name": "Actarius",
+   "at": [
+    33216,
+    18816,
+    16560
+   ],
+   "walk": 18211
+  },
+  {
+   "name": "Decurion",
+   "at": [
+    33408,
+    18432,
+    16561
+   ],
+   "walk": 18622
+  },
+  {
+   "name": "Decurion",
+   "at": [
+    33216,
+    18048,
+    16496
+   ],
+   "walk": 18981
+  },
+  {
+   "name": "Decurion",
+   "at": [
+    32832,
+    17856,
+    16560
+   ],
+   "walk": 19291
+  },
+  {
+   "name": "Decurion",
+   "at": [
+    33024,
+    17472,
+    16515
+   ],
+   "walk": 19585
+  },
+  {
+   "name": "Draconarius",
+   "at": [
+    33216,
+    17088,
+    16496
+   ],
+   "walk": 19940
+  },
+  {
+   "name": "Draconarius",
+   "at": [
+    33521,
+    16770,
+    16560
+   ],
+   "walk": 20279
+  },
+  {
+   "name": "Draconarius",
+   "at": [
+    33216,
+    16320,
+    16560
+   ],
+   "walk": 20707
+  },
+  {
+   "name": "Draconarius",
+   "at": [
+    33024,
+    15936,
+    16560
+   ],
+   "walk": 21248
+  },
+  {
+   "name": "Tesserarius Rica",
+   "boss": true,
+   "level": 36,
+   "at": [
+    32187,
+    15986,
+    16560
+   ],
+   "walk": 21612
+  },
+  {
+   "name": "Plebian",
+   "boss": true,
+   "level": 20,
+   "at": [
+    33371,
+    14976,
+    16684
+   ],
+   "walk": 22084
+  }
+ ]
+}

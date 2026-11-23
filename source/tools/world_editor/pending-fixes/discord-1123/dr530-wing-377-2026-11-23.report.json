@@ -1,0 +1,396 @@
+{
+ "zone": "The Beastmaster's Den",
+ "floor_points": 916,
+ "spots": 140,
+ "spawns": 42,
+ "bosses": [
+  "Beastmaster Gorn",
+  "Beast"
+ ],
+ "unplaced": [],
+ "deepest_walk": 24205,
+ "spawn_list": [
+  {
+   "name": "Goblin (Tepok)",
+   "at": [
+    33408,
+    33509,
+    15771
+   ],
+   "walk": 307
+  },
+  {
+   "name": "Goblin (Tepok)",
+   "at": [
+    33216,
+    32832,
+    15768
+   ],
+   "walk": 1053
+  },
+  {
+   "name": "Goblin (Tepok)",
+   "at": [
+    32832,
+    32640,
+    15739
+   ],
+   "walk": 1279
+  },
+  {
+   "name": "Goblin (Tepok)",
+   "at": [
+    32064,
+    33024,
+    15966
+   ],
+   "walk": 1879
+  },
+  {
+   "name": "Goblin Patrol Leader",
+   "at": [
+    33024,
+    35328,
+    15772
+   ],
+   "walk": 2372
+  },
+  {
+   "name": "Goblin Patrol Leader",
+   "at": [
+    32064,
+    32064,
+    15998
+   ],
+   "walk": 2827
+  },
+  {
+   "name": "Goblin Patrol Leader",
+   "at": [
+    33216,
+    36480,
+    15739
+   ],
+   "walk": 3481
+  },
+  {
+   "name": "Goblin Patrol Leader",
+   "at": [
+    32640,
+    31009,
+    16257
+   ],
+   "walk": 4282
+  },
+  {
+   "name": "Angler",
+   "at": [
+    34109,
+    37541,
+    15489
+   ],
+   "walk": 5015
+  },
+  {
+   "name": "Angler",
+   "at": [
+    35328,
+    37440,
+    15485
+   ],
+   "walk": 6127
+  },
+  {
+   "name": "Angler",
+   "at": [
+    35174,
+    36485,
+    15531
+   ],
+   "walk": 6614
+  },
+  {
+   "name": "Angler",
+   "at": [
+    36096,
+    36864,
+    15493
+   ],
+   "walk": 7023
+  },
+  {
+   "name": "Goblin Whip",
+   "at": [
+    36215,
+    37843,
+    15516
+   ],
+   "walk": 7263
+  },
+  {
+   "name": "Goblin Whip",
+   "at": [
+    35966,
+    38206,
+    15521
+   ],
+   "walk": 7565
+  },
+  {
+   "name": "Goblin Whip",
+   "at": [
+    34854,
+    35553,
+    15707
+   ],
+   "walk": 7835
+  },
+  {
+   "name": "Goblin Whip",
+   "at": [
+    35904,
+    38784,
+    15508
+   ],
+   "walk": 8157
+  },
+  {
+   "name": "Apprentice Beastmaster",
+   "at": [
+    35136,
+    34752,
+    15768
+   ],
+   "walk": 8378
+  },
+  {
+   "name": "Apprentice Beastmaster",
+   "at": [
+    34176,
+    35153,
+    15494
+   ],
+   "walk": 8674
+  },
+  {
+   "name": "Apprentice Beastmaster",
+   "at": [
+    35109,
+    39717,
+    15503
+   ],
+   "walk": 9086
+  },
+  {
+   "name": "Apprentice Beastmaster",
+   "at": [
+    34560,
+    40512,
+    15488
+   ],
+   "walk": 9506
+  },
+  {
+   "name": "Goblin Beastmaster",
+   "at": [
+    34560,
+    41088,
+    15483
+   ],
+   "walk": 10088
+  },
+  {
+   "name": "Goblin Beastmaster",
+   "at": [
+    34944,
+    41280,
+    15494
+   ],
+   "walk": 10473
+  },
+  {
+   "name": "Goblin Beastmaster",
+   "at": [
+    33792,
+    41472,
+    15478
+   ],
+   "walk": 10926
+  },
+  {
+   "name": "Goblin Beastmaster",
+   "at": [
+    37248,
+    41856,
+    14981
+   ],
+   "walk": 12491
+  },
+  {
+   "name": "Goblin Imperator",
+   "at": [
+    37248,
+    42357,
+    14981
+   ],
+   "walk": 12985
+  },
+  {
+   "name": "Goblin Imperator",
+   "at": [
+    38003,
+    43008,
+    14853
+   ],
+   "walk": 13904
+  },
+  {
+   "name": "Goblin Imperator",
+   "at": [
+    36480,
+    43061,
+    14779
+   ],
+   "walk": 14302
+  },
+  {
+   "name": "Goblin Imperator",
+   "at": [
+    36211,
+    43397,
+    14766
+   ],
+   "walk": 14849
+  },
+  {
+   "name": "Goblin Snatcher",
+   "at": [
+    36480,
+    43968,
+    14941
+   ],
+   "walk": 15581
+  },
+  {
+   "name": "Goblin Snatcher",
+   "at": [
+    37341,
+    44209,
+    14997
+   ],
+   "walk": 16814
+  },
+  {
+   "name": "Goblin Snatcher",
+   "at": [
+    37731,
+    45120,
+    15006
+   ],
+   "walk": 17649
+  },
+  {
+   "name": "Goblin Snatcher",
+   "at": [
+    37632,
+    45696,
+    14971
+   ],
+   "walk": 18225
+  },
+  {
+   "name": "Juggernaut",
+   "at": [
+    37488,
+    46174,
+    14856
+   ],
+   "walk": 18819
+  },
+  {
+   "name": "Juggernaut",
+   "at": [
+    35850,
+    45579,
+    15323
+   ],
+   "walk": 19642
+  },
+  {
+   "name": "Juggernaut",
+   "at": [
+    36864,
+    47040,
+    14801
+   ],
+   "walk": 20244
+  },
+  {
+   "name": "Juggernaut",
+   "at": [
+    37440,
+    47808,
+    14721
+   ],
+   "walk": 20458
+  },
+  {
+   "name": "Goblin Monitor",
+   "at": [
+    36672,
+    47808,
+    14712
+   ],
+   "walk": 20763
+  },
+  {
+   "name": "Goblin Monitor",
+   "at": [
+    35645,
+    44491,
+    15579
+   ],
+   "walk": 20915
+  },
+  {
+   "name": "Goblin Monitor",
+   "at": [
+    36478,
+    48386,
+    14504
+   ],
+   "walk": 21810
+  },
+  {
+   "name": "Goblin Monitor",
+   "at": [
+    36152,
+    48951,
+    14507
+   ],
+   "walk": 22400
+  },
+  {
+   "name": "Beastmaster Gorn",
+   "boss": true,
+   "level": 36,
+   "at": [
+    36789,
+    50365,
+    14753
+   ],
+   "walk": 24131
+  },
+  {
+   "name": "Beast",
+   "boss": true,
+   "level": 25,
+   "at": [
+    37229,
+    50350,
+    14751
+   ],
+   "walk": 24205
+  }
+ ]
+}

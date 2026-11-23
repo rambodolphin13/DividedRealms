@@ -1,0 +1,551 @@
+{
+ "zone": "The Hidden Crypt",
+ "floor_points": 483,
+ "spots": 73,
+ "spawns": 60,
+ "bosses": [],
+ "unplaced": [],
+ "deepest_walk": 10857,
+ "spawn_list": [
+  {
+   "name": "Cursed Believer",
+   "at": [
+    31680,
+    34368,
+    15651
+   ],
+   "walk": 333
+  },
+  {
+   "name": "Cursed Believer",
+   "at": [
+    32064,
+    33984,
+    15651
+   ],
+   "walk": 367
+  },
+  {
+   "name": "Cursed Believer",
+   "at": [
+    31872,
+    33600,
+    15654
+   ],
+   "walk": 763
+  },
+  {
+   "name": "Cursed Believer",
+   "at": [
+    32440,
+    33591,
+    15651
+   ],
+   "walk": 987
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    32064,
+    33216,
+    15587
+   ],
+   "walk": 1136
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    32448,
+    33024,
+    15651
+   ],
+   "walk": 1437
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    31872,
+    32832,
+    15587
+   ],
+   "walk": 1523
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    32256,
+    32640,
+    15621
+   ],
+   "walk": 1737
+  },
+  {
+   "name": "Fallen Paladin",
+   "at": [
+    31680,
+    32448,
+    15640
+   ],
+   "walk": 1941
+  },
+  {
+   "name": "Fallen Paladin",
+   "at": [
+    32064,
+    32256,
+    15609
+   ],
+   "walk": 2094
+  },
+  {
+   "name": "Fallen Paladin",
+   "at": [
+    32064,
+    31680,
+    15651
+   ],
+   "walk": 2669
+  },
+  {
+   "name": "Fallen Paladin",
+   "at": [
+    30720,
+    32448,
+    15651
+   ],
+   "walk": 2758
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    31872,
+    31296,
+    15651
+   ],
+   "walk": 3062
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    30820,
+    31872,
+    15651
+   ],
+   "walk": 3127
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    32064,
+    30912,
+    15651
+   ],
+   "walk": 3436
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    30618,
+    31488,
+    15651
+   ],
+   "walk": 3528
+  },
+  {
+   "name": "Living Entombed",
+   "at": [
+    32919,
+    31283,
+    15651
+   ],
+   "walk": 3763
+  },
+  {
+   "name": "Living Entombed",
+   "at": [
+    31872,
+    30528,
+    15651
+   ],
+   "walk": 3854
+  },
+  {
+   "name": "Living Entombed",
+   "at": [
+    30812,
+    31101,
+    15651
+   ],
+   "walk": 3898
+  },
+  {
+   "name": "Living Entombed",
+   "at": [
+    30336,
+    31104,
+    15651
+   ],
+   "walk": 4136
+  },
+  {
+   "name": "Doomed Minion",
+   "at": [
+    33216,
+    30912,
+    15652
+   ],
+   "walk": 4243
+  },
+  {
+   "name": "Doomed Minion",
+   "at": [
+    33408,
+    31296,
+    15649
+   ],
+   "walk": 4244
+  },
+  {
+   "name": "Doomed Minion",
+   "at": [
+    29952,
+    31296,
+    15651
+   ],
+   "walk": 4567
+  },
+  {
+   "name": "Doomed Minion",
+   "at": [
+    33792,
+    31488,
+    15651
+   ],
+   "walk": 4621
+  },
+  {
+   "name": "Priest of Mithra",
+   "at": [
+    29795,
+    30876,
+    15675
+   ],
+   "walk": 4730
+  },
+  {
+   "name": "Priest of Mithra",
+   "at": [
+    29568,
+    31475,
+    15651
+   ],
+   "walk": 4980
+  },
+  {
+   "name": "Priest of Mithra",
+   "at": [
+    29376,
+    30912,
+    15621
+   ],
+   "walk": 5115
+  },
+  {
+   "name": "Priest of Mithra",
+   "at": [
+    29184,
+    31296,
+    15620
+   ],
+   "walk": 5287
+  },
+  {
+   "name": "Suffering Apparition",
+   "at": [
+    29284,
+    31872,
+    15651
+   ],
+   "walk": 5577
+  },
+  {
+   "name": "Suffering Apparition",
+   "at": [
+    28882,
+    30873,
+    15659
+   ],
+   "walk": 5606
+  },
+  {
+   "name": "Suffering Apparition",
+   "at": [
+    29284,
+    29990,
+    15651
+   ],
+   "walk": 5935
+  },
+  {
+   "name": "Suffering Apparition",
+   "at": [
+    28992,
+    32291,
+    15651
+   ],
+   "walk": 6137
+  },
+  {
+   "name": "Disturbed Initiate",
+   "at": [
+    28800,
+    29923,
+    15650
+   ],
+   "walk": 6343
+  },
+  {
+   "name": "Disturbed Initiate",
+   "at": [
+    28516,
+    29568,
+    15651
+   ],
+   "walk": 6845
+  },
+  {
+   "name": "Disturbed Initiate",
+   "at": [
+    28224,
+    29900,
+    15651
+   ],
+   "walk": 6919
+  },
+  {
+   "name": "Disturbed Initiate",
+   "at": [
+    27840,
+    32281,
+    15651
+   ],
+   "walk": 7286
+  },
+  {
+   "name": "Malevolent Disciple",
+   "at": [
+    28516,
+    29145,
+    15651
+   ],
+   "walk": 7290
+  },
+  {
+   "name": "Malevolent Disciple",
+   "at": [
+    27692,
+    29617,
+    15648
+   ],
+   "walk": 7490
+  },
+  {
+   "name": "Malevolent Disciple",
+   "at": [
+    27546,
+    32640,
+    15651
+   ],
+   "walk": 7657
+  },
+  {
+   "name": "Malevolent Disciple",
+   "at": [
+    28416,
+    28608,
+    15651
+   ],
+   "walk": 7802
+  },
+  {
+   "name": "Rogue Bleeder",
+   "at": [
+    27264,
+    29760,
+    15772
+   ],
+   "walk": 7887
+  },
+  {
+   "name": "Rogue Bleeder",
+   "at": [
+    27741,
+    33208,
+    15651
+   ],
+   "walk": 8151
+  },
+  {
+   "name": "Rogue Bleeder",
+   "at": [
+    28857,
+    28470,
+    15651
+   ],
+   "walk": 8166
+  },
+  {
+   "name": "Rogue Bleeder",
+   "at": [
+    27264,
+    33049,
+    15651
+   ],
+   "walk": 8336
+  },
+  {
+   "name": "Eternal Scream",
+   "at": [
+    28416,
+    28032,
+    15587
+   ],
+   "walk": 8378
+  },
+  {
+   "name": "Eternal Scream",
+   "at": [
+    26690,
+    29917,
+    16052
+   ],
+   "walk": 8512
+  },
+  {
+   "name": "Eternal Scream",
+   "at": [
+    28916,
+    28032,
+    15651
+   ],
+   "walk": 8516
+  },
+  {
+   "name": "Eternal Scream",
+   "at": [
+    28608,
+    27648,
+    15590
+   ],
+   "walk": 8770
+  },
+  {
+   "name": "Insidious Whisper",
+   "at": [
+    26846,
+    32921,
+    15651
+   ],
+   "walk": 8820
+  },
+  {
+   "name": "Insidious Whisper",
+   "at": [
+    26862,
+    33373,
+    15651
+   ],
+   "walk": 8822
+  },
+  {
+   "name": "Insidious Whisper",
+   "at": [
+    28224,
+    27456,
+    15589
+   ],
+   "walk": 8992
+  },
+  {
+   "name": "Insidious Whisper",
+   "at": [
+    28800,
+    27264,
+    15653
+   ],
+   "walk": 9201
+  },
+  {
+   "name": "Reanimated Necroservant",
+   "at": [
+    26304,
+    33024,
+    15621
+   ],
+   "walk": 9296
+  },
+  {
+   "name": "Reanimated Necroservant",
+   "at": [
+    27840,
+    27264,
+    15651
+   ],
+   "walk": 9303
+  },
+  {
+   "name": "Reanimated Necroservant",
+   "at": [
+    26468,
+    33600,
+    15651
+   ],
+   "walk": 9335
+  },
+  {
+   "name": "Reanimated Necroservant",
+   "at": [
+    28416,
+    27072,
+    15652
+   ],
+   "walk": 9337
+  },
+  {
+   "name": "Cynthia the Necromancer",
+   "at": [
+    25994,
+    33494,
+    15673
+   ],
+   "walk": 9658
+  },
+  {
+   "name": "Cynthia the Necromancer",
+   "at": [
+    25920,
+    30528,
+    16131
+   ],
+   "walk": 9738
+  },
+  {
+   "name": "Cynthia the Necromancer",
+   "at": [
+    25754,
+    33011,
+    15651
+   ],
+   "walk": 9845
+  },
+  {
+   "name": "Cynthia the Necromancer",
+   "at": [
+    25344,
+    30528,
+    16131
+   ],
+   "walk": 10314
+  }
+ ]
+}

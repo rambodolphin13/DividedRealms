@@ -1,0 +1,308 @@
+[
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-368",
+   "Id": 368,
+   "Realm": 0,
+   "SourceRegion": 129,
+   "SourceX": 31424,
+   "SourceY": 32138,
+   "SourceZ": 16449,
+   "TargetRegion": 345,
+   "TargetX": 33777,
+   "TargetY": 32531,
+   "TargetZ": 16001,
+   "TargetHeading": 4056,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-369",
+   "Id": 369,
+   "Realm": 0,
+   "SourceRegion": 129,
+   "SourceX": 36931,
+   "SourceY": 39567,
+   "SourceZ": 16188,
+   "TargetRegion": 346,
+   "TargetX": 32228,
+   "TargetY": 31601,
+   "TargetZ": 16271,
+   "TargetHeading": 1111,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-372",
+   "Id": 372,
+   "Realm": 0,
+   "SourceRegion": 128,
+   "SourceX": 33149,
+   "SourceY": 34367,
+   "SourceZ": 16000,
+   "TargetRegion": 349,
+   "TargetX": 31094,
+   "TargetY": 31103,
+   "TargetZ": 16578,
+   "TargetHeading": 4044,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-373",
+   "Id": 373,
+   "Realm": 0,
+   "SourceRegion": 128,
+   "SourceX": 37611,
+   "SourceY": 33547,
+   "SourceZ": 15717,
+   "TargetRegion": 350,
+   "TargetX": 29612,
+   "TargetY": 33449,
+   "TargetZ": 16516,
+   "TargetHeading": 1161,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-370",
+   "Id": 370,
+   "Realm": 0,
+   "SourceRegion": 126,
+   "SourceX": 31106,
+   "SourceY": 32467,
+   "SourceZ": 16558,
+   "TargetRegion": 353,
+   "TargetX": 30838,
+   "TargetY": 31573,
+   "TargetZ": 16261,
+   "TargetHeading": 3140,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-371",
+   "Id": 371,
+   "Realm": 0,
+   "SourceRegion": 126,
+   "SourceX": 30209,
+   "SourceY": 32880,
+   "SourceZ": 16070,
+   "TargetRegion": 354,
+   "TargetX": 30819,
+   "TargetY": 31905,
+   "TargetZ": 16259,
+   "TargetHeading": 2249,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-375",
+   "Id": 375,
+   "Realm": 0,
+   "SourceRegion": 127,
+   "SourceX": 32836,
+   "SourceY": 28551,
+   "SourceZ": 13964,
+   "TargetRegion": 358,
+   "TargetX": 30154,
+   "TargetY": 26757,
+   "TargetZ": 15235,
+   "TargetHeading": 3066,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-295",
+   "Id": 295,
+   "Realm": 0,
+   "SourceRegion": 24,
+   "SourceX": 37304,
+   "SourceY": 30337,
+   "SourceZ": 14433,
+   "TargetRegion": 377,
+   "TargetX": 33695,
+   "TargetY": 33402,
+   "TargetZ": 15737,
+   "TargetHeading": 377,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-296",
+   "Id": 296,
+   "Realm": 0,
+   "SourceRegion": 23,
+   "SourceX": 34137,
+   "SourceY": 30769,
+   "SourceZ": 15760,
+   "TargetRegion": 380,
+   "TargetX": 32906,
+   "TargetY": 31856,
+   "TargetZ": 16215,
+   "TargetHeading": 1045,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-297",
+   "Id": 297,
+   "Realm": 0,
+   "SourceRegion": 23,
+   "SourceX": 32602,
+   "SourceY": 38732,
+   "SourceZ": 14765,
+   "TargetRegion": 381,
+   "TargetX": 48778,
+   "TargetY": 31364,
+   "TargetZ": 16955,
+   "TargetHeading": 11,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-291",
+   "Id": 291,
+   "Realm": 0,
+   "SourceRegion": 22,
+   "SourceX": 37588,
+   "SourceY": 33534,
+   "SourceZ": 15700,
+   "TargetRegion": 385,
+   "TargetX": 33268,
+   "TargetY": 37117,
+   "TargetZ": 15755,
+   "TargetHeading": 1040,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-298",
+   "Id": 298,
+   "Realm": 0,
+   "SourceRegion": 21,
+   "SourceX": 29312,
+   "SourceY": 30257,
+   "SourceZ": 15515,
+   "TargetRegion": 392,
+   "TargetX": 37824,
+   "TargetY": 29139,
+   "TargetZ": 16736,
+   "TargetHeading": 2049,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-299",
+   "Id": 299,
+   "Realm": 0,
+   "SourceRegion": 21,
+   "SourceX": 25127,
+   "SourceY": 30676,
+   "SourceZ": 15035,
+   "TargetRegion": 393,
+   "TargetX": 32013,
+   "TargetY": 34348,
+   "TargetZ": 15648,
+   "TargetHeading": 1992,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-406",
+   "Id": 406,
+   "Realm": 0,
+   "SourceRegion": 221,
+   "SourceX": 33497,
+   "SourceY": 34234,
+   "SourceZ": 15760,
+   "TargetRegion": 442,
+   "TargetX": 32778,
+   "TargetY": 31999,
+   "TargetZ": 15040,
+   "TargetHeading": 987,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-421",
+   "Id": 421,
+   "Realm": 0,
+   "SourceRegion": 222,
+   "SourceX": 33225,
+   "SourceY": 32125,
+   "SourceZ": 14940,
+   "TargetRegion": 475,
+   "TargetX": 32627,
+   "TargetY": 31438,
+   "TargetZ": 16248,
+   "TargetHeading": 4090,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-437",
+   "Id": 437,
+   "Realm": 0,
+   "SourceRegion": 224,
+   "SourceX": 32892,
+   "SourceY": 30795,
+   "SourceZ": 14742,
+   "TargetRegion": 479,
+   "TargetX": 25767,
+   "TargetY": 27264,
+   "TargetZ": 16275,
+   "TargetHeading": 3112,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ },
+ {
+  "table": "ZonePoint",
+  "insert": {
+   "ZonePoint_ID": "dr530-entrance-431",
+   "Id": 431,
+   "Realm": 0,
+   "SourceRegion": 223,
+   "SourceX": 29753,
+   "SourceY": 36052,
+   "SourceZ": 17000,
+   "TargetRegion": 483,
+   "TargetX": 31997,
+   "TargetY": 31979,
+   "TargetZ": 16010,
+   "TargetHeading": 3069,
+   "ClassType": "DOL.GS.ServerRules.AdventureWingJumpPoint"
+  }
+ }
+]

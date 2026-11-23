@@ -1,0 +1,254 @@
+{
+ "zone": "The Ancient's Retreat",
+ "floor_points": 717,
+ "spots": 119,
+ "spawns": 26,
+ "bosses": [
+  "Melgron the Ancient",
+  "Melgron's Servant"
+ ],
+ "unplaced": [
+  "Ursine Dweller"
+ ],
+ "deepest_walk": 17604,
+ "spawn_list": [
+  {
+   "name": "Arachnite",
+   "at": [
+    26080,
+    27141,
+    16288
+   ],
+   "walk": 337
+  },
+  {
+   "name": "Arachnite",
+   "at": [
+    26912,
+    27123,
+    16266
+   ],
+   "walk": 1157
+  },
+  {
+   "name": "Arachnite",
+   "at": [
+    27456,
+    26304,
+    16268
+   ],
+   "walk": 2182
+  },
+  {
+   "name": "Arachnite",
+   "at": [
+    28224,
+    26304,
+    16263
+   ],
+   "walk": 2940
+  },
+  {
+   "name": "Lair Worm",
+   "at": [
+    28992,
+    26304,
+    16268
+   ],
+   "walk": 3708
+  },
+  {
+   "name": "Lair Worm",
+   "at": [
+    29376,
+    26880,
+    16261
+   ],
+   "walk": 4355
+  },
+  {
+   "name": "Lair Worm",
+   "at": [
+    29952,
+    26117,
+    16269
+   ],
+   "walk": 4677
+  },
+  {
+   "name": "Lair Worm",
+   "at": [
+    31296,
+    25536,
+    16259
+   ],
+   "walk": 6279
+  },
+  {
+   "name": "Scragger",
+   "at": [
+    31488,
+    25152,
+    16259
+   ],
+   "walk": 6695
+  },
+  {
+   "name": "Scragger",
+   "at": [
+    31680,
+    26496,
+    16269
+   ],
+   "walk": 7018
+  },
+  {
+   "name": "Scragger",
+   "at": [
+    31166,
+    24452,
+    15819
+   ],
+   "walk": 7646
+  },
+  {
+   "name": "Scragger",
+   "at": [
+    32626,
+    27062,
+    16299
+   ],
+   "walk": 8245
+  },
+  {
+   "name": "Troglodyte",
+   "at": [
+    30701,
+    27648,
+    16272
+   ],
+   "walk": 8600
+  },
+  {
+   "name": "Troglodyte",
+   "at": [
+    31872,
+    28608,
+    16278
+   ],
+   "walk": 9146
+  },
+  {
+   "name": "Troglodyte",
+   "at": [
+    30978,
+    28599,
+    16297
+   ],
+   "walk": 9701
+  },
+  {
+   "name": "Troglodyte",
+   "at": [
+    32448,
+    29376,
+    16265
+   ],
+   "walk": 10147
+  },
+  {
+   "name": "Ursine Warrior",
+   "at": [
+    31488,
+    29376,
+    16262
+   ],
+   "walk": 10575
+  },
+  {
+   "name": "Ursine Warrior",
+   "at": [
+    33408,
+    29760,
+    16274
+   ],
+   "walk": 11262
+  },
+  {
+   "name": "Ursine Warrior",
+   "at": [
+    32448,
+    31104,
+    16019
+   ],
+   "walk": 13126
+  },
+  {
+   "name": "Ursine Warrior",
+   "at": [
+    34976,
+    31342,
+    15894
+   ],
+   "walk": 13825
+  },
+  {
+   "name": "Ursine Thrall",
+   "at": [
+    32256,
+    32640,
+    15936
+   ],
+   "walk": 14569
+  },
+  {
+   "name": "Ursine Thrall",
+   "at": [
+    32640,
+    33024,
+    15806
+   ],
+   "walk": 14938
+  },
+  {
+   "name": "Ursine Thrall",
+   "at": [
+    34752,
+    30528,
+    14992
+   ],
+   "walk": 15596
+  },
+  {
+   "name": "Ursine Thrall",
+   "at": [
+    29952,
+    32805,
+    16022
+   ],
+   "walk": 16412
+  },
+  {
+   "name": "Melgron the Ancient",
+   "boss": true,
+   "level": 34,
+   "at": [
+    36096,
+    29958,
+    14992
+   ],
+   "walk": 17238
+  },
+  {
+   "name": "Melgron's Servant",
+   "boss": true,
+   "level": 28,
+   "at": [
+    36480,
+    30144,
+    14992
+   ],
+   "walk": 17604
+  }
+ ]
+}

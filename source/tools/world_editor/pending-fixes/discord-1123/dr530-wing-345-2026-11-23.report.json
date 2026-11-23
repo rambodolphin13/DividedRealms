@@ -1,0 +1,443 @@
+{
+ "zone": "Tomte Prison",
+ "floor_points": 804,
+ "spots": 126,
+ "spawns": 48,
+ "bosses": [],
+ "unplaced": [],
+ "deepest_walk": 21429,
+ "spawn_list": [
+  {
+   "name": "Prisoner",
+   "at": [
+    33792,
+    32832,
+    16029
+   ],
+   "walk": 325
+  },
+  {
+   "name": "Prisoner",
+   "at": [
+    34176,
+    32640,
+    16004
+   ],
+   "walk": 413
+  },
+  {
+   "name": "Prisoner",
+   "at": [
+    32892,
+    32405,
+    16014
+   ],
+   "walk": 980
+  },
+  {
+   "name": "Prisoner",
+   "at": [
+    33198,
+    32062,
+    16028
+   ],
+   "walk": 1232
+  },
+  {
+   "name": "Tomte Cutthroat",
+   "at": [
+    31881,
+    32155,
+    16026
+   ],
+   "walk": 2250
+  },
+  {
+   "name": "Tomte Cutthroat",
+   "at": [
+    32256,
+    31104,
+    16271
+   ],
+   "walk": 2908
+  },
+  {
+   "name": "Tomte Cutthroat",
+   "at": [
+    30912,
+    31680,
+    16001
+   ],
+   "walk": 3272
+  },
+  {
+   "name": "Tomte Cutthroat",
+   "at": [
+    30720,
+    32832,
+    16016
+   ],
+   "walk": 3740
+  },
+  {
+   "name": "Lair Patrol",
+   "at": [
+    31105,
+    33791,
+    16014
+   ],
+   "walk": 4789
+  },
+  {
+   "name": "Lair Patrol",
+   "at": [
+    31868,
+    33408,
+    16020
+   ],
+   "walk": 5367
+  },
+  {
+   "name": "Lair Patrol",
+   "at": [
+    31356,
+    34680,
+    16027
+   ],
+   "walk": 6143
+  },
+  {
+   "name": "Lair Patrol",
+   "at": [
+    31680,
+    35136,
+    15993
+   ],
+   "walk": 6340
+  },
+  {
+   "name": "Tomte Warhound",
+   "at": [
+    31680,
+    35904,
+    15983
+   ],
+   "walk": 7108
+  },
+  {
+   "name": "Tomte Warhound",
+   "at": [
+    31859,
+    36296,
+    16001
+   ],
+   "walk": 7526
+  },
+  {
+   "name": "Tomte Warhound",
+   "at": [
+    32256,
+    37056,
+    16004
+   ],
+   "walk": 8435
+  },
+  {
+   "name": "Tomte Warhound",
+   "at": [
+    32067,
+    37629,
+    16004
+   ],
+   "walk": 9003
+  },
+  {
+   "name": "Lair Guard",
+   "at": [
+    32256,
+    38016,
+    16005
+   ],
+   "walk": 9385
+  },
+  {
+   "name": "Lair Guard",
+   "at": [
+    33408,
+    37248,
+    16003
+   ],
+   "walk": 9582
+  },
+  {
+   "name": "Lair Guard",
+   "at": [
+    32064,
+    38459,
+    15998
+   ],
+   "walk": 9955
+  },
+  {
+   "name": "Lair Guard",
+   "at": [
+    32541,
+    38494,
+    15998
+   ],
+   "walk": 10057
+  },
+  {
+   "name": "Tomte Handler",
+   "at": [
+    32256,
+    38976,
+    15856
+   ],
+   "walk": 10350
+  },
+  {
+   "name": "Tomte Handler",
+   "at": [
+    31872,
+    39168,
+    15863
+   ],
+   "walk": 10606
+  },
+  {
+   "name": "Tomte Handler",
+   "at": [
+    33984,
+    36288,
+    16019
+   ],
+   "walk": 10679
+  },
+  {
+   "name": "Tomte Handler",
+   "at": [
+    32256,
+    39552,
+    15768
+   ],
+   "walk": 10931
+  },
+  {
+   "name": "Tomte Hoodoo",
+   "at": [
+    32448,
+    39936,
+    15763
+   ],
+   "walk": 11331
+  },
+  {
+   "name": "Tomte Hoodoo",
+   "at": [
+    31488,
+    39936,
+    15700
+   ],
+   "walk": 11561
+  },
+  {
+   "name": "Tomte Hoodoo",
+   "at": [
+    31104,
+    39744,
+    15693
+   ],
+   "walk": 11847
+  },
+  {
+   "name": "Tomte Hoodoo",
+   "at": [
+    32640,
+    40512,
+    15771
+   ],
+   "walk": 11932
+  },
+  {
+   "name": "Tomte Protector",
+   "at": [
+    30686,
+    39681,
+    15763
+   ],
+   "walk": 12280
+  },
+  {
+   "name": "Tomte Protector",
+   "at": [
+    29760,
+    39744,
+    15738
+   ],
+   "walk": 13189
+  },
+  {
+   "name": "Tomte Protector",
+   "at": [
+    29376,
+    39936,
+    15776
+   ],
+   "walk": 13585
+  },
+  {
+   "name": "Tomte Protector",
+   "at": [
+    28992,
+    40128,
+    15829
+   ],
+   "walk": 14007
+  },
+  {
+   "name": "Tomte Shaman",
+   "at": [
+    29376,
+    40896,
+    15924
+   ],
+   "walk": 14387
+  },
+  {
+   "name": "Tomte Shaman",
+   "at": [
+    28748,
+    40546,
+    15927
+   ],
+   "walk": 14426
+  },
+  {
+   "name": "Tomte Shaman",
+   "at": [
+    28992,
+    41088,
+    15989
+   ],
+   "walk": 14704
+  },
+  {
+   "name": "Tomte Shaman",
+   "at": [
+    28425,
+    38703,
+    15777
+   ],
+   "walk": 14793
+  },
+  {
+   "name": "Tomte Trainer",
+   "at": [
+    29945,
+    41554,
+    16017
+   ],
+   "walk": 15767
+  },
+  {
+   "name": "Tomte Trainer",
+   "at": [
+    29376,
+    42432,
+    16016
+   ],
+   "walk": 16230
+  },
+  {
+   "name": "Tomte Trainer",
+   "at": [
+    29184,
+    42816,
+    16013
+   ],
+   "walk": 16637
+  },
+  {
+   "name": "Tomte Trainer",
+   "at": [
+    30720,
+    42624,
+    16013
+   ],
+   "walk": 17075
+  },
+  {
+   "name": "Tomte Apprentice",
+   "at": [
+    30912,
+    43008,
+    16019
+   ],
+   "walk": 17567
+  },
+  {
+   "name": "Tomte Apprentice",
+   "at": [
+    30144,
+    43584,
+    16012
+   ],
+   "walk": 17785
+  },
+  {
+   "name": "Tomte Apprentice",
+   "at": [
+    31104,
+    43776,
+    16013
+   ],
+   "walk": 18742
+  },
+  {
+   "name": "Tomte Apprentice",
+   "at": [
+    30528,
+    43968,
+    16014
+   ],
+   "walk": 19160
+  },
+  {
+   "name": "Lilst the Warden",
+   "at": [
+    30144,
+    44928,
+    15989
+   ],
+   "walk": 20217
+  },
+  {
+   "name": "Lilst the Warden",
+   "at": [
+    30336,
+    45312,
+    15888
+   ],
+   "walk": 20588
+  },
+  {
+   "name": "Lilst the Warden",
+   "at": [
+    29952,
+    45504,
+    15934
+   ],
+   "walk": 20838
+  },
+  {
+   "name": "Lilst the Warden",
+   "at": [
+    29376,
+    45504,
+    15995
+   ],
+   "walk": 21085
+  }
+ ]
+}

@@ -1,0 +1,350 @@
+{
+ "zone": "The Brawler's Den",
+ "floor_points": 466,
+ "spots": 80,
+ "spawns": 37,
+ "bosses": [
+  "Koalinth Ring Announcer"
+ ],
+ "unplaced": [
+  "Wrestler Grub"
+ ],
+ "deepest_walk": 12182,
+ "spawn_list": [
+  {
+   "name": "Cave Toad",
+   "at": [
+    32437,
+    32044,
+    16003
+   ],
+   "walk": 445
+  },
+  {
+   "name": "Cave Toad",
+   "at": [
+    32448,
+    30912,
+    16249
+   ],
+   "walk": 1401
+  },
+  {
+   "name": "Cave Toad",
+   "at": [
+    32448,
+    30144,
+    16368
+   ],
+   "walk": 2195
+  },
+  {
+   "name": "Cave Toad",
+   "at": [
+    32640,
+    29568,
+    16519
+   ],
+   "walk": 2865
+  },
+  {
+   "name": "Koalinth Sentinel",
+   "at": [
+    32448,
+    29184,
+    16514
+   ],
+   "walk": 3160
+  },
+  {
+   "name": "Koalinth Sentinel",
+   "at": [
+    32309,
+    28774,
+    16524
+   ],
+   "walk": 3570
+  },
+  {
+   "name": "Koalinth Sentinel",
+   "at": [
+    33792,
+    29315,
+    16280
+   ],
+   "walk": 4102
+  },
+  {
+   "name": "Koalinth Sentinel",
+   "at": [
+    34088,
+    29664,
+    16265
+   ],
+   "walk": 4457
+  },
+  {
+   "name": "Watery Escort",
+   "at": [
+    33997,
+    28918,
+    16265
+   ],
+   "walk": 4763
+  },
+  {
+   "name": "Watery Escort",
+   "at": [
+    34944,
+    29184,
+    16311
+   ],
+   "walk": 5286
+  },
+  {
+   "name": "Watery Escort",
+   "at": [
+    35328,
+    29376,
+    16251
+   ],
+   "walk": 5594
+  },
+  {
+   "name": "Watery Escort",
+   "at": [
+    35906,
+    29507,
+    16294
+   ],
+   "walk": 6165
+  },
+  {
+   "name": "Koalinth Spectator",
+   "at": [
+    35902,
+    29941,
+    16320
+   ],
+   "walk": 6256
+  },
+  {
+   "name": "Koalinth Spectator",
+   "at": [
+    31016,
+    26880,
+    16256
+   ],
+   "walk": 6513
+  },
+  {
+   "name": "Koalinth Spectator",
+   "at": [
+    36288,
+    29760,
+    16284
+   ],
+   "walk": 6583
+  },
+  {
+   "name": "Koalinth Spectator",
+   "at": [
+    31938,
+    26156,
+    16259
+   ],
+   "walk": 6794
+  },
+  {
+   "name": "Koalinth Warden",
+   "at": [
+    31872,
+    26688,
+    16177
+   ],
+   "walk": 7114
+  },
+  {
+   "name": "Koalinth Warden",
+   "at": [
+    32064,
+    27072,
+    16155
+   ],
+   "walk": 7388
+  },
+  {
+   "name": "Koalinth Warden",
+   "at": [
+    31104,
+    26112,
+    16003
+   ],
+   "walk": 7533
+  },
+  {
+   "name": "Koalinth Warden",
+   "at": [
+    31500,
+    27072,
+    16195
+   ],
+   "walk": 7655
+  },
+  {
+   "name": "Koalinth Bouncer",
+   "at": [
+    32640,
+    27264,
+    16195
+   ],
+   "walk": 7749
+  },
+  {
+   "name": "Koalinth Bouncer",
+   "at": [
+    30912,
+    25536,
+    16001
+   ],
+   "walk": 7969
+  },
+  {
+   "name": "Koalinth Bouncer",
+   "at": [
+    33176,
+    27141,
+    16168
+   ],
+   "walk": 8139
+  },
+  {
+   "name": "Koalinth Bouncer",
+   "at": [
+    29760,
+    25920,
+    16278
+   ],
+   "walk": 8529
+  },
+  {
+   "name": "Koalinth Warder",
+   "at": [
+    29376,
+    25728,
+    16263
+   ],
+   "walk": 8900
+  },
+  {
+   "name": "Koalinth Warder",
+   "at": [
+    31296,
+    24576,
+    16016
+   ],
+   "walk": 9124
+  },
+  {
+   "name": "Koalinth Warder",
+   "at": [
+    31644,
+    24665,
+    16252
+   ],
+   "walk": 9544
+  },
+  {
+   "name": "Koalinth Warder",
+   "at": [
+    29760,
+    24576,
+    15749
+   ],
+   "walk": 9789
+  },
+  {
+   "name": "Koalinth Wrestler",
+   "at": [
+    28914,
+    25088,
+    16080
+   ],
+   "walk": 10035
+  },
+  {
+   "name": "Koalinth Wrestler",
+   "at": [
+    31951,
+    24118,
+    16489
+   ],
+   "walk": 10191
+  },
+  {
+   "name": "Koalinth Wrestler",
+   "at": [
+    29149,
+    24723,
+    16006
+   ],
+   "walk": 10517
+  },
+  {
+   "name": "Koalinth Wrestler",
+   "at": [
+    29760,
+    23616,
+    15428
+   ],
+   "walk": 10652
+  },
+  {
+   "name": "Poisonous Cave Toad",
+   "at": [
+    28800,
+    24384,
+    16003
+   ],
+   "walk": 10738
+  },
+  {
+   "name": "Poisonous Cave Toad",
+   "at": [
+    30144,
+    23424,
+    15432
+   ],
+   "walk": 10948
+  },
+  {
+   "name": "Poisonous Cave Toad",
+   "at": [
+    29760,
+    23040,
+    15430
+   ],
+   "walk": 11211
+  },
+  {
+   "name": "Poisonous Cave Toad",
+   "at": [
+    29391,
+    22635,
+    15491
+   ],
+   "walk": 11775
+  },
+  {
+   "name": "Koalinth Ring Announcer",
+   "boss": true,
+   "level": 24,
+   "at": [
+    29760,
+    22080,
+    15492
+   ],
+   "walk": 12182
+  }
+ ]
+}

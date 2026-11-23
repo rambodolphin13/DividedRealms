@@ -1,0 +1,744 @@
+{
+ "zone": "The Hall of Reawakening",
+ "floor_points": 486,
+ "spots": 81,
+ "spawns": 81,
+ "bosses": [
+  "Reanimated Soul"
+ ],
+ "unplaced": [],
+ "deepest_walk": 12954,
+ "spawn_list": [
+  {
+   "name": "Decaying Spirit",
+   "at": [
+    37752,
+    29445,
+    16739
+   ],
+   "walk": 330
+  },
+  {
+   "name": "Decaying Spirit",
+   "at": [
+    37824,
+    28800,
+    16739
+   ],
+   "walk": 358
+  },
+  {
+   "name": "Decaying Spirit",
+   "at": [
+    37248,
+    28800,
+    16739
+   ],
+   "walk": 821
+  },
+  {
+   "name": "Decaying Spirit",
+   "at": [
+    36672,
+    28800,
+    16739
+   ],
+   "walk": 1397
+  },
+  {
+   "name": "Dreadful Cadaver",
+   "at": [
+    36480,
+    28416,
+    16742
+   ],
+   "walk": 1747
+  },
+  {
+   "name": "Dreadful Cadaver",
+   "at": [
+    36480,
+    29184,
+    16741
+   ],
+   "walk": 1790
+  },
+  {
+   "name": "Dreadful Cadaver",
+   "at": [
+    36096,
+    28800,
+    16709
+   ],
+   "walk": 1973
+  },
+  {
+   "name": "Haunting Gloom",
+   "at": [
+    36288,
+    28032,
+    16739
+   ],
+   "walk": 2175
+  },
+  {
+   "name": "Haunting Gloom",
+   "at": [
+    35904,
+    28416,
+    16740
+   ],
+   "walk": 2226
+  },
+  {
+   "name": "Haunting Gloom",
+   "at": [
+    35712,
+    28992,
+    16750
+   ],
+   "walk": 2368
+  },
+  {
+   "name": "Haunting Gloom",
+   "at": [
+    35520,
+    28608,
+    16739
+   ],
+   "walk": 2561
+  },
+  {
+   "name": "Menacing Presense",
+   "at": [
+    35136,
+    28800,
+    16739
+   ],
+   "walk": 2932
+  },
+  {
+   "name": "Menacing Presense",
+   "at": [
+    34690,
+    28818,
+    16739
+   ],
+   "walk": 3378
+  },
+  {
+   "name": "Menacing Presense",
+   "at": [
+    34885,
+    29362,
+    16979
+   ],
+   "walk": 3783
+  },
+  {
+   "name": "Devout Follower",
+   "at": [
+    34680,
+    29760,
+    16979
+   ],
+   "walk": 4186
+  },
+  {
+   "name": "Devout Follower",
+   "at": [
+    34875,
+    30139,
+    16979
+   ],
+   "walk": 4546
+  },
+  {
+   "name": "Devout Follower",
+   "at": [
+    34368,
+    30144,
+    16979
+   ],
+   "walk": 4759
+  },
+  {
+   "name": "Devout Follower",
+   "at": [
+    33984,
+    29954,
+    16979
+   ],
+   "walk": 5100
+  },
+  {
+   "name": "Endless Sorrow",
+   "at": [
+    34117,
+    30528,
+    16979
+   ],
+   "walk": 5409
+  },
+  {
+   "name": "Endless Sorrow",
+   "at": [
+    34107,
+    31104,
+    16979
+   ],
+   "walk": 5984
+  },
+  {
+   "name": "Endless Sorrow",
+   "at": [
+    33600,
+    30968,
+    16979
+   ],
+   "walk": 6219
+  },
+  {
+   "name": "Forgotten Promise",
+   "at": [
+    33216,
+    31296,
+    16979
+   ],
+   "walk": 6693
+  },
+  {
+   "name": "Forgotten Promise",
+   "at": [
+    33024,
+    30912,
+    16982
+   ],
+   "walk": 6804
+  },
+  {
+   "name": "Forgotten Promise",
+   "at": [
+    32640,
+    31104,
+    16947
+   ],
+   "walk": 7182
+  },
+  {
+   "name": "Forgotten Promise",
+   "at": [
+    32640,
+    30528,
+    16979
+   ],
+   "walk": 7375
+  },
+  {
+   "name": "Rotting Tombraider",
+   "at": [
+    32448,
+    31488,
+    16980
+   ],
+   "walk": 7457
+  },
+  {
+   "name": "Rotting Tombraider",
+   "at": [
+    32256,
+    30912,
+    16959
+   ],
+   "walk": 7565
+  },
+  {
+   "name": "Rotting Tombraider",
+   "at": [
+    32578,
+    31890,
+    16908
+   ],
+   "walk": 7725
+  },
+  {
+   "name": "Tortured Soul",
+   "at": [
+    32448,
+    30144,
+    16981
+   ],
+   "walk": 7815
+  },
+  {
+   "name": "Tortured Soul",
+   "at": [
+    31872,
+    31104,
+    17090
+   ],
+   "walk": 7951
+  },
+  {
+   "name": "Tortured Soul",
+   "at": [
+    32832,
+    29952,
+    16979
+   ],
+   "walk": 8069
+  },
+  {
+   "name": "Tortured Soul",
+   "at": [
+    32256,
+    29760,
+    16960
+   ],
+   "walk": 8243
+  },
+  {
+   "name": "Undead Builder",
+   "at": [
+    32616,
+    32395,
+    16739
+   ],
+   "walk": 8278
+  },
+  {
+   "name": "Undead Builder",
+   "at": [
+    32640,
+    29568,
+    16949
+   ],
+   "walk": 8378
+  },
+  {
+   "name": "Undead Builder",
+   "at": [
+    31296,
+    31104,
+    17219
+   ],
+   "walk": 8534
+  },
+  {
+   "name": "Undead Guardsman",
+   "at": [
+    32448,
+    32832,
+    16739
+   ],
+   "walk": 8678
+  },
+  {
+   "name": "Undead Guardsman",
+   "at": [
+    32293,
+    29224,
+    16979
+   ],
+   "walk": 8745
+  },
+  {
+   "name": "Undead Guardsman",
+   "at": [
+    32832,
+    33024,
+    16739
+   ],
+   "walk": 8990
+  },
+  {
+   "name": "Undead Guardsman",
+   "at": [
+    32064,
+    32640,
+    16739
+   ],
+   "walk": 9042
+  },
+  {
+   "name": "Undead Poacher",
+   "at": [
+    30731,
+    30968,
+    17219
+   ],
+   "walk": 9099
+  },
+  {
+   "name": "Undead Poacher",
+   "at": [
+    32578,
+    28800,
+    16979
+   ],
+   "walk": 9143
+  },
+  {
+   "name": "Undead Poacher",
+   "at": [
+    32325,
+    33278,
+    16607
+   ],
+   "walk": 9195
+  },
+  {
+   "name": "Unfortunate Pragmatic",
+   "at": [
+    33216,
+    32832,
+    16739
+   ],
+   "walk": 9284
+  },
+  {
+   "name": "Unfortunate Pragmatic",
+   "at": [
+    31749,
+    32962,
+    16739
+   ],
+   "walk": 9323
+  },
+  {
+   "name": "Unfortunate Pragmatic",
+   "at": [
+    32256,
+    28416,
+    16979
+   ],
+   "walk": 9583
+  },
+  {
+   "name": "Unfortunate Pragmatic",
+   "at": [
+    31872,
+    33408,
+    16483
+   ],
+   "walk": 9681
+  },
+  {
+   "name": "Bleeder",
+   "at": [
+    31877,
+    28608,
+    16979
+   ],
+   "walk": 9878
+  },
+  {
+   "name": "Bleeder",
+   "at": [
+    31488,
+    33408,
+    16262
+   ],
+   "walk": 10110
+  },
+  {
+   "name": "Bleeder",
+   "at": [
+    31680,
+    28224,
+    17039
+   ],
+   "walk": 10224
+  },
+  {
+   "name": "Chilled Presence",
+   "at": [
+    31403,
+    28608,
+    16908
+   ],
+   "walk": 10369
+  },
+  {
+   "name": "Chilled Presence",
+   "at": [
+    31296,
+    33024,
+    16260
+   ],
+   "walk": 10467
+  },
+  {
+   "name": "Chilled Presence",
+   "at": [
+    31104,
+    33600,
+    16259
+   ],
+   "walk": 10528
+  },
+  {
+   "name": "Chilled Presence",
+   "at": [
+    30912,
+    33216,
+    16262
+   ],
+   "walk": 10683
+  },
+  {
+   "name": "Fallen Cleric",
+   "at": [
+    31680,
+    27648,
+    17219
+   ],
+   "walk": 10808
+  },
+  {
+   "name": "Fallen Cleric",
+   "at": [
+    30912,
+    28608,
+    16739
+   ],
+   "walk": 10868
+  },
+  {
+   "name": "Fallen Cleric",
+   "at": [
+    30789,
+    32792,
+    16259
+   ],
+   "walk": 10979
+  },
+  {
+   "name": "Sacrificed Slave",
+   "at": [
+    30528,
+    33408,
+    16261
+   ],
+   "walk": 11037
+  },
+  {
+   "name": "Sacrificed Slave",
+   "at": [
+    31872,
+    27264,
+    17219
+   ],
+   "walk": 11239
+  },
+  {
+   "name": "Sacrificed Slave",
+   "at": [
+    30523,
+    28416,
+    16739
+   ],
+   "walk": 11268
+  },
+  {
+   "name": "Sacrificed Slave",
+   "at": [
+    30336,
+    33024,
+    16260
+   ],
+   "walk": 11286
+  },
+  {
+   "name": "Spiteful Wraith",
+   "at": [
+    30197,
+    33723,
+    16259
+   ],
+   "walk": 11451
+  },
+  {
+   "name": "Spiteful Wraith",
+   "at": [
+    31338,
+    27225,
+    17219
+   ],
+   "walk": 11466
+  },
+  {
+   "name": "Spiteful Wraith",
+   "at": [
+    30421,
+    28886,
+    16739
+   ],
+   "walk": 11567
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    31680,
+    26880,
+    17155
+   ],
+   "walk": 11592
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    29952,
+    33216,
+    16262
+   ],
+   "walk": 11638
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    30327,
+    28040,
+    16739
+   ],
+   "walk": 11691
+  },
+  {
+   "name": "Botched Sacrifice",
+   "at": [
+    32213,
+    26880,
+    17219
+   ],
+   "walk": 11752
+  },
+  {
+   "name": "Fallen Paladin",
+   "at": [
+    29952,
+    28608,
+    16676
+   ],
+   "walk": 11823
+  },
+  {
+   "name": "Fallen Paladin",
+   "at": [
+    31296,
+    26688,
+    17220
+   ],
+   "walk": 11888
+  },
+  {
+   "name": "Fallen Paladin",
+   "at": [
+    31872,
+    26496,
+    17155
+   ],
+   "walk": 11974
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    29760,
+    28224,
+    16715
+   ],
+   "walk": 12049
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    29760,
+    28992,
+    16739
+   ],
+   "walk": 12127
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    31488,
+    26304,
+    17165
+   ],
+   "walk": 12188
+  },
+  {
+   "name": "Lingering Shade",
+   "at": [
+    29376,
+    28608,
+    16676
+   ],
+   "walk": 12397
+  },
+  {
+   "name": "Living Entombed",
+   "at": [
+    32064,
+    26112,
+    17221
+   ],
+   "walk": 12442
+  },
+  {
+   "name": "Living Entombed",
+   "at": [
+    29376,
+    28032,
+    16739
+   ],
+   "walk": 12510
+  },
+  {
+   "name": "Living Entombed",
+   "at": [
+    31680,
+    25920,
+    17157
+   ],
+   "walk": 12551
+  },
+  {
+   "name": "Thyra the Reanimator",
+   "at": [
+    31109,
+    26053,
+    17219
+   ],
+   "walk": 12674
+  },
+  {
+   "name": "Thyra the Reanimator",
+   "at": [
+    29184,
+    28992,
+    16739
+   ],
+   "walk": 12691
+  },
+  {
+   "name": "Thyra the Reanimator",
+   "at": [
+    28992,
+    28416,
+    16716
+   ],
+   "walk": 12790
+  },
+  {
+   "name": "Reanimated Soul",
+   "boss": true,
+   "level": 13,
+   "at": [
+    31989,
+    25606,
+    17219
+   ],
+   "walk": 12954
+  }
+ ]
+}
